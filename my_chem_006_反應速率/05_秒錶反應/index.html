@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>秒錶反應 - 互動式模擬實驗</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-yellow: #fbbf24;
+            --accent-red: #f87171;
+            --accent-cyan: #22d3ee;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --sol-a: #e2e8f0;
+            --sol-b: #cbd5e1;
+            --sol-reacted: #0a0a2a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', 'Noto Sans TC', sans-serif; overflow: hidden; }
+
+        #app { position: relative; width: 100vw; height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- Start Overlay --- */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 1000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .hero-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+        .btn-start { background: linear-gradient(135deg, var(--accent-blue), #0284c7); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
+
+        /* --- Main Layout --- */
+        #main-container { flex: 1; display: grid; grid-template-columns: 33.3% 66.7%; padding: 15px; gap: 15px; height: 100%; opacity: 0; transition: opacity 0.8s ease; }
+
+        #main-container.visible { opacity: 1; }
+
+        /* Left Panel: Experimental Rows */
+        .left-panel { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; padding-right: 5px; }
+        
+        .theory-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; background: rgba(56, 189, 248, 0.1); border-radius: 12px; padding: 15px; border: 1px solid rgba(56, 189, 248, 0.2); }
+        .theory-item { font-size: 1rem; color: var(--text-dim); display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+        .theory-item span { color: var(--accent-cyan); font-weight: 600; font-family: 'Courier New', Courier, monospace; margin-top: 4px; font-size: 1.1rem; }
+
+        .exp-card {
+            background: var(--bg-panel); backdrop-filter: blur(8px); border: 1px solid var(--glass-border);
+            border-radius: 15px; padding: 10px 15px; display: flex; align-items: center; gap: 20px;
+            transition: 0.3s; position: relative;
+        }
+
+        .exp-card.completed { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.05); }
+
+        .exp-controls-side { width: 110px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .slider-row { display: flex; flex-direction: column; gap: 2px; }
+        .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-dim); }
+        .slider-header b { color: var(--accent-yellow); }
+        .slider-row input { width: 100%; height: 3px; appearance: none; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; }
+
+        .exp-visual-row { display: flex; gap: 20px; align-items: flex-start; flex: 1; justify-content: flex-start; padding: 5px 0 5px 10px; }
+
+        
+        .glass-mini { position: relative; border: 1.2px solid rgba(255,255,255,0.4); border-top: none; background: rgba(255,255,255,0.05); border-radius: 0 0 3px 3px; overflow: hidden; }
+        .cyl-mini { width: 18px; height: 55px; }
+        .beaker-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: -5px; }
+        .beaker-mini { width: 55px; height: 45px; border-radius: 0 0 15px 15px; border-width: 1.5px; }
+        
+        .exp-num-btn { 
+            width: 28px; height: 28px; background: var(--accent-blue); color: #000; border: none; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; 
+            cursor: pointer; transition: 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+        }
+        .exp-num-btn:hover { transform: scale(1.1); background: var(--accent-cyan); }
+        .exp-num-btn:disabled { opacity: 0.5; background: var(--accent-green); color: white; cursor: default; }
+
+        .cyl-b-container { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .label-b { font-size: 0.7rem; color: var(--accent-green); font-weight: 600; text-align: center; white-space: nowrap; }
+
+        .liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; transition: height 0.6s, background 0.8s; }
+        .liq-a { background: rgba(56, 189, 248, 0.3); }
+        .liq-b { background: rgba(52, 211, 153, 0.3); }
+        .liq-mixed { background: rgba(255,255,255,0.1); }
+
+        /* Right Panel: Data */
+        .right-panel { display: flex; flex-direction: column; gap: 8px; height: 100%; overflow: hidden; }
+        .report-box { background: var(--bg-panel); border-radius: 20px; padding: 10px; border: 1px solid var(--glass-border); flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .data-table th { text-align: center; padding: 6px 2px; border-bottom: 1px solid var(--glass-border); color: var(--accent-blue); line-height: 1.2; font-size: 0.85rem; }
+        .data-table td { padding: 8px 2px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .data-table .highlight { color: var(--accent-yellow); font-weight: 600; }
+        
+        /* Analysis Section */
+        .analysis-container { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; border-top: 1px dashed var(--glass-border); padding-top: 10px; flex-shrink: 0; }
+        .analysis-card { background: rgba(0,0,0,0.15); border-radius: 12px; padding: 8px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .chart-box { width: 100%; height: 210px; position: relative; margin-bottom: 5px; }
+        .chart-box canvas { width: 100%; height: 100%; background: rgba(255,255,255,0.01); border-radius: 6px; }
+        .formula-label { font-size: 1.1rem; color: var(--accent-cyan); font-weight: 600; margin-top: 4px; font-family: 'Courier New', Courier, monospace; }
+        
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 5px; }
+        .log-table th { background: rgba(56, 189, 248, 0.05); padding: 4px; border: 1px solid var(--glass-border); color: var(--accent-blue); }
+        .log-table td { padding: 6px; border: 1px solid var(--glass-border); text-align: center; }
+
+        #toolbar {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 10px 5px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            z-index: 2000;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            width: 45px;
+        }
+
+        .btn {
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: normal;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .btn.active-tool, .btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #000;
+        }
+
+        #drag-handle {
+            width: 100%;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            cursor: grab;
+            padding: 2px 0;
+            margin-bottom: 5px;
+            margin-top: -5px;
+            user-select: none;
+            font-size: 1.2rem;
+            line-height: 0.5;
+        }
+
+        .color-picker {
+            display: none;
+            grid-template-columns: 1fr;
+            width: 100%;
+            padding-top: 5px;
+            gap: 4px;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .color-dot.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1500; }
+        #drawing-layer.active { pointer-events: auto; }
+
+        /* Animations */
+        @keyframes tilt-left { 0% { transform: rotate(0); } 50% { transform: translate(-15px, -15px) rotate(45deg); } 100% { transform: rotate(0); } }
+        @keyframes tilt-right { 0% { transform: rotate(0); } 50% { transform: translate(15px, -15px) rotate(-45deg); } 100% { transform: rotate(0); } }
+        .pour-l { animation: tilt-left 1s ease-in-out; }
+        .pour-r { animation: tilt-right 1s ease-in-out; }
+
+        @media (max-width: 1024px) {
+            #main-container { grid-template-columns: 1fr; overflow-y: auto; }
+            .right-panel { height: auto; }
+            .analysis-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Start Overlay -->
+        <div id="start-overlay">
+            <h1 class="hero-title">秒錶反應：互動實驗操作</h1>
+            <p style="color: var(--text-dim); margin-bottom: 2rem;">溶液 A (KIO₃) + 溶液 B (NaHSO₃ + 澱粉)</p>
+            <button class="btn-start" onclick="initApp()">▶ 開始實驗教學</button>
+        </div>
+
+        <!-- Main Container -->
+        <div id="main-container">
+            <!-- Left: 5 Experiment Rows -->
+            <div class="left-panel">
+                <div class="theory-row">
+                    <div class="theory-item">1. 緩慢反應：<span>IO₃⁻ + 3HSO₃⁻ → I⁻ + 3SO₄²⁻ + 3H⁺</span></div>
+                    <div class="theory-item">2. 快速反應：<span>5I⁻ + 6H⁺ + IO₃⁻ → 3I₂ + 3H₂O</span></div>
+                    <div class="theory-item">3. 變色反應：<span>I₂ + 澱粉 → 藍黑色配合物</span></div>
+                </div>
+                <div id="exp-list">
+                    <!-- JS will generate 5 rows -->
+                </div>
+            </div>
+
+            <!-- Right: Report Table -->
+            <div class="right-panel">
+                <div class="report-box">
+                    
+                    <!-- Original Solution Info Section -->
+
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--glass-border); font-size: 1rem;">
+                        <div style="font-weight: 700; color: var(--accent-yellow); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>📝 實驗配製與參數</span>
+                            </div>
+                            <button onclick="resetExpData()" style="background: linear-gradient(135deg, var(--accent-red), #b91c1c); color: white; border: none; padding: 6px 15px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                🔄 重新實驗 (清除數據)
+                            </button>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                    <span style="color: var(--text-dim); width: 65px;">溶液 A：</span>
+                                    <span>[KIO₃] = </span>
+                                    <input type="text" placeholder="輸入濃度" id="base-conc-a" oninput="updateAllRowsInTable()" style="background: rgba(0,0,0,0.2); border: 1px solid var(--accent-blue); border-radius: 6px; color: var(--accent-blue); width: 80px; padding: 5px; font-weight: 700; text-align: center; outline: none; font-family: 'Outfit';">
+                                    <span style="color: var(--text-dim);">M</span>
+                                </div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.4); border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px;">
+                                    • 混合後總體積 = 20 mL
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                                    <span style="color: var(--text-dim); width: 65px;">溶液 B：</span>
+                                    <span>[NaHSO₃] = </span>
+                                    <input type="text" placeholder="輸入濃度" id="base-conc-b" oninput="updateAllRowsInTable()" style="background: rgba(0,0,0,0.2); border: 1px solid var(--accent-green); border-radius: 6px; color: var(--accent-green); width: 80px; padding: 5px; font-weight: 700; text-align: center; outline: none; font-family: 'Outfit';">
+                                    <span style="color: var(--text-dim);">M + 澱粉</span>
+                                </div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.4); border-left: 1px solid rgba(255,255,255,0.1); padding-left: 15px;">
+                                    • 溶液 B 固定用量 = 10 mL
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">實驗</th>
+                                    <th colspan="2">溶液 A (mL)</th>
+                                    <th rowspan="2">稀釋後溶液 A<br>(M)</th>
+                                    <th rowspan="2">溶液 B (mL)</th>
+                                    <th rowspan="2">混合後 [KIO₃]<br>濃度 (M)</th>
+                                    <th rowspan="2">混合後 [NaHSO₃]<br>濃度 (M)</th>
+                                    <th rowspan="2">反應時間<br>(sec)</th>
+                                    <th rowspan="2">反應速率 r<br>(M/s)</th>
+                                </tr>
+                                <tr>
+                                    <th style="font-size: 0.7rem; border-top: 1px solid rgba(255,255,255,0.1);">原溶液</th>
+                                    <th style="font-size: 0.7rem; border-top: 1px solid rgba(255,255,255,0.1);">蒸餾水</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-body">
+                                <tr><td>1</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                                <tr><td>2</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                                <tr><td>3</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                                <tr><td>4</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                                <tr><td>5</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+                            </tbody>
+                        </table>
+                    <div class="analysis-container" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <!-- 1: Linear Plot -->
+                        <div class="analysis-card">
+                            <h4 style="color: var(--text-dim); margin-bottom: 8px; font-size: 0.9rem;">初濃度對反應速率作圖</h4>
+                            <div class="chart-box">
+                                <canvas id="chart-linear"></canvas>
+                            </div>
+                            <div class="formula-label">R<sub>HSO₃⁻</sub> = k [IO₃⁻]<sup>n</sup></div>
+                        </div>
+
+                        <!-- 2: Log Table -->
+                        <div class="analysis-card">
+                            <h4 style="color: var(--text-dim); margin-bottom: 8px; font-size: 0.9rem;">數據對數處理表</h4>
+                            <table class="log-table">
+                                <thead>
+                                    <tr>
+                                        <th>實驗</th>
+                                        <th>log [IO₃⁻]</th>
+                                        <th>log R</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="log-body">
+                                    <tr><td>1</td><td>-</td><td>-</td></tr>
+                                    <tr><td>2</td><td>-</td><td>-</td></tr>
+                                    <tr><td>3</td><td>-</td><td>-</td></tr>
+                                    <tr><td>4</td><td>-</td><td>-</td></tr>
+                                    <tr><td>5</td><td>-</td><td>-</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 3: Log-Log Plot -->
+                        <div class="analysis-card">
+                            <h4 style="color: var(--text-dim); margin-bottom: 8px; font-size: 0.9rem;">log R 對 log [IO₃⁻] 作圖</h4>
+                            <div class="chart-box">
+                                <canvas id="chart-log"></canvas>
+                            </div>
+                            <div class="formula-label" style="font-size: 0.9rem;">log R = log k + n log [IO₃⁻]</div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <div id="toolbar">
+            <div id="drag-handle" title="拖曳移動工具列">
+                <div style="pointer-events: none;">≡</div>
+            </div>
+            
+            <button class="btn" id="btn-draw" onclick="toggleDrawing()" title="手寫模式">✎</button>
+            
+            <div class="color-picker" id="color-picker">
+                <div class="color-dot active" style="background: #f8fafc" onclick="setPenColor('#f8fafc', this)"></div>
+                <div class="color-dot" style="background: #f87171" onclick="setPenColor('#f87171', this)"></div>
+                <div class="color-dot" style="background: #38bdf8" onclick="setPenColor('#38bdf8', this)"></div>
+                <div class="color-dot" style="background: #fbbf24" onclick="setPenColor('#fbbf24', this)"></div>
+                <div class="color-dot" style="background: #34d399" onclick="setPenColor('#34d399', this)"></div>
+            </div>
+
+            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
+                <input type="range" id="pen-size" min="1" max="20" value="3" oninput="currentLineWidth = this.value" style="width: 100%; height: 4px; cursor: pointer;">
+            </div>
+
+            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
+                <button class="btn" id="btn-eraser" title="橡皮擦" onclick="toggleEraser()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; pointer-events: none;">
+                        <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path>
+                        <path d="M22 21H7"></path>
+                        <path d="m5 11 9 9"></path>
+                    </svg>
+                </button>
+                <button class="btn" onclick="clearCanvas()" title="全清">🗑</button>
+            </div>
+            
+            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
+            <button class="btn" onclick="location.reload()" title="重置全部">🔄</button>
+            <button class="btn" onclick="window.location.href='../../index.html'" title="回目錄">🏠</button>
+        </div>
+
+
+        <canvas id="drawing-layer"></canvas>
+    </div>
+
+    <script>
+        // --- Setup ---
+        const expData = [
+            { id: 1, vA: 10, vW: 0, time: 8 },
+            { id: 2, vA: 8, vW: 2, time: 9 },
+            { id: 3, vA: 6, vW: 4, time: 13 },
+            { id: 4, vA: 4, vW: 6, time: 20 },
+            { id: 5, vA: 2, vW: 8, time: 55 }
+        ];
+
+        let drawingCtx = null;
+        let isDrawingMode = false;
+        let isDrawing = false;
+        let penColor = '#f8fafc';
+        let currentLineWidth = 3;
+
+        function initApp() {
+            // Trigger Fullscreen
+            try {
+                const elem = document.documentElement;
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (err) {
+                console.log("Fullscreen request failed", err);
+            }
+
+            document.getElementById('start-overlay').style.display = 'none';
+            document.getElementById('main-container').classList.add('visible');
+            renderExps();
+            initCanvas();
+            initToolbarDragging();
+        }
+
+        function initToolbarDragging() {
+            const t = document.getElementById('toolbar');
+            const h = document.getElementById('drag-handle');
+            let drag = false, ox = 0, oy = 0, initialLeft, initialTop;
+
+            h.addEventListener('pointerdown', (e) => {
+                drag = true;
+                h.style.cursor = 'grabbing';
+                const rect = t.getBoundingClientRect();
+                
+                if (!t.dataset.isAbsolute) {
+                    t.style.right = 'auto';
+                    t.style.top = rect.top + 'px';
+                    t.style.left = rect.left + 'px';
+                    t.style.transform = 'none';
+                    t.dataset.isAbsolute = "true";
+                }
+                
+                ox = e.clientX;
+                oy = e.clientY;
+                initialLeft = parseFloat(t.style.left);
+                initialTop = parseFloat(t.style.top);
+                
+                document.addEventListener('pointermove', onDrag);
+                document.addEventListener('pointerup', onStop);
+            });
+
+            function onDrag(e) {
+                if (!drag) return;
+                const dx = e.clientX - ox;
+                const dy = e.clientY - oy;
+                t.style.left = (initialLeft + dx) + 'px';
+                t.style.top = (initialTop + dy) + 'px';
+            }
+
+            function onStop() {
+                drag = false;
+                h.style.cursor = 'grab';
+                document.removeEventListener('pointermove', onDrag);
+                document.removeEventListener('pointerup', onStop);
+            }
+        }
+
+        function renderExps() {
+            const container = document.getElementById('exp-list');
+            expData.forEach((data, index) => {
+                const card = document.createElement('div');
+                card.className = 'exp-card';
+                card.id = `exp-card-${data.id}`;
+                card.innerHTML = `
+                    <div class="exp-controls-side">
+                        <div class="slider-row">
+                            <div class="slider-header"><span>A</span><b><span id="val-a-${data.id}">${data.vA}</span> mL</b></div>
+                            <input type="range" min="0" max="10" value="${data.vA}" oninput="updateExpVol(${data.id}, 'A', this.value)">
+                        </div>
+                        <div class="slider-row">
+                            <div class="slider-header"><span>W</span><b><span id="val-w-${data.id}">${data.vW}</span> mL</b></div>
+                            <input type="range" min="0" max="10" value="${data.vW}" oninput="updateExpVol(${data.id}, 'W', this.value)">
+                        </div>
+                    </div>
+
+
+                    <div class="exp-visual-row">
+                        <div class="glass-mini cyl-mini" id="cyl-a-${data.id}">
+                            <div class="liquid liq-a" id="liq-a-${data.id}" style="height: 80%"></div>
+                        </div>
+
+                        <div class="beaker-container">
+                            <button class="exp-num-btn" id="btn-mix-${data.id}" onclick="runExp(${data.id})">${data.id}</button>
+                            <div class="glass-mini beaker-mini" id="beaker-${data.id}">
+                                <div class="liquid liq-mixed" id="liq-mix-${data.id}"></div>
+                            </div>
+                        </div>
+
+                        <div class="cyl-b-container">
+                            <div class="glass-mini cyl-mini" id="cyl-b-${data.id}">
+                                <div class="liquid liq-b" id="liq-b-${data.id}" style="height: 80%"></div>
+                            </div>
+                            <div class="label-b">B 10mL</div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+
+
+        function updateExpVol(id, type, val) {
+            const exp = expData.find(e => e.id === id);
+            const v = parseInt(val);
+            
+            if (type === 'A') {
+                exp.vA = v;
+                exp.vW = 10 - v;
+            } else {
+                exp.vW = v;
+                exp.vA = 10 - v;
+            }
+
+            // Update UI values and sliders
+            document.getElementById(`val-a-${id}`).textContent = exp.vA;
+            document.getElementById(`val-w-${id}`).textContent = exp.vW;
+            const sliders = document.querySelectorAll(`#exp-card-${id} input`);
+            sliders[0].value = exp.vA;
+            sliders[1].value = exp.vW;
+            
+            // Visual height of Cyl A (based on total 10mL being 80% height)
+            document.getElementById(`liq-a-${id}`).style.height = '80%';
+
+            // Real-time Sync to Table (Only A, W, and Concentration columns)
+            syncTable(id);
+        }
+
+        function syncTable(id) {
+            const exp = expData.find(e => e.id === id);
+            const row = document.getElementById('report-body').rows[id-1];
+            const baseA = parseFloat(document.getElementById('base-conc-a').value) || 0.02;
+            
+            const concADiluted = (exp.vA * baseA / 10);
+
+            row.cells[1].textContent = exp.vA;
+            row.cells[2].textContent = exp.vW;
+            row.cells[3].textContent = concADiluted.toFixed(3);
+            row.cells[4].textContent = 10;
+        }
+
+
+
+
+
+        function updateAllRowsInTable() {
+            expData.forEach(exp => syncTable(exp.id));
+        }
+
+        function runExp(id) {
+            const exp = expData.find(e => e.id === id);
+            const btn = document.getElementById(`btn-mix-${id}`);
+            const cylA = document.getElementById(`cyl-a-${id}`);
+            const cylB = document.getElementById(`cyl-b-${id}`);
+            const liqA = document.getElementById(`liq-a-${id}`);
+            const liqB = document.getElementById(`liq-b-${id}`);
+            const liqMix = document.getElementById(`liq-mix-${id}`);
+
+            // Concentrations for condition check
+            const baseA = parseFloat(document.getElementById('base-conc-a').value) || 0.02;
+            const baseB = parseFloat(document.getElementById('base-conc-b').value) || 0.004;
+            const concAMixed = (exp.vA * baseA / 20);
+            const concBMixed = (10 * baseB / 20);
+            
+            // Condition: IO3- >= 1/3 * HSO3-
+            const willReact = concAMixed >= (concBMixed / 3);
+
+            btn.disabled = true;
+            
+            // Animation
+            cylA.classList.add('pour-l');
+            cylB.classList.add('pour-r');
+
+            setTimeout(() => {
+                liqA.style.height = '0%';
+                liqB.style.height = '0%';
+                liqMix.style.height = '80%';
+                
+                // Wait 1.5 seconds for color change
+                setTimeout(() => {
+                    if (willReact) {
+                        liqMix.style.background = 'var(--sol-reacted)';
+                        document.getElementById(`exp-card-${id}`).classList.add('completed');
+                    } else {
+                        // Stays clear
+                        liqMix.style.background = 'rgba(255,255,255,0.15)';
+                        document.getElementById(`exp-card-${id}`).style.borderColor = 'var(--accent-red)';
+                    }
+                    fillTable(id, willReact);
+                }, 1500);
+
+            }, 500);
+        }
+
+        function fillTable(id, willReact) {
+            const exp = expData.find(e => e.id === id);
+            const row = document.getElementById('report-body').rows[id-1];
+            
+            // Get base concentrations from input fields
+            const baseA = parseFloat(document.getElementById('base-conc-a').value) || 0.02;
+            const baseB = parseFloat(document.getElementById('base-conc-b').value) || 0.004;
+            
+            // Calculate real timing
+            const time = calculateRealTime(exp.vA);
+            
+            // Diluted concentration in Cylinder A (Base Volume = 10mL)
+            const concADiluted = (exp.vA * baseA / 10);
+            
+            // Mixed concentrations (Total Volume = 20mL)
+            const concAMixed = (exp.vA * baseA / 20);
+            const concBMixed = (10 * baseB / 20);
+            
+            // Reaction Rate r = Delta [HSO3-] / Delta t
+            const rate = (concBMixed / time);
+
+            row.cells[1].textContent = exp.vA;
+            row.cells[2].textContent = exp.vW;
+            row.cells[3].textContent = concADiluted.toFixed(3);
+            row.cells[4].textContent = 10;
+            row.cells[5].textContent = concAMixed.toFixed(4);
+            row.cells[6].textContent = concBMixed.toFixed(4);
+            
+            if (willReact) {
+                row.cells[7].innerHTML = `<span class="highlight">${time.toFixed(1)}</span>`;
+                row.cells[8].textContent = rate.toExponential(2);
+                
+                // Store results for charts
+                exp.result = { concA: concAMixed, rate: rate };
+                updateLogTable(id, concAMixed, rate);
+                updateCharts();
+            } else {
+                row.cells[7].innerHTML = `<span style="color: var(--accent-red); font-size: 0.75rem;">不變色</span>`;
+                row.cells[8].textContent = 'N/A';
+                exp.result = null;
+            }
+        }
+
+        function updateLogTable(id, concA, rate) {
+            const logRow = document.getElementById('log-body').rows[id-1];
+            logRow.cells[1].textContent = Math.log10(concA).toFixed(3);
+            logRow.cells[2].textContent = Math.log10(rate).toFixed(3);
+        }
+
+        function updateCharts() {
+            const completed = expData.filter(e => e.result);
+            if (completed.length < 1) return;
+
+            // Chart 1: Linear (r vs [A])
+            const linearPoints = completed.map(e => ({ x: e.result.concA, y: e.result.rate }));
+            drawChart('chart-linear', linearPoints, '[IO₃⁻] (M)', 'r (M/s)', false);
+
+            // Chart 2: Log (log r vs log [A])
+            const logPoints = completed.map(e => ({ x: Math.log10(e.result.concA), y: Math.log10(e.result.rate) }));
+            drawChart('chart-log', logPoints, 'log [IO₃⁻]', 'log R', true);
+        }
+
+        function drawChart(canvasId, points, labelX, labelY, isLog) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width = canvas.offsetWidth * 2;
+            const h = canvas.height = canvas.offsetHeight * 2;
+            ctx.clearRect(0, 0, w, h);
+            ctx.scale(2, 2);
+
+            const cw = w/2, ch = h/2;
+            const margin = 45;
+            const graphW = cw - margin * 1.5;
+            const graphH = ch - margin * 1.5;
+
+            // Find bounds
+            let minX, maxX, minY, maxY;
+            if (isLog) {
+                const xs = points.map(p => p.x);
+                const ys = points.map(p => p.y);
+                minX = Math.min(...xs) - 0.2;
+                maxX = Math.max(...xs) + 0.2;
+                minY = Math.min(...ys) - 0.2;
+                maxY = Math.max(...ys) + 0.2;
+                // Avoid zero-range
+                if (maxX === minX) { maxX += 0.5; minX -= 0.5; }
+                if (maxY === minY) { maxY += 0.5; minY -= 0.5; }
+            } else {
+                minX = 0;
+                maxX = Math.max(...points.map(p => p.x)) * 1.2 || 0.01;
+                minY = 0;
+                maxY = Math.max(...points.map(p => p.y)) * 1.2 || 0.001;
+            }
+
+
+            const mapX = x => margin + ((x - minX) / (maxX - minX)) * graphW;
+            const mapY = y => (ch - margin) - ((y - minY) / (maxY - minY)) * graphH;
+
+            // Grid Lines & Ticks
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.font = '8px Outfit';
+            ctx.fillStyle = '#64748b';
+            ctx.textAlign = 'center';
+
+            // X Ticks
+            for (let i = 0; i <= 5; i++) {
+                const val = minX + (maxX - minX) * (i / 5);
+                const x = mapX(val);
+                ctx.beginPath(); ctx.moveTo(x, margin/2); ctx.lineTo(x, ch - margin); ctx.stroke();
+                ctx.fillText(isLog ? val.toFixed(1) : val.toFixed(3), x, ch - margin + 12);
+            }
+
+            // Y Ticks
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const val = minY + (maxY - minY) * (i / 5);
+                const y = mapY(val);
+                ctx.beginPath(); ctx.moveTo(margin, y); ctx.lineTo(cw - margin/2, y); ctx.stroke();
+                ctx.fillText(isLog ? val.toFixed(1) : val.toExponential(1), margin - 5, y + 3);
+            }
+
+            // Axes
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(margin, margin/2); ctx.lineTo(margin, ch - margin); ctx.lineTo(cw - margin/2, ch - margin);
+            ctx.stroke();
+
+            // Origin Label (if not log)
+            if (!isLog) {
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText("0", margin - 5, ch - margin + 5);
+            }
+
+            // Upright Labels
+            ctx.fillStyle = varColor('--accent-cyan');
+            ctx.font = 'bold 10px Outfit';
+            ctx.textAlign = 'center';
+            // X Label
+            ctx.fillText(labelX, cw/2 + margin/2, ch - 8);
+            // Y Label (Upright)
+            ctx.textAlign = 'left';
+            ctx.fillText(labelY, margin - 10, margin/2 - 5);
+
+            // Data Points & Line
+            if (points.length > 0) {
+                ctx.strokeStyle = isLog ? '#34d399' : '#38bdf8';
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.lineWidth = 2;
+                
+                points.sort((a,b) => a.x - b.x);
+
+                ctx.beginPath();
+                points.forEach((p, i) => {
+                    const tx = mapX(p.x);
+                    const ty = mapY(p.y);
+                    if (i === 0) ctx.moveTo(tx, ty); else ctx.lineTo(tx, ty);
+                    
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, 4, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.moveTo(tx, ty);
+                });
+                ctx.stroke();
+            }
+        }
+
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+
+
+        function calculateRealTime(v) {
+            // Baseline concentration used in the lookup table
+            const refA = 0.02;
+            const refB = 0.004;
+            
+            // User-defined base concentrations
+            const baseA = parseFloat(document.getElementById('base-conc-a').value) || 0.02;
+            const baseB = parseFloat(document.getElementById('base-conc-b').value) || 0.004;
+
+            // Step 1: Get baseline t from lookup table (based on vA volume)
+            const lookup = [
+                {v: 10, t: 8.0}, {v: 8, t: 9.0}, {v: 6, t: 13.0}, {v: 4, t: 20.0}, {v: 2, t: 55.0}
+            ];
+            
+            let tBase = 0;
+            if (v >= lookup[0].v) tBase = lookup[0].t;
+            else if (v <= lookup[lookup.length-1].v) tBase = lookup[lookup.length-1].t;
+            else {
+                for (let i = 0; i < lookup.length - 1; i++) {
+                    if (v <= lookup[i].v && v >= lookup[i+1].v) {
+                        const r = (v - lookup[i+1].v) / (lookup[i].v - lookup[i+1].v);
+                        tBase = lookup[i+1].t + r * (lookup[i].t - lookup[i+1].t);
+                        break;
+                    }
+                }
+            }
+
+            // Step 2: Apply first-order kinetic scaling
+            // Since Rate = k[A]^1 = [B]/t, then t is proportional to [B] and inversely to [A]
+            // Scale by ratio of current concentrations vs baseline
+            const scaleFactorA = refA / baseA;
+            const scaleFactorB = baseB / refB;
+            
+            const tFinal = tBase * scaleFactorA * scaleFactorB;
+            
+            return Math.max(0.1, tFinal); // Ensure no negative or zero time
+        }
+
+
+        // --- Drawing Tools ---
+        let lx, ly;
+        function initCanvas() {
+            const canvas = document.getElementById('drawing-layer');
+            drawingCtx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawingCtx.lineCap = 'round';
+            drawingCtx.lineWidth = currentLineWidth;
+
+            const start = (e) => { 
+                if(!isDrawingMode) return; 
+                isDrawing = true; 
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                lx = clientX - rect.left;
+                ly = clientY - rect.top;
+            };
+            const move = (e) => {
+                if(!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                const cx = clientX - rect.left;
+                const cy = clientY - rect.top;
+                
+                drawingCtx.beginPath();
+                drawingCtx.lineWidth = currentLineWidth;
+                drawingCtx.strokeStyle = penColor;
+                drawingCtx.moveTo(lx, ly);
+                drawingCtx.lineTo(cx, cy);
+                drawingCtx.stroke();
+                [lx, ly] = [cx, cy];
+            };
+            const end = () => isDrawing = false;
+
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); });
+            canvas.addEventListener('touchend', end);
+        }
+
+        function toggleDrawing() {
+            isDrawingMode = !isDrawingMode;
+            document.getElementById('btn-draw').classList.toggle('active', isDrawingMode);
+            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
+            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('drawing-layer').classList.toggle('active', isDrawingMode);
+            if (!isDrawingMode) {
+                isEraser = false;
+                drawingCtx.globalCompositeOperation = 'source-over';
+                document.getElementById('btn-eraser').classList.remove('active');
+            }
+        }
+
+        let isEraser = false;
+        function toggleEraser() {
+            isEraser = !isEraser;
+            document.getElementById('btn-eraser').classList.toggle('active', isEraser);
+            drawingCtx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
+            if (isEraser) {
+                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            } else {
+                // Find and reactivate current color dot
+                document.querySelectorAll('.color-dot').forEach(d => {
+                    if (rgbToHex(d.style.backgroundColor).toLowerCase() === penColor.toLowerCase()) {
+                        d.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function rgbToHex(rgb) {
+            if (!rgb) return penColor;
+            const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!match) return penColor;
+            function hex(x) { return ("0" + parseInt(x).toString(16)).slice(-2); }
+            return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
+        }
+
+        function setPenColor(c, el) {
+            penColor = c;
+            isEraser = false;
+            drawingCtx.globalCompositeOperation = 'source-over';
+            document.getElementById('btn-eraser').classList.remove('active');
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function clearCanvas() { drawingCtx.clearRect(0,0,window.innerWidth, window.innerHeight); }
+
+        function resetExpData() {
+            // Reset Data State
+            expData.forEach(exp => {
+                exp.result = null;
+                
+                // Reset Visual Cards
+                const card = document.getElementById(`exp-card-${exp.id}`);
+                card.classList.remove('completed');
+                card.style.borderColor = 'var(--glass-border)';
+                
+                // Reset Liquids
+                document.getElementById(`liq-a-${exp.id}`).style.height = '80%';
+                document.getElementById(`liq-b-${exp.id}`).style.height = '80%';
+                const liqMix = document.getElementById(`liq-mix-${exp.id}`);
+                liqMix.style.height = '0%';
+                liqMix.style.background = 'rgba(255,255,255,0.1)';
+                
+                // Enable Buttons
+                document.getElementById(`btn-mix-${exp.id}`).disabled = false;
+                
+                // Clear Table Rows (Time and Rate)
+                const row = document.getElementById('report-body').rows[exp.id-1];
+                row.cells[5].textContent = '-';
+                row.cells[6].textContent = '-';
+                row.cells[7].textContent = '-';
+                row.cells[8].textContent = '-';
+                
+                // Clear Log Table Rows
+                const logRow = document.getElementById('log-body').rows[exp.id-1];
+                logRow.cells[1].textContent = '-';
+                logRow.cells[2].textContent = '-';
+            });
+
+            // Clear Canvases
+            const c1 = document.getElementById('chart-linear');
+            const c2 = document.getElementById('chart-log');
+            c1.getContext('2d').clearRect(0,0,c1.width, c1.height);
+            c2.getContext('2d').clearRect(0,0,c2.width, c2.height);
+        }
+
+    </script>
+</body>
+</html>

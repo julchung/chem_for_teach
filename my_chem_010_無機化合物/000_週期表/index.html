@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>互動式週期表與測驗系統</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --cell-metal: rgba(56, 189, 248, 0.15);
+            --cell-nonmetal: rgba(52, 211, 153, 0.15);
+            --cell-metalloid: rgba(251, 191, 36, 0.15);
+            --cell-noble: rgba(167, 139, 250, 0.15);
+            --cell-transition: rgba(244, 114, 182, 0.15);
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            justify-self: start;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .mode-tabs {
+            justify-self: center;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .quiz-status {
+            justify-self: end;
+        }
+
+        /* Back to index button */
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .btn-home:hover {
+            background: rgba(255,255,255,0.16);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            padding: 1.5rem 2rem;
+            background: var(--panel-bg);
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .control-btn.active {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Periodic Table Grid */
+        .table-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 0.5rem;
+        }
+
+        /* Scaling wrapper */
+        #scale-wrapper {
+            transform-origin: top center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px;
+            width: 1400px;
+        }
+
+        /* Element Cell */
+        .element {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            aspect-ratio: 1 / 1.1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+
+        .element:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        /* Categories Colors */
+        .cat-nonmetal { background: var(--cell-nonmetal); }
+        .cat-alkali { background: var(--cell-metal); }
+        .cat-alkaline { background: var(--cell-metal); filter: brightness(1.2); }
+        .cat-transition { background: var(--cell-transition); }
+        .cat-post-transition { background: var(--cell-metal); filter: brightness(0.8); }
+        .cat-metalloid { background: var(--cell-metalloid); }
+        .cat-halogen { background: var(--cell-nonmetal); filter: brightness(1.2); }
+        .cat-noble { background: var(--cell-noble); }
+
+        /* Cell Data Displays */
+        .el-z {
+            position: absolute;
+            top: 4px; left: 4px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .el-conf {
+            position: absolute;
+            top: 4px; right: 4px;
+            font-size: 0.7rem;
+            opacity: 0.6;
+        }
+
+        .el-sym {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .el-name {
+            font-size: 0.85rem;
+            margin-top: 2px;
+            opacity: 0.9;
+        }
+
+        /* Single Mode Display */
+        .el-single-view {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            padding: 0 2px;
+            word-break: break-all;
+        }
+
+        /* Quiz Mode Styles */
+        .quiz-input {
+            width: 90%;
+            height: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: 2px solid var(--accent-yellow);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .quiz-input:focus {
+            border-color: var(--accent-blue);
+            background: rgba(0,0,0,0.8);
+        }
+
+        .quiz-status {
+            display: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            margin-left: auto;
+        }
+
+        .element.correct {
+            border-color: var(--accent-green) !important;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.5) !important;
+        }
+
+        .element.incorrect {
+            border-color: var(--accent-red) !important;
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.5) !important;
+        }
+        
+        .correct-answer-label {
+            position: absolute;
+            bottom: 2px;
+            font-size: 0.7rem;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        /* Quiz instruction banner: in the grid gap at rows 2-3, groups 3-12 */
+        #quiz-instruction {
+            grid-column: 3 / 13;
+            grid-row: 2 / 4;
+            justify-self: center;
+            align-self: center;
+            padding: 0.5rem 1.5rem;
+            display: none;          /* shown via JS in quiz mode */
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--accent-yellow);
+            text-shadow: 0 0 20px rgba(251,191,36,0.6);
+            background: rgba(251,191,36,0.07);
+            border: 1px solid rgba(251,191,36,0.25);
+            border-radius: 10px;
+            pointer-events: none;
+        }
+
+        /* Element Info Card (Learning Mode) */
+        #element-info-card {
+            grid-column: 3 / 13;
+            grid-row: 1 / 4;
+            background: var(--panel-bg);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: none; /* flex when active */
+            gap: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 20;
+            align-self: center;
+            justify-self: center;
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .eic-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.5);
+            transition: 0.2s;
+            border: none;
+            background: transparent;
+        }
+        .eic-close:hover { color: white; }
+
+        .eic-image-container {
+            width: 180px;
+            height: 180px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .eic-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .eic-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .eic-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .eic-sym { font-size: 3rem; font-weight: bold; color: var(--accent-blue); }
+        .eic-name { font-size: 2rem; }
+        .eic-z { font-size: 1.2rem; opacity: 0.7; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; }
+
+        .eic-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            opacity: 0.9;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 140px;
+        }
+
+        .eic-source {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.4);
+            text-align: right;
+            margin-top: auto;
+            padding-top: 0.5rem;
+        }
+        
+        .eic-source a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+        }
+        
+        .eic-source a:hover {
+            color: var(--accent-blue);
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo" style="display:flex;align-items:center;gap:12px;">
+            <a class="btn-home" href="../../index.html" id="btn-home" title="回目錄">&#8592; 目錄</a>
+            週期表互動教學系統
+        </div>
+        <div class="mode-tabs">
+            <button class="tab-btn active" id="tab-learn">學習模式</button>
+            <button class="tab-btn" id="tab-quiz">測驗模式</button>
+        </div>
+        <div class="quiz-status" id="quiz-status">
+            進度: <span id="quiz-progress">0</span>/10 | 分數: <span id="quiz-score">--</span>
+        </div>
+    </header>
+
+    <!-- Learning Controls -->
+    <div class="controls-panel" id="learn-controls">
+        <button class="control-btn active" data-view="all">全顯示</button>
+        <button class="control-btn" data-view="name">元素中文</button>
+        <button class="control-btn" data-view="sym">元素符號</button>
+        <button class="control-btn" data-view="z">原子序</button>
+        <button class="control-btn" data-view="conf">電子組態</button>
+    </div>
+
+    <!-- Quiz Controls -->
+    <div class="controls-panel" id="quiz-controls" style="display: none;">
+        <span style="display: flex; align-items: center; font-weight: bold;">測驗項目：</span>
+        <button class="control-btn active" data-quiz="name">考元素(中文名)</button>
+        <button class="control-btn" data-quiz="sym">考元素符號</button>
+        <button class="control-btn" data-quiz="z">考原子序</button>
+        <div style="flex: 1;"></div>
+        <button class="control-btn" id="btn-submit-quiz" style="background: var(--accent-blue); color: black; font-weight: bold; border:none;">交卷批改</button>
+        <button class="control-btn" id="btn-restart-quiz" style="border-color: var(--accent-red); color: var(--accent-red);">重新測驗</button>
+    </div>
+
+    <div class="table-container" id="table-container">
+        <div id="scale-wrapper">
+            <div class="periodic-table" id="ptable">
+                <!-- quiz-instruction is a grid child: row 1 cols 2-18 (the H/He gap) -->
+                <div id="quiz-instruction"></div>
+                <!-- Element Info Card -->
+                <div id="element-info-card">
+                    <button class="eic-close" onclick="document.getElementById('element-info-card').style.display='none'">&times;</button>
+                    <div class="eic-image-container" id="eic-img-box">
+                        <!-- image or placeholder symbol -->
+                    </div>
+                    <div class="eic-content">
+                        <div class="eic-header">
+                            <div class="eic-sym" id="eic-sym"></div>
+                            <div class="eic-name" id="eic-name"></div>
+                            <div class="eic-z" id="eic-z"></div>
+                        </div>
+                        <div class="eic-desc" id="eic-desc"></div>
+                        <div class="eic-source" id="eic-source"></div>
+                    </div>
+                </div>
+                <!-- Elements will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Base
+        const elementsData = [
+            {z:1, sym:'H', name:'氫', conf:'1s¹', g:1, p:1, cat:'nonmetal'},
+            {z:2, sym:'He', name:'氦', conf:'1s²', g:18, p:1, cat:'noble'},
+            {z:3, sym:'Li', name:'鋰', conf:'[He] 2s¹', g:1, p:2, cat:'alkali'},
+            {z:4, sym:'Be', name:'鈹', conf:'[He] 2s²', g:2, p:2, cat:'alkaline'},
+            {z:5, sym:'B', name:'硼', conf:'[He] 2s² 2p¹', g:13, p:2, cat:'metalloid'},
+            {z:6, sym:'C', name:'碳', conf:'[He] 2s² 2p²', g:14, p:2, cat:'nonmetal'},
+            {z:7, sym:'N', name:'氮', conf:'[He] 2s² 2p³', g:15, p:2, cat:'nonmetal'},
+            {z:8, sym:'O', name:'氧', conf:'[He] 2s² 2p⁴', g:16, p:2, cat:'nonmetal'},
+            {z:9, sym:'F', name:'氟', conf:'[He] 2s² 2p⁵', g:17, p:2, cat:'halogen'},
+            {z:10, sym:'Ne', name:'氖', conf:'[He] 2s² 2p⁶', g:18, p:2, cat:'noble'},
+            {z:11, sym:'Na', name:'鈉', conf:'[Ne] 3s¹', g:1, p:3, cat:'alkali'},
+            {z:12, sym:'Mg', name:'鎂', conf:'[Ne] 3s²', g:2, p:3, cat:'alkaline'},
+            {z:13, sym:'Al', name:'鋁', conf:'[Ne] 3s² 3p¹', g:13, p:3, cat:'post-transition'},
+            {z:14, sym:'Si', name:'矽', conf:'[Ne] 3s² 3p²', g:14, p:3, cat:'metalloid'},
+            {z:15, sym:'P', name:'磷', conf:'[Ne] 3s² 3p³', g:15, p:3, cat:'nonmetal'},
+            {z:16, sym:'S', name:'硫', conf:'[Ne] 3s² 3p⁴', g:16, p:3, cat:'nonmetal'},
+            {z:17, sym:'Cl', name:'氯', conf:'[Ne] 3s² 3p⁵', g:17, p:3, cat:'halogen'},
+            {z:18, sym:'Ar', name:'氬', conf:'[Ne] 3s² 3p⁶', g:18, p:3, cat:'noble'},
+            {z:19, sym:'K', name:'鉀', conf:'[Ar] 4s¹', g:1, p:4, cat:'alkali'},
+            {z:20, sym:'Ca', name:'鈣', conf:'[Ar] 4s²', g:2, p:4, cat:'alkaline'},
+            {z:21, sym:'Sc', name:'鈧', conf:'[Ar] 3d¹ 4s²', g:3, p:4, cat:'transition'},
+            {z:22, sym:'Ti', name:'鈦', conf:'[Ar] 3d² 4s²', g:4, p:4, cat:'transition'},
+            {z:23, sym:'V', name:'釩', conf:'[Ar] 3d³ 4s²', g:5, p:4, cat:'transition'},
+            {z:24, sym:'Cr', name:'鉻', conf:'[Ar] 3d⁵ 4s¹', g:6, p:4, cat:'transition'},
+            {z:25, sym:'Mn', name:'錳', conf:'[Ar] 3d⁵ 4s²', g:7, p:4, cat:'transition'},
+            {z:26, sym:'Fe', name:'鐵', conf:'[Ar] 3d⁶ 4s²', g:8, p:4, cat:'transition'},
+            {z:27, sym:'Co', name:'鈷', conf:'[Ar] 3d⁷ 4s²', g:9, p:4, cat:'transition'},
+            {z:28, sym:'Ni', name:'鎳', conf:'[Ar] 3d⁸ 4s²', g:10, p:4, cat:'transition'},
+            {z:29, sym:'Cu', name:'銅', conf:'[Ar] 3d¹⁰ 4s¹', g:11, p:4, cat:'transition'},
+            {z:30, sym:'Zn', name:'鋅', conf:'[Ar] 3d¹⁰ 4s²', g:12, p:4, cat:'transition'},
+            {z:31, sym:'Ga', name:'鎵', conf:'[Ar] 3d¹⁰ 4s² 4p¹', g:13, p:4, cat:'post-transition'},
+            {z:32, sym:'Ge', name:'鍺', conf:'[Ar] 3d¹⁰ 4s² 4p²', g:14, p:4, cat:'metalloid'},
+            {z:33, sym:'As', name:'砷', conf:'[Ar] 3d¹⁰ 4s² 4p³', g:15, p:4, cat:'metalloid'},
+            {z:34, sym:'Se', name:'硒', conf:'[Ar] 3d¹⁰ 4s² 4p⁴', g:16, p:4, cat:'nonmetal'},
+            {z:35, sym:'Br', name:'溴', conf:'[Ar] 3d¹⁰ 4s² 4p⁵', g:17, p:4, cat:'halogen'},
+            {z:36, sym:'Kr', name:'氪', conf:'[Ar] 3d¹⁰ 4s² 4p⁶', g:18, p:4, cat:'noble'},
+            {z:37, sym:'Rb', name:'銣', conf:'[Kr] 5s¹', g:1, p:5, cat:'alkali'},
+            {z:38, sym:'Sr', name:'鍶', conf:'[Kr] 5s²', g:2, p:5, cat:'alkaline'},
+            {z:39, sym:'Y', name:'釔', conf:'[Kr] 4d¹ 5s²', g:3, p:5, cat:'transition'},
+            {z:40, sym:'Zr', name:'鋯', conf:'[Kr] 4d² 5s²', g:4, p:5, cat:'transition'},
+            {z:41, sym:'Nb', name:'鈮', conf:'[Kr] 4d⁴ 5s¹', g:5, p:5, cat:'transition'},
+            {z:42, sym:'Mo', name:'鉬', conf:'[Kr] 4d⁵ 5s¹', g:6, p:5, cat:'transition'},
+            {z:43, sym:'Tc', name:'鎝', conf:'[Kr] 4d⁵ 5s²', g:7, p:5, cat:'transition'},
+            {z:44, sym:'Ru', name:'釕', conf:'[Kr] 4d⁷ 5s¹', g:8, p:5, cat:'transition'},
+            {z:45, sym:'Rh', name:'銠', conf:'[Kr] 4d⁸ 5s¹', g:9, p:5, cat:'transition'},
+            {z:46, sym:'Pd', name:'鈀', conf:'[Kr] 4d¹⁰', g:10, p:5, cat:'transition'},
+            {z:47, sym:'Ag', name:'銀', conf:'[Kr] 4d¹⁰ 5s¹', g:11, p:5, cat:'transition'},
+            {z:48, sym:'Cd', name:'鎘', conf:'[Kr] 4d¹⁰ 5s²', g:12, p:5, cat:'transition'},
+            {z:49, sym:'In', name:'銦', conf:'[Kr] 4d¹⁰ 5s² 5p¹', g:13, p:5, cat:'post-transition'},
+            {z:50, sym:'Sn', name:'錫', conf:'[Kr] 4d¹⁰ 5s² 5p²', g:14, p:5, cat:'post-transition'},
+            {z:51, sym:'Sb', name:'銻', conf:'[Kr] 4d¹⁰ 5s² 5p³', g:15, p:5, cat:'metalloid'},
+            {z:52, sym:'Te', name:'碲', conf:'[Kr] 4d¹⁰ 5s² 5p⁴', g:16, p:5, cat:'metalloid'},
+            {z:53, sym:'I', name:'碘', conf:'[Kr] 4d¹⁰ 5s² 5p⁵', g:17, p:5, cat:'halogen'},
+            {z:54, sym:'Xe', name:'氙', conf:'[Kr] 4d¹⁰ 5s² 5p⁶', g:18, p:5, cat:'noble'},
+            {z:55, sym:'Cs', name:'銫', conf:'[Xe] 6s¹', g:1, p:6, cat:'alkali'},
+            {z:56, sym:'Ba', name:'鋇', conf:'[Xe] 6s²', g:2, p:6, cat:'alkaline'},
+            {z:57, sym:'La', name:'鑭', conf:'[Xe] 5d¹ 6s²', g:3, p:6, cat:'transition'},
+            {z:72, sym:'Hf', name:'鉿', conf:'[Xe] 4f¹⁴ 5d² 6s²', g:4, p:6, cat:'transition'},
+            {z:73, sym:'Ta', name:'鉭', conf:'[Xe] 4f¹⁴ 5d³ 6s²', g:5, p:6, cat:'transition'},
+            {z:74, sym:'W', name:'鎢', conf:'[Xe] 4f¹⁴ 5d⁴ 6s²', g:6, p:6, cat:'transition'},
+            {z:75, sym:'Re', name:'錸', conf:'[Xe] 4f¹⁴ 5d⁵ 6s²', g:7, p:6, cat:'transition'},
+            {z:76, sym:'Os', name:'鋨', conf:'[Xe] 4f¹⁴ 5d⁶ 6s²', g:8, p:6, cat:'transition'},
+            {z:77, sym:'Ir', name:'銥', conf:'[Xe] 4f¹⁴ 5d⁷ 6s²', g:9, p:6, cat:'transition'},
+            {z:78, sym:'Pt', name:'鉑', conf:'[Xe] 4f¹⁴ 5d⁹ 6s¹', g:10, p:6, cat:'transition'},
+            {z:79, sym:'Au', name:'金', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s¹', g:11, p:6, cat:'transition'},
+            {z:80, sym:'Hg', name:'汞', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s²', g:12, p:6, cat:'transition'},
+            {z:81, sym:'Tl', name:'鉈', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹', g:13, p:6, cat:'post-transition'},
+            {z:82, sym:'Pb', name:'鉛', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²', g:14, p:6, cat:'post-transition'},
+            {z:83, sym:'Bi', name:'鉍', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³', g:15, p:6, cat:'post-transition'},
+            {z:84, sym:'Po', name:'釙', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴', g:16, p:6, cat:'post-transition'},
+            {z:85, sym:'At', name:'砈', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵', g:17, p:6, cat:'halogen'},
+            {z:86, sym:'Rn', name:'氡', conf:'[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶', g:18, p:6, cat:'noble'},
+            {z:87, sym:'Fr', name:'鍅', conf:'[Rn] 7s¹', g:1, p:7, cat:'alkali'},
+            {z:88, sym:'Ra', name:'鐳', conf:'[Rn] 7s²', g:2, p:7, cat:'alkaline'},
+            {z:89, sym:'Ac', name:'錒', conf:'[Rn] 6d¹ 7s²', g:3, p:7, cat:'transition'},
+            {z:104, sym:'Rf', name:'鑪', conf:'[Rn] 5f¹⁴ 6d² 7s²', g:4, p:7, cat:'transition'},
+            {z:105, sym:'Db', name:'𨧀', conf:'[Rn] 5f¹⁴ 6d³ 7s²', g:5, p:7, cat:'transition'},
+            {z:106, sym:'Sg', name:'𨭎', conf:'[Rn] 5f¹⁴ 6d⁴ 7s²', g:6, p:7, cat:'transition'},
+            {z:107, sym:'Bh', name:'𨨏', conf:'[Rn] 5f¹⁴ 6d⁵ 7s²', g:7, p:7, cat:'transition'},
+            {z:108, sym:'Hs', name:'𨭆', conf:'[Rn] 5f¹⁴ 6d⁶ 7s²', g:8, p:7, cat:'transition'},
+            {z:109, sym:'Mt', name:'䥑', conf:'[Rn] 5f¹⁴ 6d⁷ 7s²', g:9, p:7, cat:'transition'},
+            {z:110, sym:'Ds', name:'鐽', conf:'[Rn] 5f¹⁴ 6d⁸ 7s²', g:10, p:7, cat:'transition'},
+            {z:111, sym:'Rg', name:'錀', conf:'[Rn] 5f¹⁴ 6d⁹ 7s²', g:11, p:7, cat:'transition'},
+            {z:112, sym:'Cn', name:'鎶', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s²', g:12, p:7, cat:'transition'},
+            {z:113, sym:'Nh', name:'鉨', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹', g:13, p:7, cat:'post-transition'},
+            {z:114, sym:'Fl', name:'鈇', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²', g:14, p:7, cat:'post-transition'},
+            {z:115, sym:'Mc', name:'鏌', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³', g:15, p:7, cat:'post-transition'},
+            {z:116, sym:'Lv', name:'鉝', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴', g:16, p:7, cat:'post-transition'},
+            {z:117, sym:'Ts', name:'石田', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵', g:17, p:7, cat:'halogen'},
+            {z:118, sym:'Og', name:'鿫', conf:'[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶', g:18, p:7, cat:'noble'}
+        ];
+
+        // Quiz target elements: A group (groups 1,2,13-18) + 1st row transition (21-30) + specific (46,47,48,78,79,80)
+        const quizTargetZs = new Set([
+            // Period 1-7 A groups
+            1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,31,32,33,34,35,36,
+            37,38,49,50,51,52,53,54,55,56,81,82,83,84,85,86,87,88,113,114,115,116,117,118,
+            // 1st row transition
+            21,22,23,24,25,26,27,28,29,30,
+            // Specific metals
+            46,47,48,78,79,80
+        ]);
+
+        let currentViewMode = 'all';
+        let currentQuizMode = 'name';
+        let isQuizMode = false;
+        let activeQuizElements = [];
+        
+        const ptable = document.getElementById('ptable');
+
+        // Cache for Wikipedia data
+        const elementCache = {};
+
+        async function showElementInfo(z) {
+            const el = elementsData.find(e => e.z === z);
+            if (!el) return;
+
+            const card = document.getElementById('element-info-card');
+
+            // 預先填入基本資訊
+            document.getElementById('eic-sym').textContent = el.sym;
+            document.getElementById('eic-name').textContent = el.name;
+            document.getElementById('eic-z').textContent = `原子序: ${el.z}`;
+            
+            const imgBox = document.getElementById('eic-img-box');
+            const descBox = document.getElementById('eic-desc');
+            
+            card.style.display = 'flex';
+
+            // 若已有快取，直接顯示
+            if (elementCache[z]) {
+                updateCardContent(elementCache[z], el.name, el.sym, imgBox, descBox);
+                return;
+            }
+
+            // 顯示載入中
+            descBox.textContent = '正在從維基百科載入資料...';
+            imgBox.innerHTML = '<div style="font-size: 1rem; color: #fff;">載入中</div>';
+
+            try {
+                // 從維基百科抓取資料
+                const response = await fetch(`https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(el.name)}`);
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                
+                const info = {
+                    desc: data.extract || '維基百科上暫無此元素的摘要說明。',
+                    img: data.thumbnail ? data.thumbnail.source : '',
+                    isWiki: true
+                };
+                
+                elementCache[z] = info;
+                updateCardContent(info, el.name, el.sym, imgBox, descBox);
+            } catch (err) {
+                descBox.textContent = '無法連線到維基百科取得資料。';
+                imgBox.innerHTML = el.sym;
+            }
+        }
+
+        function updateCardContent(info, elName, sym, imgBox, descBox) {
+            descBox.textContent = info.desc;
+            if (info.img) {
+                imgBox.innerHTML = `<img src="${info.img}" alt="${sym}">`;
+            } else {
+                imgBox.innerHTML = sym;
+            }
+            
+            const sourceBox = document.getElementById('eic-source');
+            if (info.isWiki) {
+                const wikiUrl = 'https://zh.wikipedia.org/wiki/' + encodeURIComponent(elName);
+                sourceBox.innerHTML = `文字與圖片來源：<a href="${wikiUrl}" target="_blank">維基百科</a> (CC BY-SA 4.0)`;
+            } else {
+                sourceBox.innerHTML = '';
+            }
+        }
+
+        // Render Table
+        function renderTable() {
+            // Remove only .element cells; preserve #quiz-instruction inside the grid
+            Array.from(ptable.querySelectorAll('.element')).forEach(el => el.remove());
+            elementsData.forEach(el => {
+                const cell = document.createElement('div');
+                cell.className = `element cat-${el.cat}`;
+                cell.style.gridColumn = el.g;
+                cell.style.gridRow = el.p;
+                cell.dataset.z = el.z;
+
+                cell.innerHTML = getCellHTML(el);
+                
+                // Add click event for Info Card
+                cell.addEventListener('click', () => {
+                    if (!isQuizMode) {
+                        showElementInfo(el.z);
+                    }
+                });
+
+                ptable.appendChild(cell);
+            });
+        }
+
+        function getCellHTML(el) {
+            if (!isQuizMode) {
+                // Learning Mode
+                if (currentViewMode === 'all') {
+                    return `
+                        <div class="el-z">${el.z}</div>
+                        <div class="el-conf">${el.conf}</div>
+                        <div class="el-sym">${el.sym}</div>
+                        <div class="el-name">${el.name}</div>
+                    `;
+                } else if (currentViewMode === 'name') {
+                    return `<div class="el-single-view">${el.name}</div>`;
+                } else if (currentViewMode === 'sym') {
+                    return `<div class="el-single-view">${el.sym}</div>`;
+                } else if (currentViewMode === 'z') {
+                    return `<div class="el-single-view">${el.z}</div>`;
+                } else if (currentViewMode === 'conf') {
+                    return `<div class="el-single-view" style="font-size: 0.9rem;">${el.conf}</div>`;
+                }
+            } else {
+                // Quiz Mode
+                const isTarget = activeQuizElements.find(q => q.z === el.z);
+                
+                if (isTarget) {
+                    return `<input type="text" class="quiz-input" data-z="${el.z}" autocomplete="off" />`;
+                } else {
+                    // Show symbol as hint for non-target cells
+                    return `<div class="el-single-view" style="opacity:0.3">${el.sym}</div>`;
+                }
+            }
+        }
+
+        // Initialize Learning Mode
+        const learnBtns = document.querySelectorAll('#learn-controls .control-btn');
+        learnBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                learnBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentViewMode = e.target.dataset.view;
+                renderTable();
+            });
+        });
+
+        // Initialize Quiz Mode
+        const quizBtns = document.querySelectorAll('#quiz-controls .control-btn[data-quiz]');
+        quizBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                quizBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentQuizMode = e.target.dataset.quiz;
+                startQuiz();
+            });
+        });
+
+        // Tab Switching
+        const tabLearn = document.getElementById('tab-learn');
+        const tabQuiz = document.getElementById('tab-quiz');
+        const learnControls = document.getElementById('learn-controls');
+        const quizControls = document.getElementById('quiz-controls');
+        const quizStatus = document.getElementById('quiz-status');
+
+        tabLearn.addEventListener('click', () => {
+            isQuizMode = false;
+            tabLearn.classList.add('active');
+            tabQuiz.classList.remove('active');
+            learnControls.style.display = 'flex';
+            quizControls.style.display = 'none';
+            quizStatus.style.display = 'none';
+            // Hide instruction banner when leaving quiz mode
+            const banner = document.getElementById('quiz-instruction');
+            if (banner) banner.style.display = 'none';
+            // Hide info card if open
+            const card = document.getElementById('element-info-card');
+            if (card) card.style.display = 'none';
+            renderTable();
+        });
+
+        tabQuiz.addEventListener('click', () => {
+            isQuizMode = true;
+            tabQuiz.classList.add('active');
+            tabLearn.classList.remove('active');
+            quizControls.style.display = 'flex';
+            learnControls.style.display = 'none';
+            quizStatus.style.display = 'block';
+            // Hide info card
+            const card = document.getElementById('element-info-card');
+            if (card) card.style.display = 'none';
+            startQuiz();
+        });
+
+        // Quiz instruction texts per mode
+        const quizInstructionText = {
+            name: '請填入空格內元素之中文名稱',
+            sym:  '請填入空格內元素之化學符號',
+            z:    '請填入空格內元素之原子序'
+        };
+
+        // Quiz Logic
+        function startQuiz() {
+            // Pick 10 random elements from the target pool
+            const pool = elementsData.filter(e => quizTargetZs.has(e.z));
+            const shuffled = pool.sort(() => 0.5 - Math.random());
+            activeQuizElements = shuffled.slice(0, 10);
+            
+            document.getElementById('quiz-progress').textContent = '0';
+            document.getElementById('quiz-score').textContent = '--';
+            document.getElementById('btn-submit-quiz').disabled = false;
+            document.getElementById('btn-submit-quiz').style.opacity = '1';
+
+            renderTable();
+
+            // Show instruction banner
+            const banner = document.getElementById('quiz-instruction');
+            banner.textContent = quizInstructionText[currentQuizMode] || '';
+            banner.style.display = 'flex';
+
+            // Add input listeners + Enter navigation
+            const inputs = Array.from(document.querySelectorAll('.quiz-input'));
+            inputs.forEach((input, idx) => {
+                input.addEventListener('input', () => {
+                    const filledCount = inputs.filter(i => i.value.trim() !== '').length;
+                    document.getElementById('quiz-progress').textContent = filledCount;
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const next = inputs[idx + 1];
+                        if (next) {
+                            next.focus();
+                        } else {
+                            input.blur();
+                        }
+                    }
+                });
+            });
+
+            // Auto-focus the first input
+            if (inputs.length > 0) {
+                setTimeout(() => inputs[0].focus(), 50);
+            }
+        }
+
+        document.getElementById('btn-restart-quiz').addEventListener('click', startQuiz);
+
+        document.getElementById('btn-submit-quiz').addEventListener('click', () => {
+            let correctCount = 0;
+            const inputs = document.querySelectorAll('.quiz-input');
+            
+            inputs.forEach(input => {
+                const z = parseInt(input.dataset.z);
+                const el = elementsData.find(e => e.z === z);
+                const userVal = input.value.trim();
+                let correctVal = '';
+                let isCorrect = false;
+
+                if (currentQuizMode === 'name') {
+                    correctVal = el.name;
+                    isCorrect = (userVal === correctVal);
+                } else if (currentQuizMode === 'sym') {
+                    correctVal = el.sym;
+                    // Case insensitive check for symbols
+                    isCorrect = (userVal.toLowerCase() === correctVal.toLowerCase());
+                } else if (currentQuizMode === 'z') {
+                    correctVal = el.z.toString();
+                    isCorrect = (userVal === correctVal);
+                }
+
+                const cell = input.parentElement;
+                
+                if (isCorrect) {
+                    correctCount++;
+                    cell.classList.add('correct');
+                    input.style.color = 'var(--accent-green)';
+                } else {
+                    cell.classList.add('incorrect');
+                    input.style.color = 'var(--accent-red)';
+                    // Append correct answer
+                    const ansDiv = document.createElement('div');
+                    ansDiv.className = 'correct-answer-label';
+                    ansDiv.textContent = correctVal;
+                    cell.appendChild(ansDiv);
+                }
+                input.disabled = true;
+            });
+
+            const score = correctCount * 10;
+            document.getElementById('quiz-score').textContent = score;
+            document.getElementById('btn-submit-quiz').disabled = true;
+            document.getElementById('btn-submit-quiz').style.opacity = '0.5';
+        });
+
+        // Initial Render
+        renderTable();
+
+        // ── Viewport scale-to-fit ──────────────────────────────────────
+        function fitTable() {
+            const header = document.querySelector('header');
+            const controlsPanel = document.querySelector('.controls-panel:not([style*="display: none"])') ||
+                                  document.querySelector('.controls-panel');
+            const container = document.getElementById('table-container');
+            const wrapper = document.getElementById('scale-wrapper');
+
+            const headerH = header ? header.offsetHeight : 0;
+            const controlsH = controlsPanel ? controlsPanel.offsetHeight : 0;
+            const availH = window.innerHeight - headerH - controlsH;
+            const availW = window.innerWidth;
+
+            // Natural dimensions of the wrapper content
+            const naturalW = wrapper.scrollWidth || 1400;
+            const naturalH = wrapper.scrollHeight || 600;
+
+            const scaleX = availW / naturalW;
+            const scaleY = availH / naturalH;
+            const scale = Math.min(scaleX, scaleY);
+
+            wrapper.style.transform = `scale(${scale})`;
+            wrapper.style.transformOrigin = 'top center';
+            // Compensate container height so no scrollbar
+            container.style.height = `${availH}px`;
+            wrapper.style.marginTop = `${(availH - naturalH * scale) / 2}px`;
+        }
+
+        window.addEventListener('resize', fitTable);
+        // Run after each render
+        const _origRender = renderTable;
+        renderTable = function() {
+            _origRender();
+            requestAnimationFrame(fitTable);
+        };
+        requestAnimationFrame(fitTable);
+
+        // ── Auto fullscreen on entry (desktop; iPad falls back to 100dvh) ──
+        function tryFullscreen() {
+            const el = document.documentElement;
+            const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+            if (req) req.call(el).catch(() => {});
+        }
+        // Trigger fullscreen on first user gesture (required by browsers)
+        document.addEventListener('click', function onFirstClick() {
+            tryFullscreen();
+            document.removeEventListener('click', onFirstClick);
+        }, { once: true });
+        // Also try immediately (works in some environments)
+        tryFullscreen();
+
+        // Re-fit whenever fullscreen state changes
+        document.addEventListener('fullscreenchange', () => requestAnimationFrame(fitTable));
+        document.addEventListener('webkitfullscreenchange', () => requestAnimationFrame(fitTable));
+
+    </script>
+</body>
+</html>

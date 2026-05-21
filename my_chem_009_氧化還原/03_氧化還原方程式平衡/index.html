@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>氧化還原平衡——Google Blogger 專用版</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Fira+Math&family=Roboto+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    /* === 原 style.css 內容匯入 === */
+    :root {
+      --primary-bg: #0f172a;
+      --panel-bg: rgba(30, 41, 59, 0.7);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --accent-ox: #ff4d6d;
+      --accent-red: #00b4d8;
+      --accent-success: #3ef2a0;
+      --accent-step2: #facc15;
+      --accent-step34: #c084fc;
+      --accent-step5: #3ef2a0;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --sidebar-width: 280px;
+      --transition-speed: 0.3s;
+    }
+
+    /* 全螢幕與側邊欄切換樣式 */
+    .app-container.sidebar-hidden .sidebar {
+      margin-right: calc(-1 * var(--sidebar-width));
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .sidebar {
+      transition: margin-right var(--transition-speed) ease, opacity var(--transition-speed) ease;
+    }
+
+    .main-content {
+      transition: all var(--transition-speed) ease;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: var(--primary-bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(255, 77, 109, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 180, 216, 0.05) 0px, transparent 50%);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hidden { display: none !important; }
+
+    sub, sup { font-size: 0.75em; }
+
+    /* Blogger 全畫面破框設定 */
+    .app-container {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex;
+      flex-direction: row-reverse;
+      z-index: 99999 !important;
+      background: var(--primary-bg);
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      z-index: 100;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-icon { font-size: 1.5rem; }
+    .sidebar-header h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: 1px; }
+
+    .step-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+      text-align: left;
+      color: var(--text-main);
+    }
+
+    .step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .step-btn:not(:disabled):hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .step-btn.active {
+      background: rgba(52, 211, 153, 0.1);
+      border-color: var(--accent-success);
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .step-btn.active .step-num { background: var(--accent-success); color: #000; }
+
+    .reset-btn {
+      margin-top: auto;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .reset-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
+
+    /* 方法切換分頁 */
+    .method-tabs {
+      display: flex;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--glass-border);
+    }
+    .method-tab {
+      flex: 1;
+      padding: 0.6rem;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      color: var(--text-muted);
+    }
+    .method-tab.active {
+      background: var(--glass-bg);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .main-header { margin-bottom: 2rem; text-align: center; width: 100%; }
+    .main-header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+    .topic-display {
+      background: var(--glass-bg);
+      border: 1px solid var(--accent-success);
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      margin-bottom: 2rem;
+      font-size: 1.2rem;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    .topic-display.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .equation-workspace {
+      position: relative;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 80px;
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .equation-workspace.balancing .slot.filled { border-color: var(--glass-border) !important; box-shadow: none !important; }
+    .equation-workspace.step5 .coeff { color: var(--accent-step5) !important; }
+    .equation-workspace.step5 .slot.filled {
+      border-color: var(--glass-border) !important;
+      box-shadow: none !important;
+      background: rgba(255, 255, 255, 0.02) !important;
+    }
+
+    .equation-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      width: max-content;
+      min-width: 100%;
+      padding: 0 2rem;
+    }
+
+    .row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; position: relative; }
+    .slot-group { display: flex; align-items: center; gap: 0.5rem; }
+
+    .slot {
+      min-width: 160px;
+      padding: 0 10px;
+      min-height: 90px;
+      border: 2px dashed var(--glass-border);
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .slot:hover:not(.locked) { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.05); }
+    .slot.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+    .slot-label {
+      position: absolute;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: var(--text-muted); font-size: 0.85rem; pointer-events: none; width: 100%; text-align: center;
+    }
+    .slot-content { font-size: 1.5rem; font-weight: 500; z-index: 2; text-align: center; }
+    .slot.filled .slot-label { display: none; }
+
+    .arrow-container { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; margin: 0 2rem; }
+    .mini-slot {
+      position: absolute; bottom: 100%; margin-bottom: -10px;
+      width: 36px; min-height: 24px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
+    }
+    .mini-slot .slot-label { font-size: 0.65rem; }
+    .mini-slot .slot-content { font-size: 0.9rem; }
+
+    .slot.ox.filled { border-color: var(--accent-ox); border-style: solid; box-shadow: 0 0 10px rgba(255, 77, 109, 0.1); }
+    .slot.red.filled { border-color: var(--accent-red); border-style: solid; box-shadow: 0 0 10px rgba(0, 180, 216, 0.1); }
+    .slot-cond.filled { border-color: var(--accent-success); border-style: solid; }
+
+    .slot-balancer { min-width: 120px; width: auto; opacity: 0; pointer-events: none; }
+    .slot-balancer.show { border-style: dotted; opacity: 0.6; }
+    .slot-balancer.filled { opacity: 1; border-style: solid; min-width: 120px; padding: 0 1.5rem; }
+
+    .operator { font-size: 2rem; font-weight: 300; color: var(--text-muted); padding: 0 0.5rem; }
+    .operator.arrow { font-size: 2.5rem; color: var(--text-main); margin: 0; }
+
+    .popover {
+      position: fixed; background: #1e293b; border: 1px solid var(--glass-border); border-radius: 10px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 100000; padding: 8px; min-width: 200px; backdrop-filter: blur(8px);
+    }
+    .popover-arrow { position: absolute; width: 10px; height: 10px; background: #1e293b; border-left: 1px solid var(--glass-border); border-top: 1px solid var(--glass-border); transform: rotate(45deg); }
+    .popover-content { display: flex; flex-direction: column; gap: 4px; }
+    .pop-item { padding: 10px 14px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .pop-item:hover { background: rgba(255, 255, 255, 0.1); }
+    .pop-item .formula { font-family: 'Fira Math', serif; font-size: 1.1rem; }
+    .pop-item .name { font-size: 0.8rem; color: var(--text-muted); }
+
+    .eq-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+
+    .key-atom { display: inline-block; position: relative; border-radius: 4px; }
+    .ox-hi { color: var(--accent-ox); background: rgba(255, 77, 109, 0.1); }
+    .red-hi { color: var(--accent-red); background: rgba(0, 180, 216, 0.1); }
+    .ox-label { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--accent-success); opacity: 0; transition: opacity 0.3s; padding-bottom: 2px; pointer-events: none; white-space: nowrap; }
+    .ox-label.vis { opacity: 1; text-shadow: 0 0 5px rgba(0,0,0,0.8); }
+    .coeff { display: inline-block; font-weight: 700; color: var(--accent-success); margin-right: 0.4em; opacity: 0; transition: opacity 0.3s; }
+    .coeff.vis { opacity: 1; }
+    .coeff.step2 { color: var(--accent-step2); }
+    .coeff.step34 { color: var(--accent-step34); }
+
+    .feedback-area { margin-top: 3rem; width: 100%; max-width: 800px; padding-bottom: 4rem; }
+    .step-explanation { background: var(--glass-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--accent-success); border-right: 4px solid var(--accent-success); line-height: 1.6; }
+    .step-explanation h3 { margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--accent-success); }
+    .step-explanation b { color: #fff; }
+    .charge-info { display: flex; gap: 1rem; margin-top: 1rem; }
+    .charge-box { flex: 1; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; }
+    .charge-box-label { font-size: 0.75rem; color: var(--text-muted); display: block; }
+    .charge-box-val { font-family: 'Roboto Mono', monospace; font-weight: 700; }
+    .hi-red { color: #fb7185; }
+    .hi-ox { color: #38bdf8; }
+    .hi-coeff { background: rgba(52, 211, 153, 0.2); color: var(--accent-success); padding: 0 4px; border-radius: 4px; }
+
+    /* 返回部落格按鈕 */
+    .back-to-blog {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 100001;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    .back-to-blog:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    .back-to-blog i { font-style: normal; font-size: 1.1rem; }
+
+    /* 控制按鈕群組 */
+    .top-controls {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 100001;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      padding: 0.6rem 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .control-btn.active {
+      background: var(--accent-success);
+      color: #000;
+      border-color: var(--accent-success);
+    }
+
+    /* === 行動裝置響應式優化 === */
+    @media (max-width: 850px) {
+      .back-to-blog {
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+      }
+      .app-container { flex-direction: column; }
+      .sidebar {
+        width: 100%; height: auto; padding: 0.5rem; flex-direction: row; align-items: center; border-right: none; border-top: 1px solid var(--glass-border); order: 2;
+      }
+      .sidebar-header, .sidebar-footer { display: none; }
+      .step-nav { flex-direction: row; gap: 0.5rem; width: 100%; justify-content: space-around; }
+      .step-btn { padding: 0.5rem; flex: 1; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px; box-shadow: none; border: none; background: transparent; }
+      .step-text { display: none; }
+      .step-num { width: 26px; height: 26px; font-size: 0.8rem; }
+      .main-content { padding: 1rem 0.5rem; height: calc(100vh - 60px); }
+      .method-tabs { margin-bottom: 1rem; }
+      .main-header { margin-bottom: 1.5rem; text-align: center; }
+      .main-header h1 { font-size: 1.3rem; }
+      .main-header .subtitle { font-size: 0.8rem; }
+      .equation-workspace { padding-top: 40px; }
+      .equation-layout { transform: scale(0.8); transform-origin: top center; gap: 1.5rem; }
+      .slot { min-width: 120px; min-height: 70px; }
+      .slot-content { font-size: 1.1rem; }
+      .operator { font-size: 1.4rem; }
+      .arrow-container { margin: 0 0.5rem; }
+      .feedback-area { margin-top: 1.5rem; padding-bottom: 2rem; }
+      .step-explanation { font-size: 0.9rem; padding: 1rem; }
+
+      /* 半反應法行動版優化 */
+      .half-rxn-container { transform: scale(0.7); transform-origin: top center; }
+      .hr-label { font-size: 0.9rem; }
+    }
+
+    /* 半反應法專屬樣式 - 強化對齊與格狀化 */
+    .half-rxn-workspace {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding: 2rem;
+      background: var(--panel-bg);
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+    }
+    
+    .hr-table {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto auto auto 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      width: 100%;
+      max-width: 1100px;
+      position: relative;
+    }
+
+    .hr-label-cell {
+      grid-column: 1;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .hr-red .hr-label-cell { color: var(--accent-ox); }
+    .hr-ox .hr-label-cell { color: var(--accent-red); }
+
+    .hr-slot {
+      min-width: 140px;
+      min-height: 50px;
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 1.2rem;
+      padding: 0 10px;
+      transition: all 0.3s ease;
+    }
+    .hr-slot:empty::before {
+      content: ' ';
+    }
+    .hr-slot.main {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      font-weight: 700;
+    }
+    
+    .hr-arrow-cell {
+      font-size: 2rem;
+      color: var(--text-main);
+      padding: 0 1rem;
+    }
+
+    .hr-math-line {
+      grid-column: 1 / span 8;
+      height: 2px;
+      background: var(--text-main);
+      width: 100%;
+      margin: 1rem 0;
+      opacity: 1;
+      display: none;
+    }
+
+    .hr-sum-row {
+      grid-column: 1 / span 8;
+      text-align: center;
+      font-size: 1.5rem;
+      opacity: 0;
+      transition: opacity 0.5s;
+      padding: 1.5rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .hr-operator {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .hr-bracket-container {
+      position: absolute;
+      right: -60px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .hr-bracket-svg { height: 100%; width: 30px; stroke: var(--accent-step34); stroke-width: 2; fill: none; }
+    .hr-mult-text { color: var(--accent-step34); font-weight: 700; font-size: 1.3rem; margin-left: 10px; }
+
+    .hr-section-wrapper {
+      display: contents; /* 讓內容直接參與 grid 佈局 */
+    }
+
+    .sum-reactant { color: var(--accent-success); }
+    .sum-product { color: var(--accent-red); }
+    .hr-e { color: #facc15; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<div class="top-controls">
+  <button class="control-btn" onclick="exitToBlog()" title="返回目錄">
+    <i>←</i> <span class="btn-text">目錄</span>
+  </button>
+  <button class="control-btn" id="fs-btn" onclick="toggleFullscreen()" title="切換全螢幕">
+    <i id="fs-icon">⛶</i> <span class="btn-text">全螢幕</span>
+  </button>
+  <button class="control-btn" id="sidebar-btn" onclick="toggleSidebar()" title="切換側邊欄">
+    <i>📂</i> <span class="btn-text">側邊欄</span>
+  </button>
+</div>
+
+<div class="app-container">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">⚗️</span>
+      <h2>平衡步驟</h2>
+    </div>
+    
+    <div class="method-tabs">
+      <div class="method-tab active" id="tab-ox" onclick="switchMode('oxNum')">氧化數法</div>
+      <div class="method-tab" id="tab-hr" onclick="switchMode('halfRxn')">半反應法</div>
+    </div>
+
+    <div class="step-nav" id="nav-ox">
+      <button class="step-btn" id="step1-btn" onclick="runStep(1)" disabled>
+        <div class="step-num">1</div>
+        <div class="step-text">計算氧化數及變化</div>
+      </button>
+      <button class="step-btn" id="step2-btn" onclick="runStep(2)" disabled>
+        <div class="step-num">2</div>
+        <div class="step-text">平衡氧化數變化量</div>
+      </button>
+      <button class="step-btn" id="step3-btn" onclick="runStep(3)" disabled>
+        <div class="step-num">3</div>
+        <div class="step-text">平衡電荷數</div>
+      </button>
+      <button class="step-btn" id="step4-btn" onclick="runStep(4)" disabled>
+        <div class="step-num">4</div>
+        <div class="step-text">原子不滅 (H₂O)</div>
+      </button>
+      <button class="step-btn" id="step5-btn" onclick="runStep(5)" disabled>
+        <div class="step-num">5</div>
+        <div class="step-text">最終平衡結果</div>
+      </button>
+    </div>
+
+    <div class="step-nav hidden" id="nav-hr">
+      <button class="step-btn" id="hr-step1-btn" onclick="runHRStep(1)" disabled>
+        <div class="step-num">1</div>
+        <div class="step-text">1.氧化劑與還原劑</div>
+      </button>
+      <button class="step-btn" id="hr-step2-btn" onclick="runHRStep(2)" disabled>
+        <div class="step-num">2</div>
+        <div class="step-text">2.計算電子變化量</div>
+      </button>
+      <button class="step-btn" id="hr-step3-btn" onclick="runHRStep(3)" disabled>
+        <div class="step-num">3</div>
+        <div class="step-text">3.平衡電荷數</div>
+      </button>
+      <button class="step-btn" id="hr-step4-btn" onclick="runHRStep(4)" disabled>
+        <div class="step-num">4</div>
+        <div class="step-text">4.平衡原子數 (H₂O)</div>
+      </button>
+      <button class="step-btn" id="hr-step5-btn" onclick="runHRStep(5)" disabled>
+        <div class="step-num">5</div>
+        <div class="step-text">5.平衡得失電子數</div>
+      </button>
+      <button class="step-btn" id="hr-step6-btn" onclick="runHRStep(6)" disabled>
+        <div class="step-num">6</div>
+        <div class="step-text">6.完成反應</div>
+      </button>
+      <button class="step-btn" id="hr-step7-btn" onclick="runHRStep(7)" disabled>
+        <div class="step-num">7</div>
+        <div class="step-text">7.完成平衡</div>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="reset-btn" onclick="resetAll()">🔄 重置反應式</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="main-header">
+      <h1 id="main-title">氧化還原方程式——氧化數法平衡</h1>
+      <p class="subtitle" id="main-subtitle">依序點擊框格選取化學種，開始平衡練習</p>
+    </header>
+
+    <div class="topic-display" id="topic-display"></div>
+
+    <div class="equation-workspace" id="equation-workspace">
+      <svg id="eq-svg" class="eq-svg">
+        <defs>
+          <marker id="arr-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#ff4d6d" stroke-width="1.5" />
+          </marker>
+          <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#00b4d8" stroke-width="1.5" />
+          </marker>
+        </defs>
+      </svg>
+
+      <div class="equation-layout">
+        <div class="row row-main">
+          <div class="slot-group group-reactants">
+            <div class="slot slot-balancer" id="slot-1">
+              <span class="slot-label">反應物</span>
+              <div class="slot-content" id="content-1"></div>
+            </div>
+            <div class="operator plus" id="plus-1-2" style="display:none">+</div>
+            <div class="slot slot-agent ox" id="slot-2" onclick="openPopover(2, event)">
+              <span class="slot-label">氧化劑</span>
+              <div class="slot-content" id="content-2"></div>
+            </div>
+            <div class="operator plus" id="plus-2-3">+</div>
+            <div class="slot slot-agent red" id="slot-3" onclick="openPopover(3, event)">
+              <span class="slot-label">還原劑</span>
+              <div class="slot-content" id="content-3"></div>
+            </div>
+          </div>
+          <div class="arrow-container">
+            <div class="slot slot-cond mini-slot" id="slot-7" onclick="openPopover(7, event)">
+              <span class="slot-label">酸/鹼</span>
+              <div class="slot-content" id="content-7"></div>
+            </div>
+            <div class="operator arrow">⟶</div>
+          </div>
+          <div class="slot-group group-products">
+            <div class="slot slot-agent ox-prod locked" id="slot-4" onclick="openPopover(4, event)">
+              <span class="slot-label">共軛還原劑</span>
+              <div class="slot-content" id="content-4"></div>
+            </div>
+            <div class="operator plus" id="plus-4-5">+</div>
+            <div class="slot slot-agent red-prod locked" id="slot-5" onclick="openPopover(5, event)">
+              <span class="slot-label">共軛氧化劑</span>
+              <div class="slot-content" id="content-5"></div>
+            </div>
+            <div class="operator plus" id="plus-5-6" style="display:none">+</div>
+            <div class="slot slot-balancer" id="slot-6">
+              <span class="slot-label">產物</span>
+              <div class="slot-content" id="content-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="half-rxn-workspace hidden" id="hr-workspace">
+        <div class="hr-table">
+          <!-- 還原半反應 -->
+          <div class="hr-section-wrapper hr-red">
+            <div class="hr-label-cell">還原半反應：</div>
+            <div class="hr-slot" id="hr-red-L"></div>
+            <div class="hr-operator">+</div>
+            <div class="hr-slot main" id="hr-red-main-L"></div>
+            <div class="hr-arrow-cell">⟶</div>
+            <div class="hr-slot main" id="hr-red-main-R"></div>
+            <div class="hr-operator">+</div>
+            <div class="hr-slot" id="hr-red-R">
+              <span id="hr-red-R-content"></span>
+              <div class="hr-bracket-container" id="hr-bracket-red">
+                <svg class="hr-bracket-svg" viewBox="0 0 30 100">
+                  <path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" />
+                </svg>
+                <span class="hr-mult-text" id="hr-mult-red"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 氧化半反應 -->
+          <div class="hr-section-wrapper hr-ox">
+            <div class="hr-label-cell">氧化半反應：</div>
+            <div class="hr-slot" id="hr-ox-L"></div>
+            <div class="hr-operator">+</div>
+            <div class="hr-slot main" id="hr-ox-main-L"></div>
+            <div class="hr-arrow-cell">⟶</div>
+            <div class="hr-slot main" id="hr-ox-main-R"></div>
+            <div class="hr-operator">+</div>
+            <div class="hr-slot" id="hr-ox-R">
+              <span id="hr-ox-R-content"></span>
+              <div class="hr-bracket-container" id="hr-bracket-ox">
+                <svg class="hr-bracket-svg" viewBox="0 0 30 100">
+                  <path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" />
+                </svg>
+                <span class="hr-mult-text" id="hr-mult-ox"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr-math-line" id="hr-sum-line"></div>
+          <div class="hr-sum-row" id="hr-sum-result"></div>
+        </div>
+      </div>
+
+      <div class="feedback-area">
+        <div id="step-explanation" class="step-explanation"></div>
+        <div id="charge-info" class="charge-info" style="display:none"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="popover" class="popover" style="display:none">
+  <div class="popover-arrow"></div>
+  <div class="popover-content" id="popover-items"></div>
+</div>
+
+<script>
+const SPECIES = {
+  "MnO4": { name: "高錳酸根離子", htmlParts: [{ type:"key", text:"Mn" }, { type:"txt", text:"O" }, { type:"sub", text:"4" }, { type:"sup", text:"−" }], oxNum: 7, keyCount: 1, charge: -1, state:"(aq)", H:0, O:4 },
+  "Cr2O7": { name: "重鉻酸根離子", htmlParts: [{ type:"key", text:"Cr" }, { type:"sub", text:"2" }, { type:"txt", text:"O" }, { type:"sub", text:"7" }, { type:"sup", text:"2−" }], oxNum: 6, keyCount: 2, charge: -2, state:"(aq)", H:0, O:7 },
+  "Cl2": { name: "氯氣", htmlParts: [{ type:"key", text:"Cl" }, { type:"sub", text:"2" }], oxNum: 0, keyCount: 2, charge: 0, state:"(aq)", H:0, O:0 },
+  "Fe3ox": { name: "鐵(III)離子", htmlParts: [{ type:"key", text:"Fe" }, { type:"sup", text:"3+" }], oxNum: 3, keyCount: 1, charge: 3, state:"(aq)", H:0, O:0 },
+  "H2O2": { name: "雙氧水", htmlParts: [{ type:"txt", text:"H" }, { type:"sub", text:"2" }, { type:"key", text:"O" }, { type:"sub", text:"2" }], oxNum: -1, keyCount: 2, charge: 0, state:"(aq)", H:2, O:2 },
+  "NO3-": { name: "硝酸根離子", htmlParts: [{ type:"key", text:"N" }, { type:"txt", text:"O" }, { type:"sub", text:"3" }, { type:"sup", text:"−" }], oxNum: 5, keyCount: 1, charge: -1, state:"(aq)", H:0, O:3 },
+  "Hplus": { name: "氫離子", htmlParts: [{ type:"key", text:"H" }, { type:"sup", text:"+" }], oxNum: 1, keyCount: 1, charge: 1, state:"(aq)", H:1, O:0 },
+  "H2O_ox": { name: "水", htmlParts: [{ type:"key", text:"H" }, { type:"sub", text:"2" }, { type:"txt", text:"O" }], oxNum: 1, keyCount: 2, charge: 0, state:"(l)", H:2, O:1 },
+  "Mn2": { name: "錳(II)離子", htmlParts: [{ type:"key", text:"Mn" }, { type:"sup", text:"2+" }], oxNum: 2, keyCount: 1, charge: 2, state:"(aq)", H:0, O:0 },
+  "MnO2": { name: "二氧化錳", htmlParts: [{ type:"key", text:"Mn" }, { type:"txt", text:"O" }, { type:"sub", text:"2" }], oxNum: 4, keyCount: 1, charge: 0, state:"(s)", H:0, O:2 },
+  "MnO4_2-": { name: "錳酸根離子", htmlParts: [{ type:"key", text:"Mn" }, { type:"txt", text:"O" }, { type:"sub", text:"4" }, { type:"sup", text:"2−" }], oxNum: 6, keyCount: 1, charge: -2, state:"(aq)", H:0, O:4 },
+  "Mn2O3": { name: "三氧化二錳", htmlParts: [{ type:"key", text:"Mn" }, { type:"sub", text:"2" }, { type:"txt", text:"O" }, { type:"sub", text:"3" }], oxNum: 3, keyCount: 2, charge: 0, state:"(s)", H:0, O:3 },
+  "Cr3": { name: "鉻(III)離子", htmlParts: [{ type:"key", text:"Cr" }, { type:"sup", text:"3+" }], oxNum: 3, keyCount: 1, charge: 3, state:"(aq)", H:0, O:0 },
+  "Cl-": { name: "氯離子", htmlParts: [{ type:"key", text:"Cl" }, { type:"sup", text:"−" }], oxNum: -1, keyCount: 1, charge: -1, state:"(aq)", H:0, O:0 },
+  "Fe2prod": { name: "亞鐵離子", htmlParts: [{ type:"key", text:"Fe" }, { type:"sup", text:"2+" }], oxNum: 2, keyCount: 1, charge: 2, state:"(aq)", H:0, O:0 },
+  "H2O_prod": { name: "水", htmlParts: [{ type:"txt", text:"H" }, { type:"sub", text:"2" }, { type:"key", text:"O" }], oxNum: -2, keyCount: 1, charge: 0, state:"(l)", H:2, O:1 },
+  "NO2": { name: "二氧化氮", htmlParts: [{ type:"key", text:"N" }, { type:"txt", text:"O" }, { type:"sub", text:"2" }], oxNum: 4, keyCount: 1, charge: 0, state:"(g)", H:0, O:2 },
+  "NO": { name: "一氧化氮", htmlParts: [{ type:"key", text:"N" }, { type:"txt", text:"O" }], oxNum: 2, keyCount: 1, charge: 0, state:"(g)", H:0, O:1 },
+  "H2": { name: "氫氣", htmlParts: [{ type:"key", text:"H" }, { type:"sub", text:"2" }], oxNum: 0, keyCount: 2, charge: 0, state:"(g)", H:2, O:0 },
+  "Fe2": { name: "亞鐵離子", htmlParts: [{ type:"key", text:"Fe" }, { type:"sup", text:"2+" }], oxNum: 2, keyCount: 1, charge: 2, state:"(aq)", H:0, O:0 },
+  "I-": { name: "碘離子", htmlParts: [{ type:"key", text:"I" }, { type:"sup", text:"−" }], oxNum: -1, keyCount: 1, charge: -1, state:"(aq)", H:0, O:0 },
+  "Sn2": { name: "錫(II)離子", htmlParts: [{ type:"key", text:"Sn" }, { type:"sup", text:"2+" }], oxNum: 2, keyCount: 1, charge: 2, state:"(aq)", H:0, O:0 },
+  "Br-": { name: "溴離子", htmlParts: [{ type:"key", text:"Br" }, { type:"sup", text:"−" }], oxNum: -1, keyCount: 1, charge: -1, state:"(aq)", H:0, O:0 },
+  "C2O4": { name: "草酸根離子", htmlParts: [{ type:"key", text:"C" }, { type:"sub", text:"2" }, { type:"txt", text:"O" }, { type:"sub", text:"4" }, { type:"sup", text:"2−" }], oxNum: 3, keyCount: 2, charge: -2, state:"(aq)", H:0, O:4 },
+  "S2O3": { name: "硫代硫酸根離子", htmlParts: [{ type:"key", text:"S" }, { type:"sub", text:"2" }, { type:"txt", text:"O" }, { type:"sub", text:"3" }, { type:"sup", text:"2−" }], oxNum: 2, keyCount: 2, charge: -2, state:"(aq)", H:0, O:3 },
+  "Cu": { name: "金屬銅", htmlParts: [ { type:"key", text:"Cu" } ], oxNum: 0, keyCount: 1, charge: 0, state:"(s)", H:0, O:0 },
+  "HSO3-": { name: "亞硫酸氫根離子", htmlParts: [{ type:"txt", text:"H" }, { type:"key", text:"S" }, { type:"txt", text:"O" }, { type:"sub", text:"3" }, { type:"sup", text:"−" }], oxNum: 4, keyCount: 1, charge: -1, state:"(aq)", H:1, O:3 },
+  "Al": { name: "金屬鋁", htmlParts: [ { type:"key", text:"Al" } ], oxNum: 0, keyCount: 1, charge: 0, state:"(s)", H:0, O:0 },
+  "Fe3": { name: "鐵(III)離子", htmlParts: [{ type:"key", text:"Fe" }, { type:"sup", text:"3+" }], oxNum: 3, keyCount: 1, charge: 3, state:"(aq)", H:0, O:0 },
+  "I2": { name: "碘分子", htmlParts: [{ type:"key", text:"I" }, { type:"sub", text:"2" }], oxNum: 0, keyCount: 2, charge: 0, state:"(aq)", H:0, O:0 },
+  "Sn4": { name: "錫(IV)離子", htmlParts: [{ type:"key", text:"Sn" }, { type:"sup", text:"4+" }], oxNum: 4, keyCount: 1, charge: 4, state:"(aq)", H:0, O:0 },
+  "Br2": { name: "溴分子", htmlParts: [{ type:"key", text:"Br" }, { type:"sub", text:"2" }], oxNum: 0, keyCount: 2, charge: 0, state:"(aq)", H:0, O:0 },
+  "CO2": { name: "二氧化碳", htmlParts: [{ type:"key", text:"C" }, { type:"txt", text:"O" }, { type:"sub", text:"2" }], oxNum: 4, keyCount: 1, charge: 0, state:"(g)", H:0, O:2 },
+  "IO3-": { name: "碘酸根離子", htmlParts: [{ type:"key", text:"I" }, { type:"txt", text:"O" }, { type:"sub", text:"3" }, { type:"sup", text:"−" }], oxNum: 5, keyCount: 1, charge: -1, state:"(aq)", H:0, O:3 },
+  "S4O6": { name: "連四硫酸根離子", htmlParts: [{ type:"key", text:"S" }, { type:"sub", text:"4" }, { type:"txt", text:"O" }, { type:"sub", text:"6" }, { type:"sup", text:"2−" }], oxNum: 2.5, keyCount: 4, charge: -2, state:"(aq)", H:0, O:6 },
+  "SO4": { name: "硫酸根離子", htmlParts: [{ type:"key", text:"S" }, { type:"txt", text:"O" }, { type:"sub", text:"4" }, { type:"sup", text:"2−" }], oxNum: 6, keyCount: 1, charge: -2, state:"(aq)", H:0, O:4 },
+  "O2": { name: "氧氣", htmlParts: [{ type:"key", text:"O" }, { type:"sub", text:"2" }], oxNum: 0, keyCount: 2, charge: 0, state:"(g)", H:0, O:2 },
+  "Cu2+": { name: "銅(II)離子", htmlParts: [{ type:"key", text:"Cu" }, { type:"sup", text:"2+" }], oxNum: 2, keyCount: 1, charge: 2, state:"(aq)", H:0, O:0 },
+  "Al3": { name: "鋁離子", htmlParts: [{ type:"key", text:"Al" }, { type:"sup", text:"3+" }], oxNum: 3, keyCount: 1, charge: 3, state:"(aq)", H:0, O:0 },
+  "AlOH4": { name: "四羥基合鋁酸根", htmlParts: [{ type:"key", text:"Al" }, { type:"txt", text:"(" }, { type:"txt", text:"OH" }, { type:"txt", text:")" }, { type:"sub", text:"4" }, { type:"sup", text:"−" }], oxNum: 3, keyCount: 1, charge: -1, state:"(aq)", H:4, O:4 },
+  "OH-": { name: "氫氧根離子", htmlParts: [{ type:"key", text:"O" }, { type:"txt", text:"H" }, { type:"sup", text:"−" }], oxNum: -2, keyCount: 1, charge: -1, state:"(aq)", H:1, O:1 },
+  "ClO-": { name: "次氯酸根離子", htmlParts: [{ type:"key", text:"Cl" }, { type:"txt", text:"O" }, { type:"sup", text:"−" }], oxNum: 1, keyCount: 1, charge: -1, state:"(aq)", H:0, O:1 }
+};
+
+const OXIDIZERS_LIST = [
+  { id: "MnO4",  formulaHTML: "MnO<sub>4</sub><sup>−</sup>", name: "高錳酸根離子", compound: "KMnO₄" },
+  { id: "Cr2O7", formulaHTML: "Cr<sub>2</sub>O<sub>7</sub><sup>2−</sup>", name: "重鉻酸根離子", compound: "K₂Cr₂O₇" },
+  { id: "Cl2",   formulaHTML: "Cl<sub>2</sub>", name: "氯氣", compound: "Cl₂" },
+  { id: "Br2",   formulaHTML: "Br<sub>2</sub>", name: "溴水", compound: "Br₂" },
+  { id: "Fe3ox", formulaHTML: "Fe<sup>3+</sup>", name: "鐵(III)離子", compound: "FeCl₃" },
+  { id: "IO3-",  formulaHTML: "IO<sub>3</sub><sup>−</sup>", name: "碘酸根", compound: "KIO₃" },
+  { id: "H2O2",  formulaHTML: "H<sub>2</sub>O<sub>2</sub>", name: "雙氧水", compound: "H₂O₂" },
+  { id: "NO3-",  formulaHTML: "NO<sub>3</sub><sup>−</sup>", name: "硝酸根離子", compound: "HNO₃" },
+  { id: "Hplus", formulaHTML: "H<sup>+</sup>", name: "氫離子", compound: "H⁺" },
+  { id: "H2O_ox", formulaHTML: "H<sub>2</sub>O", name: "水", compound: "H₂O" }
+];
+
+const REDUCERS_LIST = [
+  { id:"Fe2",  formulaHTML:"Fe<sup>2+</sup>",                     name:"亞鐵離子",   compound:"FeSO₄" },
+  { id:"I-",   formulaHTML:"I<sup>−</sup>",                       name:"碘化物離子", compound:"KI" },
+  { id:"Sn2",  formulaHTML:"Sn<sup>2+</sup>",                     name:"錫(II)離子", compound:"SnCl₂" },
+  { id:"Br-",  formulaHTML:"Br<sup>−</sup>",                      name:"溴化物離子", compound:"KBr" },
+  { id:"C2O4", formulaHTML:"C<sub>2</sub>O<sub>4</sub><sup>2−</sup>", name:"草酸根離子", compound:"Na₂C₂O₄" },
+  { id:"S2O3", formulaHTML:"S<sub>2</sub>O<sub>3</sub><sup>2−</sup>", name:"硫代硫酸根", compound: "Na₂S₂O₃" },
+  { id:"I2",   formulaHTML:"I<sub>2</sub>",                       name:"碘分子", compound: "I₂" },
+  { id:"H2O2", formulaHTML:"H<sub>2</sub>O<sub>2</sub>",          name:"雙氧水", compound: "H₂O₂" },
+  { id:"Cu",   formulaHTML:"Cu",                                  name:"金屬銅", compound: "Cu" },
+  { id:"HSO3-",formulaHTML:"HSO<sub>3</sub><sup>−</sup>",         name:"亞硫酸氫根", compound: "NaHSO₃" },
+  { id:"Al",   formulaHTML:"Al",                                  name:"金屬鋁", compound: "Al" },
+  { id:"Cl2",  formulaHTML:"Cl<sub>2</sub>",                      name:"氯氣", compound: "Cl₂" }
+];
+
+const HALF_REACTIONS = [
+  { oxForm: "MnO4", redForm: "Mn2",     conds: ["acid"], E0: 1.51 },
+  { oxForm: "MnO4", redForm: "MnO2",    conds: ["neutral", "weak_base", "acid", "base"], E0: 1.69 },
+  { oxForm: "MnO4", redForm: "MnO4_2-", conds: ["base"], E0: 0.56 },
+  { oxForm: "MnO4", redForm: "Mn2O3",   conds: ["acid", "base"], E0: 1.0 },
+  { oxForm: "Cr2O7",redForm: "Cr3",     conds: ["acid"], E0: 1.33 },
+  { oxForm: "Cl2",  redForm: "Cl-",     conds: ["acid", "base", "neutral"], E0: 1.36 },
+  { oxForm: "Br2",  redForm: "Br-",     conds: ["acid", "base", "neutral"], E0: 1.07 },
+  { oxForm: "Fe3ox",redForm: "Fe2prod", conds: ["acid"], E0: 0.77 },
+  { oxForm: "Fe3",  redForm: "Fe2",     conds: ["acid"], E0: 0.77 },
+  { oxForm: "I2",   redForm: "I-",      conds: ["acid", "base", "neutral"], E0: 0.54 },
+  { oxForm: "IO3-", redForm: "I2",      conds: ["acid", "base", "neutral"], E0: 1.20 },
+  { oxForm: "IO3-", redForm: "I-",      conds: ["acid", "base", "neutral"], E0: 1.09 },
+  { oxForm: "S4O6", redForm: "S2O3",    conds: ["acid", "base", "neutral"], E0: 0.08, maxOxE0: 0.70 },
+  { oxForm: "SO4",  redForm: "S2O3",    conds: ["acid", "base", "neutral"], E0: 0.40, minOxE0: 0.71 },
+  { oxForm: "Sn4",  redForm: "Sn2",     conds: ["acid"], E0: 0.15 },
+  { oxForm: "CO2",  redForm: "C2O4",    conds: ["acid", "base"], E0: -0.49 },
+  { oxForm: "H2O2", redForm: "H2O_prod", conds: ["acid", "neutral"], E0: 1.78 },
+  { oxForm: "H2O2", redForm: "OH-",      conds: ["base"], E0: 0.88 },
+  { oxForm: "O2",   redForm: "H2O2",     conds: ["acid", "base", "neutral"], E0: 0.68 },
+  { oxForm: "NO3-", redForm: "NO2",     conds: ["acid"], E0: 0.80 },
+  { oxForm: "NO3-", redForm: "NO",      conds: ["acid"], E0: 0.96 },
+  { oxForm: "Cu2+", redForm: "Cu",      conds: ["acid", "base", "neutral"], E0: 0.34 },
+  { oxForm: "SO4",  redForm: "HSO3-",   conds: ["acid", "base", "neutral"], E0: 0.17 },
+  { oxForm: "Hplus", redForm: "H2",     conds: ["acid"], E0: 0 },
+  { oxForm: "H2O_ox", redForm: "H2",    conds: ["base"], E0: -0.83 },
+  { oxForm: "Al3",  redForm: "Al",      conds: ["acid"], E0: -1.66 },
+  { oxForm: "AlOH4", redForm: "Al",     conds: ["base"], E0: -2.33 },
+  { oxForm: "ClO-", redForm: "Cl2",     conds: ["acid", "base", "neutral"], E0: 0.40 }
+];
+
+let sel = { ox: null, red: null, cond: null, oxP: null, redP: null };
+let rxn = null; 
+let mode = 'oxNum'; // 'oxNum' or 'halfRxn'
+let state = {
+  oxNum: { cur: 0, max: 0 },
+  halfRxn: { cur: 0, max: 0 }
+};
+let hrRxn = { red: null, ox: null };
+
+function switchMode(m) {
+  if (m === mode) return;
+  mode = m;
+  
+  // 更新分頁標籤狀態
+  document.getElementById('tab-ox').classList.toggle('active', m === 'oxNum');
+  document.getElementById('tab-hr').classList.toggle('active', m === 'halfRxn');
+  document.getElementById('nav-ox').classList.toggle('hidden', m !== 'oxNum');
+  document.getElementById('nav-hr').classList.toggle('hidden', m !== 'halfRxn');
+  
+  // 更新標題
+  const title = document.getElementById('main-title');
+  const subtitle = document.getElementById('main-subtitle');
+  if (m === 'oxNum') {
+    title.innerText = '氧化還原方程式——氧化數法平衡';
+    subtitle.innerText = '依序點擊框格選取化學種，開始平衡練習';
+  } else {
+    title.innerText = '氧化還原方程式——半反應法平衡';
+    subtitle.innerText = '點擊右側按鈕，依序進行半反應拆解與平衡';
+  }
+  
+  // 切換工作區顯示
+  const s = state[m];
+  if (m === 'halfRxn') {
+    document.querySelector('.equation-layout').classList.toggle('hidden', s.cur >= 1);
+    document.getElementById('eq-svg').classList.toggle('hidden', s.cur >= 1);
+    document.getElementById('hr-workspace').classList.toggle('hidden', s.cur < 1);
+    if (s.cur >= 1) runHRStep(s.cur);
+    else enableHRUpTo(rxn ? 1 : 0);
+  } else {
+    document.querySelector('.equation-layout').classList.remove('hidden');
+    document.getElementById('eq-svg').classList.remove('hidden');
+    document.getElementById('hr-workspace').classList.add('hidden');
+    if (s.cur >= 1) runStep(s.cur);
+    else enableUpTo(rxn ? 1 : 0);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { 
+  resetAll(); 
+  window.addEventListener('resize', () => { if (rxn && curStep >= 1) drawLines(curStep >= 2); });
+  
+  // 初次點擊自動觸發全螢幕 (為了符合「預設全螢幕」需求)
+  document.body.addEventListener('click', () => {
+    if (!document.fullscreenElement && !window.hasRequestedFS) {
+      requestFullscreen();
+      window.hasRequestedFS = true;
+    }
+  }, { once: true });
+});
+
+function requestFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.msRequestFullscreen) el.msRequestFullscreen();
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    requestFullscreen();
+    document.getElementById('fs-icon').innerText = '內';
+    document.getElementById('fs-btn').classList.add('active');
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if (document.msExitFullscreen) document.msExitFullscreen();
+    document.getElementById('fs-icon').innerText = '⛶';
+    document.getElementById('fs-btn').classList.remove('active');
+  }
+}
+
+function toggleSidebar() {
+  const container = document.querySelector('.app-container');
+  const btn = document.getElementById('sidebar-btn');
+  container.classList.toggle('sidebar-hidden');
+  btn.classList.toggle('active', !container.classList.contains('sidebar-hidden'));
+  setTimeout(() => { if (rxn && curStep >= 1) drawLines(curStep >= 2); }, 350);
+}
+
+function openPopover(slotId, event) {
+  const popover = document.getElementById('popover'); const itemsContainer = document.getElementById('popover-items');
+  const slotEl = document.getElementById(`slot-${slotId}`); if (slotEl.classList.contains('locked')) return;
+  itemsContainer.innerHTML = ''; let items = [];
+  switch(slotId) {
+    case 2: OXIDIZERS_LIST.forEach(ox => { items.push({ id: ox.id, html: ox.formulaHTML, name: ox.compound, action: () => selectSpecies(2, ox.id) }); }); break;
+    case 3: REDUCERS_LIST.forEach(red => { items.push({ id: red.id, html: red.formulaHTML, name: red.compound, action: () => selectSpecies(3, red.id) }); }); break;
+    case 7: items = [{ id: 'acid', html: '酸性 (H⁺)', name: 'Acidic', action: () => selectCondition('acid') }, { id: 'base', html: '鹼性 (OH⁻)', name: 'Basic', action: () => selectCondition('base') }]; break;
+    case 4: if (!sel.ox) return; getConjugatesFor(sel.ox, sel.cond, 'ox').forEach(p => { items.push({ id: p.id, html: p.formulaHTML, name: p.name, action: () => selectSpecies(4, p.id) }); }); break;
+    case 5: if (!sel.red) return; getConjugatesFor(sel.red, sel.cond, 'red').forEach(p => { items.push({ id: p.id, html: p.formulaHTML, name: p.name, action: () => selectSpecies(5, p.id) }); }); break;
+  }
+  items.forEach(item => {
+    const div = document.createElement('div'); div.className = 'pop-item'; div.innerHTML = `<span class="formula">${item.html}</span><span class="name">${item.name}</span>`;
+    div.onclick = () => { item.action(); closePopover(); }; itemsContainer.appendChild(div);
+  });
+  const rect = slotEl.getBoundingClientRect(); popover.style.display = 'block';
+  if (items.length > 5) { itemsContainer.style.display = 'grid'; itemsContainer.style.gridTemplateRows = 'repeat(5, auto)'; itemsContainer.style.gridAutoFlow = 'column'; itemsContainer.style.gap = '8px'; }
+  else { itemsContainer.style.display = 'flex'; itemsContainer.style.flexDirection = 'column'; itemsContainer.style.gap = '4px'; }
+  let left = rect.left + rect.width/2 - popover.offsetWidth/2;
+  if (left < 10) left = 10; if (left + popover.offsetWidth > window.innerWidth - 10) left = window.innerWidth - popover.offsetWidth - 10;
+  popover.style.left = `${left}px`; popover.style.top = `${rect.bottom + 10}px`;
+  const closeHandler = (e) => { if (!popover.contains(e.target) && !slotEl.contains(e.target)) { closePopover(); document.removeEventListener('mousedown', closeHandler); } };
+  document.addEventListener('mousedown', closeHandler);
+}
+
+function closePopover() { document.getElementById('popover').style.display = 'none'; }
+function selectSpecies(slotId, id) { const roles = { 2: 'ox', 3: 'red', 4: 'oxP', 5: 'redP' }; sel[roles[slotId]] = id; if (slotId === 2) sel.oxP = null; if (slotId === 3) sel.redP = null; updateSlot(slotId, id); checkUnlockProducts(); resetStepsIfChanged(); }
+function selectCondition(cond) { sel.cond = cond; updateSlot(7, cond); checkUnlockProducts(); resetStepsIfChanged(); }
+function resetStepsIfChanged() { 
+  if (state.oxNum.cur > 0 || state.halfRxn.cur > 0) { 
+    state.oxNum = { cur: 0, max: 0 };
+    state.halfRxn = { cur: 0, max: 0 };
+    clearStepsData(); 
+    enableUpTo(0); 
+    enableHRUpTo(0); 
+    // 重置後回到選取介面
+    document.querySelector('.equation-layout').classList.remove('hidden');
+    document.getElementById('eq-svg').classList.remove('hidden');
+    document.getElementById('hr-workspace').classList.add('hidden');
+  } 
+}
+function updateSlot(slotId, id) {
+  const content = document.getElementById(`content-${slotId}`), slotEl = document.getElementById(`slot-${slotId}`);
+  if (!id) { content.innerHTML = ''; slotEl.classList.remove('filled'); return; }
+  slotEl.classList.add('filled'); if (slotId === 7) content.innerHTML = (id === 'acid') ? 'H<sup>+</sup>' : 'OH<sup>−</sup>'; else content.innerHTML = renderFormula(id, slotId);
+  checkReadyToBalance();
+}
+
+function renderFormula(id, slotId) {
+  const sp = SPECIES[id]; if (!sp) return id;
+  let html = ''; const rolePrefix = { 2:'ox', 3:'red', 4:'oxP', 5:'redP' }[slotId];
+  html += `<span class="coeff" id="coeff-${rolePrefix}">1</span>`;
+  sp.htmlParts.forEach(part => {
+    if (part.type === 'key') html += `<span class="key-atom" id="key-${rolePrefix}"><span class="ox-label" id="oxnum-${rolePrefix}">${fmtN(sp.oxNum)}</span>${part.text}</span>`;
+    else if (part.type === 'txt') html += part.text; else if (part.type === 'sub') html += `<sub>${part.text}</sub>`; else if (part.type === 'sup') html += `<sup>${part.text}</sup>`;
+  });
+  return html;
+}
+
+function checkUnlockProducts() {
+  const s4 = document.getElementById('slot-4'), s5 = document.getElementById('slot-5');
+  if (sel.ox && sel.red && sel.cond) { s4.classList.remove('locked'); s5.classList.remove('locked'); } else { s4.classList.add('locked'); s5.classList.add('locked'); }
+}
+
+function checkReadyToBalance() {
+  if (sel.ox && sel.red && sel.cond && sel.oxP && sel.redP) {
+    const res = calculateBalance(sel.ox, sel.red, sel.oxP, sel.redP, sel.cond);
+    if (res) { 
+      rxn = res; 
+      enableUpTo(1); 
+      enableHRUpTo(1);
+    } else { 
+      setExpl('<div style="color:#f87171">無法平衡：請確認選取的反應物與產物。</div>', 0); 
+      enableUpTo(0); 
+      enableHRUpTo(0);
+    }
+  } else {
+    rxn = null;
+    enableUpTo(0);
+    enableHRUpTo(0);
+  }
+}
+
+function calculateBalance(oxId, redId, oxPId, redPId, cond) {
+  const oxSp = SPECIES[oxId], redSp = SPECIES[redId], oxPSp = SPECIES[oxPId], redPSp = SPECIES[redPId];
+  const dx = oxPSp.oxNum - oxSp.oxNum, dr = redPSp.oxNum - redSp.oxNum; if ((dx >= 0 && dr >= 0) || (dx <= 0 && dr <= 0)) return null;
+  const molDx = Math.abs(dx * oxSp.keyCount), molDr = Math.abs(dr * redSp.keyCount), L = lcm(molDx, molDr);
+  let cOx = L / molDx, cRed = L / molDr;
+  const totalKeyOx = cOx * oxSp.keyCount, totalKeyRed = cRed * redSp.keyCount;
+  const mult = lcm(oxPSp.keyCount / gcd(totalKeyOx, oxPSp.keyCount), redPSp.keyCount / gcd(totalKeyRed, redPSp.keyCount));
+  cOx *= mult; cRed *= mult; const cOxP = (cOx * oxSp.keyCount) / oxPSp.keyCount, cRedP = (cRed * redSp.keyCount) / redPSp.keyCount;
+  let QL = cOx * oxSp.charge + cRed * redSp.charge, QR = cOxP * oxPSp.charge + cRedP * redPSp.charge, dQ = QR - QL, b3 = null;
+  if (cond === 'acid') { if (dQ > 0) b3 = { type: 'H+', coeff: dQ, side: 'L' }; else if (dQ < 0) b3 = { type: 'H+', coeff: Math.abs(dQ), side: 'R' }; }
+  else { if (dQ > 0) b3 = { type: 'OH-', coeff: dQ, side: 'R' }; else if (dQ < 0) b3 = { type: 'OH-', coeff: Math.abs(dQ), side: 'L' }; }
+  const getA = () => {
+    let hl=0, ol=0, hr=0, or=0; const add = (id, c, s) => { const sp=SPECIES[id]; if(s==='L'){ hl+=sp.H*c; ol+=sp.O*c; } else { hr+=sp.H*c; or+=sp.O*c; } };
+    add(oxId, cOx, 'L'); add(redId, cRed, 'L'); add(oxPId, cOxP, 'R'); add(redPId, cRedP, 'R');
+    if (b3) { const c = b3.coeff; if (b3.type === 'H+') { if(b3.side==='L') hl+=c; else hr+=c; } else { if(b3.side==='L') { hl+=c; ol+=c; } else { hr+=c; or+=c; } } }
+    return { hl, ol, hr, or };
+  };
+  let atoms = getA(), dO = atoms.or - atoms.ol, b4 = null;
+  if (dO > 0) b4 = { type: 'H2O', coeff: dO, side: 'L' }; else if (dO < 0) b4 = { type: 'H2O', coeff: Math.abs(dO), side: 'R' };
+  return { cOx, cRed, cOxP, cRedP, dx, dr, molDx, molDr, L, balancer3: b3, balancer4: b4, oxSp, redSp, oxPSp, redPSp };
+}
+
+function clearStepsData() {
+  document.getElementById('step-explanation').innerHTML = '';
+  const svg = document.getElementById('eq-svg'); svg.querySelectorAll('.line-group').forEach(e => e.remove()); svg.style.display = 'block';
+  document.getElementById('equation-workspace').classList.remove('balancing', 'step5');
+  document.getElementById('topic-display').classList.remove('show');
+  document.getElementById('topic-display').innerHTML = '';
+  document.querySelectorAll('.ox-label').forEach(el => el.classList.remove('vis'));
+  document.querySelectorAll('.key-atom').forEach(el => el.classList.remove('ox-hi', 'red-hi'));
+  ['ox','red','oxP','redP'].forEach(r => { const el = document.getElementById(`coeff-${r}`); if (el) { el.textContent = '1'; el.className = 'coeff'; } });
+  [1, 6].forEach(sid => { const s = document.getElementById(`slot-${sid}`); s.dataset.items = ''; s.classList.remove('show', 'filled'); s.style.display = ''; document.getElementById(`content-${sid}`).innerHTML = ''; });
+  document.getElementById('plus-1-2').style.display='none'; document.getElementById('plus-5-6').style.display='none';
+  document.getElementById('slot-3').style.display=''; document.getElementById('slot-5').style.display='';
+  document.getElementById('plus-2-3').style.display=''; document.getElementById('plus-4-5').style.display='';
+}
+
+function runStep(n) {
+  if (!rxn) return; 
+  state.oxNum.cur = n; 
+  updateStepBtns(n); 
+  clearStepsData();
+  if (n >= 1) { 
+    document.getElementById('equation-workspace').classList.add('balancing'); 
+    showTopic();
+    applyStep1(); 
+    if (n === 1) setExpl(getExpl1()); 
+  }
+  if (n >= 2) { applyStep2(); if (n === 2) setExpl(getExpl2()); }
+  if (n >= 3) { applyStep3(); if (n === 3) setExpl(getExpl3()); }
+  if (n >= 4) { applyStep4(); if (n === 4) setExpl(getExpl4()); }
+  if (n === 5) { applyStep5(); setExpl('<h3>步驟 5：平衡完成</h3><p>反應式已完成平衡。請確認兩側原子數與電荷數皆相等。</p>'); }
+  if (n >= 1 && n <= 4) setTimeout(() => drawLines(n >= 2), 50);
+  if (n > state.oxNum.max) { state.oxNum.max = n; enableUpTo(n + 1); }
+}
+
+function applyStep1() { document.querySelectorAll('.ox-label').forEach(el => el.classList.add('vis')); document.querySelectorAll('.key-atom').forEach(el => { const r = el.id.split('-')[1]; if (r.startsWith('ox')) el.classList.add('ox-hi'); else el.classList.add('red-hi'); }); }
+function getExpl1() { return `<h3>步驟 1：標示氧化數並找出變化</h3><p><span class="hi-red">氧化劑</span>分子的總下降量 = <b class="hi-red">${rxn.molDx}</b>。<br><span class="hi-ox">還原劑</span>分子的總上升量 = <b class="hi-ox">${rxn.molDr}</b>。</p>`; }
+function applyStep2() { ['ox','red','oxP','redP'].forEach(r => { const el = document.getElementById(`coeff-${r}`); el.textContent = rxn[`c${r.charAt(0).toUpperCase() + r.slice(1)}`]; el.className = 'coeff vis step2'; }); }
+function getExpl2() { return `<h3>步驟 2：利用最小公倍數平衡變化量</h3><p>lcm(${rxn.molDx}, ${rxn.molDr}) = <b class="hi-coeff">${rxn.L}</b>。<br>氧化劑係數取 <b>${rxn.cOx}</b>，還原劑係數取 <b>${rxn.cRed}</b>。</p>`; }
+function applyStep3() { if (rxn.balancer3) fillBalancerSlot(rxn.balancer3); }
+function getExpl3() { const b3 = rxn.balancer3; if (!b3) return '<h3>步驟 3：平衡電荷</h3><p>兩側電荷相等。</p>'; return `<h3>步驟 3：平衡電荷</h3><p>於${b3.side==='L'?'左':'右'}側補入 <b class="hi-coeff">${b3.coeff} ${b3.type}</b>。</p>`; }
+function applyStep4() { if (rxn.balancer4) fillBalancerSlot(rxn.balancer4); }
+function getExpl4() { const b4 = rxn.balancer4; if (!b4) return '<h3>步驟 4：平衡原子</h3><p>原子守恆。</p>'; return `<h3>步驟 4：平衡原子</h3><p>補入 <b class="hi-coeff">${b4.coeff} H₂O</b>。</p>`; }
+
+function applyStep5() {
+  document.getElementById('equation-workspace').classList.add('step5'); document.getElementById('eq-svg').style.display = 'none';
+  document.querySelectorAll('.ox-label').forEach(el => el.classList.remove('vis'));
+  document.querySelectorAll('.key-atom').forEach(el => el.classList.remove('ox-hi', 'red-hi'));
+
+  const getB = (id) => { const el = document.getElementById(`slot-${id}`); return el.dataset.items ? JSON.parse(el.dataset.items) : []; };
+  const can = (id) => { if (!id) return null; if (id === 'H2O_ox' || id === 'H2O_prod') return 'H2O'; if (id === 'Hplus') return 'H+'; if (id === 'OH-') return 'OH-'; return id; };
+  const mrg = (items, side) => {
+    const rem = []; items.forEach(it => {
+      let m = false; const ct = it.type;
+      if (side === 'L') { if (can(sel.ox) === ct) { rxn.cOx += it.coeff; m = true; } else if (can(sel.red) === ct) { rxn.cRed += it.coeff; m = true; } }
+      else { if (can(sel.oxP) === ct) { rxn.cOxP += it.coeff; m = true; } else if (can(sel.redP) === ct) { rxn.cRedP += it.coeff; m = true; } }
+      if (!m) rem.push(it);
+    }); return rem;
+  };
+
+  let i1 = mrg(getB(1), 'L'), i6 = mrg(getB(6), 'R');
+  const updB = (sid, items) => {
+    const s = document.getElementById(`slot-${sid}`), c = document.getElementById(`content-${sid}`), p = (sid === 1) ? 'plus-1-2' : 'plus-5-6';
+    if (items.length === 0) { s.classList.remove('filled', 'show'); s.style.display = 'none'; document.getElementById(p).style.display = 'none'; }
+    else { c.innerHTML = items.map(it => { const cf = it.coeff > 1 ? `<span class="coeff vis step34">${it.coeff}</span>` : ''; let f = it.type; if (f==='H+') f='H<sup>+</sup>'; else if (f==='OH-') f='OH<sup>−</sup>'; else if (f==='H2O') f='H<sub>2</sub>O'; return cf+f; }).join(' + '); }
+  };
+  updB(1, i1); updB(6, i6);
+
+  const updC = (role, val) => { const el = document.getElementById(`coeff-${role}`); if (el) { el.textContent = (val === 1) ? '' : val; el.classList.add('vis'); } };
+  updC('ox', rxn.cOx); updC('red', rxn.cRed); updC('oxP', rxn.cOxP); updC('redP', rxn.cRedP);
+  if (sel.ox && sel.ox === sel.red) { document.getElementById('slot-3').style.display='none'; document.getElementById('plus-2-3').style.display='none'; updC('ox', rxn.cOx+rxn.cRed); }
+  if (sel.oxP && sel.oxP === sel.redP) { document.getElementById('slot-5').style.display='none'; document.getElementById('plus-4-5').style.display='none'; updC('oxP', rxn.cOxP+rxn.cRedP); }
+}
+
+function fillBalancerSlot(bal) {
+  const isL = bal.side === 'L', sid = isL ? 1 : 6, s = document.getElementById(`slot-${sid}`), c = document.getElementById(`content-${sid}`), p = isL ? 'plus-1-2' : 'plus-5-6';
+  let ex = s.dataset.items ? JSON.parse(s.dataset.items) : []; ex.push(bal); s.dataset.items = JSON.stringify(ex);
+  s.classList.add('show', 'filled'); document.getElementById(p).style.display = 'block';
+  c.innerHTML = ex.map(it => { const cf = it.coeff > 1 ? `<span class="coeff vis step34">${it.coeff}</span>` : ''; let f = it.type; if (f==='H+') f='H<sup>+</sup>'; else if (f==='OH-') f='OH<sup>−</sup>'; else if (f==='H2O') f='H<sub>2</sub>O'; return cf+f; }).join(' + ');
+}
+
+function drawLines(withC) {
+  const svg = document.getElementById('eq-svg'); svg.querySelectorAll('.line-group').forEach(e=>e.remove());
+  const box = (r) => { const el=document.getElementById(`key-${r}`); if(!el) return null; const b=el.getBoundingClientRect(), c=document.getElementById('equation-workspace').getBoundingClientRect(); return { x: b.left + b.width/2 - c.left, yT: b.top - c.top, yB: b.bottom - c.top }; };
+  const pOx=box('ox'), pOxP=box('oxP'), pRed=box('red'), pRedP=box('redP'); if (!pOx || !pOxP || !pRed || !pRedP) return;
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('class', 'line-group');
+  const yB = Math.max(pOx.yB, pOxP.yB)+40; pth(g, pOx.x, pOx.yB, pOxP.x, pOxP.yB, yB, 'arr-red', '#ff4d6d'); txt(g, (pOx.x+pOxP.x)/2, yB+18, lbl('red', withC), '#ff4d6d');
+  const yT = Math.min(pRed.yT-25, pRedP.yT-25)-40; pth(g, pRed.x, pRed.yT-25, pRedP.x, pRedP.yT-25, yT, 'arr-blue', '#00b4d8'); txt(g, (pRed.x+pRedP.x)/2, yT-8, lbl('ox', withC), '#00b4d8');
+  svg.appendChild(g);
+}
+function pth(g,x1,y1,x2,y2,ye,m,cl) { const p=document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d',`M${x1},${y1} V${ye} H${x2} V${y2}`); p.setAttribute('stroke',cl); p.setAttribute('stroke-width','2'); p.setAttribute('fill','none'); p.setAttribute('marker-end',`url(#${m})`); g.appendChild(p); }
+function txt(g,x,y,tx,cl) { const t=document.createElementNS('http://www.w3.org/2000/svg','text'); t.setAttribute('x',x); t.setAttribute('y',y); t.setAttribute('text-anchor','middle'); t.setAttribute('fill',cl); t.setAttribute('font-size','12'); t.setAttribute('font-weight','700'); t.innerHTML=tx; g.appendChild(t); }
+function lbl(t,wC) { const col='#facc15'; const mul=String.fromCharCode(215); if(t==='ox') return wC ? `+${rxn.molDr} <tspan fill="${col}">${mul} ${rxn.cRed}</tspan> = +${rxn.L}` : `+${rxn.molDr}`; return wC ? `-${rxn.molDx} <tspan fill="${col}">${mul} ${rxn.cOx}</tspan> = -${rxn.L}` : `-${rxn.molDx}`; }
+function getConjugatesFor(id, cond, role) {
+  const res=[]; 
+  HALF_REACTIONS.forEach(hr=>{ 
+    if (cond && !hr.conds.includes(cond)) return;
+    if (role === 'ox' && hr.oxForm === id) res.push(hr.redForm);
+    else if (role === 'red' && hr.redForm === id) res.push(hr.oxForm);
+  });
+  return [...new Set(res)].map(pid=>{ const s=SPECIES[pid]; return { id:pid, formulaHTML: rndr(s.htmlParts), name:s.name||pid }; });
+}
+function rndr(pt) { return pt.map(p=>{ if(p.type==='sub') return `<sub>${p.text}</sub>`; if(p.type==='sup') return `<sup>${p.text}</sup>`; return p.text; }).join(''); }
+function showTopic() {
+  const td = document.getElementById('topic-display');
+  td.innerHTML = `<b>題目：</b> ${renderSpeciesHTML(sel.ox)} + ${renderSpeciesHTML(sel.red)} ⟶ ${renderSpeciesHTML(sel.oxP)} + ${renderSpeciesHTML(sel.redP)}`;
+  td.classList.add('show');
+}
+
+function resetAll() { 
+  sel={ox:null,red:null,cond:null,oxP:null,redP:null}; 
+  rxn=null; 
+  state.oxNum = { cur: 0, max: 0 };
+  state.halfRxn = { cur: 0, max: 0 };
+  [1,2,3,4,5,6,7].forEach(i=>{ updateSlot(i,null); const s=document.getElementById(`slot-${i}`); s.classList.remove('locked','show'); s.style.display='flex'; }); 
+  clearStepsData(); 
+  enableUpTo(0); 
+  enableHRUpTo(0);
+  document.getElementById('hr-workspace').classList.add('hidden');
+  document.querySelector('.equation-layout').classList.remove('hidden');
+  document.getElementById('eq-svg').classList.remove('hidden');
+}
+function enableUpTo(n) { for(let i=1;i<=5;i++){ const b=document.getElementById(`step${i}-btn`); if(i<=n) b.removeAttribute('disabled'); else b.setAttribute('disabled',''); b.classList.remove('active'); } }
+function updateStepBtns(n) { for(let i=1;i<=5;i++) document.getElementById(`step${i}-btn`).classList.toggle('active', i===n); }
+function setExpl(h) { const el=document.getElementById('step-explanation'); el.innerHTML=h; el.classList.remove('anim'); void el.offsetWidth; el.classList.add('anim'); }
+function fmtN(n) { return n>=0?`+${n}`:`${n}`; }
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function lcm(a, b) { return (a * b) / gcd(a, b); }
+
+// === 半反應法專屬邏輯 ===
+function enableHRUpTo(n) {
+  for (let i = 1; i <= 7; i++) {
+    const b = document.getElementById(`hr-step${i}-btn`);
+    if (b) {
+      if (i <= n) b.removeAttribute('disabled'); else b.setAttribute('disabled', '');
+      b.classList.remove('active');
+    }
+  }
+}
+
+function runHRStep(n) {
+  if (!rxn) return;
+  state.halfRxn.cur = n;
+  for (let i = 1; i <= 7; i++) {
+    const b = document.getElementById(`hr-step${i}-btn`);
+    if (b) b.classList.toggle('active', i === n);
+  }
+  
+  // 切換到半反應工作區
+  document.querySelector('.equation-layout').classList.add('hidden');
+  document.getElementById('eq-svg').classList.add('hidden');
+  document.getElementById('hr-workspace').classList.remove('hidden');
+  showTopic();
+  
+  // 清除舊資料
+  ['red-L', 'ox-L', 'red-main-L', 'red-main-R', 'ox-main-L', 'ox-main-R', 'red-R-content', 'ox-R-content'].forEach(id => {
+    const el = document.getElementById(`hr-${id}`);
+    if (el) el.innerHTML = '';
+  });
+  document.getElementById('hr-bracket-red').style.opacity = '0';
+  document.getElementById('hr-bracket-ox').style.opacity = '0';
+  document.getElementById('hr-sum-line').style.display = 'none';
+  document.getElementById('hr-sum-result').style.opacity = '0';
+
+  if (n >= 1) applyHRStep1();
+  if (n >= 2) applyHRStep2();
+  if (n >= 3) applyHRStep3();
+  if (n >= 4) applyHRStep4();
+  if (n >= 5) applyHRStep5();
+  if (n >= 6) applyHRStep6();
+  if (n >= 7) applyHRStep7();
+  
+  if (n > state.halfRxn.max) { state.halfRxn.max = n; enableHRUpTo(n + 1); }
+}
+
+function renderSpeciesHTML(id, coeff = 1) {
+  const sp = SPECIES[id]; if (!sp) return id;
+  let html = coeff > 1 ? `<span class="coeff vis">${coeff}</span>` : '';
+  sp.htmlParts.forEach(p => {
+    if (p.type === 'key' || p.type === 'txt') html += p.text;
+    else if (p.type === 'sub') html += `<sub>${p.text}</sub>`;
+    else if (p.type === 'sup') html += `<sup>${p.text}</sup>`;
+  });
+  return html;
+}
+
+function renderHR() {
+  const formatItems = (items) => {
+    if (!items || items.length === 0) return '';
+    return `<span>` + items.map(it => {
+      if (it.id === 'e-') return `<span class="hr-e">${it.coeff > 1 ? it.coeff + '&nbsp;' : ''}e⁻</span>`;
+      if (it.id === 'H+') return `<span>${it.coeff > 1 ? it.coeff + '&nbsp;' : ''}H⁺</span>`;
+      if (it.id === 'OH-') return `<span>${it.coeff > 1 ? it.coeff + '&nbsp;' : ''}OH⁻</span>`;
+      if (it.id === 'H2O') return `<span>${it.coeff > 1 ? it.coeff + '&nbsp;' : ''}H₂O</span>`;
+      return renderSpeciesHTML(it.id, it.coeff);
+    }).join(' + ') + `</span>`;
+  };
+
+  document.getElementById('hr-red-main-L').innerHTML = formatItems(hrRxn.red.mainL);
+  document.getElementById('hr-red-main-R').innerHTML = formatItems(hrRxn.red.mainR);
+  document.getElementById('hr-red-L').innerHTML = formatItems(hrRxn.red.extraL);
+  document.getElementById('hr-red-R-content').innerHTML = formatItems(hrRxn.red.extraR);
+
+  document.getElementById('hr-ox-main-L').innerHTML = formatItems(hrRxn.ox.mainL);
+  document.getElementById('hr-ox-main-R').innerHTML = formatItems(hrRxn.ox.mainR);
+  document.getElementById('hr-ox-L').innerHTML = formatItems(hrRxn.ox.extraL);
+  document.getElementById('hr-ox-R-content').innerHTML = formatItems(hrRxn.ox.extraR);
+}
+
+function applyHRStep1() {
+  // 步驟 1: 氧化劑與還原劑 (建立基礎框架)
+  const gcdRed = gcd(rxn.oxSp.keyCount, rxn.oxPSp.keyCount);
+  const cOx = rxn.oxPSp.keyCount / gcdRed;
+  const cOxP = rxn.oxSp.keyCount / gcdRed;
+  
+  const gcdOx = gcd(rxn.redSp.keyCount, rxn.redPSp.keyCount);
+  const cRed = rxn.redPSp.keyCount / gcdOx;
+  const cRedP = rxn.redSp.keyCount / gcdOx;
+
+  hrRxn.red = {
+    mainL: [{ id: sel.ox, coeff: cOx }],
+    mainR: [{ id: sel.oxP, coeff: cOxP }],
+    extraL: [], extraR: []
+  };
+  hrRxn.ox = {
+    mainL: [{ id: sel.red, coeff: cRed }],
+    mainR: [{ id: sel.redP, coeff: cRedP }],
+    extraL: [], extraR: []
+  };
+
+  renderHR();
+  document.getElementById('hr-sum-line').style.display = 'block'; 
+  setExpl(`<h3>步驟 1：氧化劑與還原劑</h3><p>標示還原半反應與氧化半反應的反應物及產物。</p>`);
+}
+
+function applyHRStep2() {
+  // 步驟 2: 計算電子變化量
+  const eRed = Math.abs(rxn.dx * lcm(rxn.oxSp.keyCount, rxn.oxPSp.keyCount));
+  hrRxn.red.extraL.push({ id: 'e-', coeff: eRed });
+
+  const eOx = Math.abs(rxn.dr * lcm(rxn.redSp.keyCount, rxn.redPSp.keyCount));
+  hrRxn.ox.extraR.push({ id: 'e-', coeff: eOx });
+
+  renderHR();
+  setExpl(`<h3>步驟 2：計算電子變化量</h3><p>標示電子得失。還原半反應得到電子；氧化半反應失去電子。</p>`);
+}
+
+function applyHRStep3() {
+  // 步驟 3: 平衡電荷
+  const balanceCharge = (rxnSide) => {
+    let qL = 0, qR = 0;
+    const countQ = (items) => {
+      let q = 0;
+      items.forEach(it => { q += (it.id === 'e-' ? -1 : it.id === 'H+' ? 1 : it.id === 'OH-' ? -1 : (SPECIES[it.id]?.charge || 0)) * it.coeff; });
+      return q;
+    };
+    qL = countQ(rxnSide.mainL) + countQ(rxnSide.extraL);
+    qR = countQ(rxnSide.mainR) + countQ(rxnSide.extraR);
+    
+    let dq = qR - qL;
+    if (sel.cond === 'acid') {
+      if (dq > 0) rxnSide.extraL.push({ id: 'H+', coeff: dq });
+      else if (dq < 0) rxnSide.extraR.push({ id: 'H+', coeff: Math.abs(dq) });
+    } else {
+      if (dq > 0) rxnSide.extraR.push({ id: 'OH-', coeff: dq });
+      else if (dq < 0) rxnSide.extraL.push({ id: 'OH-', coeff: Math.abs(dq) });
+    }
+  };
+  balanceCharge(hrRxn.red);
+  balanceCharge(hrRxn.ox);
+  renderHR();
+  setExpl(`<h3>步驟 3：平衡電荷</h3><p>依據液性補入 H⁺ 或 OH⁻。</p>`);
+}
+
+function applyHRStep4() {
+  // 步驟 4: 平衡原子數 (H2O)
+  const balanceAtoms = (rxnSide) => {
+    let oL = 0, oR = 0;
+    const countO = (items) => {
+      let o = 0;
+      items.forEach(it => { o += (it.id === 'H2O' ? 1 : it.id === 'OH-' ? 1 : (SPECIES[it.id]?.O || 0)) * it.coeff; });
+      return o;
+    };
+    oL = countO(rxnSide.mainL) + countO(rxnSide.extraL);
+    oR = countO(rxnSide.mainR) + countO(rxnSide.extraR);
+    
+    let dO = oR - oL;
+    if (dO > 0) rxnSide.extraL.push({ id: 'H2O', coeff: dO });
+    else if (dO < 0) rxnSide.extraR.push({ id: 'H2O', coeff: Math.abs(dO) });
+  };
+  balanceAtoms(hrRxn.red);
+  balanceAtoms(hrRxn.ox);
+  renderHR();
+  setExpl(`<h3>步驟 4：平衡原子數</h3><p>補入 H₂O 平衡氧原子。</p>`);
+}
+
+function applyHRStep5() {
+  // 步驟 5: 平衡得失電子數
+  document.getElementById('hr-bracket-red').style.opacity = '1';
+  document.getElementById('hr-bracket-ox').style.opacity = '1';
+  document.getElementById('hr-mult-red').innerText = ` ${String.fromCharCode(215)} ${rxn.cOx}`;
+  document.getElementById('hr-mult-ox').innerText = ` ${String.fromCharCode(215)} ${rxn.cRed}`;
+  setExpl(`<h3>步驟 5：平衡得失電子數</h3><p>通分使電子數相等。</p>`);
+}
+
+function applyHRStep6() {
+  // 步驟 6: 完成反應
+  document.getElementById('hr-sum-line').style.display = 'block';
+  document.getElementById('hr-sum-result').style.opacity = '1';
+  
+  const getUnsimplifiedSide = (sideKey) => {
+    const sideName = sideKey === 'reactants' ? 'L' : 'R';
+    const formatItems = (items, mult) => {
+      if (items.length === 0) return '';
+      return items.map(it => {
+        const totalCoeff = it.coeff * mult;
+        if (it.id === 'e-') return `<span class="hr-e">${totalCoeff > 1 ? totalCoeff + '&nbsp;' : ''}e⁻</span>`;
+        if (it.id === 'H+') return `<span>${totalCoeff > 1 ? totalCoeff + '&nbsp;' : ''}H⁺</span>`;
+        if (it.id === 'OH-') return `<span>${totalCoeff > 1 ? totalCoeff + '&nbsp;' : ''}OH⁻</span>`;
+        if (it.id === 'H2O') return `<span>${totalCoeff > 1 ? totalCoeff + '&nbsp;' : ''}H₂O</span>`;
+        return renderSpeciesHTML(it.id, totalCoeff);
+      }).join(' + ');
+    };
+    
+    let redItems, oxItems;
+    if (sideName === 'L') {
+      redItems = [...hrRxn.red.extraL, ...hrRxn.red.mainL];
+      oxItems = [...hrRxn.ox.extraL, ...hrRxn.ox.mainL];
+    } else {
+      redItems = [...hrRxn.red.mainR, ...hrRxn.red.extraR];
+      oxItems = [...hrRxn.ox.mainR, ...hrRxn.ox.extraR];
+    }
+    
+    const redHtml = formatItems(redItems, rxn.cOx);
+    const oxHtml = formatItems(oxItems, rxn.cRed);
+    
+    let res = '';
+    if (redHtml) res += `<span style="color: var(--accent-ox)">${redHtml}</span>`;
+    if (redHtml && oxHtml) res += ' + ';
+    if (oxHtml) res += `<span style="color: var(--accent-red)">${oxHtml}</span>`;
+    return res;
+  };
+
+  const finalL = getUnsimplifiedSide('reactants');
+  const finalR = getUnsimplifiedSide('products');
+  
+  document.getElementById('hr-sum-result').innerHTML = `${finalL} <span style="color: var(--text-main);">${String.fromCharCode(10230)}</span> ${finalR}`;
+  setExpl(`<h3>步驟 6：完成反應</h3><p>將兩半反應相加（尚未消去相同粒子），還原半反應為<span style="color: var(--accent-ox)">粉紅色</span>，氧化半反應為<span style="color: var(--accent-red)">藍色</span>。</p>`);
+}
+
+function applyHRStep7() {
+  // 步驟 7: 完成平衡
+  document.getElementById('hr-sum-line').style.display = 'block';
+  document.getElementById('hr-sum-result').style.opacity = '1';
+  
+  const combine = (sideKey) => {
+    let map = new Map();
+    const add = (id, c, mult) => { map.set(id, (map.get(id) || 0) + c * mult); };
+    const sideName = sideKey === 'reactants' ? 'L' : 'R';
+    hrRxn.red['main'+sideName].forEach(it => add(it.id, it.coeff, rxn.cOx));
+    hrRxn.red['extra'+sideName].forEach(it => add(it.id, it.coeff, rxn.cOx));
+    hrRxn.ox['main'+sideName].forEach(it => add(it.id, it.coeff, rxn.cRed));
+    hrRxn.ox['extra'+sideName].forEach(it => add(it.id, it.coeff, rxn.cRed));
+    return map;
+  };
+
+  let left = combine('reactants'), right = combine('products');
+  left.delete('e-'); right.delete('e-');
+  ['H2O', 'H+', 'OH-'].forEach(k => {
+    let l = left.get(k) || 0, r = right.get(k) || 0;
+    if (l > r) { left.set(k, l - r); right.delete(k); }
+    else if (r > l) { right.set(k, r - l); left.delete(k); }
+    else { left.delete(k); right.delete(k); }
+  });
+
+  const renderMap = (map) => Array.from(map.entries()).filter(([id, c]) => c > 0).map(([id, c]) => {
+    if (id === 'H+') return `<span>${c > 1 ? c + '&nbsp;' : ''}H⁺</span>`;
+    if (id === 'OH-') return `<span>${c > 1 ? c + '&nbsp;' : ''}OH⁻</span>`;
+    if (id === 'H2O') return `<span>${c > 1 ? c + '&nbsp;' : ''}H₂O</span>`;
+    return renderSpeciesHTML(id, c);
+  }).join(' + ');
+
+  const finalL = renderMap(left), finalR = renderMap(right);
+  document.getElementById('hr-sum-result').innerHTML = `<span class="sum-reactant">${finalL}</span> <span style="color: var(--text-main);">\\u27F6</span> <span class="sum-product">${finalR}</span>`;
+  document.getElementById('topic-display').innerHTML = `<b>平衡結果：</b> ${finalL} \\u27F6 ${finalR}`;
+  setExpl(`<h3>步驟 7：完成平衡</h3><p>相加並消去相同粒子，得到最終平衡方程式。</p>`);
+}
+
+function exitToBlog() {
+  window.location.href = '../../index.html';
+}
+
+// ── Auto fullscreen on entry (iPad uses webkit prefix) ──
+function tryFullscreen() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (req) req.call(el).catch(() => {});
+}
+tryFullscreen();
+document.addEventListener('click', function onFirstClick() {
+  tryFullscreen();
+  document.removeEventListener('click', onFirstClick);
+}, { once: true });
+document.addEventListener('fullscreenchange', () => {});
+document.addEventListener('webkitfullscreenchange', () => {});
+</script>
+</body>
+</html>

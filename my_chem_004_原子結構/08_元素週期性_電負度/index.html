@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>元素週期性 - 電負度 | 互動教學</title>
+    <meta name="description" content="高中選修化學 電負度互動教學：定義、週期性規律、金屬性與範例練習">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0f1e;
+            --text-main: #f0f4ff;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #c084fc;
+            --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(96,165,250,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(248,113,113,0.06) 0%, transparent 60%),
+                radial-gradient(rgba(96,165,250,0.05) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px;
+        }
+
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        /* ── Start Overlay ── */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-dark); z-index: 5000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image:
+                radial-gradient(circle at 30% 40%, rgba(248,113,113,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(96,165,250,0.10) 0%, transparent 50%),
+                radial-gradient(rgba(248,113,113,0.06) 1.5px, transparent 1.5px);
+            background-size: 100% 100%, 100% 100%, 50px 50px;
+        }
+        .start-badge {
+            font-size: 1rem; color: var(--accent-red);
+            background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+            padding: 0.3rem 1.2rem; border-radius: 40px; margin-bottom: 1.5rem;
+            letter-spacing: 0.15em; text-transform: uppercase;
+        }
+        .start-title {
+            font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-yellow) 50%, var(--accent-orange) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center; margin-bottom: 0.5rem; line-height: 1.1;
+        }
+        .start-sub { font-size: 1.4rem; color: rgba(240,244,255,0.55); margin-bottom: 3rem; }
+        .start-atoms { position: absolute; width: 100%; height: 100%; pointer-events: none; overflow: hidden; }
+        .atom-float {
+            position: absolute; border-radius: 50%;
+            border: 1.5px solid rgba(248,113,113,0.25);
+            animation: floatAtom linear infinite;
+        }
+        @keyframes floatAtom {
+            0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.4; }
+            50%  { opacity: 0.8; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(360deg); opacity: 0.4; }
+        }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+            color: #fff; border: none; padding: 1.1rem 3.5rem;
+            border-radius: 60px; font-size: 1.4rem; font-weight: 800;
+            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 40px rgba(248,113,113,0.4), 0 0 80px rgba(251,146,60,0.2);
+        }
+        @media (hover: hover) { .btn-start:hover { transform: scale(1.08); box-shadow: 0 0 60px rgba(248,113,113,0.6), 0 0 120px rgba(251,146,60,0.3); } }
+        .btn-start:active { transform: scale(0.95); }
+        .start-info { margin-top: 2rem; display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: rgba(240,244,255,0.5); }
+        .info-chip span:first-child { font-size: 1.1rem; }
+
+        /* ── Presentation ── */
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 0.8rem 0.5rem 0.5rem 0.5rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-red); font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+            margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.7rem;
+            border-bottom: 2px solid rgba(248,113,113,0.2); padding-bottom: 0.4rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 28px; background: linear-gradient(var(--accent-red), var(--accent-orange)); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1rem, 1.6vw, 1.35rem); margin: 0.4rem 0 0.3rem; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.95rem, 1.3vw, 1.15rem); margin: 0.3rem 0; font-weight: 600; }
+
+        p, li { font-size: clamp(0.9rem, 1.3vw, 1.15rem); line-height: 1.55; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-red); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        li { margin-bottom: 0.3rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border);
+            border-radius: 18px; padding: 1.1rem 1.2rem;
+            backdrop-filter: blur(14px); display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        .formula-box {
+            background: rgba(0,0,0,0.4); border-radius: 12px;
+            border-left: 6px solid var(--accent-red);
+            padding: 0.9rem; margin: 0.6rem 0;
+            text-align: center; font-size: clamp(1.3rem, 1.9vw, 1.7rem);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(248,113,113,0.07); border-radius: 12px;
+            padding: 0.8rem; border: 1px solid rgba(248,113,113,0.25); margin: 0.5rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(251,191,36,0.08); border-radius: 12px;
+            padding: 0.8rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.5rem 0; flex-shrink: 0;
+        }
+        .svg-container { flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; overflow: hidden; }
+        .svg-container svg { max-height: 100%; max-width: 100%; }
+
+        /* ── Toolbar ── */
+        #toolbar {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(10, 15, 30, 0.92); padding: 12px 6px;
+            border-radius: 30px; display: flex; flex-direction: column; gap: 9px;
+            align-items: center; z-index: 2000;
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15);
+            width: 34px; height: 34px; border-radius: 10px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        @media (hover: hover) { .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); } }
+        .btn-tool:active { background: rgba(255,255,255,0.2); transform: scale(0.9); }
+        .btn-tool.active-tool { background: var(--accent-red); color: #fff; border-color: var(--accent-red); box-shadow: 0 0 15px rgba(248,113,113,0.6); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; font-size: 1.3rem; line-height: 0.5; margin-bottom: 2px; }
+        #slide-info {
+            position: absolute; bottom: 18px; left: 18px; z-index: 100;
+            font-size: 0.95rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px); font-weight: 700;
+        }
+        #drawing-layer {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 50; pointer-events: none; touch-action: none;
+        }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+
+        /* ── Answer Overlay ── */
+        .ans-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 12, 26, 0.97); z-index: 100;
+            flex-direction: column; padding: 1.5rem; border-radius: 18px;
+            border: 2px solid var(--accent-green); animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-orange));
+            color: #fff; border: none; padding: 0.75rem 1.7rem;
+            border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+            transition: 0.2s; align-self: center; margin-top: auto; flex-shrink: 0;
+        }
+        @media (hover: hover) { .btn-action:hover { filter: brightness(1.15); transform: scale(1.05); } }
+        .btn-action:active { transform: scale(0.95); }
+        .btn-action-outline {
+            background: transparent; color: var(--accent-red);
+            border: 1.5px solid var(--accent-red);
+            padding: 0.7rem 1.5rem; border-radius: 10px;
+            cursor: pointer; font-weight: 700; font-size: 1rem; transition: 0.2s;
+        }
+        @media (hover: hover) { .btn-action-outline:hover { background: rgba(248,113,113,0.15); } }
+        .btn-action-outline:active { background: rgba(248,113,113,0.25); transform: scale(0.95); }
+
+        /* ── Atom Value Visual ── */
+        .atom-val-circle {
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #fff; flex-shrink: 0;
+        }
+
+        /* ── Trend Arrow ── */
+        .trend-arrow { font-size: 2rem; opacity: 0.7; }
+
+        /* ── Game ── */
+        .dot {
+            width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent-red);
+            background: rgba(248,113,113,0.15); cursor: pointer; flex-shrink: 0; transition: 0.2s;
+        }
+        @media (hover: hover) { .dot:hover { background: rgba(248,113,113,0.4); transform: scale(1.25); } }
+        .dot.active { background: var(--accent-yellow); border-color: var(--accent-yellow); transform: scale(1.3); box-shadow: 0 0 10px var(--accent-yellow); }
+        .dot.active-hover { background: var(--accent-cyan); border-color: var(--accent-cyan); transform: scale(1.45); box-shadow: 0 0 12px var(--accent-cyan); }
+        .dot.matched { background: var(--accent-green); border-color: var(--accent-green); transform: scale(1); pointer-events: none; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .game-item {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 0.7rem 1rem; font-size: clamp(0.85rem, 1.1vw, 1rem);
+        }
+        .left-dot { order: 1; } .game-label-l { order: 2; }
+        .game-label-r { order: 1; } .right-dot { order: 2; margin-left: auto; }
+
+        /* ── Periodic Table Highlight ── */
+        .pt-cell {
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: 700; transition: 0.2s; cursor: default;
+        }
+        @media (hover: hover) { .pt-cell:hover { transform: scale(1.15); z-index: 10; } }
+
+        /* ── Scrollable panel ── */
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-track { background: transparent; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <!-- ═══════════════════ START OVERLAY ═══════════════════ -->
+    <div id="start-overlay">
+        <div class="start-atoms" id="float-atoms"></div>
+        <div class="start-badge">選修化學二 · 第一章 · 原子結構</div>
+        <h1 class="start-title" style="border:none; padding:0; -webkit-text-fill-color: transparent;">電負度<br>(陰電性)</h1>
+        <p class="start-sub">分子內搶電子的拔河比賽 — 互動教學</p>
+        <button class="btn-start" id="btn-start">開始探索教學 ✦</button>
+        <div class="start-info">
+            <div class="info-chip"><span>📏</span><span>電負度定義與基準</span></div>
+            <div class="info-chip"><span>📊</span><span>週期表趨勢變化</span></div>
+            <div class="info-chip"><span>⚖️</span><span>鍵的極性與離子性</span></div>
+            <div class="info-chip"><span>✏️</span><span>互動手寫 · 範例練習</span></div>
+            <div class="info-chip"><span>🏆</span><span>單元挑戰</span></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ PRESENTATION ═══════════════════ -->
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- ══ Slide 1: 定義與基本概念 ══ -->
+            <div class="slide active">
+                <h1>電負度的定義與概念</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>什麼是電負度 (Electronegativity, EN)？</h2>
+                        <p>兩原子鍵結時，<strong>共用電子對</strong>會偏向對電子吸引力較大的原子，而偏離對電子吸引力較小的原子。</p>
+                        <div class="info-card" style="margin-top:0.6rem;">
+                            <p><strong>定義：</strong></p>
+                            <p>表示一分子內，其成份原子對共用電子的吸引力相對大小。</p>
+                            <p style="font-size:0.9rem; margin-top:0.3rem; color:rgba(255,255,255,0.6);">
+                                1932年由美國化學家鮑林 (L.C. Pauling) 根據化學鍵的強度導出。
+                            </p>
+                        </div>
+                        <div class="highlight-box" style="margin-top:0.5rem;">
+                            <p><em>基準點：</em></p>
+                            <p><strong>氟 (F)</strong> 對電子的吸引力最強，定其電負度為 <strong>4.0</strong>。其他原子的電負度則是與氟的比較值。</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>電負度與化學鍵的關係</h2>
+                        <div style="flex:1; display:flex; flex-direction:column; gap:0.7rem; overflow:hidden;">
+                            <div class="info-card" style="border-color: rgba(52,211,153,0.4); background:rgba(52,211,153,0.06);">
+                                <h3 style="margin-bottom:0.3rem;">非極性共價鍵</h3>
+                                <p>兩原子電負度相同（ΔEN = 0），共用電子對平均分配。</p>
+                                <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:0.3rem;">例：H₂ 氫分子</p>
+                            </div>
+                            <div class="info-card" style="border-color: rgba(251,191,36,0.4); background:rgba(251,191,36,0.06);">
+                                <h3 style="margin-bottom:0.3rem;">極性共價鍵</h3>
+                                <p>兩原子電負度不同，共用電子對偏向電負度大的原子。</p>
+                                <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:0.3rem;">例：HF 氟化氫，電子偏向 F</p>
+                            </div>
+                            <div class="info-card" style="border-color: rgba(192,132,252,0.4); background:rgba(192,132,252,0.06);">
+                                <h3 style="margin-bottom:0.3rem;">離子鍵</h3>
+                                <p>兩原子電負度相差極大，電子幾乎完全轉移。</p>
+                                <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:0.3rem;">當 ΔEN > 1.9 時，通常視為離子鍵。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 2: 視覺化電負度 ══ -->
+            <div class="slide">
+                <h1>電負度數值的直覺感受</h1>
+                <div style="display:flex; flex-direction:column; flex:1; gap:0.7rem; overflow:hidden;">
+                    <div class="panel" style="flex:0 0 auto; padding:0.6rem 1.2rem;">
+                        <p>第二、三週期元素的<strong>鮑林電負度數值</strong>。顏色越紅表示吸引電子能力越強（數值越大）。</p>
+                    </div>
+                    <div class="panel" style="flex:1; overflow:hidden; display:flex; flex-direction:column; justify-content:space-evenly; padding:0.7rem 1rem;">
+
+                        <!-- 族標題列 -->
+                        <div style="display:grid; grid-template-columns: 54px repeat(7,1fr) 70px; gap:0.3rem; align-items:center;">
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.3); text-align:center;">族</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(96,165,250,0.25); padding-bottom:3px;">IA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(52,211,153,0.25); padding-bottom:3px;">IIA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(251,191,36,0.25); padding-bottom:3px;">IIIA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(251,146,60,0.25); padding-bottom:3px;">IVA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(248,113,113,0.25); padding-bottom:3px;">VA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(225,29,72,0.25); padding-bottom:3px;">VIA</div>
+                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); text-align:center; border-bottom:1px solid rgba(159,18,57,0.25); padding-bottom:3px;">VIIA</div>
+                            <div></div>
+                        </div>
+
+                        <!-- 第二週期 -->
+                        <div style="display:grid; grid-template-columns: 54px repeat(7,1fr) 70px; gap:0.3rem; align-items:center;">
+                            <div style="font-size:0.78rem; color:var(--accent-cyan); font-weight:700; text-align:center; line-height:1.3;">第二<br>週期</div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:40px;height:40px; background:rgba(96,165,250,0.4); border:2px solid rgba(96,165,250,0.8);">Li</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">1.0</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:45px;height:45px; background:rgba(52,211,153,0.4); border:2px solid rgba(52,211,153,0.8);">Be</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">1.5</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:50px;height:50px; background:rgba(251,191,36,0.4); border:2px solid rgba(251,191,36,0.8);">B</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">2.0</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:55px;height:55px; background:rgba(251,146,60,0.4); border:2px solid rgba(251,146,60,0.8);">C</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">2.5</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:60px;height:60px; background:rgba(248,113,113,0.6); border:2px solid rgba(248,113,113,0.9);">N</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">3.0</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:65px;height:65px; background:rgba(225,29,72,0.7); border:2px solid rgba(225,29,72,1);">O</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">3.5</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:75px;height:75px; background:rgba(159,18,57,0.9); border:2px solid rgba(159,18,57,1); box-shadow:0 0 15px rgba(159,18,57,0.8);">F</div>
+                                <div style="font-size:1.1rem; font-weight:bold; color:var(--accent-yellow);">4.0</div>
+                            </div>
+                            <div style="text-align:center; line-height:1.4;">
+                                <div style="font-size:1.1rem; color:var(--accent-red); font-weight:700;">→ 遞增</div>
+                            </div>
+                        </div>
+
+                        <!-- 週期差值提示 -->
+                        <div style="text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.4);">
+                            (第二週期元素，由左至右，電負度約以 0.5 的規律增加)
+                        </div>
+
+                        <!-- 第三週期 -->
+                        <div style="display:grid; grid-template-columns: 54px repeat(7,1fr) 70px; gap:0.3rem; align-items:center;">
+                            <div style="font-size:0.78rem; color:var(--accent-yellow); font-weight:700; text-align:center; line-height:1.3;">第三<br>週期</div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:38px;height:38px; background:rgba(96,165,250,0.3); border:2px solid rgba(96,165,250,0.7);">Na</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">0.9</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:42px;height:42px; background:rgba(52,211,153,0.3); border:2px solid rgba(52,211,153,0.7);">Mg</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">1.2</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:45px;height:45px; background:rgba(251,191,36,0.3); border:2px solid rgba(251,191,36,0.7);">Al</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">1.5</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:48px;height:48px; background:rgba(251,146,60,0.3); border:2px solid rgba(251,146,60,0.7);">Si</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">1.8</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:52px;height:52px; background:rgba(248,113,113,0.4); border:2px solid rgba(248,113,113,0.7);">P</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">2.1</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:55px;height:55px; background:rgba(225,29,72,0.5); border:2px solid rgba(225,29,72,0.8);">S</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">2.5</div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                                <div class="atom-val-circle" style="width:60px;height:60px; background:rgba(159,18,57,0.7); border:2px solid rgba(159,18,57,0.9);">Cl</div>
+                                <div style="font-size:1rem; font-weight:bold; color:#fff;">3.0</div>
+                            </div>
+                            <div style="text-align:center; line-height:1.4;">
+                                <div style="font-size:1.1rem; color:var(--accent-red); font-weight:700;">→ 遞增</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ══ Slide 3: 週期性規律 ══ -->
+            <div class="slide">
+                <h1>電負度的週期性規律</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>同週期 → 由左至右</h2>
+                        <div class="formula-box" style="border-left-color: var(--accent-red); font-size:1.4rem;">
+                            電負度 <strong style="color:var(--accent-red);">遞增</strong> ↗
+                        </div>
+                        <div class="info-card" style="margin-top:0.5rem;">
+                            <p><strong>原因：</strong></p>
+                            <ul style="margin-top:0.3rem;">
+                                <li>同週期電子層數相同，核電荷數（Z）增大。</li>
+                                <li><strong>有效核電荷（Z*）增大</strong>。</li>
+                                <li>原子核對最外層電子的吸引力增強。</li>
+                                <li>因此對鍵結電子對的吸引力也增強。</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box" style="margin-top:0.5rem;">
+                            <p>例：$\text{C} < \text{N} < \text{O} < \text{F}$</p>
+                            <p style="font-size:0.85rem; margin-top:0.3rem; color:rgba(255,255,255,0.6);">2.5 &lt; 3.0 &lt; 3.5 &lt; 4.0</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>同族 → 由上至下</h2>
+                        <div class="formula-box" style="border-left-color: var(--accent-blue); font-size:1.4rem;">
+                            電負度 <strong style="color:var(--accent-blue);">遞減</strong> ↘
+                        </div>
+                        <div class="info-card" style="margin-top:0.5rem;">
+                            <p><strong>原因：</strong></p>
+                            <ul style="margin-top:0.3rem;">
+                                <li>電子層數（n 值）增加。</li>
+                                <li><strong>原子半徑增大</strong>，最外層電子距離原子核越來越遠。</li>
+                                <li>內層電子的屏蔽效應增加，使得原子核對共用電子的吸引力減弱。</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box" style="margin-top:0.5rem;">
+                            <p>例（第 VIIA 族鹵素）：$\text{F} > \text{Cl} > \text{Br} > \text{I}$</p>
+                            <p style="font-size:0.85rem; margin-top:0.3rem; color:rgba(255,255,255,0.6);">4.0 &gt; 3.0 &gt; 2.8 &gt; 2.5</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" style="flex:0 0 auto; padding:0.7rem 1.2rem; margin-top:0.8rem;">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:3rem; flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:0.9rem; color:rgba(255,255,255,0.5); margin-bottom:0.3rem;">最大電負度方向</div>
+                            <div style="font-size:1.2rem; color:var(--accent-red);">右上角元素最大 ↗ (F)</div>
+                        </div>
+                        <div style="width:1px; height:40px; background:rgba(255,255,255,0.15);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:0.9rem; color:rgba(255,255,255,0.5); margin-bottom:0.3rem;">最小電負度方向</div>
+                            <div style="font-size:1.2rem; color:var(--accent-blue);">左下角元素最小 ↙ (Fr, Cs)</div>
+                        </div>
+                        <div style="width:1px; height:40px; background:rgba(255,255,255,0.15);"></div>
+                        <div style="text-align:center;">
+                            <div style="font-size:0.9rem; color:rgba(255,255,255,0.5); margin-bottom:0.3rem;">例外提醒</div>
+                            <div style="font-size:1.1rem; color:var(--accent-yellow);">惰性氣體(VIIIA)一般不討論</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 4: 互動週期表 ══ -->
+            <div class="slide" id="slide-ptable">
+                <h1>互動：週期表中的電負度分佈</h1>
+                <div style="display:flex; flex-direction:column; flex:1; gap:0.8rem; overflow:hidden;">
+                    <div class="panel" style="flex:0 0 auto; padding:0.7rem 1.2rem;">
+                        <p>顏色越<strong style="color:var(--accent-red);">深紅</strong>表示電負度越大，越<strong style="color:var(--accent-blue);">深藍</strong>表示電負度越小。點選元素查看數據。</p>
+                    </div>
+                    <div class="panel" style="flex:1; overflow:hidden;">
+                        <div id="ptable-grid" style="display:grid; grid-template-columns: repeat(18,1fr); gap:3px; height:100%; align-content:start; padding:0.3rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 5: 金屬與非金屬性 ══ -->
+            <div class="slide">
+                <h1>金屬與非金屬性的判斷</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>元素的金屬性與非金屬性</h2>
+                        <div class="info-card" style="border-color:rgba(96,165,250,0.4); background:rgba(96,165,250,0.06);">
+                            <h3 style="color:var(--accent-blue); margin-bottom:0.3rem;">金屬元素 (電負度較小)</h3>
+                            <p>一般來說，金屬元素的電負度在 <strong>2.0 以下</strong>。</p>
+                            <p>電負度越小，越容易失去電子，<strong>金屬性越強</strong>。</p>
+                            <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:0.3rem;">(銫 Cs 與鍅 Fr 電負度為 0.7，金屬性最強)</p>
+                        </div>
+                        <div class="info-card" style="border-color:rgba(248,113,113,0.4); background:rgba(248,113,113,0.06); margin-top:0.8rem;">
+                            <h3 style="color:var(--accent-red); margin-bottom:0.3rem;">非金屬元素 (電負度較大)</h3>
+                            <p>一般來說，非金屬元素的電負度在 <strong>2.0 以上</strong>。</p>
+                            <p>電負度越大，越容易得到電子，<strong>非金屬性越強</strong>。</p>
+                            <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:0.3rem;">(氟 F 電負度為 4.0，非金屬性最強)</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>在化合物中的應用</h2>
+                        <div class="info-card" style="margin-top:0.5rem;">
+                            <h3 style="margin-bottom:0.3rem;">決定氧化數</h3>
+                            <ul style="margin-top:0.3rem;">
+                                <li>電負度<strong>大</strong>的原子，吸引電子能力強，通常有<strong>負的氧化數</strong>。</li>
+                                <li>電負度<strong>小</strong>的原子，電子偏離，通常有<strong>正的氧化數</strong>。</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box" style="margin-top:0.5rem;">
+                            <h3 style="margin-bottom:0.3rem; color:var(--accent-yellow);">決定中心原子 (畫結構式時)</h3>
+                            <p>畫路易斯結構式時，通常以<strong>電負度較小的原子為中心原子</strong>。</p>
+                            <p style="font-size:0.9rem; margin-top:0.3rem; color:rgba(255,255,255,0.6);">例外：氫(H)及氟(F)幾乎只能在外圍。</p>
+                            <p style="font-size:0.9rem; margin-top:0.3rem;">例：在 H₂O 中，O 為中心；在 CO₂ 中，C (EN=2.5) 的電負度小於 O (EN=3.5)，故 C 為中心原子。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 6: 範例一 ══ -->
+            <div class="slide">
+                <h1>範例練習 1</h1>
+                <div class="panel" style="position:relative; flex:1;">
+                    <div class="ans-overlay" id="ans-1">
+                        <h2>詳細解析</h2>
+                        <div style="font-size:1.2rem; line-height:1.9; margin-top:0.8rem;" class="scroll-panel">
+                            <p><strong>正確答案：(C)</strong></p>
+                            <br>
+                            <p><strong>各選項分析：</strong></p>
+                            <p><strong>(A) 錯誤：</strong> 同一族的元素，隨原子序增加（由上而下），原子半徑變大，引力變弱，因此<strong>電負度減小</strong>。</p>
+                            <p><strong>(B) 錯誤：</strong> 共價鍵結合的兩原子，共用電子對會傾向吸引電子能力強的一方，即<strong>電負度大的原子</strong>。</p>
+                            <p><strong>(C) 正確：</strong> 兩原子電負度相差越大，電子偏向一方的程度越大，極性越強，因此<strong>化學鍵的離子性越大</strong>。（相差約 1.9 以上視為離子鍵）。</p>
+                            <p><strong>(D) 錯誤：</strong> 同一週期的元素，隨原子序增加（由左至右），有效核電荷增加，因此<strong>電負度增加</strong>。</p>
+                        </div>
+                        <button class="btn-action" onclick="toggleAns('ans-1')">返回題目</button>
+                    </div>
+                    <h2>觀念選擇題</h2>
+                    <p style="font-size:1.4rem; margin-top:1rem; line-height:2;">
+                        有關電負度的敘述，下列何者正確？
+                    </p>
+                    <div style="font-size:1.2rem; line-height:2; margin-top:1rem; margin-left: 2rem;">
+                        <p>(A) 同一族的元素，電負度隨原子序之增加而增加</p>
+                        <p>(B) 以共價鍵結合的兩原子，共用電子對傾向電負度小的原子</p>
+                        <p>(C) 電負度相差大的兩原子所形成的共價鍵，其離子性較大</p>
+                        <p>(D) 同一週期的元素，電負度隨原子序之增加而降低</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:auto; justify-content:center;">
+                        <button class="btn-action" onclick="toggleAns('ans-1')">顯示解析</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 7: 範例二 ══ -->
+            <div class="slide">
+                <h1>範例練習 2</h1>
+                <div class="panel" style="position:relative; flex:1;">
+                    <div class="ans-overlay" id="ans-2">
+                        <h2>詳細解析</h2>
+                        <div style="font-size:1.2rem; line-height:1.9; margin-top:0.8rem;" class="scroll-panel">
+                            <p><strong>解答：</strong></p>
+                            <p>(1) <strong>F > Cl > Br > I</strong></p>
+                            <p>(2) <strong>F > O > N > C</strong></p>
+                            <br>
+                            <p><strong>解析邏輯：</strong></p>
+                            <p>(1) F、Cl、Br、I 屬於<strong>同族（第 VIIA 族，鹵素）</strong>。</p>
+                            <p>同族元素由上而下，隨著原子序增加，電子層數增加，原子半徑變大，對外層電子的吸引力減弱，因此電負度逐漸減小。</p>
+                            <p style="color:var(--accent-yellow);">所以電負度：F > Cl > Br > I</p>
+                            <br>
+                            <p>(2) C、N、O、F 屬於<strong>同週期（第二週期）</strong>。</p>
+                            <p>同週期元素由左至右，隨著原子序增加，有效核電荷變大，原子半徑縮小，對電子的吸引力增強，因此電負度逐漸增大。</p>
+                            <p style="color:var(--accent-yellow);">所以電負度：F > O > N > C</p>
+                        </div>
+                        <button class="btn-action" onclick="toggleAns('ans-2')">返回題目</button>
+                    </div>
+                    <h2>比較電負度大小</h2>
+                    <p style="font-size:1.4rem; margin-top:1rem; line-height:2;">
+                        試比較下列各組元素的電負度大小（由大排到小）：
+                    </p>
+                    <div style="font-size:1.3rem; line-height:2; margin-top:1rem; margin-left: 2rem;">
+                        <p>(1) F、Cl、Br、I</p>
+                        <p>(2) C、N、O、F</p>
+                    </div>
+                    <div class="info-card" style="margin-top:2rem;">
+                        <p>提示：先判斷它們在週期表中的相對位置，是同族還是同週期？套用相應的規律。</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:auto; justify-content:center;">
+                        <button class="btn-action" onclick="toggleAns('ans-2')">顯示解析</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 8: 單元挑戰 ══ -->
+            <div class="slide" id="slide-game">
+                <h1 style="color:var(--accent-purple);">單元挑戰：觀念連連看</h1>
+                <div style="flex:1; position:relative; background:rgba(0,0,0,0.2); border-radius:20px; overflow:hidden; margin-top:0.5rem;">
+                    <svg id="game-svg" style="position:absolute; width:100%; height:100%; pointer-events:none;"></svg>
+                    <div style="display:grid; grid-template-columns:1fr auto 1fr; height:100%; padding:16px 20px; gap:0; align-items:stretch;">
+                        <div id="left-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; padding-right:12px;"></div>
+                        <div id="dot-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; width:220px;"></div>
+                        <div id="right-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; padding-left:12px;"></div>
+                    </div>
+                    <div id="game-feedback" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--accent-green); color:#000; padding:2rem 4rem; border-radius:20px; font-size:2rem; font-weight:900; z-index:100;">🎉 恭喜完成！</div>
+                </div>
+                <div style="text-align:center; margin-top:0.8rem;">
+                    <button class="btn-action-outline" onclick="resetGame()">重新挑戰 ↺</button>
+                </div>
+            </div>
+
+            <!-- ══ Slide 9: 總結 ══ -->
+            <div class="slide">
+                <h1>章節總結</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>📐 核心觀念回顧</h2>
+                        <div class="scroll-panel" style="flex:1;">
+                            <div class="info-card" style="margin-bottom:0.5rem;">
+                                <p><strong>① 定義：</strong>分子內原子對共用電子對的吸引力相對大小。</p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.5rem; border-color:rgba(248,113,113,0.4);">
+                                <p><strong>② 同週期規律：</strong>由左至右，Z* 增大，吸引力強 → <strong>電負度增大</strong></p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.5rem; border-color:rgba(96,165,250,0.4);">
+                                <p><strong>③ 同族規律：</strong>由上至下，半徑變大，距離遠 → <strong>電負度減小</strong></p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.5rem; border-color:rgba(251,191,36,0.4);">
+                                <p><strong>④ 離子性判斷：</strong>兩原子電負度相差愈大，鍵的離子性愈大。</p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.5rem; border-color:rgba(192,132,252,0.4);">
+                                <p><strong>⑤ 金屬與非金屬：</strong>金屬電負度通常 < 2.0，非金屬通常 > 2.0。</p>
+                            </div>
+                            <div class="info-card" style="border-color:rgba(251,146,60,0.4);">
+                                <p><strong>⑥ 極值：</strong>F (氟) 最大定為 4.0，Cs、Fr (銫、鍅) 最小 (0.7)。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>🗺️ 概念地圖</h2>
+                        <svg viewBox="0 0 400 320" style="width:100%; height:100%; max-height:280px;">
+                            <!-- Center -->
+                            <rect x="150" y="130" width="100" height="40" rx="12" fill="rgba(248,113,113,0.25)" stroke="var(--accent-red)" stroke-width="2"/>
+                            <text x="200" y="155" text-anchor="middle" fill="var(--accent-red)" font-size="14" font-weight="bold">電負度</text>
+                            
+                            <!-- Top: 定義 -->
+                            <rect x="140" y="15" width="120" height="34" rx="10" fill="rgba(251,191,36,0.18)" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                            <text x="200" y="36" text-anchor="middle" fill="var(--accent-yellow)" font-size="11">吸引共用電子的能力</text>
+                            <line x1="200" y1="49" x2="200" y2="130" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,2"/>
+                            
+                            <!-- Left: 同週期增加 -->
+                            <rect x="10" y="125" width="115" height="50" rx="10" fill="rgba(96,165,250,0.15)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+                            <text x="67" y="145" text-anchor="middle" fill="var(--accent-blue)" font-size="11">同週期</text>
+                            <text x="67" y="162" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">由左→右 增加 ↗</text>
+                            <line x1="125" y1="150" x2="150" y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,2"/>
+                            
+                            <!-- Right: 同族減少 -->
+                            <rect x="275" y="125" width="115" height="50" rx="10" fill="rgba(52,211,153,0.15)" stroke="var(--accent-green)" stroke-width="1.5"/>
+                            <text x="332" y="145" text-anchor="middle" fill="var(--accent-green)" font-size="11">同族</text>
+                            <text x="332" y="162" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">由上→下 減少 ↘</text>
+                            <line x1="250" y1="150" x2="275" y2="150" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4,2"/>
+                            
+                            <!-- Bottom left: 鍵的極性 -->
+                            <rect x="30" y="250" width="110" height="50" rx="10" fill="rgba(192,132,252,0.15)" stroke="var(--accent-purple)" stroke-width="1.5"/>
+                            <text x="85" y="270" text-anchor="middle" fill="var(--accent-purple)" font-size="11">鍵的極性</text>
+                            <text x="85" y="287" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">差值大 → 離子性強</text>
+                            <line x1="150" y1="165" x2="85" y2="250" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="4,2"/>
+                            
+                            <!-- Bottom right: 金屬性 -->
+                            <rect x="260" y="250" width="110" height="50" rx="10" fill="rgba(251,146,60,0.15)" stroke="var(--accent-orange)" stroke-width="1.5"/>
+                            <text x="315" y="270" text-anchor="middle" fill="var(--accent-orange)" font-size="11">金屬與非金屬</text>
+                            <text x="315" y="287" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">值小金屬，值大非金屬</text>
+                            <line x1="250" y1="165" x2="315" y2="250" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="4,2"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+
+        <canvas id="drawing-layer"></canvas>
+    </div><!-- /presentation-area -->
+
+    <div id="slide-info">1 / 9</div>
+
+    <!-- ═══════════════════ FLOATING TOOLBAR ═══════════════════ -->
+    <div id="toolbar">
+        <div id="drag-handle">≡</div>
+        <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+        <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
+        <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+        <button class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+        <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:4px;">
+            <div class="color-dot" style="width:22px;height:22px;background:#f0f4ff;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f0f4ff"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#60a5fa;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#60a5fa"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        </div>
+        <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+            <button class="btn-tool" id="btn-eraser" title="橡皮擦">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            </button>
+            <button class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+        </div>
+        <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+        <a href="../../index.html" class="btn-tool" id="btn-home" title="回到化學網首頁" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">🏠</a>
+    </div>
+
+</div><!-- /app -->
+
+<script>
+    // ═══════════════ Core State ═══════════════
+    let currentSlide = 0;
+    let isDrawingMode = false;
+    let drawMode = 'pen';
+    let penColor = '#f0f4ff';
+    let slideDrawings = {};
+    let lastX = 0, lastY = 0;
+    let isDrawing = false;
+
+    const slides = document.querySelectorAll('.slide');
+    const slideInfo = document.getElementById('slide-info');
+    const canvas = document.getElementById('drawing-layer');
+    const ctx = canvas.getContext('2d');
+
+    function toggleAns(id) {
+        const overlay = document.getElementById(id);
+        overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        restoreDrawing();
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return [clientX - rect.left, clientY - rect.top];
+    }
+
+    function startDrawing(e) { if (!isDrawingMode) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+    function draw(e) {
+        if (!isDrawing) return;
+        const [x, y] = getCoords(e);
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+        ctx.strokeStyle = drawMode === 'eraser' ? '#0a0f1e' : penColor;
+        ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+        [lastX, lastY] = [x, y];
+    }
+    function stopDrawing() {
+        if (isDrawing) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+    }
+    function restoreDrawing() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (slideDrawings[currentSlide]) {
+            const img = new Image();
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            img.src = slideDrawings[currentSlide];
+        }
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', (e) => { if(isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+    canvas.addEventListener('touchmove', (e) => { if(isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function updateSlides() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+        restoreDrawing();
+        if (slides[currentSlide].id === 'slide-game') initGame();
+        if (slides[currentSlide].id === 'slide-ptable') initPTable();
+    }
+
+    document.getElementById('btn-next').addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
+    document.getElementById('btn-prev').addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
+
+    // Swipe support
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }, {passive:true});
+    document.addEventListener('touchend', (e) => {
+        if (isDrawingMode) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) < 60 && Math.abs(dy) > 40) {
+            if (dy < 0 && currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
+            if (dy > 0 && currentSlide > 0) { currentSlide--; updateSlides(); }
+        }
+    }, {passive:true});
+
+    document.getElementById('btn-draw').addEventListener('click', (e) => {
+        isDrawingMode = !isDrawingMode;
+        if (isDrawingMode) drawMode = 'pen';
+        e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+        canvas.classList.toggle('drawing-active', isDrawingMode);
+        document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+        document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+    });
+
+    document.getElementById('btn-eraser').addEventListener('click', (e) => {
+        drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+        e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+    });
+
+    document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+            document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+            dot.style.borderColor = 'white';
+            penColor = dot.dataset.color;
+            drawMode = 'pen';
+            document.getElementById('btn-eraser').classList.remove('active-tool');
+        });
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        slideDrawings[currentSlide] = null;
+    });
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+        document.getElementById('start-overlay').style.display = 'none';
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        }
+        updateSlides();
+    });
+
+    document.getElementById('btn-home').addEventListener('click', () => { window.history.back(); });
+
+    // ═══════════════ Toolbar Drag ═══════════════
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = (y) => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = (y) => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', (e) => sDT(e.clientY));
+    window.addEventListener('mousemove', (e) => mDT(e.clientY));
+    window.addEventListener('mouseup', () => isDT = false);
+    dh.addEventListener('touchstart', (e) => sDT(e.touches[0].clientY), {passive:true});
+    window.addEventListener('touchmove', (e) => { if(isDT) mDT(e.touches[0].clientY); }, {passive:true});
+    window.addEventListener('touchend', () => isDT = false);
+
+    // ═══════════════ Floating Atoms (Start Screen) ═══════════════
+    const atomContainer = document.getElementById('float-atoms');
+    const atomData = [
+        {size:120, x:10, y:20, tx:'30px', ty:'-40px', dur:'18s'},
+        {size:80, x:70, y:10, tx:'-20px', ty:'50px', dur:'22s'},
+        {size:200, x:5, y:60, tx:'50px', ty:'30px', dur:'30s'},
+        {size:60, x:85, y:70, tx:'-40px', ty:'-60px', dur:'16s'},
+        {size:150, x:60, y:50, tx:'20px', ty:'-30px', dur:'25s'},
+        {size:90, x:30, y:80, tx:'-30px', ty:'40px', dur:'20s'},
+    ];
+    atomData.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'atom-float';
+        el.style.cssText = 'width:' + a.size + 'px; height:' + a.size + 'px; left:' + a.x + '%; top:' + a.y + '%; --tx:' + a.tx + '; --ty:' + a.ty + '; animation-duration:' + a.dur + ';';
+        atomContainer.appendChild(el);
+    });
+
+    // ═══════════════ Interactive Periodic Table (Slide 4) ═══════════════
+    const ptData = [
+        {sym:'H',  Z:1,  period:1, group:1,  en:2.1},
+        {sym:'He', Z:2,  period:1, group:18, en:null},
+        {sym:'Li', Z:3,  period:2, group:1,  en:1.0},
+        {sym:'Be', Z:4,  period:2, group:2,  en:1.5},
+        {sym:'B',  Z:5,  period:2, group:13, en:2.0},
+        {sym:'C',  Z:6,  period:2, group:14, en:2.5},
+        {sym:'N',  Z:7,  period:2, group:15, en:3.0},
+        {sym:'O',  Z:8,  period:2, group:16, en:3.5},
+        {sym:'F',  Z:9,  period:2, group:17, en:4.0},
+        {sym:'Ne', Z:10, period:2, group:18, en:null},
+        {sym:'Na', Z:11, period:3, group:1,  en:0.9},
+        {sym:'Mg', Z:12, period:3, group:2,  en:1.2},
+        {sym:'Al', Z:13, period:3, group:13, en:1.5},
+        {sym:'Si', Z:14, period:3, group:14, en:1.8},
+        {sym:'P',  Z:15, period:3, group:15, en:2.1},
+        {sym:'S',  Z:16, period:3, group:16, en:2.5},
+        {sym:'Cl', Z:17, period:3, group:17, en:3.0},
+        {sym:'Ar', Z:18, period:3, group:18, en:null},
+        {sym:'K',  Z:19, period:4, group:1,  en:0.8},
+        {sym:'Ca', Z:20, period:4, group:2,  en:1.0},
+        {sym:'Ga', Z:31, period:4, group:13, en:1.6},
+        {sym:'Ge', Z:32, period:4, group:14, en:1.8},
+        {sym:'As', Z:33, period:4, group:15, en:2.0},
+        {sym:'Se', Z:34, period:4, group:16, en:2.4},
+        {sym:'Br', Z:35, period:4, group:17, en:2.8},
+        {sym:'Kr', Z:36, period:4, group:18, en:null},
+        {sym:'Rb', Z:37, period:5, group:1,  en:0.8},
+        {sym:'Sr', Z:38, period:5, group:2,  en:1.0},
+        {sym:'In', Z:49, period:5, group:13, en:1.7},
+        {sym:'Sn', Z:50, period:5, group:14, en:1.8},
+        {sym:'Sb', Z:51, period:5, group:15, en:1.9},
+        {sym:'Te', Z:52, period:5, group:16, en:2.1},
+        {sym:'I',  Z:53, period:5, group:17, en:2.5},
+        {sym:'Xe', Z:54, period:5, group:18, en:null},
+        {sym:'Cs', Z:55, period:6, group:1,  en:0.7},
+        {sym:'Ba', Z:56, period:6, group:2,  en:0.9},
+        {sym:'Tl', Z:81, period:6, group:13, en:1.8},
+        {sym:'Pb', Z:82, period:6, group:14, en:1.8},
+        {sym:'Bi', Z:83, period:6, group:15, en:1.9},
+        {sym:'Po', Z:84, period:6, group:16, en:2.0},
+        {sym:'At', Z:85, period:6, group:17, en:2.2},
+        {sym:'Rn', Z:86, period:6, group:18, en:null},
+    ];
+
+    let ptableInited = false;
+    function initPTable() {
+        if (ptableInited) return;
+        ptableInited = true;
+        const grid = document.getElementById('ptable-grid');
+        const maxEN = 4.0, minEN = 0.7;
+
+        const infoBox = document.createElement('div');
+        infoBox.id = 'ptable-info-embedded';
+        infoBox.style.cssText = 'grid-column:3/13;grid-row:1/4;background:rgba(15,23,42,0.45);border:1px dashed rgba(255,255,255,0.25);border-radius:12px;backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:0.3rem 0.6rem;color:#f0f4ff;box-shadow:inset 0 0 15px rgba(255,255,255,0.05),0 6px 20px rgba(0,0,0,0.3);overflow:hidden;transition:all 0.3s ease;box-sizing:border-box;max-height:100%;';
+
+        infoBox.innerHTML = '<div style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:0.3rem;animation:pulse 2s infinite ease-in-out;"><div style="font-size:1.4rem;line-height:1;">👆</div><div style="font-size:0.85rem;font-weight:500;color:rgba(240,244,255,0.85);">點選四周元素查看電負度數值</div><div style="font-size:0.68rem;color:rgba(255,255,255,0.45);">(IA、IIA 與 IIIA ~ VIIA 主族元素)</div></div>';
+
+        if (!document.getElementById('ptable-pulse-style')) {
+            const style = document.createElement('style');
+            style.id = 'ptable-pulse-style';
+            style.innerHTML = '@keyframes pulse{0%,100%{transform:scale(1);opacity:0.8;}50%{transform:scale(1.04);opacity:1;}}';
+            document.head.appendChild(style);
+        }
+
+        grid.appendChild(infoBox);
+
+        const cells = {};
+        ptData.forEach(function(el) { cells[el.period + '-' + el.group] = el; });
+
+        let lastSelectedDiv = null;
+
+        for (let period = 1; period <= 6; period++) {
+            for (let group = 1; group <= 18; group++) {
+                if (period >= 1 && period <= 3 && group >= 3 && group <= 12) continue;
+
+                const key = period + '-' + group;
+                const el = cells[key];
+                const div = document.createElement('div');
+                div.className = 'pt-cell';
+                div.style.aspectRatio = '1';
+
+                if (el) {
+                    if (el.en === null || el.en === undefined) {
+                        div.style.background = 'rgba(255, 255, 255, 0.08)';
+                        div.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+                        div.style.color = 'rgba(240, 244, 255, 0.4)';
+                        div.textContent = el.sym;
+                        div.title = el.sym + ': 惰性氣體（無常規電負度）';
+                        div.style.cursor = 'pointer';
+
+                        (function(el) {
+                            div.addEventListener('click', function() {
+                                if (lastSelectedDiv) {
+                                    lastSelectedDiv.style.boxShadow = 'none';
+                                    lastSelectedDiv.style.transform = 'scale(1)';
+                                    lastSelectedDiv.style.borderColor = lastSelectedDiv.dataset.originalBorderColor;
+                                    lastSelectedDiv.style.zIndex = '1';
+                                }
+                                div.dataset.originalBorderColor = 'rgba(255, 255, 255, 0.15)';
+                                div.style.boxShadow = '0 0 10px rgba(255,255,255,0.5)';
+                                div.style.borderColor = 'rgba(255,255,255,0.5)';
+                                div.style.transform = 'scale(1.12)';
+                                div.style.zIndex = '15';
+                                lastSelectedDiv = div;
+
+                                infoBox.style.borderStyle = 'dashed';
+                                infoBox.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                                infoBox.innerHTML =
+                                    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;gap:4px;">' +
+                                    '<div style="display:flex;align-items:center;gap:5px;font-size:0.8rem;font-weight:bold;">' +
+                                    '<span style="font-weight:900;font-size:1.15rem;color:rgba(240, 244, 255, 0.65);">' + el.sym + '</span>' +
+                                    '<span style="font-size:0.75rem;color:rgba(255,255,255,0.4);">(Z=' + el.Z + ')</span>' +
+                                    '<span style="font-size:0.6rem;padding:1px 4px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:rgba(240,244,255,0.5);">第' + el.period + '週期</span>' +
+                                    '<span style="font-size:0.6rem;padding:1px 4px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:3px;color:rgba(240,244,255,0.5);">第' + el.group + '族</span>' +
+                                    '</div>' +
+                                    '<div style="width:28px;height:28px;background:rgba(255,255,255,0.05);font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-weight:800;border:1px solid rgba(255,255,255,0.1);margin:2px 0;">' + el.sym + '</div>' +
+                                    '<div style="font-size:0.85rem;font-weight:800;color:rgba(255,255,255,0.4);">電負度：<span style="font-size:1rem;color:rgba(255,255,255,0.5);">無 (惰性氣體)</span></div>' +
+                                    '</div>';
+                            });
+                        })(el);
+                    } else {
+                        const frac = (el.en - minEN) / (maxEN - minEN);
+                        const r = Math.round(50 + frac * 205);
+                        const b = Math.round(255 - frac * 205);
+                        const g = Math.round(50 + (1 - Math.abs(frac - 0.5)*2)*50);
+                        div.style.background = 'rgba(' + r + ',' + g + ',' + b + ',0.65)';
+                        div.style.border = '1px solid rgba(' + r + ',' + g + ',' + b + ',0.9)';
+                        div.style.color = 'white';
+                        div.textContent = el.sym;
+                        div.title = el.sym + ': ' + el.en;
+                        div.style.cursor = 'pointer';
+
+                        (function(el, frac, r, g, b) {
+                            div.addEventListener('click', function() {
+                                if (lastSelectedDiv) {
+                                    lastSelectedDiv.style.boxShadow = 'none';
+                                    lastSelectedDiv.style.transform = 'scale(1)';
+                                    lastSelectedDiv.style.borderColor = lastSelectedDiv.dataset.originalBorderColor;
+                                    lastSelectedDiv.style.zIndex = '1';
+                                }
+                                div.dataset.originalBorderColor = 'rgba(' + r + ',' + g + ',' + b + ',0.9)';
+                                div.style.boxShadow = '0 0 10px rgba(255,255,255,0.9),inset 0 0 5px rgba(255,255,255,0.5)';
+                                div.style.borderColor = 'rgba(255,255,255,0.95)';
+                                div.style.transform = 'scale(1.12)';
+                                div.style.zIndex = '15';
+                                lastSelectedDiv = div;
+                                const sz = 24 + frac * 8;
+                                infoBox.style.borderStyle = 'solid';
+                                infoBox.style.borderColor = 'rgba(' + r + ',' + g + ',' + b + ',0.6)';
+                                infoBox.innerHTML =
+                                    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;gap:4px;">' +
+                                    '<div style="display:flex;align-items:center;gap:5px;font-size:0.8rem;font-weight:bold;">' +
+                                    '<span style="font-weight:900;font-size:1.15rem;color:#fff;">' + el.sym + '</span>' +
+                                    '<span style="font-size:0.75rem;color:rgba(255,255,255,0.45);">(Z=' + el.Z + ')</span>' +
+                                    '<span style="font-size:0.6rem;padding:1px 4px;background:rgba(59,130,246,0.25);border:1px solid rgba(59,130,246,0.4);border-radius:3px;color:#93c5fd;">第' + el.period + '週期</span>' +
+                                    '<span style="font-size:0.6rem;padding:1px 4px;background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.4);border-radius:3px;color:#6ee7b7;">第' + el.group + '族</span>' +
+                                    '</div>' +
+                                    '<div style="width:' + sz + 'px;height:' + sz + 'px;background:radial-gradient(circle at 35% 35%,rgba(' + r + ',' + g + ',' + b + ',0.95),rgba(' + Math.max(0,r-80) + ',' + Math.max(0,g-20) + ',' + Math.max(0,b-80) + ',1));font-size:' + (sz*0.4) + 'px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;border:1px solid rgba(255,255,255,0.2);margin:2px 0;">' + el.sym + '</div>' +
+                                    '<div style="font-size:0.85rem;font-weight:800;color:var(--accent-yellow);">電負度：<span style="font-size:1.15rem;">' + el.en.toFixed(1) + '</span></div>' +
+                                    '</div>';
+                            });
+                        })(el, frac, r, g, b);
+                    }
+                } else {
+                    div.style.background = 'transparent';
+                    div.style.border = 'none';
+                }
+                grid.appendChild(div);
+            }
+        }
+    }
+
+    // ═══════════════ Matching Game (Slide 8) ═══════════════
+    var gameInited = false;
+    var connections = []; // Stores correct pairings: { lId: string, rId: string, pair: number }
+    
+    // Dragging state
+    var isDraggingLine = false;
+    var dragStartDot = null;
+    var activeHoveredDot = null;
+
+    var gamePool = [
+        { q: '同族元素由上而下', a: '電負度逐漸減小' },
+        { q: '同週期由左至右', a: '電負度逐漸增大' },
+        { q: '電負度最大的元素', a: '氟 (F, 4.0)' },
+        { q: '電負度相差極大', a: '易形成離子鍵' },
+        { q: '金屬元素的電負度', a: '通常小於 2.0' },
+        { q: '非金屬元素的電負度', a: '通常大於 2.0' },
+        { q: '共價鍵成鍵電子對', a: '偏向電負度大者' },
+        { q: '電負度標度的提出者', a: '鮑林 (L. Pauling)' },
+        { q: '電負度最小的元素', a: '銫 (Cs) 與鍅 (Fr)' },
+        { q: '非極性共價鍵', a: '兩原子電負度相同' },
+        { q: '極性共價鍵', a: '兩原子電負度不同' },
+        { q: '惰性氣體(第18族)', a: '通常不討論電負度' },
+        { q: '第VIIA族鹵素電負度', a: 'F > Cl > Br > I' },
+        { q: '第二週期元素電負度', a: 'F > O > N > C' }
+    ];
+
+    function initGame() {
+        if (gameInited) { drawConnections(); return; }
+        gameInited = true;
+
+        // 1. Sample 5 pairs from the pool randomly
+        var tempPool = [].concat(gamePool);
+        tempPool.sort(function() { return Math.random() - 0.5; });
+        var selectedPairs = tempPool.slice(0, 5);
+
+        // 2. Map questions and answers
+        var questions = selectedPairs.map(function(item, idx) {
+            return { text: item.q, pairIndex: idx };
+        });
+        var answers = selectedPairs.map(function(item, idx) {
+            return { text: item.a, pairIndex: idx };
+        });
+
+        // 3. Shuffle columns independently
+        var shuffledQs = [].concat(questions).sort(function() { return Math.random() - 0.5; });
+        var shuffledAns = [].concat(answers).sort(function() { return Math.random() - 0.5; });
+
+        var lCol = document.getElementById('left-column');
+        var rCol = document.getElementById('right-column');
+        lCol.innerHTML = '';
+        rCol.innerHTML = '';
+
+        // 4. Generate elements
+        shuffledQs.forEach(function(q, i) {
+            var div = document.createElement('div');
+            div.className = 'game-item'; div.style.justifyContent = 'flex-end';
+            div.innerHTML = '<span class="game-label-l">' + q.text + '</span><div class="dot right-dot" data-side="left" data-pair="' + q.pairIndex + '" id="dot-l-' + i + '"></div>';
+            lCol.appendChild(div);
+        });
+
+        shuffledAns.forEach(function(a, i) {
+            var div = document.createElement('div');
+            div.className = 'game-item';
+            div.innerHTML = '<div class="dot left-dot" data-side="right" data-pair="' + a.pairIndex + '" id="dot-r-' + i + '"></div><span class="game-label-r">' + a.text + '</span>';
+            rCol.appendChild(div);
+        });
+
+        // 5. Setup event handlers
+        addGameDragListeners();
+
+        // 6. Draw existing connections (none initially)
+        drawConnections();
+    }
+
+    function getPointerCoords(e, rect) {
+        var clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top,
+            clientX: clientX,
+            clientY: clientY
+        };
+    }
+
+    function getDotCenter(dot, rect) {
+        var r = dot.getBoundingClientRect();
+        return {
+            x: r.left + r.width / 2 - rect.left,
+            y: r.top + r.height / 2 - rect.top
+        };
+    }
+
+    function updateTempLine(e) {
+        var svg = document.getElementById('game-svg');
+        if (!svg) return;
+
+        var rect = svg.getBoundingClientRect();
+        var pointer = getPointerCoords(e, rect);
+        var startCenter = getDotCenter(dragStartDot, rect);
+
+        var oppositeSide = (dragStartDot.dataset.side === 'left') ? 'right' : 'left';
+        var oppositeDots = document.querySelectorAll('.dot[data-side="' + oppositeSide + '"]');
+        var hoveredDot = null;
+
+        oppositeDots.forEach(function(dot) {
+            if (dot.classList.contains('matched')) return;
+            var dotRect = dot.getBoundingClientRect();
+            var dx = pointer.clientX - (dotRect.left + dotRect.width / 2);
+            var dy = pointer.clientY - (dotRect.top + dotRect.height / 2);
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 40) {
+                hoveredDot = dot;
+            }
+        });
+
+        oppositeDots.forEach(function(dot) {
+            if (dot === hoveredDot) {
+                dot.classList.add('active-hover');
+            } else {
+                dot.classList.remove('active-hover');
+            }
+        });
+
+        activeHoveredDot = hoveredDot;
+
+        var endX = pointer.x;
+        var endY = pointer.y;
+        var strokeColor = 'var(--accent-cyan)';
+
+        if (hoveredDot) {
+            var endCenter = getDotCenter(hoveredDot, rect);
+            endX = endCenter.x;
+            endY = endCenter.y;
+            
+            var startPair = parseInt(dragStartDot.dataset.pair, 10);
+            var endPair = parseInt(hoveredDot.dataset.pair, 10);
+            if (startPair === endPair) {
+                strokeColor = 'var(--accent-green)';
+            } else {
+                strokeColor = 'var(--accent-red)';
+            }
+        }
+
+        var x1 = startCenter.x;
+        var y1 = startCenter.y;
+        var x2 = endX;
+        var y2 = endY;
+        
+        var pull = Math.min(100, Math.max(40, Math.abs(x2 - x1) * 0.4));
+        var cx1 = x1 + (dragStartDot.dataset.side === 'left' ? pull : -pull);
+        var cy1 = y1;
+        var cx2 = x2 + (dragStartDot.dataset.side === 'left' ? -pull : pull);
+        var cy2 = y2;
+        
+        var pathD = 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2;
+
+        var tempPath = document.getElementById('temp-path');
+        if (!tempPath) {
+            tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            tempPath.id = 'temp-path';
+            tempPath.setAttribute('stroke-width', '4');
+            tempPath.setAttribute('fill', 'none');
+            tempPath.setAttribute('stroke-linecap', 'round');
+            tempPath.setAttribute('stroke-dasharray', '8, 4');
+            svg.appendChild(tempPath);
+        }
+        
+        tempPath.setAttribute('d', pathD);
+        tempPath.setAttribute('stroke', strokeColor);
+    }
+
+    function drawIncorrectLine(startDot, endDot) {
+        var svg = document.getElementById('game-svg');
+        if (!svg) return;
+
+        var rect = svg.getBoundingClientRect();
+        var startCenter = getDotCenter(startDot, rect);
+        var endCenter = getDotCenter(endDot, rect);
+
+        var x1 = startCenter.x;
+        var y1 = startCenter.y;
+        var x2 = endCenter.x;
+        var y2 = endCenter.y;
+
+        var pull = Math.min(100, Math.max(40, Math.abs(x2 - x1) * 0.4));
+        var cx1 = x1 + (startDot.dataset.side === 'left' ? pull : -pull);
+        var cy1 = y1;
+        var cx2 = x2 + (startDot.dataset.side === 'left' ? -pull : pull);
+        var cy2 = y2;
+        
+        var pathD = 'M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2;
+
+        var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathD);
+        path.setAttribute('stroke', 'var(--accent-red)');
+        path.setAttribute('stroke-width', '4');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        path.style.transition = 'opacity 0.5s ease-out';
+        path.style.opacity = '1';
+
+        svg.appendChild(path);
+
+        setTimeout(function() {
+            path.style.opacity = '0';
+        }, 50);
+
+        setTimeout(function() {
+            path.remove();
+        }, 550);
+    }
+
+    function addGameDragListeners() {
+        var dots = document.querySelectorAll('.dot');
+
+        dots.forEach(function(dot) {
+            var startDrag = function(e) {
+                if (dot.classList.contains('matched')) return;
+
+                if (e.type === 'touchstart') {
+                    e.preventDefault();
+                }
+
+                isDraggingLine = true;
+                dragStartDot = dot;
+                dot.classList.add('active');
+
+                updateTempLine(e);
+            };
+
+            dot.addEventListener('mousedown', startDrag);
+            dot.addEventListener('touchstart', startDrag, { passive: false });
+        });
+    }
+
+    // Window global listeners for dragging
+    var moveDrag = function(e) {
+        if (!isDraggingLine || !dragStartDot) return;
+        updateTempLine(e);
+    };
+
+    var endDrag = function(e) {
+        if (!isDraggingLine || !dragStartDot) return;
+        isDraggingLine = false;
+
+        if (activeHoveredDot) {
+            var startPair = parseInt(dragStartDot.dataset.pair, 10);
+            var endPair = parseInt(activeHoveredDot.dataset.pair, 10);
+
+            if (startPair === endPair) {
+                connections.push({
+                    lId: (dragStartDot.dataset.side === 'left' ? dragStartDot.id : activeHoveredDot.id),
+                    rId: (dragStartDot.dataset.side === 'right' ? dragStartDot.id : activeHoveredDot.id),
+                    pair: startPair
+                });
+
+                dragStartDot.classList.add('matched');
+                activeHoveredDot.classList.add('matched');
+
+                dragStartDot.parentElement.style.opacity = '0.5';
+                activeHoveredDot.parentElement.style.opacity = '0.5';
+                
+                dragStartDot.classList.remove('active');
+                activeHoveredDot.classList.remove('active-hover');
+
+                drawConnections();
+
+                if (connections.length === 5) {
+                    document.getElementById('game-feedback').style.display = 'block';
+                }
+            } else {
+                drawIncorrectLine(dragStartDot, activeHoveredDot);
+
+                var startItem = dragStartDot.parentElement;
+                var endItem = activeHoveredDot.parentElement;
+                
+                startItem.style.animation = 'shake 0.4s ease';
+                endItem.style.animation = 'shake 0.4s ease';
+                
+                setTimeout(function() {
+                    startItem.style.animation = '';
+                    endItem.style.animation = '';
+                }, 400);
+
+                dragStartDot.classList.remove('active');
+                activeHoveredDot.classList.remove('active-hover');
+            }
+        } else {
+            dragStartDot.classList.remove('active');
+        }
+
+        var tempPath = document.getElementById('temp-path');
+        if (tempPath) tempPath.remove();
+
+        // Clear active-hover state from all opposite dots
+        var oppositeSide = (dragStartDot.dataset.side === 'left') ? 'right' : 'left';
+        document.querySelectorAll('.dot[data-side="' + oppositeSide + '"]').forEach(function(dot) {
+            dot.classList.remove('active-hover');
+        });
+
+        dragStartDot = null;
+        activeHoveredDot = null;
+    };
+
+    window.addEventListener('mousemove', moveDrag);
+    window.addEventListener('touchmove', moveDrag, { passive: false });
+    window.addEventListener('mouseup', endDrag);
+    window.addEventListener('touchend', endDrag);
+
+    function drawConnections() {
+        var svg = document.getElementById('game-svg');
+        if (!svg) return;
+        var rect = svg.getBoundingClientRect();
+        var html = '';
+
+        connections.forEach(function(c) {
+            var dotL = document.getElementById(c.lId);
+            var dotR = document.getElementById(c.rId);
+            if (!dotL || !dotR) return;
+
+            var r1 = getDotCenter(dotL, rect);
+            var r2 = getDotCenter(dotR, rect);
+            var x1 = r1.x;
+            var y1 = r1.y;
+            var x2 = r2.x;
+            var y2 = r2.y;
+
+            var pull = Math.min(100, Math.max(40, Math.abs(x2 - x1) * 0.4));
+            var cx1 = x1 + pull;
+            var cy1 = y1;
+            var cx2 = x2 - pull;
+            var cy2 = y2;
+
+            html += '<path d="M ' + x1 + ' ' + y1 + ' C ' + cx1 + ' ' + cy1 + ', ' + cx2 + ' ' + cy2 + ', ' + x2 + ' ' + y2 + '" stroke="var(--accent-green)" stroke-width="4" fill="none" stroke-linecap="round"/>';
+        });
+
+        svg.innerHTML = html;
+    }
+
+    window.resetGame = function() {
+        connections = [];
+        isDraggingLine = false;
+        dragStartDot = null;
+        activeHoveredDot = null;
+        document.getElementById('game-svg').innerHTML = '';
+        document.getElementById('game-feedback').style.display = 'none';
+        document.getElementById('left-column').innerHTML = '';
+        document.getElementById('right-column').innerHTML = '';
+        gameInited = false;
+        initGame();
+    };
+
+</script>
+</body>
+</html>

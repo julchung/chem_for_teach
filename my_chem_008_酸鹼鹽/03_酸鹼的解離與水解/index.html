@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>酸鹼的解離與水解 - 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
+        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
+        
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0.5rem 6rem 1rem 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
+        
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+        
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+        
+        #toolbar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 2000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: auto;
+        }
+
+        .btn-tool {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0;
+        }
+
+        .btn-tool:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-tool.active-tool {
+            background: #3b82f6;
+            border-color: #60a5fa;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        #drag-handle {
+            width: 100%;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            cursor: grab;
+            padding: 2px 0;
+            margin-bottom: 4px;
+            user-select: none;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .color-picker {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .color-swatch.selected {
+            border-color: white;
+            transform: scale(1.2);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+        
+        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-purple { color: var(--accent-purple); }
+        .text-cyan { color: var(--accent-cyan); }
+        
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #formulas-column .game-item { justify-content: flex-start; text-align: left; }
+        #names-column .game-item { justify-content: flex-end; text-align: right; }
+        .game-item span { word-break: keep-all; }
+        .game-item:hover { background: rgba(255,255,255,0.1); }
+        .game-item.highlight { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.15); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); transform: scale(1.02); }
+        .game-item.correct { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); }
+        .dot { width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .formulas-dot { margin-left: auto; }
+        .names-dot { margin-right: auto; }
+        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+        .flash { animation: flash-red-stroke 0.4s ease 2; }
+        @keyframes flash-red-stroke { 0%, 100% { opacity: 1; stroke: var(--accent-red); } 50% { opacity: 0.3; stroke: transparent; } }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Start Overlay -->
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">酸鹼的解離與水解</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">互動式全螢幕教學系統</p>
+            <button id="btn-start" class="btn primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px;">▶ 點擊進入全螢幕教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+
+                <!-- Slide 1: Electrolytes -->
+                <div class="slide active">
+                    <h1>電解質的解離 (Dissociation)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.2; font-size: 0.95em;">
+                            <h2 class="text-yellow">解離的概念</h2>
+                            <p>電解質在水中溶解時，會分解成陽離子、陰離子的過程稱為 <strong class="text-cyan">解離</strong>。</p>
+                            <div class="formula-box" style="font-size: 1.2rem; padding: 0.5rem;">
+                                $AB \rightleftharpoons A^+ + B^-$
+                            </div>
+                            <h2 class="text-yellow" style="margin-top: 0.5rem;">強弱電解質</h2>
+                            <ul>
+                                <li><strong class="text-green">強電解質</strong>：完全解離 ($\alpha \approx 100\%$ )。<br><span style="font-size: 0.8rem; opacity: 0.8;">例如：強酸 ($HCl$), 強鹼 ($NaOH$), 大多數鹽類 ($NaCl$)</span></li>
+                                <li><strong class="text-red">弱電解質</strong>：部分解離 ($\alpha \ll 100\%$ )，達平衡狀態。<br><span style="font-size: 0.8rem; opacity: 0.8;">例如：弱酸 ($CH_3COOH$), 弱鹼 ($NH_3$)</span></li>
+                            </ul>
+                        </div>
+                        <div class="flex-col" style="flex: 0.8; justify-content: center; align-items: center;">
+                            <div class="rule-card" style="border-color: var(--accent-blue); width: 100%;">
+                                <h2 class="text-blue" style="margin-top: 0; font-size: 1.5rem;">小知識：解離度 ($\alpha$)</h2>
+                                <div style="text-align: center; font-size: 1.2rem; color: var(--accent-yellow); margin-top: 1rem;">
+                                    $$ \alpha = \frac{\text{已解離莫耳數}}{\text{原始莫耳數}} \times 100\% $$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Water Self-Ionization -->
+                <div class="slide">
+                    <h1>水的自解離與 $K_w$</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.8;">
+                            <div class="formula-box" style="font-size: 1.2rem; padding: 0.5rem;">
+                                $$ \begin{alignat}{2} H_2O_{(l)} + H_2O_{(l)} &\rightleftharpoons H_3O^+_{(aq)} &&+ OH^-_{(aq)} \\ H_2O_{(l)} &\rightleftharpoons H^+_{(aq)} &&+ OH^-_{(aq)} \end{alignat} $$
+                            </div>
+                            <h2 class="text-yellow">水的離子積常數 ($K_w$)</h2>
+                            <p>在 $25^\circ C$ 時：</p>
+                            <p class="text-cyan" style="font-size: 1.4rem; text-align: center; margin: 0.5rem 0;">$K_w = [H^+][OH^-] = 1.0 \times 10^{-14}$</p>
+                        </div>
+                        <div class="flex-col" style="flex: 1;">
+                            <div class="rule-card" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                                <h3 class="text-green" style="font-size: 1.4rem; margin-bottom: 1rem;">重要觀念：</h3>
+                                <ul>
+                                    <li style="margin-bottom: 1.5rem;">為吸熱反應：$K_w$ 隨溫度升高而增大（吸熱反應）。</li>
+                                    <li>在任何水溶液中，$[H^+][OH^-]$ 的乘積在該溫度下恆為 $K_w$。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: pH and pOH -->
+                <div class="slide">
+                    <h1>pH 與 pOH</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.3;">
+                            <h2 class="text-yellow">定義與公式</h2>
+                            <div class="rule-card">
+                                <ul>
+                                    <li>$pH = -\log[H^+]$</li>
+                                    <li>$pOH = -\log[OH^-]$</li>
+                                    <li>$pH + pOH = pK_w = 14$ ($25^\circ C$)</li>
+                                </ul>
+                            </div>
+                            <div class="rule-card" style="border-color: var(--accent-cyan); background: rgba(34, 211, 238, 0.05);">
+                                <p style="margin-bottom: 0;">若 $[H^+] = 10^{-pH}$</p>
+                                <p style="margin-bottom: 0;">若 $[OH^-] = 10^{-pOH}$</p>
+                            </div>
+                            <p style="text-align: center; color: var(--accent-yellow); font-size: 1.2rem; margin-top: 1rem;">
+                                (若 $[H^+] = a \times 10^{-b}$ 時，$pH = b - \log a$)
+                            </p>
+                        </div>
+                        <div class="flex-col" style="flex: 1;">
+                            <h2 class="text-yellow" style="font-size: 1.2rem;">酸鹼性判斷 ($25^\circ C$)</h2>
+                            <table class="table-chem" style="font-size: 0.85rem;">
+                                <tr><th style="padding: 0.5rem;">酸鹼性</th><th style="padding: 0.5rem;">$[H^+]$ 與 $[OH^-]$</th><th style="padding: 0.5rem;">pH 值</th></tr>
+                                <tr><td class="text-green" style="padding: 0.5rem;">中性</td><td style="padding: 0.5rem;">$[H^+] = [OH^-]$</td><td class="text-green" style="padding: 0.5rem;">$pH = 7$</td></tr>
+                                <tr><td class="text-red" style="padding: 0.5rem;">酸性</td><td style="padding: 0.5rem;">$[H^+] > [OH^-]$</td><td class="text-red" style="padding: 0.5rem;">$pH < 7$</td></tr>
+                                <tr><td class="text-blue" style="padding: 0.5rem;">鹼性</td><td style="padding: 0.5rem;">$[H^+] < [OH^-]$</td><td class="text-blue" style="padding: 0.5rem;">$pH > 7$</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Example -->
+                <div class="slide">
+                    <h1>範例</h1>
+                    <div class="flex-row">
+                        <!-- Left Column: Q1 -->
+                        <div class="flex-col" style="flex: 1; border-left: 5px solid var(--accent-yellow); padding-bottom: 30vh;">
+                            <h2 class="text-yellow" style="margin-top: 0; font-size: 1.8rem;">Q1.</h2>
+                            <p style="font-size: 1.3rem; line-height: 1.6; margin-top: 1rem;">
+                                在 $80^\circ C$ 時有一未知水溶液，測得 $pH=7$，試問該水溶液是酸性、中性還是鹼性？
+                            </p>
+                        </div>
+                        
+                        <!-- Right Column: Q2 -->
+                        <div class="flex-col" style="flex: 1; border-left: 5px solid var(--accent-blue); padding-bottom: 30vh;">
+                            <h2 class="text-blue" style="margin-top: 0; font-size: 1.8rem;">Q2.</h2>
+                            <div style="font-size: 1.3rem; line-height: 2; margin-top: 1rem;">
+                                <p>1. $[H^+] = 3 \times 10^{-5}$，則 $pH = ?$</p>
+                                <p>2. $pH = 10.7$，則 $[H^+] = ?$</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6: Ka -->
+                <div class="slide" style="overflow-y: hidden;">
+                    <h1 style="margin-bottom: 0.2rem;">酸解離常數 ($K_a$)</h1>
+                    <div class="flex-row" style="margin-top: 0.2rem;">
+                        <!-- Left Column: Single Proton Acid & Acetic Acid Example -->
+                        <div class="flex-col" style="flex: 0.8; padding: 0.5rem;">
+                            <h2 class="text-red" style="font-size: 1.1rem; margin-bottom: 0.3rem;">單質子酸解離</h2>
+                            <p style="text-align: center; font-size: 1.1rem; margin: 0.2rem 0;">$HA \rightleftharpoons H^+ + A^-$</p>
+                            <div class="formula-box" style="text-align: center; padding: 0.5rem; font-size: 1rem; margin: 0.3rem 0;">
+                                $K_a = \frac{[H^+][A^-]}{[HA]}$
+                            </div>
+                            
+                            <h3 class="text-yellow" style="margin-top: 1rem; font-size: 1.1rem; margin-bottom: 0.3rem;">實例：醋酸 ($CH_3COOH$)</h3>
+                            <p style="text-align: center; font-size: 1.1rem; margin: 0.2rem 0;">$CH_3COOH \rightleftharpoons CH_3COO^- + H^+$</p>
+                            <div class="formula-box" style="text-align: center; padding: 0.5rem; font-size: 1rem; border-left-color: var(--accent-yellow); margin: 0.3rem 0;">
+                                $K_a = \frac{[CH_3COO^-][H^+]}{[CH_3COOH]}$
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Polyprotic Acid (Phosphoric Acid) -->
+                        <div class="flex-col" style="flex: 1.2; padding: 0.5rem;">
+                            <h2 class="text-yellow" style="font-size: 1.1rem; margin-bottom: 0.3rem;">多步解離 (以磷酸為例)</h2>
+                            <div style="font-size: 0.9rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 10px; overflow-x: auto;">
+                                $$ \begin{alignat}{2} 
+                                H_3PO_4 &\rightleftharpoons H^+ + H_2PO_4^- \quad && K_{a1} = \frac{[H^+][H_2PO_4^-]}{[H_3PO_4]} \\[1ex] 
+                                H_2PO_4^- &\rightleftharpoons H^+ + HPO_4^{2-} \quad && K_{a2} = \frac{[H^+][HPO_4^{2-}]}{[H_2PO_4^-]} \\[1ex] 
+                                HPO_4^{2-} &\rightleftharpoons H^+ + PO_4^{3-} \quad && K_{a3} = \frac{[H^+][PO_4^{3-}]}{[HPO_4^{2-}]} 
+                                \end{alignat} $$
+                            </div>
+                            <p style="text-align: center; margin-top: 0.5rem; color: var(--accent-cyan); font-size: 1.1rem; font-weight: bold;">規律：$K_{a1} \gg K_{a2} \gg K_{a3}$</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 7: Kb -->
+                <div class="slide" style="overflow-y: hidden;">
+                    <h1 style="margin-bottom: 0.5rem;">鹼解離常數 ($K_b$)</h1>
+                    <div class="flex-row" style="margin-top: 0.2rem;">
+                        <div class="flex-col" style="padding: 0.5rem;">
+                            <h2 class="text-blue" style="font-size: 1.1rem; margin-bottom: 0.3rem;">鹼解離反應</h2>
+                            <p style="text-align: center; font-size: 1.1rem; margin: 0.2rem 0;">$B + H_2O \rightleftharpoons BH^+ + OH^-$</p>
+                            <div class="formula-box" style="text-align: center; padding: 0.8rem; font-size: 1rem; margin: 0.3rem 0;">
+                                $K_b = \frac{[BH^+][OH^-]}{[B]}$
+                            </div>
+                            <p style="text-align: center; margin-top: 0.5rem; color: var(--accent-blue); font-size: 0.95rem;">當 $K_b$ 越大，鹼性越強。</p>
+                        </div>
+                        <div class="flex-col" style="padding: 0.5rem;">
+                            <h2 class="text-yellow" style="font-size: 1.1rem; margin-bottom: 0.3rem;">實例：氨水 ($NH_3$)</h2>
+                            <p style="text-align: center; font-size: 1.1rem; margin: 0.2rem 0;">$NH_3 + H_2O \rightleftharpoons NH_4^+ + OH^-$</p>
+                            <div class="formula-box" style="text-align: center; padding: 0.8rem; font-size: 1rem; margin: 0.3rem 0;">
+                                $K_b = \frac{[NH_4^+][OH^-]}{[NH_3]}$
+                            </div>
+                            <p style="text-align: center; margin-top: 0.5rem; font-size: 0.95rem;">$NH_3$ 是常見的弱鹼實例。</p>
+                        </div>
+                    </div>
+                    <div class="rule-card" style="margin-top: 0.5rem; padding: 0.8rem; background: rgba(168, 85, 247, 0.1); border-color: var(--accent-purple);">
+                        <p style="margin-bottom: 0; font-size: 0.9rem;"><strong>注意：</strong>強酸強鹼在水中「完全解離」，不討論 $K_a$/$K_b$，只有弱酸弱鹼才需要使用平衡常數計算 pH。</p>
+                    </div>
+                </div>
+
+                <!-- Slide 8: Conjugate pairs -->
+                <div class="slide">
+                    <h1>共軛酸鹼對的解離與水解</h1>
+                    <div class="flex-row">
+                        <!-- New Left Column (Derivation) -->
+                        <div class="flex-col" style="border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.05); border-left: 5px solid var(--accent-blue); flex: 1.4;">
+                            <h2 class="text-blue" style="margin-top: 0;">數學推導 ($CH_3COOH/CH_3COO^-$)</h2>
+                            <div style="font-size: 0.95rem; line-height: 1.4;">
+                                <p>1. 醋酸解離：$CH_3COOH \rightleftharpoons CH_3COO^- + H^+$</p>
+                                <div class="formula-box" style="font-size: 1.3rem; padding: 0.6rem; margin: 0.4rem 0;">
+                                    $K_a = \frac{[CH_3COO^-][H^+]}{[CH_3COOH]}$
+                                </div>
+                                <p>2. 醋酸根水解：$CH_3COO^- + H_2O \rightleftharpoons CH_3COOH + OH^-$</p>
+                                <div class="formula-box" style="font-size: 1.3rem; padding: 0.6rem; margin: 0.4rem 0;">
+                                    $K_b = \frac{[CH_3COOH][OH^-]}{[CH_3COO^-]}$
+                                </div>
+                                <p>3. 證明：將 $K_b$ 分子分母同乘 <span class="text-red">$[H^+]$</span></p>
+                                <div class="formula-box" style="font-size: 1.4rem; padding: 0.8rem; margin: 0.5rem 0;">
+                                    $K_b = \frac{[CH_3COOH][OH^-]}{[CH_3COO^-]} \times \frac{\color{red}{[H^+]}}{\color{red}{[H^+]}}$
+                                </div>
+                                <p>4. 得到結論：</p>
+                                <div class="formula-box" style="font-size: 1.6rem; padding: 0.8rem; color: var(--accent-yellow); margin: 0.5rem 0;">
+                                    $K_b = \frac{1}{K_a} \times K_w \implies K_b = \frac{K_w}{K_a}$
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- New Right Column (Conclusions) -->
+                        <div class="flex-col" style="border-color: var(--accent-green); background: rgba(52, 211, 153, 0.05); border-left: 5px solid var(--accent-green); flex: 1;">
+                            <h2 class="text-green" style="margin-top: 0;">數學關係與結論</h2>
+                            <div class="formula-box" style="text-align: center; font-size: 1.8rem; color: var(--accent-yellow); background: rgba(0,0,0,0.5); padding: 1rem;">
+                                $K_a \times K_b = K_w$
+                            </div>
+                            <p style="margin-top: 1rem; font-weight: bold;">對於一對共軛酸鹼對：</p>
+                            <ul style="font-size: 1rem;">
+                                <li>強度呈 <strong>反比</strong>（一強配一弱）</li>
+                                <li>弱酸的共軛鹼亦為弱鹼。</li>
+                                <li>強酸的共軛鹼不具鹼性（極弱）。</li>
+                                <li>在 $25^\circ C$ 時，$pK_a + pK_b = 14$</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 9: Salt Hydrolysis -->
+                <div class="slide">
+                    <h1>鹽類的水解</h1>
+                    <div style="background: rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 15px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                        <p style="font-size: 1.2rem; margin-bottom: 1.2rem; color: var(--accent-cyan);">鹽類的離子與水反應，產生 $H^+$ 或 $OH^-$，稱為 <strong class="text-yellow">水解</strong>。</p>
+                        
+                        <div style="display: grid; grid-template-columns: auto auto auto; gap: 0.8rem 1.5rem; align-items: center; font-size: 1.3rem; padding-left: 0.5rem;">
+                            <div style="color: var(--accent-yellow); font-weight: bold;">鹽的解離：</div>
+                            <div style="text-align: left;">$AB_{(aq)} \rightarrow A^+_{(aq)} + B^-_{(aq)}$</div>
+                            <div></div>
+                            
+                            <div style="color: var(--accent-red); font-weight: bold;">陽離子的水解：</div>
+                            <div style="text-align: left;">$A^+_{(aq)} + H_2O_{(l)} \rightleftharpoons A_{(aq)} + H_3O^+_{(aq)}$</div>
+                            <div style="color: var(--accent-green); font-size: 1.1rem;">$K_a = \frac{[A][H_3O^+]}{[A^+]}$</div>
+                            
+                            <div style="color: var(--accent-blue); font-weight: bold;">陰離子的水解：</div>
+                            <div style="text-align: left;">$B^-_{(aq)} + H_2O_{(l)} \rightleftharpoons HB_{(aq)} + OH^-_{(aq)}$</div>
+                            <div style="color: var(--accent-green); font-size: 1.1rem;">$K_b = \frac{[HB][OH^-]}{[B^-]}$</div>
+                        </div>
+                    </div>
+                    <table class="table-chem" style="margin: auto; width: 95%;">
+                        <thead>
+                            <tr>
+                                <th>鹽類類型</th>
+                                <th>組成來源</th>
+                                <th>實例</th>
+                                <th>水溶液性質</th>
+                                <th>說明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>中性鹽</td>
+                                <td>強酸 + 強鹼</td>
+                                <td>$NaCl, KNO_3$</td>
+                                <td class="text-green">中性 ($pH=7$)</td>
+                                <td>離子不水解</td>
+                            </tr>
+                            <tr>
+                                <td>酸性鹽</td>
+                                <td>強酸 + 弱鹼</td>
+                                <td>$NH_4Cl, CuCl_2$</td>
+                                <td class="text-red">酸性 ($pH<7$)</td>
+                                <td>陽離子水解</td>
+                            </tr>
+                            <tr>
+                                <td>鹼性鹽</td>
+                                <td>弱酸 + 強鹼</td>
+                                <td>$CH_3COONa, NaF$</td>
+                                <td class="text-blue">鹼性 ($pH>7$)</td>
+                                <td>陰離子水解</td>
+                            </tr>
+                            <tr>
+                                <td>弱酸弱鹼鹽</td>
+                                <td>弱酸 + 弱鹼</td>
+                                <td>$NH_4F, NH_4CN$</td>
+                                <td>視 $K_a, K_b$ 而定</td>
+                                <td>陰陽離子均水解</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Slide 10: Acidic Salt -->
+                <div class="slide">
+                    <h1>強酸弱鹼鹽 (酸性)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-red">以氯化銨為例：$NH_4Cl$</h2>
+                            <p style="margin-top: 1rem;">1. 完全解離：</p>
+                            <p style="text-align: center; font-size: 1.4rem; margin: 0.5rem 0;">$NH_4Cl \rightarrow NH_4^+ + Cl^-$</p>
+                            <p style="margin-top: 1rem;">2. 水解反應：(<strong class="text-red">陽離子水解</strong>)</p>
+                            <div class="formula-box" style="margin: 0.5rem 0; padding: 1rem;">
+                                $NH_4^+ + H_2O \rightleftharpoons NH_3 + H_3O^+$
+                            </div>
+                            <p style="margin-top: 1rem;">產生 $H_3O^+$，使水溶液呈<strong class="text-red">酸性</strong>。</p>
+                        </div>
+                        <div class="flex-col" style="border-left: 5px solid var(--accent-yellow);">
+                            <h2 class="text-yellow" style="margin-top: 0;">計算範例</h2>
+                            <p style="font-size: 1.4rem; line-height: 1.8; margin-top: 2rem;">
+                                已知 $25^\circ C$ 時 $NH_3$ 的 $K_b$ 為 $1.8 \times 10^{-5}$，現在有一杯 $25^\circ C$, $0.1M$ 的 $NH_4Cl_{(aq)}$，試問該水溶液的 pH 值為多少？
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 11: Basic Salt -->
+                <div class="slide">
+                    <h1>強鹼弱酸鹽 (鹼性)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-blue">以醋酸鈉為例：$CH_3COONa$</h2>
+                            <p style="margin-top: 1rem;">1. 完全解離：</p>
+                            <p style="text-align: center; font-size: 1.4rem; margin: 0.5rem 0;">$CH_3COONa \rightarrow Na^+ + CH_3COO^-$</p>
+                            <p style="margin-top: 1rem;">2. 水解反應：(<strong class="text-blue">陰離子水解</strong>)</p>
+                            <div class="formula-box" style="margin: 0.5rem 0; padding: 0.8rem; font-size: 1.1rem;">
+                                $CH_3COO^- + H_2O \rightleftharpoons CH_3COOH + OH^-$
+                            </div>
+                            <p style="margin-top: 1rem;">產生 $OH^-$，使水溶液呈<strong class="text-blue">鹼性</strong>。</p>
+                        </div>
+                        <div class="flex-col" style="border-left: 5px solid var(--accent-yellow);">
+                            <h2 class="text-yellow" style="margin-top: 0;">計算範例</h2>
+                            <p style="font-size: 1.4rem; line-height: 1.8; margin-top: 2rem;">
+                                已知 $25^\circ C$ 時 $CH_3COOH$ 的 $K_a$ 為 $1.8 \times 10^{-5}$，現在有一杯 $25^\circ C$, $0.1M$ 的 $CH_3COONa_{(aq)}$，試問該水溶液的 pH 值為多少？
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 12: Acidic Salts Comparison -->
+                <div class="slide">
+                    <h1>酸式鹽 (Acidic Salts) 的酸鹼性</h1>
+                    <p style="text-align: center; margin-bottom: 1.5rem; color: rgba(255,255,255,0.8);">多元酸中氫離子未完全解離所形成的鹽類，其酸鹼性取決於「解離」與「水解」的競爭。</p>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.5 1 0; gap: 1rem; padding: 0.8rem; background: transparent;">
+                            <div class="rule-card" style="background: rgba(248, 113, 113, 0.05); border: 1px solid var(--accent-red); margin-bottom: 0;">
+                                <h2 class="text-red">$NaHSO_4$ (硫酸氫鈉)</h2>
+                                <p>因 $HSO_4^-$ 為強酸陰離子，不水解，僅會解離：</p>
+                                <p style="text-align: center; font-size: 1.1rem; margin: 0.5rem 0;">$HSO_4^- \rightarrow H^+ + SO_4^{2-}$</p>
+                                <h3 class="text-red" style="text-align: center; font-size: 1.3rem;">結論：呈酸性</h3>
+                            </div>
+                            <div class="rule-card" style="background: rgba(248, 113, 113, 0.05); border: 1px solid var(--accent-red);">
+                                <h2 class="text-red">$NaHSO_3$ (亞硫酸氫鈉)</h2>
+                                <p>解離與水解的競爭：</p>
+                                <p style="font-size: 1.1rem;">1. 解離：$HSO_3^- \rightleftharpoons H^+ + SO_3^{2-}$ ($K_{a2}$)</p>
+                                <p style="font-size: 1.1rem;">2. 水解：$HSO_3^- + H_2O \rightleftharpoons H_2SO_3 + OH^-$ ($K_b$)</p>
+                                <p style="text-align: center; color: var(--accent-yellow); margin-top: 0.5rem;">比較後發現：<strong>解離 > 水解</strong></p>
+                                <h3 class="text-red" style="text-align: center; font-size: 1.3rem;">結論：呈酸性</h3>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1 1 0; background: rgba(56, 189, 248, 0.05); border: 1px solid var(--accent-blue);">
+                            <h2 class="text-blue">$NaHCO_3$ (碳酸氫鈉)</h2>
+                            <p>存在兩種平衡：</p>
+                            <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">1. 解離：$HCO_3^- \rightleftharpoons H^+ + CO_3^{2-}$ ($K_{a2}$)</p>
+                            <p style="font-size: 1.1rem;">2. 水解：$HCO_3^- + H_2O \rightleftharpoons H_2CO_3 + OH^-$ ($K_h$)</p>
+                            <p style="text-align: center; margin-top: 1rem; color: var(--accent-yellow);">比較後發現：<strong>水解 > 解離</strong></p>
+                            <h3 class="text-blue" style="text-align: center; margin-top: 1rem; font-size: 1.5rem;">結論：呈鹼性</h3>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 1rem; color: var(--accent-yellow);">
+                        <p>常見酸性酸式鹽：$NaHSO_4, NaH_2PO_4, NaHSO_3$</p>
+                        <p>常見鹼性酸式鹽：$NaHCO_3, Na_2HPO_4, NaHS$</p>
+                    </div>
+                </div>
+
+                <!-- Slide 13: Salt Hydrolysis Interactive Quiz -->
+                <div class="slide" id="slide-salt-quiz">
+                    <h1>進階練習：鹽類水解與性質判斷</h1>
+                    <div class="flex-row" style="gap: 1rem;">
+                        <!-- Left Column: Quiz -->
+                        <div class="flex-col" style="flex: 1.6; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.1); overflow-y: auto;">
+                            <div id="salt-q-header" class="rule-card" style="border-color: var(--accent-blue); padding: 0.8rem; margin-bottom: 0.8rem;">
+                                <button onclick="nextSaltQuiz()" class="btn primary" style="width: auto; padding: 4px 15px; margin-bottom: 8px; float: right;">換一題</button>
+                                <div id="salt-q-text" style="font-size: 1.25rem; font-weight: bold;">取少量固體 <span id="q-salt-name" class="text-yellow">?</span> 在 $25^\circ C$ 下配成水溶液。</div>
+                            </div>
+                            
+                            <div id="salt-q-steps" style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 1.1rem;">
+                                <div class="step-item" style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
+                                    <span class="text-cyan">鹽的解離：</span> <span id="q-dissociation">?</span>
+                                </div>
+                                <div class="step-item" style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
+                                    <span class="text-red">陽離子的水解：</span> <span id="q-cation-hydro">?</span>
+                                    <div id="cation-k-row" style="margin-top: 8px; padding-left: 20px; font-size: 0.95rem; display: none; align-items: center; gap: 10px;">
+                                        <span>$K_h = \frac{K_w}{K_b} =$</span>
+                                        <div style="display: flex; flex-direction: column; align-items: center; min-width: 80px;">
+                                            <div style="padding-bottom: 2px;">$10^{-14}$</div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.6); width: 100%;"></div>
+                                            <div style="padding-top: 4px;"><div class="drop-zone" data-type="A" id="drop-A">?</div></div>
+                                        </div>
+                                        <span id="res-A" class="kh-res" style="color: var(--accent-green); font-size: 1.1rem;"></span>
+                                    </div>
+                                </div>
+                                <div class="step-item" style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
+                                    <span class="text-blue">陰離子的水解：</span> <span id="q-anion-hydro">?</span>
+                                    <div id="anion-k-row" style="margin-top: 8px; padding-left: 20px; font-size: 0.95rem; display: none; align-items: center; gap: 10px;">
+                                        <span>$K_h = \frac{K_w}{K_a} =$</span>
+                                        <div style="display: flex; flex-direction: column; align-items: center; min-width: 80px;">
+                                            <div style="padding-bottom: 2px;">$10^{-14}$</div>
+                                            <div style="height: 1px; background: rgba(255,255,255,0.6); width: 100%;"></div>
+                                            <div style="padding-top: 4px;"><div class="drop-zone" data-type="B" id="drop-B">?</div></div>
+                                        </div>
+                                        <span id="res-B" class="kh-res" style="color: var(--accent-green); font-size: 1.1rem;"></span>
+                                    </div>
+                                </div>
+                                <div id="anion-diss-step" class="step-item" style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px; display: none;">
+                                    <span class="text-purple">陰離子的解離：</span> <span id="q-anion-diss">?</span>
+                                    <div style="margin-top: 4px; padding-left: 20px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                                        $K_a = $ <div class="drop-zone" data-type="C" id="drop-C">?</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="salt-q-conclusion" style="margin-top: auto; padding: 1rem; background: rgba(52, 211, 153, 0.1); border: 2px dashed var(--accent-green); border-radius: 12px; display: none; text-align: center;">
+                                <div style="font-size: 1.2rem; color: var(--accent-green); font-weight: bold;" id="q-reason"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Palette -->
+                        <div class="flex-col" style="flex: 1; background: rgba(15, 23, 42, 0.7); padding: 1rem; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                            <h2 style="font-size: 1.1rem; color: var(--accent-yellow); border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; margin-bottom: 1rem;">解離常數參考表 ($25^\circ C$)</h2>
+                            <div id="constants-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto;">
+                                <!-- Draggable items -->
+                            </div>
+                            <p style="margin-top: 1rem; font-size: 0.8rem; color: rgba(255,255,255,0.5); text-align: center;">請將對應的 $K$ 值拖曳至左側問號方框中</p>
+                        </div>
+                    </div>
+                    <style>
+                        .drop-zone { display: inline-block; min-width: 80px; height: 28px; background: rgba(255,255,255,0.1); border: 2px dashed rgba(255,255,255,0.3); border-radius: 4px; vertical-align: middle; text-align: center; line-height: 24px; color: var(--accent-yellow); cursor: default; transition: all 0.2s; }
+                        .drop-zone.over { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); transform: scale(1.05); }
+                        .drop-zone.filled { border-style: solid; border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); color: #fff; font-weight: bold; }
+                        .drag-item { padding: 6px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: grab; font-size: 0.95rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+                        .drag-item:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-blue); }
+                        .drag-item:active { cursor: grabbing; }
+                        .drag-item .k-label { color: var(--accent-cyan); font-weight: bold; }
+                        .drag-item .k-val { color: var(--accent-yellow); font-family: 'Courier New', Courier, monospace; }
+                    </style>
+                </div>
+
+                <!-- Slide 14: Game -->
+                <div class="slide" id="slide-game">
+                    <h1>綜合挑戰：鹽類酸鹼性判斷</h1>
+                    <p style="text-align: center; color: var(--accent-green); margin-top: -10px; font-size: 1rem;">
+                        請連接左側的 <strong class="text-yellow">鹽類化學式</strong> 到右側正確的 <strong class="text-yellow">酸鹼性質</strong>。完成 8 組後將自動評分！
+                        <button onclick="resetGame()" class="btn" style="display: inline-block; width: auto; margin-left: 15px; padding: 4px 12px; background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); color: var(--text-main); font-size: 0.9rem; cursor: pointer; z-index: 20; position: relative;">再測一次</button>
+                    </p>
+                    
+                    <div id="game-container" style="position: relative; flex: 1; display: flex; justify-content: space-between; align-items: stretch; padding: 20px 40px; margin-top: 10px; background: rgba(0,0,0,0.2); border-radius: 20px; user-select: none; overflow: hidden;">
+                        <svg id="game-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
+                        
+                        <div id="formulas-column" style="display: flex; flex-direction: column; justify-content: space-between; gap: 6px; z-index: 10; padding: 10px 0; width: 35%;">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div id="names-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 6px; z-index: 10; padding: 10px 0; width: 30%;">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div id="game-feedback" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.95); padding: 2rem 4rem; border-radius: 20px; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); z-index: 100; text-align: center;">
+                            🎉 太棒了！<br>全部正確！
+                            <button onclick="resetGame()" class="btn" style="margin-top: 1.5rem; background: white; color: #059669; border: none; font-size: 1.2rem; padding: 10px 25px;">再試一次</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Canvas Layer for Drawing -->
+            <canvas id="drawing-layer"></canvas>
+        </div>
+
+        <!-- Slide Indicator -->
+        <div id="slide-info">1 / 12</div>
+
+        <!-- Controls Toolbar -->
+        <div id="toolbar">
+            <div id="drag-handle" title="拖曳移動工具列">≡</div>
+            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
+            <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            
+            <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
+            
+            <div class="color-picker" id="color-picker">
+                <div class="color-swatch selected" style="background: #f8fafc" data-color="#f8fafc"></div>
+                <div class="color-swatch" style="background: #f87171" data-color="#f87171"></div>
+                <div class="color-swatch" style="background: #38bdf8" data-color="#38bdf8"></div>
+                <div class="color-swatch" style="background: #fbbf24" data-color="#fbbf24"></div>
+                <div class="color-swatch" style="background: #34d399" data-color="#34d399"></div>
+                <div class="color-swatch" style="background: #a855f7" data-color="#a855f7"></div>
+            </div>
+
+            <div id="size-picker" style="display: none; padding: 4px 0;">
+                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 44px; height: 4px; cursor: pointer;">
+            </div>
+
+            <div id="eraser-tools" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
+                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:currentColor;"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
+            </div>
+            <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            <button class="btn-tool" id="btn-exit-fs" title="回目錄">🏠</button>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let currentSlide = 0;
+        let connections = [];
+        let activeDot = null;
+        let tempLine = null;
+        let currentSalt = null;
+        let saltUserAnswers = { A: null, B: null, C: null };
+        let currentHoverDot = null;
+
+        const slides = document.querySelectorAll('.slide');
+        const slideInfo = document.getElementById('slide-info');
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        const btnExitFs = document.getElementById('btn-exit-fs');
+
+        // --- Data ---
+        const gameDataPool = [
+            { id: 1, formula: '$NaCl$', type: '中性' },
+            { id: 2, formula: '$NH_4Cl$', type: '酸性' },
+            { id: 3, formula: '$CH_3COONa$', type: '鹼性' },
+            { id: 4, formula: '$NaHCO_3$', type: '鹼性' },
+            { id: 5, formula: '$NaHSO_4$', type: '酸性' },
+            { id: 6, formula: '$KNO_3$', type: '中性' },
+            { id: 7, formula: '$Na_2CO_3$', type: '鹼性' },
+            { id: 8, formula: '$CuSO_4$', type: '酸性' },
+            { id: 9, formula: '$NH_4NO_3$', type: '酸性' },
+            { id: 10, formula: '$NaF$', type: '鹼性' },
+            { id: 11, formula: '$K_3PO_4$', type: '鹼性' },
+            { id: 12, formula: '$BaCl_2$', type: '中性' },
+            { id: 13, formula: '$Na_2SO_4$', type: '中性' },
+            { id: 14, formula: '$Al_2(SO_4)_3$', type: '酸性' },
+            { id: 15, formula: '$FeCl_3$', type: '酸性' },
+            { id: 16, formula: '$KCN$', type: '鹼性' },
+            { id: 17, formula: '$NaH_2PO_4$', type: '酸性' },
+            { id: 18, formula: '$Na_2HPO_4$', type: '鹼性' },
+            { id: 19, formula: '$NaHS$', type: '鹼性' },
+            { id: 20, formula: '$(NH_4)_2SO_4$', type: '酸性' }
+        ];
+
+        const saltConstants = [
+            { id: 'nh3', name: '$NH_3$', eq: '$NH_3+H_2O \\rightleftharpoons NH_4^++OH^-$', kLabel: '$K_b$', kVal: '$1.8 \\times 10^{-5}$', valOnly: '$1.8 \\times 10^{-5}$', value: 1.8e-5 },
+            { id: 'hac', name: '$CH_3COOH$', eq: '$CH_3COOH \\rightleftharpoons CH_3COO^-+H^+$', kLabel: '$K_a$', kVal: '$1.8 \\times 10^{-5}$', valOnly: '$1.8 \\times 10^{-5}$', value: 1.8e-5 },
+            { id: 'h2so3_1', name: '$H_2SO_3$', eq: '$H_2SO_3 \\rightleftharpoons H^++HSO_3^-$', kLabel: '$K_{a1}$', kVal: '$1.5 \\times 10^{-2}$', valOnly: '$1.5 \\times 10^{-2}$', value: 1.5e-2 },
+            { id: 'h2so3_2', name: '$H_2SO_3$', eq: '$HSO_3^- \\rightleftharpoons H^++SO_3^{2-}$', kLabel: '$K_{a2}$', kVal: '$6.2 \\times 10^{-8}$', valOnly: '$6.2 \\times 10^{-8}$', value: 6.2e-8 },
+            { id: 'h2c2o4_1', name: '$H_2C_2O_4$', eq: '$H_2C_2O_4 \\rightleftharpoons H^++HC_2O_4^-$', kLabel: '$K_{a1}$', kVal: '$5.9 \\times 10^{-2}$', valOnly: '$5.9 \\times 10^{-2}$', value: 5.9e-2 },
+            { id: 'h2c2o4_2', name: '$H_2C_2O_4$', eq: '$HC_2O_4^- \\rightleftharpoons H^++C_2O_4^{2-}$', kLabel: '$K_{a2}$', kVal: '$6.4 \\times 10^{-5}$', valOnly: '$6.4 \\times 10^{-5}$', value: 6.4e-5 },
+            { id: 'h3po4_1', name: '$H_3PO_4$', eq: '$H_3PO_4 \\rightleftharpoons H^++H_2PO_4^-$', kLabel: '$K_{a1}$', kVal: '$7.1 \\times 10^{-3}$', valOnly: '$7.1 \\times 10^{-3}$', value: 7.1e-3 },
+            { id: 'h3po4_2', name: '$H_3PO_4$', eq: '$H_2PO_4^- \\rightleftharpoons H^++HPO_4^{2-}$', kLabel: '$K_{a2}$', kVal: '$6.3 \\times 10^{-8}$', valOnly: '$6.3 \\times 10^{-8}$', value: 6.3e-8 },
+            { id: 'h3po4_3', name: '$H_3PO_4$', eq: '$HPO_4^{2-} \\rightleftharpoons H^++PO_4^{3-}$', kLabel: '$K_{a3}$', kVal: '$4.4 \\times 10^{-13}$', valOnly: '$4.4 \\times 10^{-13}$', value: 4.4e-13 },
+            { id: 'h2s_1', name: '$H_2S$', eq: '$H_2S \\rightleftharpoons H^++HS^-$', kLabel: '$K_{a1}$', kVal: '$1.0 \\times 10^{-7}$', valOnly: '$1.0 \\times 10^{-7}$', value: 1.0e-7 },
+            { id: 'h2s_2', name: '$H_2S$', eq: '$HS^- \\rightleftharpoons H^++S^{2-}$', kLabel: '$K_{a2}$', kVal: '$1.3 \\times 10^{-13}$', valOnly: '$1.3 \\times 10^{-13}$', value: 1.3e-13 },
+            { id: 'h2co3_1', name: '$H_2CO_3$', eq: '$H_2CO_3 \\rightleftharpoons H^++HCO_3^-$', kLabel: '$K_{a1}$', kVal: '$4.3 \\times 10^{-7}$', valOnly: '$4.3 \\times 10^{-7}$', value: 4.3e-7 },
+            { id: 'h2co3_2', name: '$H_2CO_3$', eq: '$HCO_3^- \\rightleftharpoons H^++CO_3^{2-}$', kLabel: '$K_{a2}$', kVal: '$4.8 \\times 10^{-11}$', valOnly: '$4.8 \\times 10^{-11}$', value: 4.8e-11 }
+        ];
+
+        const saltBank = [
+            {
+                name: '$NH_4Cl$', formula: '氯化銨',
+                diss: '$NH_4Cl \\rightarrow NH_4^+ + Cl^-$',
+                cationHydro: '$NH_4^+ + H_2O \\rightleftharpoons NH_3 + H_3O^+$',
+                cationKId: 'nh3',
+                cationKhRes: '$= 5.6 \\times 10^{-10}$',
+                anionHydro: '不水解',
+                anionKId: null,
+                anionDiss: null,
+                reason: '因 $NH_4^+$ 水解產生 $H_3O^+$，$Cl^-$ 不水解，故呈現 <span class="text-red">酸性</span>。'
+            },
+            {
+                name: '$CH_3COONa$', formula: '醋酸鈉',
+                diss: '$CH_3COONa \\rightarrow Na^+ + CH_3COO^-$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$CH_3COO^- + H_2O \\rightleftharpoons CH_3COOH + OH^-$',
+                anionKId: 'hac',
+                anionKhRes: '$= 5.6 \\times 10^{-10}$',
+                anionDiss: null,
+                reason: '因 $CH_3COO^-$ 水解產生 $OH^-$，$Na^+$ 不水解，故呈現 <span class="text-blue">鹼性</span>。'
+            },
+            {
+                name: '$NaHSO_3$', formula: '亞硫酸氫鈉',
+                diss: '$NaHSO_3 \\rightarrow Na^+ + HSO_3^-$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$HSO_3^- + H_2O \\rightleftharpoons H_2SO_3 + OH^-$',
+                anionKId: 'h2so3_1',
+                anionKhRes: '$= 6.7 \\times 10^{-13}$',
+                anionDiss: '$HSO_3^- \\rightleftharpoons H^+ + SO_3^{2-}$',
+                anionDissKId: 'h2so3_2',
+                reason: '因 $HSO_3^-$ 之 $K_a(6.2 \\times 10^{-8}) > K_b(6.7 \\times 10^{-13})$，故呈現 <span class="text-red">酸性</span>。'
+            },
+            {
+                name: '$NaHCO_3$', formula: '碳酸氫鈉',
+                diss: '$NaHCO_3 \\rightarrow Na^+ + HCO_3^-$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$HCO_3^- + H_2O \\rightleftharpoons H_2CO_3 + OH^-$',
+                anionKId: 'h2co3_1',
+                anionKhRes: '$= 2.3 \\times 10^{-8}$',
+                anionDiss: '$HCO_3^- \\rightleftharpoons H^+ + CO_3^{2-}$',
+                anionDissKId: 'h2co3_2',
+                reason: '因 $HCO_3^-$ 之 $K_b(2.3 \\times 10^{-8}) > K_a(4.8 \\times 10^{-11})$，故呈現 <span class="text-blue">鹼性</span>。'
+            },
+            {
+                name: '$Na_2HPO_4$', formula: '磷酸氫二鈉',
+                diss: '$Na_2HPO_4 \\rightarrow 2Na^+ + HPO_4^{2-}$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$HPO_4^{2-} + H_2O \\rightleftharpoons H_2PO_4^- + OH^-$',
+                anionKId: 'h3po4_2',
+                anionKhRes: '$= 1.6 \\times 10^{-7}$',
+                anionDiss: '$HPO_4^{2-} \\rightleftharpoons H^+ + PO_4^{3-}$',
+                anionDissKId: 'h3po4_3',
+                reason: '因 $HPO_4^{2-}$ 之 $K_b(1.6 \\times 10^{-7}) > K_a(4.4 \\times 10^{-13})$，故呈現 <span class="text-blue">鹼性</span>。'
+            },
+            {
+                name: '$NaH_2PO_4$', formula: '磷酸二氫鈉',
+                diss: '$NaH_2PO_4 \\rightarrow Na^+ + H_2PO_4^-$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$H_2PO_4^- + H_2O \\rightleftharpoons H_3PO_4 + OH^-$',
+                anionKId: 'h3po4_1',
+                anionKhRes: '$= 1.4 \\times 10^{-12}$',
+                anionDiss: '$H_2PO_4^- \\rightleftharpoons H^+ + HPO_4^{2-}$',
+                anionDissKId: 'h3po4_2',
+                reason: '因 $H_2PO_4^-$ 之 $K_a(6.3 \\times 10^{-8}) > K_b(1.4 \\times 10^{-12})$，故呈現 <span class="text-red">酸性</span>。'
+            },
+            {
+                name: '$Na_2CO_3$', formula: '碳酸鈉',
+                diss: '$Na_2CO_3 \\rightarrow 2Na^+ + CO_3^{2-}$',
+                cationHydro: '不水解',
+                cationKId: null,
+                anionHydro: '$CO_3^{2-} + H_2O \\rightleftharpoons HCO_3^- + OH^-$',
+                anionKId: 'h2co3_2',
+                anionKhRes: '$= 2.1 \\times 10^{-4}$',
+                anionDiss: null,
+                reason: '因 $CO_3^{2-}$ 水解產生 $OH^-$，$Na^+$ 不水解，故呈現 <span class="text-blue">鹼性</span>。'
+            },
+            {
+                name: '$NH_4NO_3$', formula: '硝酸銨',
+                diss: '$NH_4NO_3 \\rightarrow NH_4^+ + NO_3^-$',
+                cationHydro: '$NH_4^+ + H_2O \\rightleftharpoons NH_3 + H_3O^+$',
+                cationKId: 'nh3',
+                cationKhRes: '$= 5.6 \\times 10^{-10}$',
+                anionHydro: '不水解',
+                anionKId: null,
+                anionDiss: null,
+                reason: '因 $NH_4^+$ 水解產生 $H_3O^+$，$NO_3^-$ 不水解，故呈現 <span class="text-red">酸性</span>。'
+            }
+        ];
+
+        // --- Drawing Canvas Logic ---
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+        let slideDrawings = {};
+        let isDrawingMode = false;
+        let isDrawing = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let lastX = 0;
+        let lastY = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            restoreDrawing();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true;
+            [lastX, lastY] = getCoords(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = drawMode === 'eraser' ? '#0b1120' : penColor;
+            ctx.lineWidth = drawMode === 'eraser' ? penSize * 10 : penSize;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                slideDrawings[currentSlide] = canvas.toDataURL();
+            }
+        }
+
+        function restoreDrawing() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (slideDrawings[currentSlide]) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0);
+                img.src = slideDrawings[currentSlide];
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // --- Functions ---
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+            restoreDrawing();
+            
+            if (slides[currentSlide].id === 'slide-game') {
+                if (document.getElementById('formulas-column').children.length === 0) {
+                    initGame();
+                }
+            }
+            if (slides[currentSlide].id === 'slide-salt-quiz') {
+                if (!currentSalt) {
+                    initSaltPalette();
+                    nextSaltQuiz();
+                }
+            }
+        }
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            try {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (e) {}
+        }
+
+        btnStart.addEventListener('click', () => {
+            enterFullscreen();
+            startOverlay.style.display = 'none';
+            resizeCanvas();
+            updateSlides();
+        });
+
+        btnExitFs.addEventListener('click', () => {
+            window.location.href = '../../index.html';
+        });
+
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            currentSlide = Math.max(0, currentSlide - 1);
+            updateSlides();
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            currentSlide = Math.min(slides.length - 1, currentSlide + 1);
+            updateSlides();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (startOverlay.style.display !== 'none') return;
+            if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+                currentSlide = Math.min(slides.length - 1, currentSlide + 1);
+                updateSlides();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                currentSlide = Math.max(0, currentSlide - 1);
+                updateSlides();
+            }
+        });
+
+        // --- Toolbar Logic ---
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false;
+        let startX, startY, initialLeft, initialTop;
+
+        dragHandle.addEventListener('pointerdown', (e) => {
+            isDraggingToolbar = true;
+            dragHandle.style.cursor = 'grabbing';
+            const rect = toolbar.getBoundingClientRect();
+            
+            if (!toolbar.dataset.isAbsolute) {
+                toolbar.style.right = 'auto';
+                toolbar.style.top = rect.top + 'px';
+                toolbar.style.left = rect.left + 'px';
+                toolbar.style.transform = 'none';
+                toolbar.dataset.isAbsolute = "true";
+            }
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = parseFloat(toolbar.style.left);
+            initialTop = parseFloat(toolbar.style.top);
+            
+            document.addEventListener('pointermove', onDragToolbar);
+            document.addEventListener('pointerup', onStopDragToolbar);
+        });
+
+        function onDragToolbar(e) {
+            if (!isDraggingToolbar) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            toolbar.style.left = (initialLeft + dx) + 'px';
+            toolbar.style.top = (initialTop + dy) + 'px';
+        }
+
+        function onStopDragToolbar() {
+            isDraggingToolbar = false;
+            dragHandle.style.cursor = 'grab';
+            document.removeEventListener('pointermove', onDragToolbar);
+            document.removeEventListener('pointerup', onStopDragToolbar);
+        }
+
+        document.getElementById('btn-draw').addEventListener('click', (e) => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
+            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', (e) => {
+                document.querySelector('.color-swatch.selected').classList.remove('selected');
+                swatch.classList.add('selected');
+                penColor = swatch.dataset.color;
+                drawMode = 'pen';
+                document.getElementById('btn-eraser').classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('pen-size').addEventListener('input', (e) => {
+            penSize = e.target.value;
+        });
+
+        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+            drawMode = (drawMode === 'eraser') ? 'pen' : 'eraser';
+            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            slideDrawings[currentSlide] = null;
+        });
+
+        btnClear.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawingData[currentSlide] = null;
+        });
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentLineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            e.preventDefault();
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                saveDrawing();
+            }
+        }
+
+        canvas.addEventListener('pointerdown', startDrawing);
+        canvas.addEventListener('pointermove', draw);
+        canvas.addEventListener('pointerup', stopDrawing);
+        canvas.addEventListener('pointerleave', stopDrawing);
+
+        function saveDrawing() {
+            drawingData[currentSlide] = canvas.toDataURL();
+        }
+
+        function restoreDrawing() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (drawingData[currentSlide]) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0);
+                img.src = drawingData[currentSlide];
+            }
+        }
+
+        // --- Matching Game Logic ---
+
+
+        function nextSaltQuiz() {
+            currentSalt = saltBank[Math.floor(Math.random() * saltBank.length)];
+            saltUserAnswers = { A: null, B: null, C: null };
+            
+            document.getElementById('q-salt-name').innerHTML = currentSalt.name;
+            document.getElementById('q-dissociation').innerHTML = currentSalt.diss;
+            document.getElementById('q-cation-hydro').innerHTML = currentSalt.cationHydro;
+            document.getElementById('q-anion-hydro').innerHTML = currentSalt.anionHydro;
+            
+            const catKRow = document.getElementById('cation-k-row');
+            const aniKRow = document.getElementById('anion-k-row');
+            const aniDRow = document.getElementById('anion-diss-step');
+            
+            catKRow.style.display = currentSalt.cationKId ? 'flex' : 'none';
+            aniKRow.style.display = currentSalt.anionKId ? 'flex' : 'none';
+            aniDRow.style.display = currentSalt.anionDiss ? 'flex' : 'none';
+            
+            if (currentSalt.anionDiss) {
+                document.getElementById('q-anion-diss').innerHTML = currentSalt.anionDiss;
+            }
+
+            document.querySelectorAll('.drop-zone').forEach(dz => {
+                dz.innerHTML = '?';
+                dz.classList.remove('filled');
+            });
+            
+            document.querySelectorAll('.kh-res').forEach(el => el.innerHTML = '');
+            document.getElementById('salt-q-conclusion').style.display = 'none';
+            
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function initSaltPalette() {
+            const list = document.getElementById('constants-list');
+            if (!list) return;
+            list.innerHTML = '';
+            saltConstants.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'drag-item';
+                div.draggable = true;
+                div.dataset.id = c.id;
+                div.innerHTML = `<span class="k-val" style="font-size:0.85rem;">${c.eq}</span> <span class="k-label" style="margin-left:8px; white-space:nowrap;">${c.kLabel}=${c.kVal}</span>`;
+                
+                div.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', c.id);
+                });
+                
+                list.appendChild(div);
+            });
+
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('over');
+                });
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('over');
+                });
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('over');
+                    const kId = e.dataTransfer.getData('text/plain');
+                    const targetType = zone.dataset.type;
+                    
+                    const kObj = saltConstants.find(c => c.id === kId);
+                    zone.innerHTML = kObj.valOnly;
+                    zone.classList.add('filled');
+                    saltUserAnswers[targetType] = kId;
+                    
+                    checkSaltQuiz(targetType, kId);
+                });
+            });
+        }
+
+        function checkSaltQuiz(type, kId) {
+            // Check individual field correctness to show result
+            if (type === 'A' && kId === currentSalt.cationKId) {
+                document.getElementById('res-A').innerHTML = currentSalt.cationKhRes;
+            }
+            if (type === 'B' && kId === currentSalt.anionKId) {
+                document.getElementById('res-B').innerHTML = currentSalt.anionKhRes;
+            }
+            
+            let needed = [];
+            if (currentSalt.cationKId) needed.push('A');
+            if (currentSalt.anionKId) needed.push('B');
+            if (currentSalt.anionDissKId) needed.push('C');
+            
+            const allCorrect = needed.every(t => {
+                if (t === 'A') return saltUserAnswers.A === currentSalt.cationKId;
+                if (t === 'B') return saltUserAnswers.B === currentSalt.anionKId;
+                if (t === 'C') return saltUserAnswers.C === currentSalt.anionDissKId;
+                return false;
+            });
+            
+            if (allCorrect) {
+                const conc = document.getElementById('salt-q-conclusion');
+                conc.style.display = 'block';
+                document.getElementById('q-reason').innerHTML = currentSalt.reason;
+            }
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function initGame() {
+            const formulasColumn = document.getElementById('formulas-column');
+            const namesColumn = document.getElementById('names-column');
+            const svg = document.getElementById('game-svg');
+            const feedback = document.getElementById('game-feedback');
+            
+            formulasColumn.innerHTML = '';
+            namesColumn.innerHTML = '';
+            svg.innerHTML = '';
+            feedback.style.display = 'none';
+            connections = [];
+            
+            // Randomly select 8 salts
+            const shuffled = [...gameDataPool].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 8);
+            
+            // Create Formula items (Left)
+            selected.forEach(salt => {
+                const div = document.createElement('div');
+                div.className = 'game-item';
+                div.style.justifyContent = 'flex-start';
+                div.innerHTML = `<span>${salt.formula}</span><div class="dot formulas-dot" data-type="formula" data-ans="${salt.type}"></div>`;
+                formulasColumn.appendChild(div);
+                
+                div.querySelector('.dot').addEventListener('pointerdown', onDotStart);
+            });
+            
+            // Create Property items (Right)
+            const properties = ['酸性', '中性', '鹼性'];
+            properties.forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'game-item';
+                div.style.justifyContent = 'flex-end';
+                div.innerHTML = `<div class="dot names-dot" data-type="name" data-val="${type}"></div><span>${type}</span>`;
+                namesColumn.appendChild(div);
+                
+                div.querySelector('.dot').addEventListener('pointerdown', onDotStart);
+            });
+
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+
+
+        function onDotStart(e) {
+            if (activeDot) return;
+            activeDot = e.target;
+            activeDot.classList.add('active');
+            activeDot.parentElement.classList.add('highlight');
+            
+            const rect = activeDot.getBoundingClientRect();
+            const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+            const x = rect.left + rect.width / 2 - svgRect.left;
+            const y = rect.top + rect.height / 2 - svgRect.top;
+
+            tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            tempLine.setAttribute("x1", x);
+            tempLine.setAttribute("y1", y);
+            tempLine.setAttribute("x2", x);
+            tempLine.setAttribute("y2", y);
+            tempLine.setAttribute("stroke", "white");
+            tempLine.setAttribute("stroke-width", "4");
+            tempLine.setAttribute("stroke-dasharray", "5,5");
+            document.getElementById('game-svg').appendChild(tempLine);
+
+            document.addEventListener('pointermove', onDotMove);
+            document.addEventListener('pointerup', onDotEnd);
+        }
+
+        function onDotMove(e) {
+            if (!tempLine) return;
+            const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+            tempLine.setAttribute("x2", e.clientX - svgRect.left);
+            tempLine.setAttribute("y2", e.clientY - svgRect.top);
+
+            const overElem = document.elementFromPoint(e.clientX, e.clientY);
+            const targetDot = overElem && overElem.classList.contains('dot') ? overElem : null;
+
+            if (currentHoverDot && currentHoverDot !== targetDot) {
+                currentHoverDot.classList.remove('active');
+                currentHoverDot.parentElement.classList.remove('highlight');
+                currentHoverDot = null;
+            }
+
+            if (targetDot && targetDot !== activeDot && targetDot.dataset.type !== activeDot.dataset.type) {
+                const isAlreadyConnected = connections.some(c => 
+                    c.fromDot === activeDot || c.toDot === activeDot
+                );
+                if (!isAlreadyConnected) {
+                    currentHoverDot = targetDot;
+                    currentHoverDot.classList.add('active');
+                    currentHoverDot.parentElement.classList.add('highlight');
+                }
+            }
+        }
+
+        function onDotEnd(e) {
+            document.removeEventListener('pointermove', onDotMove);
+            document.removeEventListener('pointerup', onDotEnd);
+
+            const overElem = document.elementFromPoint(e.clientX, e.clientY);
+            const targetDot = overElem && overElem.classList.contains('dot') ? overElem : null;
+
+            if (targetDot && targetDot !== activeDot && targetDot.dataset.type !== activeDot.dataset.type) {
+                const formulaDot = activeDot.dataset.type === 'formula' ? activeDot : targetDot;
+                const isAlreadyConnected = connections.some(c => c.fromDot === formulaDot || c.toDot === formulaDot);
+                
+                if (!isAlreadyConnected) {
+                    const rect2 = targetDot.getBoundingClientRect();
+                    const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+                    tempLine.setAttribute("x2", rect2.left + rect2.width / 2 - svgRect.left);
+                    tempLine.setAttribute("y2", rect2.top + rect2.height / 2 - svgRect.top);
+                    tempLine.setAttribute("stroke-dasharray", "");
+                    tempLine.setAttribute("stroke", "#38bdf8");
+                    
+                    let ansVal = targetDot.dataset.type === 'name' ? targetDot.dataset.val : activeDot.dataset.val;
+                    let formulaAns = targetDot.dataset.type === 'formula' ? targetDot.dataset.ans : activeDot.dataset.ans;
+                    
+                    connections.push({
+                        fromDot: activeDot,
+                        toDot: targetDot,
+                        line: tempLine,
+                        isCorrect: ansVal === formulaAns
+                    });
+                    
+                    if (connections.length === 8) {
+                        setTimeout(checkResults, 300);
+                    }
+                } else {
+                    tempLine.remove();
+                }
+            } else {
+                if (tempLine) tempLine.remove();
+            }
+            
+            if (activeDot) {
+                activeDot.classList.remove('active');
+                activeDot.parentElement.classList.remove('highlight');
+            }
+            if (currentHoverDot) {
+                currentHoverDot.classList.remove('active');
+                currentHoverDot.parentElement.classList.remove('highlight');
+                currentHoverDot = null;
+            }
+            activeDot = null;
+            tempLine = null;
+        }
+
+        function checkResults() {
+            let correctCount = 0;
+            const toRemove = [];
+            connections.forEach(conn => {
+                if (conn.isCorrect) {
+                    conn.line.setAttribute("stroke", "#34d399"); 
+                    conn.fromDot.parentElement.classList.add('correct');
+                    if (conn.fromDot.dataset.type === 'formula') conn.toDot.parentElement.classList.add('correct');
+                    correctCount++;
+                } else {
+                    conn.line.classList.add('flash');
+                    toRemove.push(conn);
+                }
+            });
+
+            if (toRemove.length > 0) {
+                setTimeout(() => {
+                    toRemove.forEach(conn => {
+                        conn.line.remove();
+                        connections = connections.filter(c => c !== conn);
+                    });
+                }, 1000);
+            }
+
+            if (correctCount === 8) {
+                document.getElementById('game-feedback').style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            initGame();
+        }
+    </script>
+</body>
+</html>

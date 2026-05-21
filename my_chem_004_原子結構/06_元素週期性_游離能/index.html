@@ -1,0 +1,3352 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>元素週期性 - 元素游離能 | 互動教學網頁</title>
+    <meta name="description" content="高中選修化學二 元素游離能互動教學：定義、連續游離能、鋸齒狀規律、軌域半滿全滿與範例解析">
+    
+    <!-- MathJax 渲染化學式與方程式 -->
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #070a16;
+            --text-main: #f0f4ff;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #c084fc;
+            --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 15% 45%, rgba(192,132,252,0.06) 0%, transparent 55%),
+                radial-gradient(circle at 85% 15%, rgba(96,165,250,0.06) 0%, transparent 55%),
+                radial-gradient(rgba(96,165,250,0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px;
+        }
+
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        /* ── Start Overlay ── */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-dark); z-index: 5000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image:
+                radial-gradient(circle at 35% 45%, rgba(192,132,252,0.11) 0%, transparent 50%),
+                radial-gradient(circle at 65% 55%, rgba(96,165,250,0.11) 0%, transparent 50%),
+                radial-gradient(rgba(192,132,252,0.05) 1.5px, transparent 1.5px);
+            background-size: 100% 100%, 100% 100%, 50px 50px;
+        }
+        .start-badge {
+            font-size: 1rem; color: var(--accent-cyan);
+            background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
+            padding: 0.35rem 1.4rem; border-radius: 40px; margin-bottom: 1.5rem;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(34,211,238,0.15);
+        }
+        .start-title {
+            font-size: clamp(2.5rem, 6vw, 4.8rem); font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 50%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-align: center; margin-bottom: 0.6rem; line-height: 1.1;
+            filter: drop-shadow(0 4px 15px rgba(192,132,252,0.15));
+        }
+        .start-sub { font-size: 1.35rem; color: rgba(240,244,255,0.6); margin-bottom: 3.2rem; text-align: center; }
+        
+        .start-atoms {
+            position: absolute; width: 100%; height: 100%; pointer-events: none; overflow: hidden;
+            z-index: 1;
+        }
+        .atom-float {
+            position: absolute; border-radius: 50%;
+            border: 1.5px solid rgba(192,132,252,0.22);
+            animation: floatAtom linear infinite;
+        }
+        .atom-core-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 16px; height: 16px; border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-purple), transparent 70%);
+            box-shadow: 0 0 20px var(--accent-purple);
+        }
+        .atom-orbit {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 1px dashed rgba(255,255,255,0.12);
+            border-radius: 50%;
+        }
+        .atom-electron-glow {
+            position: absolute; border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+            animation: rotateElectron linear infinite;
+        }
+
+        @keyframes floatAtom {
+            0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
+            50%  { opacity: 0.7; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(360deg); opacity: 0.3; }
+        }
+        @keyframes rotateElectron {
+            from { transform: rotate(0deg) translate(var(--dist)) rotate(0deg); }
+            to { transform: rotate(360deg) translate(var(--dist)) rotate(-360deg); }
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff; border: none; padding: 1.1rem 3.6rem;
+            border-radius: 60px; font-size: 1.4rem; font-weight: 800;
+            cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 40px rgba(192,132,252,0.4), 0 0 80px rgba(96,165,250,0.25);
+            z-index: 10;
+        }
+        .btn-start:hover { transform: scale(1.08); box-shadow: 0 0 60px rgba(192,132,252,0.6), 0 0 120px rgba(96,165,250,0.4); }
+        
+        .start-info {
+            margin-top: 2.5rem; display: flex; gap: 2.2rem; flex-wrap: wrap; justify-content: center; z-index: 10;
+        }
+        .info-chip {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 0.95rem; color: rgba(240,244,255,0.55);
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.4rem 1.1rem; border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+        .info-chip span:first-child { font-size: 1.15rem; }
+
+        /* ── Presentation Area ── */
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 0.6rem 0.5rem 0.5rem 0.5rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+            margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.7rem;
+            border-bottom: 2px solid rgba(96,165,250,0.18); padding-bottom: 0.4rem; flex-shrink: 0;
+            text-shadow: 0 0 10px rgba(96,165,250,0.25);
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: linear-gradient(var(--accent-blue), var(--accent-purple)); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.35rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.95rem, 1.2vw, 1.1rem); margin: 0.25rem 0; font-weight: 600; }
+
+        p, li { font-size: clamp(0.85rem, 1.2vw, 1.08rem); line-height: 1.55; margin-bottom: 0.35rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-orange); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        li { margin-bottom: 0.25rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border);
+            border-radius: 18px; padding: 1rem 1.1rem;
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        
+        .formula-box {
+            background: rgba(0,0,0,0.45); border-radius: 12px;
+            border-left: 6px solid var(--accent-green);
+            padding: 0.85rem; margin: 0.5rem 0;
+            text-align: center; font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(96,165,250,0.07); border-radius: 12px;
+            padding: 0.75rem 0.85rem; border: 1px solid rgba(96,165,250,0.22); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(251,191,36,0.07); border-radius: 12px;
+            padding: 0.75rem 0.85rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .svg-container { flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; overflow: hidden; }
+        .svg-container svg { max-height: 100%; max-width: 100%; }
+
+        /* ── Floating Toolbar ── */
+        #toolbar {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(8, 12, 28, 0.93); padding: 14px 6px;
+            border-radius: 30px; display: flex; flex-direction: column; gap: 10px;
+            align-items: center; z-index: 2000;
+            border: 1px solid rgba(255,255,255,0.18);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            width: 52px; transition: top 0.05s ease;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.13);
+            width: 36px; height: 36px; border-radius: 11px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1.05rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(96,165,250,0.65); }
+        
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; font-size: 1.3rem; line-height: 0.5; margin-bottom: 2px; }
+        #slide-info {
+            position: absolute; bottom: 18px; left: 18px; z-index: 100;
+            font-size: 0.95rem; color: rgba(255,255,255,0.65);
+            background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            font-weight: 700;
+        }
+        #drawing-layer {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 50; pointer-events: none; touch-action: none;
+        }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+
+        /* ── Answer Overlay (Slide Question Dialogs) ── */
+        .ans-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 9, 20, 0.97); z-index: 100;
+            flex-direction: column; padding: 1.4rem 1.6rem; border-radius: 18px;
+            border: 2px solid var(--accent-green); animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #fff; border: none; padding: 0.7rem 1.7rem;
+            border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1rem;
+            transition: 0.2s; align-self: center; margin-top: auto; flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(192,132,252,0.3);
+        }
+        .btn-action:hover { filter: brightness(1.15); transform: scale(1.05); }
+        .btn-action-outline {
+            background: transparent; color: var(--accent-blue);
+            border: 1.5px solid var(--accent-blue);
+            padding: 0.65rem 1.5rem; border-radius: 10px;
+            cursor: pointer; font-weight: 700; font-size: 0.95rem; transition: 0.2s;
+        }
+        .btn-action-outline:hover { background: rgba(96,165,250,0.12); }
+
+        /* ── Scrollable panel ── */
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; padding-right: 4px; }
+        .scroll-panel::-webkit-scrollbar { width: 5px; }
+        .scroll-panel::-webkit-scrollbar-track { background: transparent; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+
+        /* ── Interactive 1: Successive IE Simulator ── */
+        .sim-tab-container { display: flex; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .sim-tab {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(240, 244, 255, 0.6); padding: 0.5rem 1.2rem; border-radius: 8px;
+            cursor: pointer; font-weight: 700; font-size: 0.9rem; transition: 0.2s;
+        }
+        .sim-tab.active {
+            background: rgba(96, 165, 250, 0.2); border-color: var(--accent-blue);
+            color: #fff; box-shadow: 0 0 10px rgba(96,165,250,0.25);
+        }
+        .sim-atom-area { flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; position: relative; min-height: 200px; }
+        .sim-btn-area { display: flex; gap: 10px; justify-content: center; margin-top: 8px; flex-shrink: 0; }
+        .sim-badge-alert {
+            position: relative;
+            margin-top: 8px;
+            background: rgba(248, 113, 113, 0.2); border: 1px solid var(--accent-red);
+            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem;
+            font-weight: 700; animation: bounce 0.6s ease infinite alternate;
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.3); display: none; z-index: 10;
+            width: fit-content;
+            align-self: center;
+            text-align: center;
+        }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+
+        /* ── Interactive 2: Sawtooth Chart ── */
+        .chart-node { cursor: pointer; transition: r 0.2s, stroke-width 0.2s; }
+        .chart-node:hover { r: 8px; stroke-width: 3px; stroke: #fff; }
+        .chart-node-active { r: 9px; stroke-width: 4px; stroke: #fff; fill: var(--accent-yellow) !important; filter: drop-shadow(0 0 8px var(--accent-yellow)); }
+        
+        /* ── Interactive 3: Orbital Diagram ── */
+        .orbital-box-wrapper { display: flex; gap: 12px; align-items: center; margin: 10px 0; }
+        .orbital-label { font-size: 0.95rem; font-weight: 700; width: 35px; color: var(--accent-cyan); }
+        .orbital-subshell { display: flex; gap: 4px; }
+        .orbital-box {
+            width: 42px; height: 42px; border: 2.2px solid var(--glass-border);
+            border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.4); font-size: 1.6rem; font-weight: bold; position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+        }
+        .orbital-box.stable { border-color: var(--accent-green); background: rgba(52,211,153,0.06); }
+        .orbital-arrow {
+            display: flex; align-items: center; justify-content: center;
+            font-family: serif; color: var(--accent-yellow); font-size: 1.5rem; text-shadow: 0 0 5px rgba(251,191,36,0.5);
+            line-height: 1;
+        }
+        .orbital-arrow.up { color: var(--accent-yellow); }
+        .orbital-arrow.down { color: var(--accent-red); text-shadow: 0 0 5px rgba(248,113,113,0.5); }
+
+        /* ── Interactive 5: Periodic Table ── */
+        .pt-cell {
+            border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 700; transition: 0.2s; cursor: default; aspect-ratio: 1;
+            position: relative; border: 1px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .pt-cell:hover { transform: scale(1.16); z-index: 10; box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
+        .pt-cell-sym { font-size: 0.88rem; font-weight: 900; }
+        .pt-cell-num { font-size: 0.55rem; opacity: 0.45; position: absolute; top: 2px; left: 3px; }
+        .pt-cell-val { font-size: 0.52rem; opacity: 0.85; margin-top: 1px; font-weight: normal; }
+
+        /* ── Interactive 6: 觀念連連看 ── */
+        .game-label {
+            display: flex; align-items: center;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 0.65rem 1rem;
+            font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+            min-height: 52px; box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            line-height: 1.35;
+        }
+        .game-label-l { justify-content: flex-start; text-align: left; }
+        .game-label-r { justify-content: flex-start; text-align: left; }
+        .game-label.done { background: rgba(52,211,153,0.12); border-color: var(--accent-green); opacity: 0.88; }
+
+        .dot {
+            width: 16px; height: 16px; border-radius: 50%; border: 2.2px solid var(--accent-blue);
+            background: rgba(96,165,250,0.2); flex-shrink: 0; transition: 0.2s; cursor: grab;
+            touch-action: none;
+        }
+        .dot:hover { background: rgba(96,165,250,0.45); transform: scale(1.15); }
+        .dot.active { background: var(--accent-green); border-color: var(--accent-green); cursor: default; box-shadow: 0 0 10px var(--accent-green); }
+
+        .game-right-panel {
+            display: grid;
+            grid-template-columns: 20px minmax(200px, 1fr);
+            column-gap: 12px;
+            justify-self: end;
+            width: max-content;
+            max-width: 100%;
+            height: 100%;
+        }
+        #right-dot-column,
+        #right-text-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 8px;
+        }
+        #right-dot-column { align-items: center; }
+
+        /* ── Input sliders ── */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; height: 5px;
+            border-radius: 3px; background: rgba(255,255,255,0.15); outline: none; cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px;
+            border-radius: 50%; background: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(96,165,250,0.7); cursor: pointer;
+        }
+
+        /* ── Tags ── */
+        .tag {
+            display: inline-block; padding: 0.15rem 0.6rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; margin: 0.15rem;
+        }
+        .tag-blue { background: rgba(96,165,250,0.16); border: 1px solid rgba(96,165,250,0.4); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.14); border: 1px solid rgba(52,211,153,0.35); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.14); border: 1px solid rgba(248,113,113,0.35); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.14); border: 1px solid rgba(251,191,36,0.35); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(192,132,252,0.14); border: 1px solid rgba(192,132,252,0.35); color: var(--accent-purple); }
+
+        /* ── General Visual Animations ── */
+        .color-dot { transition: transform 0.2s; }
+        .color-dot:hover { transform: scale(1.15); }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <!-- ═══════════════════ START OVERLAY ═══════════════════ -->
+    <div id="start-overlay">
+        <div class="start-atoms" id="float-atoms"></div>
+        <div class="start-badge">選修化學二 · 第一章 · 原子結構</div>
+        <h1 class="start-title">元素游離能</h1>
+        <p class="start-sub">移去電子的能量規律與週期規律 — 互動教學設計</p>
+        <button class="btn-start" id="btn-start">開始探索教學 ✦</button>
+        <div class="start-info">
+            <div class="info-chip"><span>⚡</span><span>游離能定義與方程式</span></div>
+            <div class="info-chip"><span>📊</span><span>連續游離能與能階跳躍</span></div>
+            <div class="info-chip"><span>📈</span><span>鋸齒狀週期規律</span></div>
+            <div class="info-chip"><span>🔬</span><span>軌域全滿半滿微觀解析</span></div>
+            <div class="info-chip"><span>📝</span><span>iPad 手寫與範例練習</span></div>
+            <div class="info-chip"><span>🏆</span><span>觀念連連看單元挑戰</span></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ PRESENTATION AREA ═══════════════════ -->
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- ══ Slide 1: 游離能的定義 ══ -->
+            <div class="slide active">
+                <h1>游離能的定義與測定</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>什麼是游離能？</h2>
+                        <p><strong>游離能（Ionization Energy, IE）</strong>是指在<strong>基態氣相原子或陽離子</strong>中移去一個電子所需的<strong>最小能量</strong>。</p>
+                        <div class="formula-box">
+                            $\text{X}_{(g)} \rightarrow \text{X}^+_{(g)} + \text{e}^- \quad \Delta H = \text{IE}_1 > 0$
+                        </div>
+                        <div class="info-card">
+                            <p><strong>重要核心觀念：</strong></p>
+                            <ul style="margin-top: 4px;">
+                                <li><strong>必須在氣態（g）：</strong>排除分子間吸引力或晶格能之干擾。</li>
+                                <li><strong>基態（ground state）：</strong>電子處於能量最低的最穩定狀態。</li>
+                                <li><strong>必為吸熱反應（$\Delta H > 0$）：</strong>移去帶負電的電子需克服原子核的庫倫靜電引力，故游離能必為<em>正值</em>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>測定方式與常用單位</h2>
+                        <p><strong>測定原理：</strong>於真空管中引入少量氣態元素，逐漸提高電極電壓。當電壓到達臨界值時，外加高能電子足以將氣態原子碰撞游離，電流急劇上升，此時換算的臨界能量即為游離能。</p>
+                        <div class="info-card" style="border-color: rgba(192,132,252,0.4); background:rgba(192,132,252,0.04); margin-top:0.7rem;">
+                            <h3>常用能量單位：</h3>
+                            <ul style="margin-top: 4px;">
+                                <li><strong>千焦耳 / 莫耳 (kJ/mol)：</strong>巨觀單位（化學常用）。</li>
+                                <li><strong>電子伏特 / 原子 (eV/atom)：</strong>微觀單位（物理常用）。</li>
+                                <li><strong>單位換算：</strong>$1 \text{ eV} \approx 96.48 \text{ kJ/mol}$</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box" style="margin-top: 0.6rem;">
+                            <p><em>思考：</em>為什麼同一元素移去越後面的電子，需要的能量會越來越高？我們在下一頁深入探討！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 2: 連續游離能與能階跳躍 ══ -->
+            <div class="slide">
+                <h1>連續游離能與能階跳躍</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>連續游離能 (Successive IE)</h2>
+                        <p>同一原子中，依序移去第一、第二、第三...個電子所需的能量，稱為第一游離能（$\text{IE}_1$）、第二游離能（$\text{IE}_2$）等。</p>
+                        <div class="info-card">
+                            <p><strong>規律：$\text{IE}_1 < \text{IE}_2 < \text{IE}_3 < \text{IE}_4 < \dots$</strong></p>
+                            <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-top:4px;">
+                                隨著電子數減少，帶正電的離子對剩餘電子的庫倫靜電引力增加，且同層電子排斥力減弱，使得外層電子更緊縮，故游離所需能量必然遞增。
+                            </p>
+                        </div>
+                        <div class="highlight-box" style="border-color:var(--accent-red); background:rgba(248,113,113,0.03);">
+                            <h3 style="color:var(--accent-red);">💥 能階驟增（能階跳躍）</h3>
+                            <p style="margin-top:2px;">當移去<strong>內層核心電子</strong>時，因為主量子數 $n$ 減小、電子極度靠近原子核且失去屏蔽，游離能會<strong>驟增數倍至十倍</strong>。</p>
+                            <p style="font-size:0.92rem; font-weight:bold; color:var(--accent-yellow); margin-top:4px;">
+                                💡 利用游離能遽增的界線，可準確判定該主族元素的「價電子數（族別）」。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 互動組件 1: 連續游離能模擬器 -->
+                    <div class="panel">
+                        <h2>連續游離能模擬與電子剝離</h2>
+                        <div class="sim-tab-container">
+                            <div class="sim-tab active" data-elem="Na">Na (鈉, 1A)</div>
+                            <div class="sim-tab" data-elem="Mg">Mg (鎂, 2A)</div>
+                            <div class="sim-tab" data-elem="Al">Al (鋁, 3A)</div>
+                        </div>
+                        
+                        <!-- 模擬器與長條圖水平併排區域 -->
+                        <div style="display: flex; gap: 16px; align-items: stretch; margin-top: 8px; height: 260px;">
+                            <!-- 左側：原子 Canvas 模擬區 -->
+                            <div class="sim-atom-area" id="sim-atom-area" style="flex: 1; position: relative; height: 100%; min-height: unset; overflow: hidden; padding: 0;">
+                                <canvas id="sim-atom-canvas" width="300" height="300" style="width:100%; height:100%; aspect-ratio:1; display:block;"></canvas>
+                            </div>
+                            
+                            <!-- 右側：窄高型游離能長條圖區 -->
+                            <div id="sim-chart-area" style="width: 140px; height: 100%; display: flex; gap: 10px; align-items: stretch; background: rgba(0,0,0,0.35); border-radius: 12px; padding: 16px 10px; border: 1px solid rgba(255,255,255,0.06); box-sizing: border-box; justify-content: space-around;">
+                                <!-- Bars will be inserted dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <div class="sim-btn-area">
+                            <button class="btn-action" id="btn-sim-remove" style="padding:0.5rem 1.4rem; font-size:0.9rem;">⚡ 移去一個電子</button>
+                            <button class="btn-action-outline" id="btn-sim-reset" style="padding:0.45rem 1.2rem; font-size:0.88rem; border-radius:8px;">重設 ↺</button>
+                        </div>
+                        <div class="sim-badge-alert" id="sim-alert">⚡ 移去內層核心電子！能階驟增！</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 3: 影響游離能的因素 ══ -->
+            <div class="slide">
+                <h1>影響游離能大小的因素</h1>
+                <div class="grid-3">
+                    <div class="panel">
+                        <h2>① 原子半徑 (r)</h2>
+                        <div class="svg-container" style="flex:0 0 90px; margin-bottom:6px;">
+                            <svg viewBox="0 0 200 100">
+                                <circle cx="60" cy="50" r="16" fill="rgba(96,165,250,0.15)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+                                <circle cx="60" cy="50" r="2" fill="white"/>
+                                <circle cx="140" cy="50" r="32" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="3,3"/>
+                                <circle cx="140" cy="50" r="26" fill="rgba(248,113,113,0.12)" stroke="var(--accent-red)" stroke-width="1.5"/>
+                                <circle cx="140" cy="50" r="2" fill="white"/>
+                                <text x="60" y="90" text-anchor="middle" fill="var(--accent-blue)" font-size="10" font-weight="bold">半徑小 → IE 大</text>
+                                <text x="140" y="90" text-anchor="middle" fill="var(--accent-red)" font-size="10" font-weight="bold">半徑大 → IE 小</text>
+                            </svg>
+                        </div>
+                        <div class="info-card" style="flex:1;">
+                            <p>當<strong>原子半徑愈小</strong>，最外層電子與帶正電原子核的距離愈近，兩者間庫倫靜電引力愈強。</p>
+                            <p style="margin-top: 4px; font-weight: bold; color: var(--accent-cyan);">→ 移去電子愈困難，游離能愈大。</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>② 有效核電荷 (Z*)</h2>
+                        <div class="info-card" style="background:rgba(251,191,36,0.06); border-color:rgba(251,191,36,0.25);">
+                            <p>有效核電荷 $Z^* = Z - \sigma$</p>
+                            <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); margin-top:2px;">(Z:核電荷數, $\sigma$:屏蔽常數)</p>
+                        </div>
+                        <div class="info-card" style="flex:1;">
+                            <p>同週期主族元素由左至右，原子序 $Z$ 增大，而內層電子屏蔽數 $\sigma$ 幾乎不變。</p>
+                            <p style="margin-top: 4px; font-weight: bold; color: var(--accent-yellow);">→ $Z^*$ 顯著增大，核對外層電子的吸引力變強，半徑縮小，游離能呈上升趨勢。</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>③ 電子組態穩定性</h2>
+                        <div class="info-card" style="background:rgba(52,211,153,0.06); border-color:rgba(52,211,153,0.25);">
+                            <p>核外電子的能量狀態受到軌域對稱與對稱性的影響，存在額外的電子排佈穩定區：</p>
+                        </div>
+                        <div class="info-card" style="flex:1;">
+                            <ul>
+                                <li><strong>鈍氣組態 ($ns^2 np^6$)：</strong>全滿的最外殼層，最穩定，游離能極高。</li>
+                                <li><strong>副殼層全滿 ($ns^2, nd^{10}$)：</strong>例如 2A 族或 2B 族，具高穩定性。</li>
+                                <li><strong>副殼層半滿 ($np^3, nd^5$)：</strong>例如 5A 族，電子均勻分佈且對稱，能量較低，較穩定。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 4: 第一游離能的週期規律 ══ -->
+            <div class="slide">
+                <h1>第一游離能的週期性規律</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>週期表中的整體規律</h2>
+                        <div class="info-card" style="border-left-color: var(--accent-green);">
+                            <h3>同族元素（由上至下）：游離能遞減 ↓</h3>
+                            <p style="font-size:0.92rem; margin-top:3px; color:rgba(255,255,255,0.7);">
+                                電子主量子數 $n$ 增加（電子層數增多）→ 最外層電子距離原子核愈遠，且受內層屏蔽效應增強，故游離能逐漸減少。
+                            </p>
+                        </div>
+                        <div class="info-card" style="border-left-color: var(--accent-red); margin-top:8px;">
+                            <h3>同週期元素（由左至右）：鋸齒狀遞增 ↑</h3>
+                            <p style="font-size:0.92rem; margin-top:3px; color:rgba(255,255,255,0.7);">
+                                有效核電荷 $Z^*$ 逐漸增加，半徑變小，使游離能整體呈現上升趨勢。但因為<strong>電子組態軌域全滿或半滿的穩定性差別</strong>，同週期會產生反常的「鋸齒狀」分布！
+                            </p>
+                        </div>
+                        <div class="highlight-box" style="margin-top: 8px;">
+                            <p><strong>第一游離能極值：</strong></p>
+                            <p>• 全週期表最大者為：<strong>He（氦，鈍氣，2,372 kJ/mol）</strong></p>
+                            <p>• 全週期表最小者為：<strong>Fr（鍅，鹼金屬，380 kJ/mol）</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- 互動組件 2: 第二、三週期第一游離能鋸齒折線圖 -->
+                    <div class="panel" style="position:relative;">
+                        <h2>互動探索：第二、三週期第一游離能折線圖</h2>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.5);">點選下圖中的「反常轉折點 (Be, B, N, O, Mg, Al, P, S)」查看微觀能階原理解析：</p>
+                        
+                        <!-- 動態電子組態變化顯示區 -->
+                        <div id="electron-config-display" style="margin-top: 8px; padding: 6px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; height: 32px; box-sizing: border-box; transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;">
+                            <span style="color: rgba(255,255,255,0.5); font-weight: 500;">💡 移去電子時的組態變化：</span>
+                            <span id="config-change-text" style="color: var(--accent-cyan); font-weight: 700; font-family: var(--font-mono, monospace);">請將滑鼠移至原子節點上...</span>
+                        </div>
+                        
+                        <div class="svg-container" style="flex:1; min-height:160px; margin-top:10px;">
+                            <svg id="sawtooth-svg" viewBox="0 0 420 220" style="width:100%; height:100%;"></svg>
+                        </div>
+
+                        <!-- 鋸齒圖專屬彈出框 (動態更新) -->
+                        <div id="sawtooth-popup" style="margin-top:6px; display:none; background:rgba(15,23,42,0.92); border:1.5px solid var(--accent-blue); padding:10px 14px; border-radius:12px; font-size:0.88rem; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow: 0 4px 20px rgba(96,165,250,0.3); animation:fadeIn 0.2s ease;">
+                            <h3 id="pop-title" style="color:var(--accent-yellow); margin-bottom:3px;">標題</h3>
+                            <p id="pop-desc" style="line-height:1.5; font-size:0.86rem;">內容</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 5: 反常轉折微觀軌域解析 ══ -->
+            <div class="slide">
+                <h1>鋸齒狀反常的微觀軌域解析</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>副殼層全滿反常：Be > B 與 Mg > Al</h2>
+                        <p>以第二週期為例，為何 $\text{IE}_1(\text{Be}) > \text{IE}_1(\text{B})$？</p>
+                        <div class="info-card">
+                            <p><strong>電子組態分析：</strong></p>
+                            <p>• $\text{Be} \ (Z=4)：1s^2 2s^2$（最外層 $2s$ 軌域<strong>填滿</strong>，高度對稱且穩定）</p>
+                            <p>• $\text{B} \ (Z=5)：1s^2 2s^2 2p^1$（最外層電子在 $2p$ 軌域）</p>
+                        </div>
+                        <p><strong>原理解析：</strong>$2p$ 軌域的能量高於 $2s$ 軌域，且 $2p$ 的電子受到內層 $1s$ 與 $2s$ 電子的屏蔽效應較大，因此移去 B 的這顆 $2p$ 電子所需要的能量反而低於 Be 填滿的 $2s$ 電子。故：<strong>$\text{IE}_1(\text{Be}) > \text{IE}_1(\text{B})$</strong>（同理 $\text{IE}_1(\text{Mg}) > \text{IE}_1(\text{Al})$）。</p>
+                    </div>
+                    <div class="panel">
+                        <h2>副殼層半滿反常：N > O 與 P > S</h2>
+                        <p>為何 $\text{IE}_1(\text{N}) > \text{IE}_1(\text{O})$？</p>
+                        <div class="info-card">
+                            <p><strong>電子組態分析：</strong></p>
+                            <p>• $\text{N} \ (Z=7)：1s^2 2s^2 2p^3$（$2p$ 三個軌域各填入一個電子，<strong>半填滿</strong>組態）</p>
+                            <p>• $\text{O} \ (Z=8)：1s^2 2s^2 2p^4$（其中一個 $2p$ 軌域填入成對電子）</p>
+                        </div>
+                        <p><strong>原理解析：</strong>根據罕德定則，半滿軌域電子均勻對稱，帶有較高交換能而相當穩定。而 O 的第四個電子必須與另一個電子共享同一個 $2p$ 軌域，<strong>成對的兩個帶負電電子在極小空間內會產生強烈的靜電排斥力</strong>，使得該電子極易被移去。故：<strong>$\text{IE}_1(\text{N}) > \text{IE}_1(\text{O})$</strong>（同理 $\text{IE}_1(\text{P}) > \text{IE}_1(\text{S})$）。</p>
+                    </div>
+                </div>
+                <!-- 互動組件 3: 軌域自旋電子填寫檢視 -->
+                <div class="panel" style="flex:0 0 auto; padding:0.6rem 1.2rem; margin-top:0.8rem;">
+                    <div style="display:flex; align-items:center; gap:20px; justify-content:center; flex-wrap:wrap;">
+                        <span style="font-weight:700; color:var(--accent-cyan); font-size:0.95rem;">🔬 軌域圖自旋填寫視覺化：</span>
+                        <div class="sim-tab-container" style="margin-bottom:0;">
+                            <div class="sim-tab active" id="tab-orb-Be" onclick="showOrbital('Be')">Be (s²全滿)</div>
+                            <div class="sim-tab" id="tab-orb-B" onclick="showOrbital('B')">B (p¹未滿)</div>
+                            <div class="sim-tab" id="tab-orb-N" onclick="showOrbital('N')">N (p³半滿)</div>
+                            <div class="sim-tab" id="tab-orb-O" onclick="showOrbital('O')">O (p⁴成對)</div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:center;">
+                            <div class="orbital-box-wrapper" id="orbital-2s-area">
+                                <div class="orbital-label">2s</div>
+                                <div class="orbital-box" id="box-2s"></div>
+                            </div>
+                            <div class="orbital-box-wrapper" id="orbital-2p-area">
+                                <div class="orbital-label">2p</div>
+                                <div class="orbital-subshell">
+                                    <div class="orbital-box" id="box-2px"></div>
+                                    <div class="orbital-box" id="box-2py"></div>
+                                    <div class="orbital-box" id="box-2pz"></div>
+                                </div>
+                            </div>
+                            <div style="font-size:0.85rem; color:var(--accent-yellow); font-weight:700; border-left:2px solid rgba(255,255,255,0.2); padding-left:10px;" id="orbital-desc">
+                                軌域狀態說明
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 6: 類氫離子游離能與能階 ══ -->
+            <div class="slide">
+                <h1>類氫原子的游離能</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>單電子物種能階與游離能</h2>
+                        <p>類氫離子（即只含有<strong>單個核外電子</strong>的離子，例如 $\text{H}、\text{He}^+、\text{Li}^{2+}、\text{Be}^{3+}$）的能階與游離能非常規律，可完美應用波耳原子模型進行理論計算。</p>
+                        <div class="formula-box" style="font-size: 1.22rem;">
+                            $\text{IE} = 1312 \times \dfrac{Z^2}{n^2} \ \text{kJ/mol} \ = 13.6 \times \dfrac{Z^2}{n^2} \ \text{eV}$
+                        </div>
+                        <div class="info-card">
+                            <p><strong>公式變數解析：</strong></p>
+                            <ul>
+                                <li><strong>$Z$（原子序 / 核電荷數）：</strong>原子核內質子數。因僅含一個電子，無屏蔽效應，電子感受到的有效核電荷即為 $Z$。</li>
+                                <li><strong>$n$（電子能階）：</strong>基態時 $n=1$。</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box">
+                            <p><em>注意：</em>因為游離能 $\text{IE} \propto Z^2$，所以核電荷每增加，游離能會以平方比例激增！例如：</p>
+                            <p>$\text{IE}_1(\text{H}) : \text{IE}_2(\text{He}^+) : \text{IE}_3(\text{Li}^{2+}) = 1^2 : 2^2 : 3^2 = 1 : 4 : 9$</p>
+                        </div>
+                    </div>
+
+                    <!-- 互動組件 4: 單電子游離能計算器 -->
+                    <div class="panel">
+                        <h2>單電子物種游離能計算器</h2>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.6); margin-bottom:8px;">輸入或調整以下參數，系統將自動計算並繪製類氫離子的游離能與能階躍遷圖：</p>
+                        
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:0.9rem; font-weight:700; width:100px;">物種原子序 Z：</span>
+                                <select id="calc-z" style="background:#0f172a; border:1px solid rgba(255,255,255,0.2); color:#fff; padding:4px 10px; border-radius:6px; font-weight:700; flex:1;">
+                                    <option value="1">H (Z=1)</option>
+                                    <option value="2">He⁺ (Z=2)</option>
+                                    <option value="3">Li²⁺ (Z=3)</option>
+                                    <option value="4">Be³⁺ (Z=4)</option>
+                                    <option value="5">B⁴⁺ (Z=5)</option>
+                                </select>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span style="font-size:0.9rem; font-weight:700; width:100px;">目前電子能階 n：</span>
+                                <input type="range" id="calc-n" min="1" max="5" value="1" style="flex:1;">
+                                <span style="font-size:0.95rem; font-weight:800; color:var(--accent-cyan); width:40px; text-align:right;" id="calc-n-val">n=1</span>
+                            </div>
+                        </div>
+
+                        <div class="info-card" style="border-color:var(--accent-green); background:rgba(52,211,153,0.03); margin-top:8px;" id="calc-result">
+                            <!-- JS will inject dynamic calculation here -->
+                        </div>
+
+                        <!-- 類氫能階圖繪製區 -->
+                        <div class="svg-container" style="flex:1; min-height:100px; margin-top:6px;">
+                            <svg id="calc-energy-svg" viewBox="0 0 200 120" style="width:100%; height:100%;"></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 7: 互動週期表 + 折線圖對照 ══ -->
+            <div class="slide" id="slide-ptable">
+                <h1>互動對照：原子序 1–40 元素的第一游離能</h1>
+                <div style="display:flex; flex-direction:row; flex:1; gap:8px; overflow:hidden; min-height:0;">
+
+                    <!-- 左側：互動週期表 + 資訊欄 -->
+                    <div style="flex:0 0 54%; display:flex; flex-direction:column; gap:5px; overflow:hidden; min-height:0;">
+                        <!-- 資訊欄 (鎖定高度防跳動，改為多行顯示) -->
+                        <div id="cross-info-bar" style="flex:0 0 85px; height:85px; box-sizing:border-box; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:5px 12px; background:rgba(0,0,0,0.35); border-radius:8px; border:1px solid rgba(255,255,255,0.08); transition:border-color 0.25s, background 0.25s;">
+                            <span id="cross-info-text" style="color:rgba(255,255,255,0.38); text-align:center; width:100%;">
+                                <div style="font-size:1.15rem; line-height:1.5;">💡 移動滑鼠至週期表或折線圖上的任一元素<br><span style="font-size:0.95rem; color:rgba(255,255,255,0.3);">兩者將同步發亮對照，並在此顯示詳細數據</span></div>
+                            </span>
+                        </div>
+                        <div class="panel" style="flex:1; padding:0.35rem 0.5rem; overflow:hidden; min-height:0; display:flex; flex-direction:column; justify-content:center;">
+                            <div id="ptable-cross-grid" style="display:grid; grid-template-columns:repeat(18,1fr); gap:2px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 右側：折線圖 -->
+                    <div class="panel" style="flex:1; padding:0.5rem 0.6rem; min-height:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                        <svg id="ie-line-svg" viewBox="0 0 400 280" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block; overflow:visible;"></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 8: 1-20 元素連續游離能 (IE1, IE2, IE3) 比較 ══ -->
+            <div class="slide" id="slide-three-ie">
+                <h1>連續游離能對比與電子組態效應</h1>
+                <div style="display:flex; flex-direction:column; flex:1; gap:8px; overflow:hidden; min-height:0;">
+                    
+                    <!-- 上方：詳細資訊面板 (改為橫向) -->
+                    <div class="panel" id="three-ie-info-panel" style="flex:0 0 100px; display:flex; flex-direction:row; gap:12px; padding:0.5rem 1rem; align-items:center; background:rgba(10, 16, 32, 0.45); border:1px solid rgba(255,255,255,0.08); border-radius:12px; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);">
+                        <div id="three-ie-default-msg" style="width:100%; text-align:center; color:rgba(255,255,255,0.4); font-size:1.05rem;">
+                            💡 點擊下方左側折線圖上的數據點，在此查看該游離能所對應的 <strong>元素符號、價數與電子組態變化</strong>
+                        </div>
+                        <div id="three-ie-detail-content" style="display:none; flex-direction:row; gap:16px; width:100%; align-items:center; justify-content:space-between; height:100%;">
+                            <!-- 動態載入詳細內容 -->
+                        </div>
+                    </div>
+
+                    <!-- 下方：兩張圖表 -->
+                    <div style="display:flex; flex-direction:row; flex:1; gap:12px; min-height:0;">
+                        <!-- 左側：1-20 連續游離能折線圖 -->
+                        <div class="panel" style="flex:6; padding:0.6rem; min-height:0; display:flex; flex-direction:column; position:relative;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <span style="font-size:0.85rem; color:rgba(255,255,255,0.5);">💡 點擊圖表中的數據點，查看電子的移除過程與組態變化</span>
+                                <div style="display:flex; gap:12px; font-size:0.85rem; font-weight:bold;">
+                                    <span style="color:#ef4444; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:10px; height:10px; background:#ef4444; border-radius:50%;"></span>IE₁</span>
+                                    <span style="color:#10b981; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:50%;"></span>IE₂</span>
+                                    <span style="color:#3b82f6; display:flex; align-items:center; gap:4px;"><span style="display:inline-block; width:10px; height:10px; background:#3b82f6; border-radius:50%;"></span>IE₃</span>
+                                </div>
+                            </div>
+                            <div style="flex:1; overflow:visible; position:relative;">
+                                <svg id="three-ie-svg" viewBox="0 0 550 350" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block; overflow:visible;"></svg>
+                            </div>
+                        </div>
+
+                        <!-- 右側：新増的組態與IE關係示意折線圖 -->
+                        <div class="panel" style="flex:4; padding:0.6rem; min-height:0; display:flex; flex-direction:column; position:relative;">
+                            <h3 style="margin:0 0 4px 0; font-size:0.95rem; color:rgba(255,255,255,0.8); text-align:center;">電子組態與游離能趨勢示意圖</h3>
+                            <div style="flex:1; position:relative;">
+                                <svg id="config-trend-svg" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block;"></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 9: 電子親和力與比較 ══ -->
+            <div class="slide">
+                <h1>游離能的其他關係與電子親和力</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>不同電荷粒子的游離能大小</h2>
+                        <p>當我們比較相同元素但電荷不同之粒子的游離能時，有以下規律：</p>
+                        <div class="info-card" style="border-left-color: var(--accent-orange);">
+                            <h3>陽離子 > 中性原子 > 陰離子</h3>
+                            <p style="font-size:0.92rem; margin-top:3px; color:rgba(255,255,255,0.7);">
+                                電子數愈多，電子間排斥力愈強，外層電子離核愈遠（半徑愈大），因此移去電子所需的能量就愈小。
+                            </p>
+                            <p style="font-size:0.95rem; font-weight:bold; color:var(--accent-orange); margin-top:4px;">
+                                $\text{例：游離能} \ \text{F}^+ > \text{F} > \text{F}^-$
+                            </p>
+                        </div>
+                        <div class="info-card" style="border-left-color: var(--accent-purple); margin-top:8px;">
+                            <h3>等電子序列：核電荷 Z 越大，游離能越大</h3>
+                            <p style="font-size:0.92rem; margin-top:3px; color:rgba(255,255,255,0.7);">
+                                當電子數相同時（例如 $\text{N}^{3-}, \text{O}^{2-}, \text{F}^-, \text{Ne}, \text{Na}^+, \text{Mg}^{2+}$ 均為 10 電子），核電荷數 $Z$ 愈大，核對電子的靜電引力愈強，半徑愈小，游離能愈大。
+                            </p>
+                            <p style="font-size:0.95rem; font-weight:bold; color:var(--accent-purple); margin-top:4px;">
+                                $\text{例：游離能} \ \text{Mg}^{2+} > \text{Na}^+ > \text{Ne} > \text{F}^-$
+                            </p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>補充概念：電子親和力 (Electron Affinity)</h2>
+                        <p><strong>電子親和力（$\text{E}_{\text{ea}}$）：</strong>氣態基態原子獲得一個電子形成帶負一價陰離子時所<strong>釋放的能量</strong>。</p>
+                        <div class="formula-box" style="border-left-color:var(--accent-orange);">
+                            $\text{X}_{(g)} + \text{e}^- \rightarrow \text{X}^-_{(g)} \quad \Delta H = -\text{E}_{\text{ea}}$
+                        </div>
+                        <div class="highlight-box" style="margin-top: 0.6rem;">
+                            <p><strong>補充定義：</strong>陰離子的游離能絕對值即為該原子的電子親和力。</p>
+                            <div class="formula-box" style="border-left-color:var(--accent-purple); margin-top: 0.4rem;">
+                                $\text{X}^-_{(g)} \rightarrow \text{X}_{(g)} + \text{e}^- \quad \Delta H = \text{IE}(\text{X}^-)$
+                                $$\text{E}_{\text{ea}} = |\text{IE}(\text{X}^-)|$$
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <p><strong>電子親和力規律：</strong></p>
+                            <ul>
+                                <li><strong>週期表整體趨勢：</strong>大致由左至右遞增，由上至下遞減（與游離能方向相似）。七A族（鹵素）最大。</li>
+                                <li><strong>全週期表最大者為：氯（$\text{Cl}$, 349 kJ/mol）</strong>。</li>
+                                <li><em>特別注意反常：</em>由於氟（$\text{F}$）原子半徑極小，電子密度過大，新加入的電子會受到極強的內部同層電子斥力，導致其親和力反而小於氯。即：<strong>$\text{Cl} > \text{F} > \text{Br} > \text{I}$</strong>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 9: 範例一 ══ -->
+            <div class="slide">
+                <h1>範例練習 1：連續游離能與主族元素判定</h1>
+                <div class="panel" style="position:relative; flex:1;">
+                    <!-- 題目解析覆蓋層 -->
+                    <div class="ans-overlay" id="ans-1">
+                        <h2>詳細解析</h2>
+                        <div style="font-size:1.15rem; line-height:1.75; margin-top:0.6rem;" class="scroll-panel">
+                            <p><strong>題目分析：</strong>已知某第三週期元素的連續游離能數值如下：</p>
+                            <p>• $\text{IE}_1 = 577 \text{ kJ/mol}$</p>
+                            <p>• $\text{IE}_2 = 1816 \text{ kJ/mol}$</p>
+                            <p>• $\text{IE}_3 = 2744 \text{ kJ/mol}$</p>
+                            <p style="color:var(--accent-red); font-weight:bold;">• $\text{IE}_4 = 11580 \text{ kJ/mol}$ (突增約 4.2 倍！)</p>
+                            <p>• $\text{IE}_5 = 15030 \text{ kJ/mol}$</p>
+                            <br>
+                            <p><strong>① 計算游離能倍數比例：</strong></p>
+                            <p>$\text{IE}_2 / \text{IE}_1 \approx 3.1$ ； $\text{IE}_3 / \text{IE}_2 \approx 1.5$ ； <strong style="color:var(--accent-red);">$\text{IE}_4 / \text{IE}_3 \approx 4.2$ （急遽驟增）</strong></p>
+                            <p>這說明前三個電子位於最外層（價殼層），第四個電子開始必須從內層的核心殼層（鈍氣組態）移去，需要極大的能量。因此，該元素有 <strong>3 個價電子</strong>，屬於 <strong>3A 族（第 13 族）</strong>。</p>
+                            <br>
+                            <p><strong>② 推斷元素：</strong>第三週期第 3A 族元素為 <strong>鋁（$\text{Al}$）</strong>。</p>
+                            <p><strong>③ 氧化物化學式：</strong>$\text{Al}^{3+}$ 與 $\text{O}^{2-}$ 結合，其穩定氧化物為 <strong>$\text{Al}_2\text{O}_3$</strong>。</p>
+                        </div>
+                        <button class="btn-action" onclick="toggleAns('ans-1')">返回題目</button>
+                    </div>
+
+                    <h2>連續游離能數值與結構推導</h2>
+                    <p style="font-size:1.3rem; margin-top:1rem; line-height:2.1;">
+                        週期表第三週期中，某主族元素 $\text{X}$ 之連續游離能數據（$\text{kJ/mol}$）如下表所示：
+                    </p>
+                    <table style="width:100%; border-collapse:collapse; margin-top:1rem; font-size:1.15rem;">
+                        <tr style="color:var(--accent-cyan); background:rgba(255,255,255,0.03);">
+                            <th style="padding:10px; border:1px solid rgba(255,255,255,0.15); text-align:center;">$\text{IE}_1$</th>
+                            <th style="padding:10px; border:1px solid rgba(255,255,255,0.15); text-align:center;">$\text{IE}_2$</th>
+                            <th style="padding:10px; border:1px solid rgba(255,255,255,0.15); text-align:center;">$\text{IE}_3$</th>
+                            <th style="padding:10px; border:1px solid rgba(255,255,255,0.15); text-align:center;">$\text{IE}_4$</th>
+                            <th style="padding:10px; border:1px solid rgba(255,255,255,0.15); text-align:center;">$\text{IE}_5$</th>
+                        </tr>
+                        <tr>
+                            <td style="padding:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; color:var(--accent-yellow);">577</td>
+                            <td style="padding:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; color:var(--accent-yellow);">1816</td>
+                            <td style="padding:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; color:var(--accent-yellow);">2744</td>
+                            <td style="padding:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; color:var(--accent-red); font-weight:bold;">11580</td>
+                            <td style="padding:10px; border:1px solid rgba(255,255,255,0.1); text-align:center; color:var(--accent-yellow);">15030</td>
+                        </tr>
+                    </table>
+                    <p style="font-size:1.2rem; margin-top:1.5rem; line-height:1.8;">
+                        (1) 試判斷此元素 $\text{X}$ 為何？<br>
+                        (2) 寫出此元素之穩定氧化物的化學式。
+                    </p>
+                    <div class="info-card" style="margin-top:1.2rem;">
+                        <p>提示：尋找連續游離能數據中「突然翻倍、暴增」的關卡！這代表電子已經開始從穩定的內層軌域被強行抽離。</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:auto; justify-content:center;">
+                        <button class="btn-action" onclick="toggleAns('ans-1')">顯示解題過程</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 10: 範例二 ══ -->
+            <div class="slide">
+                <h1>範例練習 2：等電子序列的游離能比較</h1>
+                <div class="panel" style="position:relative; flex:1;">
+                    <!-- 題目解析覆蓋層 -->
+                    <div class="ans-overlay" id="ans-2">
+                        <h2>詳細解析</h2>
+                        <div style="font-size:1.15rem; line-height:1.8; margin-top:0.6rem;" class="scroll-panel">
+                            <p><strong>比較對象：</strong>$\text{F}^-、\text{Ne}、\text{Na}^+、\text{Mg}^{2+}$</p>
+                            <br>
+                            <p><strong>① 確定核外電子數：</strong></p>
+                            <ul>
+                                <li>$\text{F}^-$：原子序 9，得到 1 個電子 $\rightarrow$ 10 電子</li>
+                                <li>$\text{Ne}$：原子序 10 $\rightarrow$ 10 電子</li>
+                                <li>$\text{Na}^+$：原子序 11，失去 1 個電子 $\rightarrow$ 10 電子</li>
+                                <li>$\text{Mg}^{2+}$：原子序 12，失去 2 個電子 $\rightarrow$ 10 電子</li>
+                            </ul>
+                            <p><strong>等電子序列規律：</strong>四個粒子均為 10 電子組態，核外排佈完全相同。</p>
+                            <br>
+                            <p><strong>② 核電荷對比：</strong></p>
+                            <p>這時，移去一個電子的困難度（游離能）完全取決於<strong>原子核內質子數（核電荷 Z）</strong>的多寡：</p>
+                            <p>核電荷大小：$\text{Mg (Z=12)} > \text{Na (Z=11)} > \text{Ne (Z=10)} > \text{F (Z=9)}$</p>
+                            <p>→ 核電荷越大，原子核對外層電子的引力越強，半徑越小，電子越難被移去，游離能也就越大。</p>
+                            <br>
+                            <p><strong>結論：移去一個電子的能量大小順序為：</strong></p>
+                            <p style="font-size:1.5rem; color:var(--accent-green); font-weight:800; text-align:center;">$\text{Mg}^{2+} > \text{Na}^+ > \text{Ne} > \text{F}^-$</p>
+                        </div>
+                        <button class="btn-action" onclick="toggleAns('ans-2')">返回題目</button>
+                    </div>
+
+                    <h2>等電子粒子的游離能大小比較</h2>
+                    <p style="font-size:1.35rem; margin-top:1.5rem; line-height:2.2;">
+                        試比較 $\text{F}^-、\text{Ne}、\text{Na}^+、\text{Mg}^{2+}$ 四種粒子移去<strong>一個核外電子</strong>所需能量的相對大小。
+                    </p>
+                    <div class="info-card" style="margin-top:1.5rem;">
+                        <p>提示：請先寫出各粒子的核外電子數。若電子數相同，它們屬於「等電子序列」，此時決定半徑與核對電子吸引力大小的最關鍵因素是原子核內的質子數（核電荷）。</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:auto; justify-content:center;">
+                        <button class="btn-action" onclick="toggleAns('ans-2')">顯示解題過程</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 11: 範例三 ══ -->
+            <div class="slide">
+                <h1>範例練習 3：單電子類氫離子的游離能</h1>
+                <div class="panel" style="position:relative; flex:1;">
+                    <!-- 題目解析覆蓋層 -->
+                    <div class="ans-overlay" id="ans-3">
+                        <h2>詳細解析</h2>
+                        <div style="font-size:1.15rem; line-height:1.8; margin-top:0.6rem;" class="scroll-panel">
+                            <p><strong>已知條件：</strong></p>
+                            <p>• 氣態氫原子 $\text{H}$ 的第一游離能為 $x \ \text{kcal/mol}$</p>
+                            <p>• 氦離子 $\text{He}^+$ 的第二游離能為 $y \ \text{kcal/mol}$</p>
+                            <p>• 鋰離子 $\text{Li}^{2+}$ 的第三游離能為 $z \ \text{kcal/mol}$</p>
+                            <br>
+                            <p><strong>① 分析三者的電子組態：</strong></p>
+                            <ul>
+                                <li>$\text{H}_{(g)}$ 移去唯一的電子 $\rightarrow 1s^1$ 組態（單電子）</li>
+                                <li>$\text{He}^+_{(g)}$ 移去第二個電子 $\rightarrow 1s^1$ 組態（單電子）</li>
+                                <li>$\text{Li}^{2+}_{(g)}$ 移去第三個電子 $\rightarrow 1s^1$ 組態（單電子）</li>
+                            </ul>
+                            <p>→ 三者均為基態單電子類氫物種，電子均在 $n=1$ 能階，適用波耳模型游離能公式！</p>
+                            <br>
+                            <p><strong>② 套用類氫游離能公式 $\text{IE} \propto \dfrac{Z^2}{n^2}$：</strong></p>
+                            <p>• 對於 $\text{H} \ (Z=1, n=1)$： $x = 13.6 \times \dfrac{1^2}{1^2} = 13.6 \ \text{eV}$</p>
+                            <p>• 對於 $\text{He}^+ \ (Z=2, n=1)$： $y = 13.6 \times \dfrac{2^2}{1^2} = 13.6 \times 4 \ \text{eV}$</p>
+                            <p>• 對於 $\text{Li}^{2+} \ (Z=3, n=1)$： $z = 13.6 \times \dfrac{3^2}{1^2} = 13.6 \times 9 \ \text{eV}$</p>
+                            <br>
+                            <p><strong>③ 比例計算：</strong></p>
+                            <p>因此，$x : y : z = 1^2 : 2^2 : 3^2 = 1 : 4 : 9$</p>
+                            <br>
+                            <p><strong>結論：關係式為 (B) $x : y : z = 1 : 4 : 9$。</strong></p>
+                        </div>
+                        <button class="btn-action" onclick="toggleAns('ans-3')">返回題目</button>
+                    </div>
+
+                    <h2>類氫原子游離能之比例計算</h2>
+                    <p style="font-size:1.35rem; margin-top:1rem; line-height:2.1;">
+                        若 $\text{H}、\text{He}^+、\text{Li}^{2+}$ 的電子組態均為 $1s^1$。<br>
+                        設 $\text{H}_{(g)}$ 原子之第一游離能為 $x \ \text{kcal/mol}$，<br>
+                        $\text{He}^+$ 之第二游離能為 $y \ \text{kcal/mol}$，<br>
+                        $\text{Li}^{2+}$ 之第三游離能為 $z \ \text{kcal/mol}$，則下列 $x : y : z$ 之關係何者正確？
+                    </p>
+                    <div style="font-size:1.25rem; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:1.2rem; padding: 0 1rem; color:var(--accent-yellow);">
+                        <div>(A) $x : y : z = 1 : 2 : 3$</div>
+                        <div>(B) $x : y : z = 1 : 4 : 9$</div>
+                        <div>(C) $x : y : z = 9 : 4 : 1$</div>
+                        <div>(D) $x : y : z = 1 : 8 : 27$</div>
+                    </div>
+                    <div class="info-card" style="margin-top:1.2rem;">
+                        <p>提示：移去這些電子時，核外皆只有唯一的一個電子（單電子物種），因此沒有電子屏蔽效應。此時電子所感受到的核吸引力完全正比於原子序的平方（$Z^2$）。</p>
+                    </div>
+                    <div style="display:flex; gap:1rem; margin-top:auto; justify-content:center;">
+                        <button class="btn-action" onclick="toggleAns('ans-3')">顯示解題過程</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Slide 12: 單元挑戰 ══ -->
+            <div class="slide" id="slide-game">
+                <h1 style="color:var(--accent-purple);">單元挑戰：游離能觀念連連看</h1>
+                <div style="flex:1; position:relative; background:rgba(0,0,0,0.22); border-radius:20px; overflow:hidden; margin-top:0.4rem; border:1px solid rgba(255,255,255,0.06);">
+                    <svg id="game-svg" style="position:absolute; width:100%; height:100%; pointer-events:none;"></svg>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 24px minmax(160px,22vw) 1fr; height:100%; padding:14px 16px; column-gap:12px; align-items:stretch;">
+                        <div id="left-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; z-index:10;"></div>
+                        <div id="dot-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; align-items:center; z-index:10;"></div>
+                        <div id="game-gap" style="z-index:1;"></div>
+                        <div id="right-column" class="game-right-panel" style="z-index:10;">
+                            <div id="right-dot-column"></div>
+                            <div id="right-text-column"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="game-feedback" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:linear-gradient(135deg, var(--accent-green), #10b981); color:#000; padding:2.5rem 5rem; border-radius:24px; font-size:2.2rem; font-weight:900; z-index:100; box-shadow:0 0 50px rgba(16,185,129,0.6); text-align:center; line-height:1.4;">
+                        🎉 挑戰成功！<br>
+                        <span style="font-size:1.2rem; font-weight:bold; color:rgba(0,0,0,0.7);">已完美掌握元素游離能的核心觀念</span>
+                    </div>
+                </div>
+                <div style="text-align:center; margin-top:0.7rem; flex-shrink:0;">
+                    <button class="btn-action-outline" onclick="resetGame()" style="padding:0.5rem 1.6rem; border-radius:30px;">重新挑戰 ↺</button>
+                </div>
+            </div>
+
+            <!-- ══ Slide 13: 總結 ══ -->
+            <div class="slide">
+                <h1>元素游離能總結</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2>📐 章節核心複習</h2>
+                        <div class="scroll-panel" style="flex:1;">
+                            <div class="info-card" style="margin-bottom:0.4rem;">
+                                <p><strong>① 定義：</strong>基態氣態原子/離子移去電子所需的最小能量（吸熱，正值）。</p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.4rem; border-color:rgba(248,113,113,0.4); background:rgba(248,113,113,0.02);">
+                                <p><strong>② 同週期鋸齒狀規律：</strong>由左至右有效核電荷增大，游離能整體增加，但在 <strong>2A>3A</strong>（$s^2$ 全滿穩定）與 <strong>5A>6A</strong>（$p^3$ 半滿穩定）出現鋸齒反常。</p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.4rem; border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.02);">
+                                <p><strong>③ 同族規律：</strong>由上至下電子層增加，半徑大、屏蔽強，游離能遞減。</p>
+                            </div>
+                            <div class="info-card" style="margin-bottom:0.4rem; border-color:rgba(192,132,252,0.4); background:rgba(192,132,252,0.02);">
+                                <p><strong>④ 價電子數判斷：</strong>尋找連續游離能遽增（跳躍）的界線，即可得知該主族價電子數。</p>
+                            </div>
+                            <div class="info-card" style="border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.02);">
+                                <p><strong>⑤ 類氫離子：</strong>單電子物種能階游離能，正比於原子序的平方（$\text{IE} \propto Z^2$）。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>🗺️ 概念知識地圖</h2>
+                        <div class="svg-container" style="flex:1; max-height:280px;">
+                            <svg viewBox="0 0 400 320" style="width:100%; height:100%;">
+                                <!-- Center -->
+                                <rect x="145" y="135" width="110" height="38" rx="10" fill="rgba(192,132,252,0.2)" stroke="var(--accent-purple)" stroke-width="2"/>
+                                <text x="200" y="159" text-anchor="middle" fill="var(--accent-purple)" font-size="12" font-weight="bold">元素游離能</text>
+                                
+                                <!-- Top: 影響因素 -->
+                                <rect x="140" y="12" width="120" height="32" rx="8" fill="rgba(96,165,250,0.15)" stroke="var(--accent-blue)" stroke-width="1.5"/>
+                                <text x="200" y="32" text-anchor="middle" fill="var(--accent-blue)" font-size="10.5" font-weight="bold">四大影響因素</text>
+                                <line x1="200" y1="44" x2="200" y2="135" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+                                <text x="205" y="70" fill="rgba(255,255,255,0.45)" font-size="8.5">① 半徑大小 (r)</text>
+                                <text x="205" y="85" fill="rgba(255,255,255,0.45)" font-size="8.5">② 有效核電荷 (Z*)</text>
+                                <text x="205" y="100" fill="rgba(255,255,255,0.45)" font-size="8.5">③ 軌域全滿/半滿</text>
+                                <text x="205" y="115" fill="rgba(255,255,255,0.45)" font-size="8.5">④ 粒子電荷性</text>
+
+                                <!-- Left: 週期趨勢 -->
+                                <rect x="10" y="128" width="115" height="52" rx="8" fill="rgba(248,113,113,0.15)" stroke="var(--accent-red)" stroke-width="1.5"/>
+                                <text x="67" y="147" text-anchor="middle" fill="var(--accent-red)" font-size="11" font-weight="bold">同週期 (左→右)</text>
+                                <text x="67" y="162" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="9.5">鋸齒狀遞增 ↗</text>
+                                <text x="67" y="173" text-anchor="middle" fill="var(--accent-yellow)" font-size="8">(2A>3A, 5A>6A)</text>
+                                <line x1="125" y1="154" x2="145" y2="154" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+                                <!-- Right: 同族趨勢 -->
+                                <rect x="275" y="128" width="115" height="52" rx="8" fill="rgba(52,211,153,0.15)" stroke="var(--accent-green)" stroke-width="1.5"/>
+                                <text x="332" y="148" text-anchor="middle" fill="var(--accent-green)" font-size="11" font-weight="bold">同族 (上→下)</text>
+                                <text x="332" y="165" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-size="9.5">數值遞減 ↘</text>
+                                <text x="332" y="175" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8">(層數屏蔽增加)</text>
+                                <line x1="255" y1="154" x2="275" y2="154" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+                                <!-- Bottom Left: 連續游離能 -->
+                                <rect x="15" y="245" width="125" height="52" rx="8" fill="rgba(251,191,36,0.12)" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                                <text x="77" y="265" text-anchor="middle" fill="var(--accent-yellow)" font-size="11" font-weight="bold">連續游離能</text>
+                                <text x="77" y="280" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9.5">IE₁ < IE₂ < IE₃...</text>
+                                <text x="77" y="291" text-anchor="middle" fill="var(--accent-red)" font-size="8">能階跳躍 → 判斷族數</text>
+                                <line x1="165" y1="173" x2="110" y2="245" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+                                <!-- Bottom Right: 類氫離子 -->
+                                <rect x="260" y="245" width="125" height="52" rx="8" fill="rgba(34,211,238,0.12)" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                                <text x="322" y="265" text-anchor="middle" fill="var(--accent-cyan)" font-size="11" font-weight="bold">類氫單電子離子</text>
+                                <text x="322" y="280" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">IE ∝ Z² / n²</text>
+                                <text x="322" y="291" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-size="8">H:He⁺:Li²⁺ = 1:4:9</text>
+                                <line x1="235" y1="173" x2="290" y2="245" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-dasharray="3,3"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+
+        <!-- 觸控平滑手寫 Canvas 層 -->
+        <canvas id="drawing-layer"></canvas>
+    </div><!-- /presentation-area -->
+
+    <div id="slide-info">1 / 13</div>
+
+    <!-- ═══════════════════ FLOATING TOOLBAR ═══════════════════ -->
+    <div id="toolbar">
+        <div id="drag-handle">≡</div>
+        <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+        <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
+        <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+        <button class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+        
+        <!-- 手寫顏色選擇面板 -->
+        <div id="color-picker" style="display:none; flex-direction:column; gap:8px; margin-top:4px;">
+            <div class="color-dot" style="width:22px;height:22px;background:#f0f4ff;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow: 0 0 5px #f0f4ff;" data-color="#f0f4ff"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#60a5fa;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#60a5fa"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        </div>
+        
+        <!-- 擦除面板 -->
+        <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:8px; align-items:center; border-top:1px solid rgba(255,255,255,0.15); padding-top:8px; margin-top:4px;">
+            <button class="btn-tool" id="btn-eraser" title="橡皮擦">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            </button>
+            <button class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+        </div>
+        <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+        <a href="../../index.html" class="btn-tool" id="btn-home" title="回到化學網首頁" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">🏠</a>
+    </div>
+
+</div><!-- /app -->
+
+<script>
+    // ═══════════════ Core State ═══════════════
+    let currentSlide = 0;
+    let isDrawingMode = false;
+    let drawMode = 'pen';
+    let penColor = '#f0f4ff';
+    let slideDrawings = {}; // 記憶每一頁的 Canvas 筆跡
+    let simAnimationId = null;
+    let lastX = 0, lastY = 0;
+    let isDrawing = false;
+
+    const slides = document.querySelectorAll('.slide');
+    const slideInfo = document.getElementById('slide-info');
+    const canvas = document.getElementById('drawing-layer');
+    const ctx = canvas.getContext('2d');
+
+    // 顯示/隱藏答題解析
+    function toggleAns(id) {
+        const overlay = document.getElementById(id);
+        overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+        // 重新排版 MathJax
+        if (window.MathJax) {
+            MathJax.typesetPromise([overlay]).catch((err) => console.log(err));
+        }
+    }
+
+    // 重新調整畫布大小並重繪筆跡
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        restoreDrawing();
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') {
+            drawConnections();
+        }
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 取得觸控或滑鼠精準座標 (適配 iPad)
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return [clientX - rect.left, clientY - rect.top];
+    }
+
+    function startDrawing(e) {
+        if (!isDrawingMode) return;
+        isDrawing = true;
+        [lastX, lastY] = getCoords(e);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const [x, y] = getCoords(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        
+        if (drawMode === 'eraser') {
+            ctx.strokeStyle = '#070a16'; // 橡皮擦顏色與底色相同
+            ctx.lineWidth = 36;
+        } else {
+            ctx.strokeStyle = penColor;
+            ctx.lineWidth = 3.5;
+        }
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        [lastX, lastY] = [x, y];
+    }
+
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            // 記憶目前分頁的筆跡
+            slideDrawings[currentSlide] = canvas.toDataURL();
+        }
+    }
+
+    function restoreDrawing() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (slideDrawings[currentSlide]) {
+            const img = new Image();
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            img.src = slideDrawings[currentSlide];
+        }
+    }
+
+    // 手寫事件註冊 (支援 iPad Apple Pencil 及 Touch)
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', (e) => {
+        if (isDrawingMode) e.preventDefault();
+        startDrawing(e);
+    }, {passive:false});
+    canvas.addEventListener('touchmove', (e) => {
+        if (isDrawingMode) e.preventDefault();
+        draw(e);
+    }, {passive:false});
+    canvas.addEventListener('touchend', stopDrawing);
+
+    // ═══════════════ 分頁管理 ═══════════════
+    function updateSlides() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+        
+        // 記憶舊筆跡並還原新分頁筆跡
+        restoreDrawing();
+
+        // 註銷任何處於活動狀態的模擬器 Canvas 循環以保護效能
+        if (simAnimationId) {
+            cancelAnimationFrame(simAnimationId);
+            simAnimationId = null;
+        }
+
+        // 觸發該分頁的互動初始化
+        const activeSlide = slides[currentSlide];
+        if (activeSlide.id === 'slide-game') {
+            initGame();
+        } else if (activeSlide.id === 'slide-ptable') {
+            initPTable();
+        } else if (activeSlide.id === 'slide-three-ie') {
+            initThreeIEChart();
+        } else if (activeSlide.querySelector('#sim-atom-canvas')) {
+            initSim();
+        } else if (activeSlide.querySelector('#sawtooth-svg')) {
+            initSawtooth();
+        } else if (activeSlide.querySelector('#calc-energy-svg')) {
+            initCalc();
+        }
+
+        // 重新排版 MathJax
+        if (window.MathJax) {
+            MathJax.typesetPromise([activeSlide]).catch((err) => console.log(err));
+        }
+    }
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+        if (currentSlide < slides.length - 1) {
+            currentSlide++;
+            updateSlides();
+        }
+    });
+    document.getElementById('btn-prev').addEventListener('click', () => {
+        if (currentSlide > 0) {
+            currentSlide--;
+            updateSlides();
+        }
+    });
+
+    // iPad 手勢翻頁：上下滑動翻頁 (非手寫模式下)
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, {passive:true});
+    
+    document.addEventListener('touchend', (e) => {
+        if (isDrawingMode) return; // 手寫模式下禁用手勢翻頁
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        
+        // 檢測垂直滑動
+        if (Math.abs(dx) < 60 && Math.abs(dy) > 50) {
+            if (dy < 0 && currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            } else if (dy > 0 && currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        }
+    }, {passive:true});
+
+    // ═══════════════ 工具列功能 ═══════════════
+    document.getElementById('btn-draw').addEventListener('click', (e) => {
+        isDrawingMode = !isDrawingMode;
+        if (isDrawingMode) drawMode = 'pen';
+        e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+        canvas.classList.toggle('drawing-active', isDrawingMode);
+        document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+        document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+        
+        // 如果是畫筆模式，將預設顏色高亮
+        if (isDrawingMode) {
+            const dots = document.querySelectorAll('.color-dot');
+            dots.forEach(d => {
+                if (d.dataset.color === penColor) d.style.borderColor = 'white';
+            });
+        }
+    });
+
+    document.getElementById('btn-eraser').addEventListener('click', (e) => {
+        drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+        e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+    });
+
+    document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+            document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+            dot.style.borderColor = 'white';
+            penColor = dot.dataset.color;
+            drawMode = 'pen';
+            document.getElementById('btn-eraser').classList.remove('active-tool');
+        });
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        slideDrawings[currentSlide] = null;
+    });
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+        document.getElementById('start-overlay').style.display = 'none';
+        // 嘗試啟用全螢幕 (適配 iPad/iOS)
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+        }
+        updateSlides();
+    });
+
+    document.getElementById('btn-home').addEventListener('click', () => {
+        window.history.back();
+    });
+
+    // ═══════════════ 工具列觸控/滑鼠拖曳 ═══════════════
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = (y) => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = (y) => { 
+        if (isDT) { 
+            let targetY = y - tOY;
+            // 限制拖曳不超出螢幕上下限
+            targetY = Math.max(10, Math.min(window.innerHeight - tb.offsetHeight - 10, targetY));
+            tb.style.top = targetY + 'px'; 
+            tb.style.bottom = 'auto'; 
+            tb.style.transform = 'none'; 
+        } 
+    };
+    dh.addEventListener('mousedown', (e) => sDT(e.clientY));
+    window.addEventListener('mousemove', (e) => mDT(e.clientY));
+    window.addEventListener('mouseup', () => isDT = false);
+    
+    dh.addEventListener('touchstart', (e) => sDT(e.touches[0].clientY), {passive:true});
+    window.addEventListener('touchmove', (e) => { 
+        if (isDT) mDT(e.touches[0].clientY); 
+    }, {passive:true});
+    window.addEventListener('touchend', () => isDT = false);
+
+    // ═══════════════ 啟動畫面浮動原子動畫 ═══════════════
+    const atomContainer = document.getElementById('float-atoms');
+    const atomData = [
+        {size:100, x:12, y:20, tx:'40px', ty:'-40px', dur:'20s', z:2, orbits:[18, 32]}, // Helium
+        {size:140, x:75, y:12, tx:'-30px', ty:'60px', dur:'26s', z:10, orbits:[18, 30, 44]}, // Neon
+        {size:180, x:6, y:65, tx:'60px', ty:'-30px', dur:'32s', z:12, orbits:[20, 32, 48, 62]}, // Magnesium
+        {size:80, x:85, y:72, tx:'-40px', ty:'-50px', dur:'18s', z:18, orbits:[15, 26, 38]} // Argon
+    ];
+    atomData.forEach(a => {
+        const el = document.createElement('div');
+        el.className = 'atom-float';
+        el.style.cssText = `width:${a.size}px; height:${a.size}px; left:${a.x}%; top:${a.y}%; --tx:${a.tx}; --ty:${a.ty}; animation-duration:${a.dur};`;
+        
+        // 核心
+        const core = document.createElement('div');
+        core.className = 'atom-core-glow';
+        el.appendChild(core);
+        
+        // 電子軌道與繞行電子
+        a.orbits.forEach((dist, idx) => {
+            const orbit = document.createElement('div');
+            orbit.className = 'atom-orbit';
+            orbit.style.width = `${dist*2}px`;
+            orbit.style.height = `${dist*2}px`;
+            
+            // 繞行電子
+            const electron = document.createElement('div');
+            electron.className = 'atom-electron-glow';
+            const size = 5 - idx * 0.5;
+            const edur = 3 + idx * 2;
+            electron.style.cssText = `width:${size}px; height:${size}px; --dist:${dist}px; animation-duration:${edur}s; top:50%; left:50%; margin-left:-${size/2}px; margin-top:-${size/2}px;`;
+            orbit.appendChild(electron);
+            el.appendChild(orbit);
+        });
+
+        atomContainer.appendChild(el);
+    });
+
+
+    // ═══════════════ 互動組件 1: 連續游離能發射電子模擬器 ═══════════════
+    let simState = {
+        elem: 'Na',
+        removedCount: 0,
+        electrons: [],
+        shells: [
+            { level: 1, currentRadius: 32, targetRadius: 32, alpha: 1, targetAlpha: 1, color: '#f87171' },
+            { level: 2, currentRadius: 64, targetRadius: 64, alpha: 1, targetAlpha: 1, color: '#c084fc' },
+            { level: 3, currentRadius: 96, targetRadius: 96, alpha: 1, targetAlpha: 1, color: '#22d3ee' }
+        ],
+        particles: [],
+        shards: [],
+        shieldCrackAlpha: 0,
+        flashAlpha: 0,
+        shakeTime: 0,
+        shakeIntensity: 0,
+        laserActive: false,
+        laserSource: { x: 18, y: 18 },
+        laserTarget: { x: 0, y: 0 },
+        laserPulse: 0,
+        targetElectronId: null,
+        ieValues: {
+            'Na': [496, 4562, 6912, 9543],
+            'Mg': [738, 1451, 7733, 10543],
+            'Al': [578, 1817, 2745, 11577]
+        },
+        maxIE: 12000,
+        jumps: {
+            'Na': 1,
+            'Mg': 2,
+            'Al': 3
+        }
+    };
+
+    function initSim() {
+        if (simAnimationId) {
+            cancelAnimationFrame(simAnimationId);
+            simAnimationId = null;
+        }
+
+        const canvas = document.getElementById('sim-atom-canvas');
+        if (!canvas) return;
+        
+        // Reset state
+        simState.removedCount = 0;
+        simState.particles = [];
+        simState.shards = [];
+        simState.shieldCrackAlpha = 0;
+        simState.flashAlpha = 0;
+        simState.shakeTime = 0;
+        simState.laserActive = false;
+        simState.targetElectronId = null;
+
+        // Reset shells
+        simState.shells = [
+            { level: 1, currentRadius: 32, targetRadius: 32, alpha: 1, targetAlpha: 1, color: '#f87171' },
+            { level: 2, currentRadius: 64, targetRadius: 64, alpha: 1, targetAlpha: 1, color: '#c084fc' },
+            { level: 3, currentRadius: 96, targetRadius: 96, alpha: 1, targetAlpha: 1, color: '#22d3ee' }
+        ];
+
+        document.getElementById('sim-alert').style.display = 'none';
+
+        // Setup electrons based on configuration
+        const shellConfig = {
+            'Na': [2, 8, 1],
+            'Mg': [2, 8, 2],
+            'Al': [2, 8, 3]
+        }[simState.elem];
+
+        simState.electrons = [];
+        let curId = 0;
+
+        // Shell 1 (inner)
+        for (let i = 0; i < shellConfig[0]; i++) {
+            const angle = (Math.PI * 2 / shellConfig[0]) * i;
+            simState.electrons.push({
+                id: curId++,
+                shell: 1,
+                angle: angle,
+                speed: 0.045,
+                radius: 32,
+                color: '#f87171',
+                active: true,
+                removed: false,
+                isEjecting: false,
+                x: 0, y: 0,
+                vibrationTime: 0
+            });
+        }
+
+        // Shell 2 (middle)
+        for (let i = 0; i < shellConfig[1]; i++) {
+            const angle = (Math.PI * 2 / shellConfig[1]) * i + (Math.PI / 8);
+            simState.electrons.push({
+                id: curId++,
+                shell: 2,
+                angle: angle,
+                speed: 0.025,
+                radius: 64,
+                color: '#c084fc',
+                active: true,
+                removed: false,
+                isEjecting: false,
+                x: 0, y: 0,
+                vibrationTime: 0
+            });
+        }
+
+        // Shell 3 (outer/valence)
+        for (let i = 0; i < shellConfig[2]; i++) {
+            const angle = (Math.PI * 2 / shellConfig[2]) * i + (Math.PI / 4);
+            simState.electrons.push({
+                id: curId++,
+                shell: 3,
+                angle: angle,
+                speed: 0.012,
+                radius: 96,
+                color: '#22d3ee',
+                active: true,
+                removed: false,
+                isEjecting: false,
+                x: 0, y: 0,
+                vibrationTime: 0
+            });
+        }
+
+        // Setup chart DOM elements in narrow vertical area
+        const chartArea = document.getElementById('sim-chart-area');
+        chartArea.innerHTML = '';
+        const list = simState.ieValues[simState.elem];
+
+        list.forEach((val, idx) => {
+            const col = document.createElement('div');
+            col.className = 'sim-chart-col';
+            col.style.cssText = `
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                align-items: center;
+                height: 100%;
+            `;
+
+            const barContainer = document.createElement('div');
+            barContainer.style.cssText = `
+                flex: 1;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+            `;
+
+            const bar = document.createElement('div');
+            bar.id = `sim-bar-${idx}`;
+            const heightFrac = (val / simState.maxIE) * 100;
+            bar.style.cssText = `
+                width: 100%;
+                height: ${heightFrac}%;
+                background: rgba(255,255,255,0.03);
+                border-radius: 4px;
+                transition: height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.25), background 0.3s, border-color 0.3s, box-shadow 0.3s;
+                border: 1px dashed rgba(255,255,255,0.12);
+                box-sizing: border-box;
+            `;
+
+            const labelArea = document.createElement('div');
+            labelArea.style.cssText = `
+                width: 100%;
+                text-align: center;
+                margin-top: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            `;
+
+            const lbl = document.createElement('div');
+            lbl.id = `sim-lbl-${idx}`;
+            lbl.style.cssText = `
+                font-size: 0.82rem;
+                font-weight: 700;
+                color: rgba(255,255,255,0.45);
+                line-height: 1.2;
+                transition: color 0.3s, text-shadow 0.3s;
+            `;
+            lbl.textContent = `IE${idx+1}`;
+
+            const valEl = document.createElement('div');
+            valEl.id = `sim-val-${idx}`;
+            valEl.style.cssText = `
+                font-size: 0.72rem;
+                font-weight: 700;
+                font-family: var(--font-mono, monospace);
+                color: rgba(255,255,255,0.25);
+                line-height: 1.2;
+                margin-top: 2px;
+                transition: color 0.3s, text-shadow 0.3s;
+            `;
+            valEl.textContent = val;
+
+            labelArea.appendChild(lbl);
+            labelArea.appendChild(valEl);
+
+            barContainer.appendChild(bar);
+            col.appendChild(barContainer);
+            col.appendChild(labelArea);
+
+            chartArea.appendChild(col);
+        });
+
+        // Trigger Canvas Retina scaling
+        resizeSimCanvas();
+
+        // Start animation loop
+        simAnimationId = requestAnimationFrame(simLoop);
+    }
+
+    function resizeSimCanvas() {
+        const canvas = document.getElementById('sim-atom-canvas');
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr * rect.width / 300, dpr * rect.height / 300);
+    }
+
+    // Call resize handle on window resize
+    window.addEventListener('resize', () => {
+        if (slides[currentSlide] && slides[currentSlide].querySelector('#sim-atom-canvas')) {
+            resizeSimCanvas();
+        }
+    });
+
+    function renderNarrowChart() {
+        const list = simState.ieValues[simState.elem];
+        list.forEach((val, idx) => {
+            const bar = document.getElementById(`sim-bar-${idx}`);
+            const lbl = document.getElementById(`sim-lbl-${idx}`);
+            const valEl = document.getElementById(`sim-val-${idx}`);
+            if (!bar || !lbl || !valEl) return;
+
+            if (idx < simState.removedCount) {
+                // Active / Ionized state
+                bar.style.borderStyle = 'solid';
+                lbl.style.color = '#ffffff';
+                lbl.style.textShadow = '0 0 4px rgba(255,255,255,0.3)';
+
+                if (idx === simState.jumps[simState.elem]) {
+                    // Big jump (core electron removed) - Glowing Red
+                    bar.style.background = 'linear-gradient(to top, var(--accent-red), rgba(248,113,113,0.35))';
+                    bar.style.borderColor = 'var(--accent-red)';
+                    bar.style.boxShadow = '0 0 10px rgba(248,113,113,0.45)';
+                    
+                    valEl.style.color = 'var(--accent-red)';
+                    valEl.style.textShadow = '0 0 6px rgba(248,113,113,0.6)';
+                } else {
+                    // Regular shell ionization - Glowing Cyan
+                    bar.style.background = 'linear-gradient(to top, var(--accent-cyan), rgba(34,211,238,0.3))';
+                    bar.style.borderColor = 'var(--accent-cyan)';
+                    bar.style.boxShadow = 'none';
+                    
+                    valEl.style.color = 'var(--accent-cyan)';
+                    valEl.style.textShadow = '0 0 6px rgba(34,211,238,0.5)';
+                }
+            } else {
+                // Inactive state
+                bar.style.background = 'rgba(255,255,255,0.03)';
+                bar.style.borderColor = 'rgba(255,255,255,0.08)';
+                bar.style.borderStyle = 'dashed';
+                bar.style.boxShadow = 'none';
+                
+                lbl.style.color = 'rgba(255,255,255,0.45)';
+                lbl.style.textShadow = 'none';
+                
+                valEl.style.color = 'rgba(255,255,255,0.25)';
+                valEl.style.textShadow = 'none';
+            }
+        });
+    }
+
+    function launchRemoveElectron() {
+        if (simState.laserActive || simState.removedCount >= 4) return;
+
+        // Find next electron to remove
+        // Prioritize shell 3, then shell 2, then shell 1
+        let target = null;
+        
+        // Find in Shell 3
+        target = simState.electrons.find(e => e.active && e.shell === 3);
+        if (!target) {
+            // Find in Shell 2
+            target = simState.electrons.find(e => e.active && e.shell === 2);
+        }
+        if (!target) {
+            // Find in Shell 1
+            target = simState.electrons.find(e => e.active && e.shell === 1);
+        }
+
+        if (!target) return;
+
+        // Target designated!
+        simState.targetElectronId = target.id;
+        simState.laserActive = true;
+        
+        // Ejection settings based on shell
+        if (target.shell === 3) {
+            // Valence: quick vibration
+            target.vibrationTime = 30; // 0.5s at 60fps
+        } else {
+            // Core: longer vibration through octet shield force field, cracks display, screen shakes
+            target.vibrationTime = 78; // 1.3s at 60fps
+            simState.shakeTime = 78;
+            simState.shakeIntensity = 2; // mild vibration shake during laser burn
+            simState.shieldCrackAlpha = 1.0;
+        }
+    }
+
+    function simLoop() {
+        if (!slides[currentSlide] || !slides[currentSlide].querySelector('#sim-atom-canvas')) {
+            simAnimationId = null;
+            return;
+        }
+
+        const canvas = document.getElementById('sim-atom-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 300, 300);
+
+        // Screen Shake Apply
+        if (simState.shakeTime > 0) {
+            const dx = (Math.random() - 0.5) * simState.shakeIntensity;
+            const dy = (Math.random() - 0.5) * simState.shakeIntensity;
+            ctx.save();
+            ctx.translate(dx, dy);
+            simState.shakeTime--;
+        } else {
+            ctx.save();
+        }
+
+        // LERP shell radius and alpha values
+        simState.shells.forEach(s => {
+            s.currentRadius += (s.targetRadius - s.currentRadius) * 0.08;
+            s.alpha += (s.targetAlpha - s.alpha) * 0.08;
+        });
+
+        // 1. Draw dashed faint orbit lines
+        simState.shells.forEach(s => {
+            if (s.alpha > 0.01) {
+                ctx.beginPath();
+                ctx.arc(150, 150, s.currentRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.08 * s.alpha})`;
+                ctx.lineWidth = 1.2;
+                ctx.setLineDash([4, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        });
+
+        // 2. Draw Stable Inner Octet Hexagonal Force Field (Shield)
+        const shell2 = simState.shells[1];
+        if (shell2.alpha > 0.05) {
+            let shieldOpacity = 0.06;
+            let drawCracks = false;
+            
+            // If we are targeted at core, make the shield flare up
+            if (simState.laserActive && simState.targetElectronId !== null) {
+                const targeted = simState.electrons.find(el => el.id === simState.targetElectronId);
+                if (targeted && targeted.shell <= 2) {
+                    shieldOpacity = 0.25 + Math.sin(Date.now() * 0.02) * 0.1;
+                    drawCracks = true;
+                }
+            }
+
+            // Draw hexagonal shield
+            ctx.strokeStyle = `rgba(192, 132, 252, ${shieldOpacity})`;
+            ctx.lineWidth = 1.8;
+            ctx.shadowColor = 'rgba(192, 132, 252, 0.4)';
+            ctx.shadowBlur = drawCracks ? 8 : 2;
+            
+            ctx.beginPath();
+            const radius = shell2.currentRadius;
+            for (let i = 0; i < 6; i++) {
+                const angle = i * Math.PI / 3;
+                const hx = 150 + radius * Math.cos(angle);
+                const hy = 150 + radius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw cracks on force field
+            if (drawCracks && simState.shieldCrackAlpha > 0.01) {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${simState.shieldCrackAlpha * 0.8})`;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = i * Math.PI / 3 + (Math.random() - 0.5)*0.08;
+                    const hx = 150 + radius * Math.cos(angle);
+                    const hy = 150 + radius * Math.sin(angle);
+                    ctx.moveTo(hx, hy);
+                    ctx.lineTo(hx - (hx - 150)*0.35 + (Math.random()-0.5)*8, hy - (hy - 150)*0.35 + (Math.random()-0.5)*8);
+                }
+                ctx.stroke();
+                // Slow decay of cracks visibility
+                simState.shieldCrackAlpha = Math.max(0, simState.shieldCrackAlpha - 0.005);
+            }
+        }
+
+        // 3. Draw nucleus with gradient glow
+        ctx.shadowColor = 'var(--accent-purple)';
+        ctx.shadowBlur = 6;
+        const nGrad = ctx.createRadialGradient(150, 150, 2, 150, 150, 14);
+        nGrad.addColorStop(0, '#c084fc');
+        nGrad.addColorStop(1, '#7c3aed');
+        ctx.beginPath();
+        ctx.arc(150, 150, 14, 0, Math.PI * 2);
+        ctx.fillStyle = nGrad;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Label inside nucleus showing active charge
+        let chargeStr = simState.removedCount === 0 ? '' : (simState.removedCount === 1 ? '⁺' : `⁺${simState.removedCount}`);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9.5px Segoe UI, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(simState.elem + chargeStr, 150, 150);
+
+        // 4. Update and Draw Electrons
+        simState.electrons.forEach(e => {
+            if (e.removed) return;
+
+            if (e.active) {
+                if (e.id === simState.targetElectronId) {
+                    // Vibrating under laser
+                    e.vibrationTime--;
+                    
+                    const targetedShell = simState.shells[e.shell - 1];
+                    const speedMultiplier = e.shell === 3 ? 0.6 : 0.3; // slow down during ionization
+                    e.angle += e.speed * speedMultiplier;
+                    
+                    // Add vibrating offset
+                    const vib = e.shell === 3 ? 1.2 : 2.5; // wider vibrations for core electrons
+                    const vx = (Math.random() - 0.5) * vib;
+                    const vy = (Math.random() - 0.5) * vib;
+
+                    e.x = 150 + targetedShell.currentRadius * Math.cos(e.angle) + vx;
+                    e.y = 150 + targetedShell.currentRadius * Math.sin(e.angle) + vy;
+
+                    if (e.vibrationTime <= 0) {
+                        // Launch Ejection!
+                        e.active = false;
+                        e.isEjecting = true;
+                        e.ejectVector = { x: Math.cos(e.angle), y: Math.sin(e.angle) };
+                        e.ejectSpeed = 8.5;
+
+                        // Laser off
+                        simState.laserActive = false;
+                        simState.targetElectronId = null;
+
+                        // Shockwave and Shards explosion for core electrons
+                        if (e.shell <= 2) {
+                            // Shatter Octet Shield
+                            const shardCount = 18;
+                            for (let i = 0; i < shardCount; i++) {
+                                const ang = Math.random() * Math.PI * 2;
+                                const spd = Math.random() * 4.5 + 2.5;
+                                simState.shards.push({
+                                    x: e.x, y: e.y,
+                                    vx: Math.cos(ang) * spd,
+                                    vy: Math.sin(ang) * spd,
+                                    size: Math.random() * 4.5 + 3.0,
+                                    alpha: 1.0,
+                                    rotation: Math.random() * Math.PI,
+                                    rotSpeed: (Math.random() - 0.5) * 0.25
+                                });
+                            }
+                            
+                            // Intense explosion screen shake and full white screen flash
+                            simState.shakeTime = 22;
+                            simState.shakeIntensity = 6.5;
+                            simState.flashAlpha = 1.0;
+                        } else {
+                            // Soft shake for valence electrons
+                            simState.shakeTime = 8;
+                            simState.shakeIntensity = 1.8;
+                        }
+                    }
+                } else {
+                    // Normal Orbiting
+                    e.angle += e.speed;
+                    const shellRadius = simState.shells[e.shell - 1].currentRadius;
+                    e.x = 150 + shellRadius * Math.cos(e.angle);
+                    e.y = 150 + shellRadius * Math.sin(e.angle);
+                }
+
+                // Render electron glowing sphere
+                ctx.shadowColor = e.color;
+                ctx.shadowBlur = 6.5;
+                ctx.fillStyle = e.color;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            if (e.isEjecting) {
+                // Update physics positions
+                e.x += e.ejectVector.x * e.ejectSpeed;
+                e.y += e.ejectVector.y * e.ejectSpeed;
+
+                // Push trail particles
+                simState.particles.push({
+                    x: e.x, y: e.y,
+                    vx: (Math.random() - 0.5) * 1.8 - (e.ejectVector.x * 0.8),
+                    vy: (Math.random() - 0.5) * 1.8 - (e.ejectVector.y * 0.8),
+                    size: Math.random() * 2.2 + 1.2,
+                    alpha: 1.0,
+                    color: e.color
+                });
+
+                // Render ejecting electron with extra glow trail
+                ctx.shadowColor = e.color;
+                ctx.shadowBlur = 9;
+                ctx.fillStyle = e.color;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 4.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Check out of bounds (virtual radius limit is 200)
+                if (Math.hypot(e.x - 150, e.y - 150) > 200) {
+                    e.isEjecting = false;
+                    e.removed = true;
+
+                    // Increment removed counter
+                    simState.removedCount++;
+
+                    // Activate bar on narrow vertical chart
+                    renderNarrowChart();
+
+                    // Check Core Jump
+                    const list = simState.ieValues[simState.elem];
+                    if (simState.removedCount - 1 === simState.jumps[simState.elem]) {
+                        const prevVal = list[simState.removedCount - 2];
+                        const curVal = list[simState.removedCount - 1];
+                        const ratio = Math.round(curVal / prevVal);
+
+                        const alertBadge = document.getElementById('sim-alert');
+                        alertBadge.style.display = 'block';
+                        alertBadge.textContent = `⚡ 移去第 ${simState.removedCount} 個電子！打破穩定殼層！游離能暴增 ${ratio} 倍！`;
+                        
+                        // Flash and extra screen shake on core jump
+                        simState.shakeTime = 30;
+                        simState.shakeIntensity = 8.0;
+                        simState.flashAlpha = 0.85;
+                    }
+
+                    // Check if any shell is now completely emptied
+                    [3, 2, 1].forEach(lvl => {
+                        const hasActive = simState.electrons.some(el => !el.removed && el.shell === lvl);
+                        if (!hasActive) {
+                            const shellObj = simState.shells[lvl - 1];
+                            shellObj.targetAlpha = 0; // fade shell orbit
+
+                            // Shell radii dynamic contraction (effective nuclear charge increase)
+                            if (lvl === 3) {
+                                // Valence emptied: Shell 2 shrinks 64 -> 54, Shell 1 shrinks 32 -> 26
+                                simState.shells[1].targetRadius = 54;
+                                simState.shells[0].targetRadius = 26;
+                            } else if (lvl === 2) {
+                                // Shell 2 also emptied: Shell 1 shrinks 26 -> 20
+                                simState.shells[0].targetRadius = 20;
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        // 5. Update and Draw Shards (Exploding force field)
+        simState.shards.forEach((sh, idx) => {
+            sh.x += sh.vx;
+            sh.y += sh.vy;
+            sh.rotation += sh.rotSpeed;
+            sh.alpha -= 0.022;
+
+            if (sh.alpha > 0.01) {
+                ctx.save();
+                ctx.translate(sh.x, sh.y);
+                ctx.rotate(sh.rotation);
+                ctx.strokeStyle = `rgba(192, 132, 252, ${sh.alpha})`;
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(-sh.size, -sh.size);
+                ctx.lineTo(sh.size, -sh.size);
+                ctx.lineTo(0, sh.size);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+        });
+        simState.shards = simState.shards.filter(sh => sh.alpha > 0.01);
+
+        // 6. Update and Draw Particle Trails
+        simState.particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= 0.026;
+
+            if (p.alpha > 0.01) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        });
+        ctx.globalAlpha = 1.0; // reset
+        simState.particles = simState.particles.filter(p => p.alpha > 0.01);
+
+        // 7. Draw Sci-Fi Laser Turret & Firing Beam
+        if (simState.laserActive && simState.targetElectronId !== null) {
+            const targeted = simState.electrons.find(el => el.id === simState.targetElectronId);
+            if (targeted) {
+                // Laser turret base
+                ctx.shadowColor = targeted.color;
+                ctx.shadowBlur = 6;
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(18, 18, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Fire Beam
+                if (targeted.shell === 3) {
+                    // Valence laser
+                    ctx.strokeStyle = '#22d3ee';
+                    ctx.lineWidth = 1.6;
+                    ctx.shadowColor = '#22d3ee';
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.moveTo(18, 18);
+                    ctx.lineTo(targeted.x, targeted.y);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Core plasma beam
+                    simState.laserPulse += 0.25;
+                    const thick = 3.2 + Math.sin(simState.laserPulse) * 1.5;
+                    
+                    ctx.strokeStyle = '#f87171';
+                    ctx.lineWidth = thick;
+                    ctx.shadowColor = '#f87171';
+                    ctx.shadowBlur = 10;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(18, 18);
+                    ctx.lineTo(targeted.x, targeted.y);
+                    ctx.stroke();
+                    
+                    // Inside white hot core
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = thick * 0.4;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+        } else {
+            // Static turret node
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.arc(18, 18, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 8. Full-screen screen flash overlay
+        if (simState.flashAlpha > 0.01) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${simState.flashAlpha})`;
+            ctx.fillRect(0, 0, 300, 300);
+            simState.flashAlpha -= 0.045;
+        }
+
+        ctx.restore(); // screen shake restore matrix
+
+        simAnimationId = requestAnimationFrame(simLoop);
+    }
+
+    // Button event listener registrations
+    document.getElementById('btn-sim-remove').addEventListener('click', launchRemoveElectron);
+
+    document.getElementById('btn-sim-reset').addEventListener('click', initSim);
+
+    // Switch element tab event listeners
+    document.querySelectorAll('.sim-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            document.querySelectorAll('.sim-tab').forEach(t => t.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            simState.elem = e.currentTarget.dataset.elem;
+            initSim();
+        });
+    });
+
+
+    // ═══════════════ 互動組件 2: 第二、三週期第一游離能折線圖 ═══════════════
+    const sawtoothData = {
+        period2: [
+            {sym:'Li', x:40,  y:170, val:520,  conf:'1s²2s¹ → 1s²'},
+            {sym:'Be', x:90,  y:120, val:900,  conf:'1s²2s² → 1s²2s¹', anomaly: true, desc:'Be 的電子組態為 [He] 2s²，為全滿的 s 軌域組態。s 軌域相較於 p 軌域更靠近原子核、能量低，且電子排布高度對稱穩定，故移去電子較為困難，第一游離能反常高於 B。'},
+            {sym:'B',  x:140, y:135, val:801,  conf:'1s²2s²2p¹ → 1s²2s²', anomaly: true, desc:'B 的組態為 [He] 2s² 2p¹，其價電子處於較高能量的 2p 軌域，且受到內層 2s 電子的顯著屏蔽，因此 2p 電子極易被移去，游離能反常地低於 Be。'},
+            {sym:'C',  x:190, y:96,  val:1086, conf:'1s²2s²2p² → 1s²2s²2p¹'},
+            {sym:'N',  x:240, y:60,  val:1402, conf:'1s²2s²2p³ → 1s²2s²2p²', anomaly: true, desc:'N 的組態為 [He] 2s² 2p³，其 2p 副殼層的三個軌域中各填入單個電子，屬於額外穩定的「半填滿」組態，帶有高交換能，因此移去電子極為困難。'},
+            {sym:'O',  x:290, y:70,  val:1314, conf:'1s²2s²2p⁴ → 1s²2s²2p³', anomaly: true, desc:'O 的組態為 [He] 2s² 2p⁴，其 2p 的第四個電子被迫與另一個電子填入相同軌域，帶同電性的成對電子在微小空間內會產生強烈的庫倫排斥力，使其極易被移去。'},
+            {sym:'F',  x:340, y:30,  val:1681, conf:'1s²2s²2p⁵ → 1s²2s²2p⁴'},
+            {sym:'Ne', x:390, y:5,   val:2081, conf:'1s²2s²2p⁶ → 1s²2s²2p⁵'}
+        ],
+        period3: [
+            {sym:'Na', x:40,  y:180, val:496,  conf:'1s²2s²2p⁶3s¹ → 1s²2s²2p⁶'},
+            {sym:'Mg', x:90,  y:142, val:738,  conf:'1s²2s²2p⁶3s² → 1s²2s²2p⁶3s¹', anomaly: true, desc:'Mg 的組態為 [Ne] 3s²，為 3s 軌域全滿組態，相較於 Al 的 3p¹ 軌域穩定。s 電子的穿透能力較強、能量低，因此游離能反常地高於 Al。'},
+            {sym:'Al', x:140, y:162, val:578,  conf:'1s²2s²2p⁶3s²3p¹ → 1s²2s²2p⁶3s²', anomaly: true, desc:'Al 的組態為 [Ne] 3s² 3p¹，3p 軌域電子能量高且受到內層 3s 屏蔽，較易被移去，游離能反常地低於 Mg。'},
+            {sym:'Si', x:190, y:135, val:786,  conf:'1s²2s²2p⁶3s²3p² → 1s²2s²2p⁶3s²3p¹'},
+            {sym:'P',  x:240, y:106, val:1012, conf:'1s²2s²2p⁶3s²3p³ → 1s²2s²2p⁶3s²3p²', anomaly: true, desc:'P 的組態為 [Ne] 3s² 3p³，屬於 3p 軌域「半填滿」組態，對稱且高度穩定，故游離能高於 S。'},
+            {sym:'S',  x:290, y:108, val:1000, conf:'1s²2s²2p⁶3s²3p⁴ → 1s²2s²2p⁶3s²3p³', anomaly: true, desc:'S 的組態為 [Ne] 3s² 3p⁴，第四個電子在 3p 中被迫共用軌域成對，成對電子之庫倫排斥力使該電子極易游離，第一游離能低於 P。'},
+            {sym:'Cl', x:340, y:75,  val:1251, conf:'1s²2s²2p⁶3s²3p⁵ → 1s²2s²2p⁶3s²3p⁴'},
+            {sym:'Ar', x:390, y:45,  val:1521, conf:'1s²2s²2p⁶3s²3p⁶ → 1s²2s²2p⁶3s²3p⁵'}
+        ]
+    };
+
+    let sawtoothInited = false;
+    function initSawtooth() {
+        if (sawtoothInited) return;
+        sawtoothInited = true;
+
+        const svg = document.getElementById('sawtooth-svg');
+        svg.innerHTML = '';
+
+        // 網格底線
+        for (let i = 0; i <= 4; i++) {
+            let y = 10 + i * 45;
+            svg.innerHTML += `<line x1="30" y1="${y}" x2="400" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+        }
+
+        // 折線繪製
+        const makePath = (data) => {
+            let p = `M ${data[0].x} ${data[0].y}`;
+            for (let i = 1; i < data.length; i++) {
+                p += ` L ${data[i].x} ${data[i].y}`;
+            }
+            return p;
+        };
+
+        // 週期二與三的線
+        svg.innerHTML += `<path d="${makePath(sawtoothData.period2)}" fill="none" stroke="var(--accent-purple)" stroke-width="2" filter="drop-shadow(0 0 4px var(--accent-purple))" opacity="0.8"/>`;
+        svg.innerHTML += `<path d="${makePath(sawtoothData.period3)}" fill="none" stroke="var(--accent-blue)" stroke-width="2" filter="drop-shadow(0 0 4px var(--accent-blue))" opacity="0.8"/>`;
+
+        // 繪製節點與點擊事件
+        const allNodes = [...sawtoothData.period2, ...sawtoothData.period3];
+        
+        // Helper function to create SVG text element safely without innerHTML re-parse
+        const createSvgText = (x, y, content, color, size, weight) => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', y);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', color);
+            text.setAttribute('font-size', size);
+            text.setAttribute('font-weight', weight);
+            text.textContent = content;
+            return text;
+        };
+
+        allNodes.forEach(node => {
+            const isP2 = node.val > 800 || ['Li','Be','B','C'].includes(node.sym);
+            const color = isP2 ? 'var(--accent-purple)' : 'var(--accent-blue)';
+            
+            // 節點圓點
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', node.x);
+            circle.setAttribute('cy', node.y);
+            circle.setAttribute('r', node.anomaly ? '6' : '4');
+            circle.setAttribute('fill', node.anomaly ? 'var(--accent-yellow)' : color);
+            circle.setAttribute('stroke', '#070a16');
+            circle.setAttribute('stroke-width', node.anomaly ? '2' : '1');
+            circle.setAttribute('class', 'chart-node');
+            
+            // 文字標籤坐標計算 (第二週期元素放置在線的上方，防重疊；Ne 做邊界防裁切處理)
+            let symY, valY;
+            if (isP2) {
+                if (node.sym === 'Ne') {
+                    symY = node.y + 24; // 放在線下方
+                    valY = node.y + 14;
+                } else {
+                    symY = node.y - 18; // 放在線上方
+                    valY = node.y - 8;
+                }
+            } else {
+                // 第三週期
+                symY = node.y + 16; // 放在線下方
+                valY = node.y - 8;  // 放在點上方
+            }
+
+            const symText = createSvgText(node.x, symY, node.sym, isP2 ? 'rgba(192,132,252,0.85)' : 'rgba(255,255,255,0.6)', '8', '700');
+            const valText = createSvgText(node.x, valY, node.val, color, '7', 'bold');
+
+            svg.appendChild(symText);
+            svg.appendChild(valText);
+            svg.appendChild(circle);
+
+            // 懸停事件 (滑鼠靠近時顯示該游離能產生的電子組態變化，並伴隨炫酷的霓虹燈邊框發光)
+            circle.addEventListener('mouseenter', () => {
+                const textEl = document.getElementById('config-change-text');
+                const displayEl = document.getElementById('electron-config-display');
+                if (textEl && displayEl) {
+                    textEl.innerHTML = `<span style="color: ${isP2 ? 'var(--accent-purple)' : 'var(--accent-blue)'}; font-weight: 800; text-shadow: 0 0 4px ${isP2 ? 'rgba(192,132,252,0.4)' : 'rgba(96,165,250,0.4)'};">${node.sym}</span>: ${node.conf}`;
+                    displayEl.style.borderColor = isP2 ? 'rgba(192,132,252,0.4)' : 'rgba(96,165,250,0.4)';
+                    displayEl.style.background = isP2 ? 'rgba(192,132,252,0.08)' : 'rgba(96,165,250,0.08)';
+                    displayEl.style.boxShadow = isP2 ? '0 0 12px rgba(192,132,252,0.2)' : '0 0 12px rgba(96,165,250,0.2)';
+                }
+            });
+
+            circle.addEventListener('mouseleave', () => {
+                const textEl = document.getElementById('config-change-text');
+                const displayEl = document.getElementById('electron-config-display');
+                if (textEl && displayEl) {
+                    textEl.innerHTML = '請將滑鼠移至原子節點上...';
+                    displayEl.style.borderColor = 'rgba(255,255,255,0.08)';
+                    displayEl.style.background = 'rgba(255,255,255,0.03)';
+                    displayEl.style.boxShadow = 'none';
+                }
+            });
+
+            // 點選節點觸起 Popup
+            circle.addEventListener('click', () => {
+                // 移除所有 nodes 的 active 樣式
+                document.querySelectorAll('.chart-node').forEach(c => c.classList.remove('chart-node-active'));
+                circle.classList.add('chart-node-active');
+
+                const popup = document.getElementById('sawtooth-popup');
+                popup.style.display = 'block';
+                
+                if (node.anomaly) {
+                    document.getElementById('pop-title').innerHTML = `🔍 反常分析：${node.sym} 的第一游離能為 ${node.val} kJ/mol`;
+                    document.getElementById('pop-desc').textContent = node.desc;
+                    document.getElementById('pop-title').style.color = 'var(--accent-yellow)';
+                } else {
+                    document.getElementById('pop-title').innerHTML = `📊 元素資料：${node.sym}`;
+                    document.getElementById('pop-desc').textContent = `第一游離能為 ${node.val} kJ/mol。此數值完全符合同週期由左至右有效核電荷 Z* 遞增、原子半徑縮小的整體規律趨勢。`;
+                    document.getElementById('pop-title').style.color = 'var(--accent-cyan)';
+                }
+            });
+        });
+    }
+
+
+    // ═══════════════ 互動組件 3: 軌域自旋電子填寫檢視 ═══════════════
+    const orbitalConfig = {
+        'Be': {
+            s2: ['up', 'down'],
+            px: [], py: [], pz: [],
+            desc: 'Be (2s²全滿)：2s 副殼層已完全填滿成對，電子排佈高度對稱且緊密，能階極度穩定。'
+        },
+        'B': {
+            s2: ['up', 'down'],
+            px: ['up'], py: [], pz: [],
+            desc: 'B (2p¹未滿)：最外層電子處於高能量的 2p 軌域且無成對穩定性，極易被移去。'
+        },
+        'N': {
+            s2: ['up', 'down'],
+            px: ['up'], py: ['up'], pz: ['up'],
+            desc: 'N (2p³半滿)：三個 2p 軌域各填入一個平行自旋電子。半滿組態高度對稱、能量極低，具額外穩定性！'
+        },
+        'O': {
+            s2: ['up', 'down'],
+            px: ['up', 'down'], py: ['up'], pz: ['up'],
+            desc: 'O (2p⁴成對排斥)：2p 軌域中有一對電子成對共享。這對電子間產生強烈的庫倫排斥力，使其極易被游離！'
+        }
+    };
+
+    function showOrbital(elem) {
+        // 更新標籤 active
+        const tabs = ['Be', 'B', 'N', 'O'];
+        tabs.forEach(t => {
+            document.getElementById(`tab-orb-${t}`).classList.toggle('active', t === elem);
+        });
+
+        const cfg = orbitalConfig[elem];
+        
+        // 渲染 2s
+        renderBox('box-2s', cfg.s2);
+        // 渲染 2p
+        renderBox('box-2px', cfg.px);
+        renderBox('box-2py', cfg.py);
+        renderBox('box-2pz', cfg.pz);
+
+        // 標記高亮與說明
+        const isStable = elem === 'Be' || elem === 'N';
+        document.getElementById('box-2s').classList.toggle('stable', elem === 'Be');
+        document.getElementById('box-2px').classList.toggle('stable', elem === 'N' || elem === 'O');
+        document.getElementById('box-2py').classList.toggle('stable', elem === 'N');
+        document.getElementById('box-2pz').classList.toggle('stable', elem === 'N');
+
+        document.getElementById('orbital-desc').textContent = cfg.desc;
+        document.getElementById('orbital-desc').style.color = isStable ? 'var(--accent-green)' : 'var(--accent-red)';
+    }
+
+    function renderBox(boxId, list) {
+        const box = document.getElementById(boxId);
+        box.innerHTML = '';
+        if (list.includes('up')) {
+            box.innerHTML += `<div class="orbital-arrow up">↑</div>`;
+        }
+        if (list.includes('down')) {
+            box.innerHTML += `<div class="orbital-arrow down">↓</div>`;
+        }
+    }
+
+
+    // ═══════════════ 互動組件 4: 單電子游離能計算器 ═══════════════
+    let calcState = {
+        Z: 1,
+        n: 1
+    };
+
+    function initCalc() {
+        const svg = document.getElementById('calc-energy-svg');
+        svg.innerHTML = '';
+
+        // 讀取目前的 Z 與 n
+        calcState.Z = parseInt(document.getElementById('calc-z').value);
+        calcState.n = parseInt(document.getElementById('calc-n').value);
+
+        // 計算數值
+        // IE = 13.6 * Z^2 / n^2 eV
+        const factor = (calcState.Z * calcState.Z) / (calcState.n * calcState.n);
+        const ieEv = 13.6 * factor;
+        const ieKj = 1312 * factor;
+
+        const resultBox = document.getElementById('calc-result');
+        resultBox.innerHTML = `
+            <p style="font-size:1.05rem; font-weight:800; color:var(--accent-green);">
+                ⚡ 游離能計算結果：
+            </p>
+            <p style="font-size:1.35rem; font-weight:900; color:var(--accent-yellow); margin-top:3px; font-family:var(--font-mono);">
+                IE = ${ieEv.toFixed(1)} eV &nbsp;<span style="font-size:0.9rem; font-weight:normal; color:rgba(255,255,255,0.5);">(${Math.round(ieKj).toLocaleString()} kJ/mol)</span>
+            </p>
+            <p style="font-size:0.86rem; color:rgba(255,255,255,0.6); margin-top:2px;">
+                這相當於氫原子基態游離能的 <strong style="color:var(--accent-cyan); font-family:var(--font-mono); font-size:1rem;">${factor.toFixed(2)}</strong> 倍！(Z² / n² = ${calcState.Z}² / ${calcState.n}²)
+            </p>
+        `;
+
+        // 繪製能階躍遷圖
+        // 基底
+        svg.innerHTML += `<line x1="20" y1="110" x2="180" y2="110" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>`;
+        svg.innerHTML += `<text x="188" y="113" fill="rgba(255,255,255,0.5)" font-size="7">n = ∞ (E=0)</text>`;
+
+        // 能階線 (n=1 到 n=4)
+        // 波耳模型中 En = -13.6 * Z^2 / n^2
+        // 我們將 n=1 對應到 y=100 (底部), n=∞ 對應到 y=10 (頂部)
+        const levels = [1, 2, 3, 4];
+        levels.forEach(lvl => {
+            const y = 10 + (100 / (lvl * lvl)); // y 越靠近 10 能量越高
+            
+            // 是否為目前能階
+            const isCurrent = lvl === calcState.n;
+            const strokeColor = isCurrent ? 'var(--accent-yellow)' : 'rgba(255,255,255,0.18)';
+            const strokeW = isCurrent ? 2 : 1;
+            
+            svg.innerHTML += `<line x1="20" y1="${y}" x2="160" y2="${y}" stroke="${strokeColor}" stroke-width="${strokeW}"/>`;
+            svg.innerHTML += `<text x="168" y="${y+3}" fill="${strokeColor}" font-size="7" font-weight="${isCurrent ? 'bold' : 'normal'}">n = ${lvl}</text>`;
+
+            if (isCurrent) {
+                // 電子小球
+                svg.innerHTML += `<circle cx="80" cy="${y}" r="3.5" fill="var(--accent-cyan)" filter="drop-shadow(0 0 4px var(--accent-cyan))"/>`;
+                
+                // 電子飛出箭頭動畫
+                svg.innerHTML += `<line x1="80" y1="${y}" x2="80" y2="8" stroke="var(--accent-red)" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>`;
+                svg.innerHTML += `<text x="85" y="${(y+10)/2}" fill="var(--accent-red)" font-size="6.5" font-weight="bold">游離發射 ⚡</text>`;
+            }
+        });
+
+        // 注入 SVG 箭頭標記
+        svg.innerHTML += `
+            <defs>
+                <marker id="arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-red)"/>
+                </marker>
+            </defs>
+        `;
+    }
+
+    // 計算器控制註冊
+    document.getElementById('calc-z').addEventListener('change', initCalc);
+    document.getElementById('calc-n').addEventListener('input', (e) => {
+        document.getElementById('calc-n-val').textContent = `n=${e.target.value}`;
+        initCalc();
+    });
+
+
+    // ═══════════════ 互動組件 5: 週期表 + 折線圖 跨元件對照 (Z = 1–40) ═══════════════
+    const crossIEData = [
+        {Z:1,  sym:'H',  period:1, group:1,  val:1312, cfg:'1s¹'},
+        {Z:2,  sym:'He', period:1, group:18, val:2372, cfg:'1s²'},
+        {Z:3,  sym:'Li', period:2, group:1,  val:520,  cfg:'[He]2s¹'},
+        {Z:4,  sym:'Be', period:2, group:2,  val:900,  cfg:'[He]2s²'},
+        {Z:5,  sym:'B',  period:2, group:13, val:801,  cfg:'[He]2s²2p¹'},
+        {Z:6,  sym:'C',  period:2, group:14, val:1086, cfg:'[He]2s²2p²'},
+        {Z:7,  sym:'N',  period:2, group:15, val:1402, cfg:'[He]2s²2p³'},
+        {Z:8,  sym:'O',  period:2, group:16, val:1314, cfg:'[He]2s²2p⁴'},
+        {Z:9,  sym:'F',  period:2, group:17, val:1681, cfg:'[He]2s²2p⁵'},
+        {Z:10, sym:'Ne', period:2, group:18, val:2081, cfg:'[He]2s²2p⁶'},
+        {Z:11, sym:'Na', period:3, group:1,  val:496,  cfg:'[Ne]3s¹'},
+        {Z:12, sym:'Mg', period:3, group:2,  val:738,  cfg:'[Ne]3s²'},
+        {Z:13, sym:'Al', period:3, group:13, val:578,  cfg:'[Ne]3s²3p¹'},
+        {Z:14, sym:'Si', period:3, group:14, val:786,  cfg:'[Ne]3s²3p²'},
+        {Z:15, sym:'P',  period:3, group:15, val:1012, cfg:'[Ne]3s²3p³'},
+        {Z:16, sym:'S',  period:3, group:16, val:1000, cfg:'[Ne]3s²3p⁴'},
+        {Z:17, sym:'Cl', period:3, group:17, val:1251, cfg:'[Ne]3s²3p⁵'},
+        {Z:18, sym:'Ar', period:3, group:18, val:1521, cfg:'[Ne]3s²3p⁶'},
+        {Z:19, sym:'K',  period:4, group:1,  val:419,  cfg:'[Ar]4s¹'},
+        {Z:20, sym:'Ca', period:4, group:2,  val:590,  cfg:'[Ar]4s²'},
+        {Z:21, sym:'Sc', period:4, group:3,  val:633,  cfg:'[Ar]3d¹4s²'},
+        {Z:22, sym:'Ti', period:4, group:4,  val:659,  cfg:'[Ar]3d²4s²'},
+        {Z:23, sym:'V',  period:4, group:5,  val:651,  cfg:'[Ar]3d³4s²'},
+        {Z:24, sym:'Cr', period:4, group:6,  val:653,  cfg:'[Ar]3d⁵4s¹'},
+        {Z:25, sym:'Mn', period:4, group:7,  val:717,  cfg:'[Ar]3d⁵4s²'},
+        {Z:26, sym:'Fe', period:4, group:8,  val:762,  cfg:'[Ar]3d⁶4s²'},
+        {Z:27, sym:'Co', period:4, group:9,  val:760,  cfg:'[Ar]3d⁷4s²'},
+        {Z:28, sym:'Ni', period:4, group:10, val:737,  cfg:'[Ar]3d⁸4s²'},
+        {Z:29, sym:'Cu', period:4, group:11, val:745,  cfg:'[Ar]3d¹⁰4s¹'},
+        {Z:30, sym:'Zn', period:4, group:12, val:906,  cfg:'[Ar]3d¹⁰4s²'},
+        {Z:31, sym:'Ga', period:4, group:13, val:579,  cfg:'[Ar]3d¹⁰4s²4p¹'},
+        {Z:32, sym:'Ge', period:4, group:14, val:762,  cfg:'[Ar]3d¹⁰4s²4p²'},
+        {Z:33, sym:'As', period:4, group:15, val:947,  cfg:'[Ar]3d¹⁰4s²4p³'},
+        {Z:34, sym:'Se', period:4, group:16, val:941,  cfg:'[Ar]3d¹⁰4s²4p⁴'},
+        {Z:35, sym:'Br', period:4, group:17, val:1140, cfg:'[Ar]3d¹⁰4s²4p⁵'},
+        {Z:36, sym:'Kr', period:4, group:18, val:1351, cfg:'[Ar]3d¹⁰4s²4p⁶'},
+        {Z:37, sym:'Rb', period:5, group:1,  val:403,  cfg:'[Kr]5s¹'},
+        {Z:38, sym:'Sr', period:5, group:2,  val:550,  cfg:'[Kr]5s²'},
+        {Z:39, sym:'Y',  period:5, group:3,  val:600,  cfg:'[Kr]4d¹5s²'},
+        {Z:40, sym:'Zr', period:5, group:4,  val:640,  cfg:'[Kr]4d²5s²'},
+    ];
+
+    const crossPeriodColors = {1:'#22d3ee', 2:'#c084fc', 3:'#60a5fa', 4:'#34d399', 5:'#fb923c'};
+    let crossHighlightZ = null;
+
+    function highlightElement(Z, color) {
+        if (crossHighlightZ === Z) return;
+        clearHighlight();
+        crossHighlightZ = Z;
+
+        // Glow PT cell
+        const ptCell = document.getElementById(`ptc-${Z}`);
+        if (ptCell) {
+            ptCell.style.transform = 'scale(1.4)';
+            ptCell.style.zIndex = '25';
+            ptCell.style.boxShadow = `0 0 16px ${color}, 0 0 6px rgba(255,255,255,0.5)`;
+            ptCell.style.borderColor = 'rgba(255,255,255,0.95)';
+        }
+
+        // Glow chart dot
+        const dot = document.getElementById(`chd-${Z}`);
+        if (dot) {
+            dot.setAttribute('r', '7');
+            dot.setAttribute('stroke', '#ffffff');
+            dot.setAttribute('stroke-width', '2');
+            dot.style.filter = `drop-shadow(0 0 6px ${color})`;
+        }
+
+        // Info bar
+        const el = crossIEData.find(e => e.Z === Z);
+        if (el) {
+            const bar = document.getElementById('cross-info-bar');
+            const txt = document.getElementById('cross-info-text');
+            if (bar) { bar.style.borderColor = color; bar.style.background = `rgba(0,0,0,0.5)`; }
+            if (txt) txt.innerHTML = `
+                <div style="display:flex; flex-direction:column; gap:4px; align-items:center; width:100%;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <strong style="color:${color}; font-size:1.6rem; text-shadow:0 0 6px ${color};">${el.sym}</strong>
+                        <span style="color:rgba(255,255,255,0.6); font-size:1.1rem;">(Z = ${el.Z})</span>
+                        <span style="padding:2px 8px; background:rgba(255,255,255,0.1); border-radius:4px; color:rgba(255,255,255,0.8); font-size:0.95rem;">第 ${el.period} 週期 · 第 ${el.group} 族</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:15px; font-size:1.1rem;">
+                        <span>電子組態: <span style="font-family:monospace; color:var(--accent-cyan); font-size:1.2rem;">${el.cfg}</span></span>
+                        <span style="color:rgba(255,255,255,0.4);">|</span>
+                        <span>第一游離能: <strong style="color:var(--accent-yellow); font-size:1.35rem;">${el.val} <span style="font-size:0.95rem; font-weight:normal;">kJ/mol</span></strong></span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function clearHighlight() {
+        if (crossHighlightZ !== null) {
+            const ptCell = document.getElementById(`ptc-${crossHighlightZ}`);
+            if (ptCell) {
+                ptCell.style.transform = '';
+                ptCell.style.zIndex = '';
+                ptCell.style.boxShadow = '';
+                ptCell.style.borderColor = ptCell.dataset.origBorder || '';
+            }
+            const dot = document.getElementById(`chd-${crossHighlightZ}`);
+            if (dot) {
+                dot.setAttribute('r', '4');
+                dot.setAttribute('stroke', '#070a16');
+                dot.setAttribute('stroke-width', '1.5');
+                dot.style.filter = '';
+            }
+            crossHighlightZ = null;
+        }
+        const bar = document.getElementById('cross-info-bar');
+        const txt = document.getElementById('cross-info-text');
+        if (bar) { bar.style.borderColor = ''; bar.style.background = ''; }
+        if (txt) { txt.innerHTML = '<div style="font-size:1.15rem; line-height:1.5;">💡 移動滑鼠至週期表或折線圖上的任一元素<br><span style="font-size:0.95rem; color:rgba(255,255,255,0.3);">兩者將同步發亮對照，並在此顯示詳細數據</span></div>'; txt.style.color = 'rgba(255,255,255,0.38)'; }
+    }
+
+    let ptableInited = false;
+    function initPTable() {
+        if (ptableInited) return;
+        ptableInited = true;
+
+        const minIE = 403, maxIE = 2372;
+
+        // Period × Group lookup
+        const lookup = {};
+        crossIEData.forEach(el => {
+            if (!lookup[el.period]) lookup[el.period] = {};
+            lookup[el.period][el.group] = el;
+        });
+
+        // ── Periodic Table Grid (5 rows × 18 columns) ──────────────────
+        const grid = document.getElementById('ptable-cross-grid');
+        grid.innerHTML = '';
+
+        for (let period = 1; period <= 5; period++) {
+            for (let group = 1; group <= 18; group++) {
+                const div = document.createElement('div');
+                const el = lookup[period] && lookup[period][group];
+
+                if (el) {
+                    const frac = (el.val - minIE) / (maxIE - minIE);
+                    const pColor = crossPeriodColors[el.period];
+                    const r = Math.round(210 * frac + 25);
+                    const g = Math.round(55 * (1 - Math.abs(frac - 0.5) * 2));
+                    const b = Math.round(225 * (1 - frac) + 30);
+                    const bg = `rgba(${r},${g},${b},0.55)`;
+                    const border = `rgba(${r},${g},${b},0.9)`;
+
+                    div.id = `ptc-${el.Z}`;
+                    div.dataset.origBorder = border;
+                    div.style.cssText = `
+                        border-radius:5px; display:flex; flex-direction:column;
+                        align-items:center; justify-content:center; aspect-ratio:1;
+                        background:${bg}; border:1.5px solid ${border};
+                        cursor:pointer; position:relative; overflow:hidden;
+                        transition:transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+                    `;
+                    div.innerHTML = `
+                        <span style="font-size:clamp(0.34rem,0.65vw,0.48rem); opacity:0.5; position:absolute; top:1px; left:2px; line-height:1;">${el.Z}</span>
+                        <span style="font-size:clamp(0.56rem,1.05vw,0.82rem); font-weight:900; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.7); line-height:1.1;">${el.sym}</span>
+                        <span style="font-size:clamp(0.28rem,0.52vw,0.42rem); color:rgba(255,255,255,0.65); margin-top:1px; font-weight:600;">${el.val}</span>
+                    `;
+                    div.addEventListener('mouseenter', () => highlightElement(el.Z, pColor));
+                    div.addEventListener('mouseleave', clearHighlight);
+                } else {
+                    div.style.cssText = 'aspect-ratio:1; background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.04); border-radius:4px;';
+                }
+                grid.appendChild(div);
+            }
+        }
+
+        // ── IE Line Chart SVG ───────────────────────────────────────────
+        buildIELineChart();
+    }
+
+    function buildIELineChart() {
+        const svg = document.getElementById('ie-line-svg');
+        svg.innerHTML = '';
+
+        // 適合右側較窄較高面板的尺寸
+        const W = 400, H = 280;
+        const L = 38, R = 8, T = 14, B = 30;
+        const cW = W - L - R, cH = H - T - B;
+
+        const xOf = Z  => L + ((Z - 1) / 39) * cW;
+        const yOf = ie => T + cH - (ie / 2500) * cH;
+        const mk  = tag => document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+        // Horizontal grid lines + Y labels
+        [500, 1000, 1500, 2000, 2500].forEach(ie => {
+            const y = yOf(ie);
+            const gl = mk('line');
+            gl.setAttribute('x1', L); gl.setAttribute('y1', y);
+            gl.setAttribute('x2', W-R); gl.setAttribute('y2', y);
+            gl.setAttribute('stroke', 'rgba(255,255,255,0.07)'); gl.setAttribute('stroke-width', '1');
+            svg.appendChild(gl);
+            const t = mk('text');
+            t.setAttribute('x', L-4); t.setAttribute('y', y+3);
+            t.setAttribute('text-anchor', 'end');
+            t.setAttribute('fill', 'rgba(255,255,255,0.4)'); t.setAttribute('font-size', '9');
+            t.textContent = ie;
+            svg.appendChild(t);
+        });
+
+        // Y-axis title
+        const yTtl = mk('text');
+        yTtl.setAttribute('x', 8); yTtl.setAttribute('y', T + cH/2);
+        yTtl.setAttribute('text-anchor', 'middle');
+        yTtl.setAttribute('fill', 'rgba(255,255,255,0.35)'); yTtl.setAttribute('font-size', '9');
+        yTtl.setAttribute('transform', `rotate(-90 8 ${T + cH/2})`);
+        yTtl.textContent = 'kJ/mol';
+        svg.appendChild(yTtl);
+
+        // Period shaded bands & labels
+        const periodDefs = [
+            {start:1,  end:2,  color:'#22d3ee', label:'第1週期'},
+            {start:3,  end:10, color:'#c084fc', label:'第2週期'},
+            {start:11, end:18, color:'#60a5fa', label:'第3週期'},
+            {start:19, end:36, color:'#34d399', label:'第4週期'},
+            {start:37, end:40, color:'#fb923c', label:'第5週期'},
+        ];
+        periodDefs.forEach(p => {
+            const x1 = xOf(p.start - 0.42), x2 = xOf(p.end + 0.42);
+            const band = mk('rect');
+            band.setAttribute('x', x1); band.setAttribute('y', T);
+            band.setAttribute('width', x2-x1); band.setAttribute('height', cH);
+            band.setAttribute('fill', p.color); band.setAttribute('opacity', '0.055');
+            svg.appendChild(band);
+            const lbl = mk('text');
+            lbl.setAttribute('x', (x1+x2)/2); lbl.setAttribute('y', T+cH+20);
+            lbl.setAttribute('text-anchor', 'middle');
+            lbl.setAttribute('fill', p.color); lbl.setAttribute('font-size', '7.5');
+            lbl.setAttribute('font-weight', '700'); lbl.setAttribute('opacity', '0.88');
+            lbl.textContent = p.label;
+            svg.appendChild(lbl);
+        });
+
+        // Period boundary dashes
+        [2.5, 10.5, 18.5, 36.5].forEach(z => {
+            const vl = mk('line');
+            vl.setAttribute('x1', xOf(z)); vl.setAttribute('y1', T);
+            vl.setAttribute('x2', xOf(z)); vl.setAttribute('y2', T+cH);
+            vl.setAttribute('stroke', 'rgba(255,255,255,0.18)');
+            vl.setAttribute('stroke-width', '1'); vl.setAttribute('stroke-dasharray', '3,2');
+            svg.appendChild(vl);
+        });
+
+        // X-axis ticks & labels (every 5)
+        for (let Z = 5; Z <= 40; Z += 5) {
+            const x = xOf(Z);
+            const tk = mk('line');
+            tk.setAttribute('x1', x); tk.setAttribute('y1', T+cH);
+            tk.setAttribute('x2', x); tk.setAttribute('y2', T+cH+5);
+            tk.setAttribute('stroke', 'rgba(255,255,255,0.3)'); tk.setAttribute('stroke-width', '1');
+            svg.appendChild(tk);
+            const xt = mk('text');
+            xt.setAttribute('x', x); xt.setAttribute('y', T+cH+13);
+            xt.setAttribute('text-anchor', 'middle');
+            xt.setAttribute('fill', 'rgba(255,255,255,0.45)'); xt.setAttribute('font-size', '9');
+            xt.textContent = Z;
+            svg.appendChild(xt);
+        }
+
+        // X-axis title
+        const xLbl = mk('text');
+        xLbl.setAttribute('x', L+cW/2); xLbl.setAttribute('y', H-1);
+        xLbl.setAttribute('text-anchor', 'middle');
+        xLbl.setAttribute('fill', 'rgba(255,255,255,0.35)'); xLbl.setAttribute('font-size', '9');
+        xLbl.textContent = '原子序 Z';
+        svg.appendChild(xLbl);
+
+        // Period-colored line segments
+        periodDefs.forEach(p => {
+            const els = crossIEData.filter(e => e.Z >= p.start && e.Z <= p.end).sort((a,b) => a.Z - b.Z);
+            if (els.length < 2) return;
+            let d = `M ${xOf(els[0].Z).toFixed(1)} ${yOf(els[0].val).toFixed(1)}`;
+            els.slice(1).forEach(e => { d += ` L ${xOf(e.Z).toFixed(1)} ${yOf(e.val).toFixed(1)}`; });
+            const path = mk('path');
+            path.setAttribute('d', d); path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', p.color); path.setAttribute('stroke-width', '2.2');
+            path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('opacity', '0.85');
+            svg.appendChild(path);
+        });
+
+        // Noble gas symbol landmarks (above the dot)
+        [2, 10, 18, 36].forEach(Z => {
+            const el = crossIEData.find(e => e.Z === Z);
+            if (!el) return;
+            const t = mk('text');
+            t.setAttribute('x', xOf(Z).toFixed(1));
+            t.setAttribute('y', (yOf(el.val) - 9).toFixed(1));
+            t.setAttribute('text-anchor', 'middle');
+            t.setAttribute('fill', crossPeriodColors[el.period]);
+            t.setAttribute('font-size', '9'); t.setAttribute('font-weight', '800');
+            t.setAttribute('opacity', '0.9');
+            t.textContent = el.sym;
+            svg.appendChild(t);
+        });
+
+        // Data dots + invisible hit areas (drawn last → on top)
+        crossIEData.forEach(el => {
+            const pColor = crossPeriodColors[el.period];
+            const cx = xOf(el.Z).toFixed(1);
+            const cy = yOf(el.val).toFixed(1);
+
+            // Main dot
+            const dot = mk('circle');
+            dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+            dot.setAttribute('r', '4.5');
+            dot.setAttribute('fill', pColor);
+            dot.setAttribute('stroke', '#070a16'); dot.setAttribute('stroke-width', '1.5');
+            dot.setAttribute('cursor', 'pointer');
+            dot.id = `chd-${el.Z}`;
+            svg.appendChild(dot);
+
+            // Larger transparent hit area
+            const hit = mk('circle');
+            hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
+            hit.setAttribute('r', '10');
+            hit.setAttribute('fill', 'transparent');
+            hit.setAttribute('cursor', 'pointer');
+            hit.addEventListener('mouseenter', () => highlightElement(el.Z, pColor));
+            hit.addEventListener('mouseleave', clearHighlight);
+            svg.appendChild(hit);
+        });
+    }
+
+
+
+
+    // ═══════════════ 互動組件 6: 觀念連連看 ═══════════════
+    const gamePool = [
+        { id: 'A', left: 'He (氦)', right: '全週期表第一游離能最高者' },
+        { id: 'B', left: 'Fr (鍅)', right: '全週期表第一游離能最低者' },
+        { id: 'C', left: 'Be > B / Mg > Al', right: '軌域全滿穩定度 (s² > p¹)' },
+        { id: 'D', left: 'N > O / P > S', right: '軌域半滿穩定度 (p³ > p⁴)' },
+        { id: 'E', left: 'IE 驟增的級數', right: '用以判斷主族元素之最外層電子數' },
+        { id: 'F', left: 'IE₁ < IE₂ < IE₃', right: '移去電子後，核對剩餘電子引力遞增' },
+        { id: 'G', left: '同週期由左→右', right: '游離能整體遞增（鋸齒狀）' },
+        { id: 'H', left: '同族由上→下', right: '游離能遞減' },
+        { id: 'I', left: '2A 與 3A 比較', right: '2A 第一游離能反常較高' },
+        { id: 'J', left: '5A 與 6A 比較', right: '5A 第一游離能反常較高' },
+        { id: 'K', left: 'Li 的第一游離能', right: '極低，易失去 2s¹ 電子' },
+        { id: 'L', left: '類氫離子 IE 比例', right: 'IE ∝ Z²（如 H:He⁺:Li²⁺ = 1:4:9）' },
+        { id: 'M', left: '游離能定義', right: '基態氣態原子移去電子所需最小能量' },
+        { id: 'N', left: '破壞 [Ne] 滿核心', right: '連續游離能發生跳躍式暴增' }
+    ];
+    const PICK_N = 6;
+    let gameData = [];
+    let gameConnections = [];
+    let gStartDot = null;
+    let gLine = null;
+    let isDraggingGame = false;
+    let gameDragBound = false;
+
+    function pickGameData() {
+        const arr = [...gamePool];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr.slice(0, PICK_N);
+    }
+
+    function dotAtPoint(cx, cy) {
+        let hit = null;
+        document.querySelectorAll('#slide-game .dot').forEach(dot => {
+            if (dot.classList.contains('active')) return;
+            const r = dot.getBoundingClientRect();
+            if (cx >= r.left - 18 && cx <= r.right + 18 && cy >= r.top - 18 && cy <= r.bottom + 18) hit = dot;
+        });
+        return hit;
+    }
+
+    function oppositeDot(dot) {
+        if (!dot || !gStartDot) return null;
+        if (dot === gStartDot) return null;
+        if (dot.classList.contains('left-dot') === gStartDot.classList.contains('left-dot')) return null;
+        return dot;
+    }
+
+    function setDragLineColor(targetDot) {
+        if (!gLine || !gStartDot) return;
+        const opp = oppositeDot(targetDot);
+        if (opp && gStartDot.dataset.id === opp.dataset.id) {
+            gLine.setAttribute('stroke', 'var(--accent-green)');
+            gLine.setAttribute('stroke-dasharray', 'none');
+        } else if (opp) {
+            gLine.setAttribute('stroke', 'var(--accent-red)');
+            gLine.setAttribute('stroke-dasharray', 'none');
+        } else {
+            gLine.setAttribute('stroke', 'var(--accent-blue)');
+            gLine.setAttribute('stroke-dasharray', '6,3');
+        }
+    }
+
+    function bindGameDrag() {
+        if (gameDragBound) return;
+        gameDragBound = true;
+        window.addEventListener('mousemove', gDragMove);
+        window.addEventListener('touchmove', gDragMove, { passive: false });
+        window.addEventListener('mouseup', gDragEnd);
+        window.addEventListener('touchend', gDragEnd);
+    }
+
+    function initGame() {
+        connectionsReset();
+        gameData = pickGameData();
+        const lc = document.getElementById('left-column');
+        const dc = document.getElementById('dot-column');
+        const rdc = document.getElementById('right-dot-column');
+        const rtc = document.getElementById('right-text-column');
+        const svg = document.getElementById('game-svg');
+        if (!lc || !dc || !rdc || !rtc || !svg) return;
+
+        lc.innerHTML = '';
+        dc.innerHTML = '';
+        rdc.innerHTML = '';
+        rtc.innerHTML = '';
+        svg.innerHTML = '';
+        document.getElementById('game-feedback').style.display = 'none';
+
+        const shuffledRight = [...gameData].sort(() => Math.random() - 0.5);
+
+        gameData.forEach(item => {
+            const lDiv = document.createElement('div');
+            lDiv.className = 'game-label game-label-l';
+            lDiv.dataset.id = item.id;
+            lDiv.textContent = item.left;
+            lc.appendChild(lDiv);
+        });
+
+        gameData.forEach(lItem => {
+            const lDot = document.createElement('div');
+            lDot.className = 'dot left-dot';
+            lDot.dataset.id = lItem.id;
+            dc.appendChild(lDot);
+        });
+
+        shuffledRight.forEach(item => {
+            const rDot = document.createElement('div');
+            rDot.className = 'dot right-dot';
+            rDot.dataset.id = item.id;
+            rdc.appendChild(rDot);
+
+            const rDiv = document.createElement('div');
+            rDiv.className = 'game-label game-label-r';
+            rDiv.dataset.id = item.id;
+            rDiv.textContent = item.right;
+            rtc.appendChild(rDiv);
+        });
+
+        document.querySelectorAll('#slide-game .dot').forEach(dot => {
+            dot.addEventListener('mousedown', gDragStart);
+            dot.addEventListener('touchstart', gDragStart, { passive: false });
+        });
+        bindGameDrag();
+    }
+
+    function connectionsReset() {
+        gameConnections = [];
+        gStartDot = null;
+        gLine = null;
+        isDraggingGame = false;
+    }
+
+    function gDragStart(e) {
+        if (!slides[currentSlide] || slides[currentSlide].id !== 'slide-game') return;
+        if (e.currentTarget.classList.contains('active')) return;
+        e.preventDefault();
+        isDraggingGame = true;
+        gStartDot = e.currentTarget;
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        const rect = document.getElementById('game-svg').getBoundingClientRect();
+        const dr = gStartDot.getBoundingClientRect();
+        gLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        gLine.setAttribute('x1', dr.left + dr.width / 2 - rect.left);
+        gLine.setAttribute('y1', dr.top + dr.height / 2 - rect.top);
+        gLine.setAttribute('x2', cx - rect.left);
+        gLine.setAttribute('y2', cy - rect.top);
+        gLine.setAttribute('stroke', 'var(--accent-blue)');
+        gLine.setAttribute('stroke-width', '3');
+        gLine.setAttribute('stroke-dasharray', '6,3');
+        document.getElementById('game-svg').appendChild(gLine);
+    }
+
+    function gDragMove(e) {
+        if (!isDraggingGame || !gLine) return;
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        const rect = document.getElementById('game-svg').getBoundingClientRect();
+        gLine.setAttribute('x2', cx - rect.left);
+        gLine.setAttribute('y2', cy - rect.top);
+        setDragLineColor(dotAtPoint(cx, cy));
+    }
+
+    function gDragEnd(e) {
+        if (!isDraggingGame) return;
+        isDraggingGame = false;
+        const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+        const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+        const tDot = dotAtPoint(cx, cy);
+        const validTarget = oppositeDot(tDot);
+
+        if (validTarget && gStartDot.dataset.id === validTarget.dataset.id) {
+            gStartDot.classList.add('active');
+            validTarget.classList.add('active');
+            gameConnections.push({ from: gStartDot, to: validTarget });
+            document.querySelectorAll(`#slide-game .game-label[data-id="${gStartDot.dataset.id}"]`).forEach(el => el.classList.add('done'));
+            if (gLine) gLine.remove();
+            gLine = null;
+            drawConnections();
+            checkGameEnd();
+        } else if (validTarget && gLine) {
+            gLine.setAttribute('stroke', 'var(--accent-red)');
+            const bad = gLine;
+            gLine = null;
+            bad.remove();
+        } else if (gLine) {
+            gLine.remove();
+            gLine = null;
+        }
+        gStartDot = null;
+    }
+
+    function drawConnections() {
+        const svg = document.getElementById('game-svg');
+        if (!svg) return;
+        const temp = isDraggingGame ? gLine : null;
+        svg.innerHTML = '';
+        if (temp) svg.appendChild(temp);
+        const rect = svg.getBoundingClientRect();
+        gameConnections.forEach(c => {
+            const r1 = c.from.getBoundingClientRect();
+            const r2 = c.to.getBoundingClientRect();
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+            line.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+            line.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+            line.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+            line.setAttribute('stroke', 'var(--accent-green)');
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('filter', 'drop-shadow(0 0 4px var(--accent-green))');
+            svg.appendChild(line);
+        });
+    }
+
+    function checkGameEnd() {
+        if (gameConnections.length === gameData.length) {
+            document.getElementById('game-feedback').style.display = 'block';
+        }
+    }
+
+    function resetGame() {
+        document.getElementById('game-feedback').style.display = 'none';
+        initGame();
+    }
+
+    // ═══════════════ 互動組件 7: 1-20 元素連續游離能 (IE1, IE2, IE3) 對照 ═══════════════
+    const successiveData = [
+      { Z: 1, sym: 'H', name: '氫', configs: ['1s¹', '無', '', ''], ies: [1312, null, null], notes: ['移走僅有的 1s 電子。這是最簡單的游離過程。', '', ''] },
+      { Z: 2, sym: 'He', name: '氦', configs: ['1s²', '1s¹', '無', ''], ies: [2372, 5250, null], notes: ['移走第一個 1s 電子。由於 He 具有最穩定的閉殼滿核結構 (1s²)，其第一游離能是所有元素中最高！', '移走最後的 1s 電子。由於只剩一個電子，且完全失去了電子間的排斥力，核電荷對其吸引極強，能量需求非常大。', ''] },
+      { Z: 3, sym: 'Li', name: '鋰', configs: ['1s² 2s¹', '1s²', '1s¹', '無'], ies: [520, 7298, 11815], notes: ['移走最外層 2s¹ 電子，形成極穩定的 [He] 滿核心 (1s²)。因此第一游離能非常低，極易失去。', '💥 破壞極為穩定的內層 [He] 滿核心！必須從最內部的 1s 軌域移走電子，所需游離能發生跳躍式暴增（達 14 倍）！', '移走最後的 1s¹ 電子。電荷已達 2+，核電荷與電子間的吸引力極強。'] },
+      { Z: 4, sym: 'Be', name: '鈹', configs: ['1s² 2s²', '1s² 2s¹', '1s²', '1s¹'], ies: [900, 1757, 14849], notes: ['移走第一個 2s 電子。由於最外層 2s 軌域全滿具有相對對稱穩定性，其第一游離能略高於同週期相鄰的硼。', '移走第二個 2s 電子。移去後外層 2s 電子已清空，剩餘的結構是極為穩定的內層 [He] 核心。', '💥 破壞穩定的 [He] 滿殼層核心 (1s²)，電子極難移去，能壘發生巨大跳躍（近 8.5 倍）！'] },
+      { Z: 5, sym: 'B', name: '硼', configs: ['[He]2s²2p¹', '[He]2s²', '[He]2s¹', '[He]'], ies: [801, 2427, 3660], notes: ['移走最外層 2p¹ 電子。由於 2p 電子比 2s 電子能量高，且受內層與 2s 屏蔽，第一游離能比鈹更低。', '移走第一個 2s 電子。需要移走已全滿、相對穩定的 2s² 軌域電子。', '移走第二個 2s 電子。移去後將獲得穩定的內層 [He] 滿殼層結構。'] },
+      { Z: 6, sym: 'C', name: '碳', configs: ['[He]2s²2p²', '[He]2s²2p¹', '[He]2s²', '[He]2s¹'], ies: [1086, 2353, 4620], notes: ['移走第一個 2p 電子。隨核電荷增加與半徑收縮，第一游離能相較於同週期前方的硼呈現上升。', '移走第二個 2p 電子。陽離子 C⁺ 對剩餘電子的靜電引力更強。', '移走一個 2s 電子。此時電子從半徑更小的 2s 軌域中移去。'] },
+      { Z: 7, sym: 'N', name: '氮', configs: ['[He]2s²2p³', '[He]2s²2p²', '[He]2s²2p¹', '[He]2s²'], ies: [1402, 2856, 4578], notes: ['移走第一個 2p 電子。因為 2p³ 具有半滿軌域的對稱穩定性，因此其第一游離能反常地高於氧。', '移走第二個 2p 電子。半滿穩定結構被破壞，帶正電的離子對外層電子引力隨之增強。', '移走第三個 2p 電子。'] },
+      { Z: 8, sym: 'O', name: '氧', configs: ['[He]2s²2p⁴', '[He]2s²2p³', '[He]2s²2p²', '[He]2s²2p¹'], ies: [1314, 3388, 5300], notes: ['移走一個 2p 電子。因為 2p 軌域上開始出現成對的電子，電子間的強烈庫倫排斥力使其比氮更易被移走！', '移走第二個 2p 電子。移去後剩餘的結構是具對稱穩定性的 2p³ 半全滿狀態。', '移走第三個 2p 電子。'] },
+      { Z: 9, sym: 'F', name: '氟', configs: ['[He]2s²2p⁵', '[He]2s²2p⁴', '[He]2s²2p³', '[He]2s²2p²'], ies: [1681, 3374, 6050], notes: ['移走最外層 2p 電子。氟的電負度極大，核電荷高，對外層電子有極強的束縛力，故游離能高。', '移走第二個 2p 電子。', '移走第三個 2p 電子。'] },
+      { Z: 10, sym: 'Ne', name: '氖', configs: ['[He]2s²2p⁶', '[He]2s²2p⁵', '[He]2s²2p⁴', '[He]2s²2p³'], ies: [2081, 3952, 6122], notes: ['移走最外層 2p 電子。氖具有極穩定的滿殼層八隅體結構 (2s²2p⁶)，因此需要非常高的能量。', '移走第二個 2p 電子。從帶正電的 Ne⁺ 離子中移去電子需要克服更強的靜電引力。', '移走第三個 2p 電子。'] },
+      { Z: 11, sym: 'Na', name: '鈉', configs: ['[Ne]3s¹', '[Ne]', '2s²2p⁵', '2s²2p⁴'], ies: [496, 4562, 6910], notes: ['移走最外層 3s¹ 電子，形成穩定 [Ne] 滿核心 (非常容易)。第一游離能極低。', '💥 破壞穩定的 [Ne] 滿殼層八隅體結構！必須從內層 2p 軌域移去電子，游離能急劇上升近 9 倍！', '移走 2p 電子。此時電荷增加，原子半徑收縮，吸引力增加。'] },
+      { Z: 12, sym: 'Mg', name: '鎂', configs: ['[Ne]3s²', '[Ne]3s¹', '[Ne]', '2s²2p⁵'], ies: [738, 1451, 7733], notes: ['移走第一個 3s 電子。由於 3s 軌域全滿具有相對對稱穩定性，其第一游離能高於同週期的鋁。', '移走第二個 3s 電子。移去後將獲得穩定的 [Ne] 滿殼層核心結構。', '💥 破壞穩定的 [Ne] 滿核心 (2s²2p⁶)，必須從靠近核心的內層軌域移走電子，能壘產生跳躍式上升！'] },
+      { Z: 13, sym: 'Al', name: '鋁', configs: ['[Ne]3s²3p¹', '[Ne]3s²', '[Ne]3s¹', '[Ne]'], ies: [578, 1817, 2745], notes: ['移走最外層 3p¹ 電子。由於 3p 電子受 3s 屏蔽，第一游離能低於鎂。', '移走第一個 3s 電子。此時需要破壞相對穩定的 3s² 全滿結構。', '移走第二個 3s 電子。移走後將剩下穩定的內層 [Ne] 滿核心結構。'] },
+      { Z: 14, sym: 'Si', name: '矽', configs: ['[Ne]3s²3p²', '[Ne]3s²3p¹', '[Ne]3s²', '[Ne]3s¹'], ies: [786, 1577, 3232], notes: ['移走最外層 3p 電子。隨核電荷數增加，第一游離能呈遞增趨勢。', '移走第二個 3p 電子。', '移走一個 3s 電子。此時電子從半徑更小的 3s 軌域中移去。'] },
+      { Z: 15, sym: 'P', name: '磷', configs: ['[Ne]3s²3p³', '[Ne]3s²3p²', '[Ne]3s²3p¹', '[Ne]3s²'], ies: [1012, 1907, 2914], notes: ['移走第一個 3p 電子。因為 3p³ 半滿軌域具有特殊的對稱穩定性，因此其第一游離能反常地高於硫。', '移走第二個 3p 電子。', '移走第三個 3p 電子。'] },
+      { Z: 16, sym: 'S', name: '硫', configs: ['[Ne]3s²3p⁴', '[Ne]3s²3p³', '[Ne]3s²3p²', '[Ne]3s²3p¹'], ies: [1000, 2252, 3357], notes: ['移走一個 3p 電子。因為 3p 軌域上開始出現成對的電子，電子間的強烈排斥力使其比磷更容易被移走！', '移走第二個 3p 電子。移去後剩餘的結構是具對稱穩定性的 3p³ 半全滿狀態。', '移走第三個 3p 電子。'] },
+      { Z: 17, sym: 'Cl', name: '氯', configs: ['[Ne]3s²3p⁵', '[Ne]3s²3p⁴', '[Ne]3s²3p³', '[Ne]3s²3p²'], ies: [1251, 2298, 3822], notes: ['移走最外層 3p 電子。氯的核電荷高，對外層電子有極強的束縛力，故游離能高。', '移走第二個 3p 電子。', '移走第三個 3p 電子。'] },
+      { Z: 18, sym: 'Ar', name: '氬', configs: ['[Ne]3s²3p⁶', '[Ne]3s²3p⁵', '[Ne]3s²3p⁴', '[Ne]3s²3p³'], ies: [1521, 2666, 3931], notes: ['移走最外層 3p 電子。氬具有極穩定的滿殼層八隅體結構 (3s²3p⁶)，游離能大。', '移走第二個 3p 電子。', '移走第三個 3p 電子。'] },
+      { Z: 19, sym: 'K', name: '鉀', configs: ['[Ar]4s¹', '[Ar]', '[Ne]3s²3p⁵', '[Ne]3s²3p⁴'], ies: [419, 3051, 4411], notes: ['移走最外層 4s¹ 電子，形成穩定 [Ar] 滿殼層結構。第一游離能極低。', '💥 破壞穩定的 [Ar] 八隅體核心！必須從內層 3p 軌域移走電子，能壘極大，游離能驟增 7 倍多！', '移走 3p 電子。帶正電的離子對外層電子有更高的庫倫力。'] },
+      { Z: 20, sym: 'Ca', name: '鈣', configs: ['[Ar]4s²', '[Ar]4s¹', '[Ar]', '[Ne]3s²3p⁵'], ies: [590, 1145, 4912], notes: ['移走第一個 4s 電子。因為 4s 軌域全滿具有相對對稱穩定性，其第一游離能高於鉀。', '移走第二個 4s 電子。移去後將獲得穩定的 [Ar] 滿殼層結構。', '💥 破壞穩定的 [Ar] 滿核心，必須從內層 3p 軌域移走電子，能壘產生跳躍式上升！'] }
+    ];
+
+    let successiveChartInited = false;
+    function initThreeIEChart() {
+        if (successiveChartInited) return;
+        successiveChartInited = true;
+        buildThreeIEChart();
+        buildConfigTrendChart();
+    }
+
+    function buildConfigTrendChart() {
+        const svg = document.getElementById('config-trend-svg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const configs = [
+            { label: 'ns¹', val: 10, note: '' },
+            { label: 'ns²', val: 28, note: '全滿 (高)' },
+            { label: 'ns²np¹', val: 22, note: '' },
+            { label: 'ns²np²', val: 38, note: '' },
+            { label: 'ns²np³', val: 56, note: '半滿 (高)' },
+            { label: 'ns²np⁴', val: 46, note: '' },
+            { label: 'ns²np⁵', val: 65, note: '' },
+            { label: 'ns²np⁶', val: 85, note: '全滿 (最高)' }
+        ];
+
+        const W = 400, H = 250;
+        const L = 45, R = 15, T = 35, B = 45;
+        const cW = W - L - R, cH = H - T - B;
+
+        const xOf = i => L + (i / 7) * cW;
+        const yOf = val => T + cH - (val / 100) * cH;
+        const mk = tag => document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+        // Draw axes
+        const xAxis = mk('line');
+        xAxis.setAttribute('x1', L); xAxis.setAttribute('y1', T + cH);
+        xAxis.setAttribute('x2', W - R + 10); xAxis.setAttribute('y2', T + cH);
+        xAxis.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+        svg.appendChild(xAxis);
+
+        const yAxis = mk('line');
+        yAxis.setAttribute('x1', L); yAxis.setAttribute('y1', T + cH);
+        yAxis.setAttribute('x2', L); yAxis.setAttribute('y2', T - 10);
+        yAxis.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+        svg.appendChild(yAxis);
+
+        // Labels
+        const yTitle = mk('text');
+        yTitle.setAttribute('x', L); yTitle.setAttribute('y', T - 15);
+        yTitle.setAttribute('fill', 'rgba(255,255,255,0.5)');
+        yTitle.setAttribute('font-size', '11');
+        yTitle.setAttribute('text-anchor', 'middle');
+        yTitle.textContent = 'IE相對值';
+        svg.appendChild(yTitle);
+
+        // Path
+        let d = '';
+        configs.forEach((c, i) => {
+            const x = xOf(i), y = yOf(c.val);
+            d += (i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`);
+        });
+        const path = mk('path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', 'var(--accent-orange)');
+        path.setAttribute('stroke-width', '2.5');
+        svg.appendChild(path);
+
+        // Points and texts
+        configs.forEach((c, i) => {
+            const x = xOf(i), y = yOf(c.val);
+            
+            // Dot
+            const dot = mk('circle');
+            dot.setAttribute('cx', x);
+            dot.setAttribute('cy', y);
+            dot.setAttribute('r', '4.5');
+            dot.setAttribute('fill', 'var(--accent-yellow)');
+            svg.appendChild(dot);
+
+            // X Label
+            const text = mk('text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', T + cH + 20);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'rgba(255,255,255,0.7)');
+            text.setAttribute('font-size', '12');
+            text.textContent = c.label;
+            svg.appendChild(text);
+
+            // Note
+            if (c.note) {
+                const noteText = mk('text');
+                noteText.setAttribute('x', x);
+                noteText.setAttribute('y', y - 10);
+                noteText.setAttribute('text-anchor', 'middle');
+                noteText.setAttribute('fill', 'var(--accent-green)');
+                noteText.setAttribute('font-size', '11');
+                noteText.setAttribute('font-weight', 'bold');
+                noteText.textContent = c.note;
+                svg.appendChild(noteText);
+                
+                // highlight dot
+                dot.setAttribute('r', '6');
+                dot.setAttribute('fill', 'var(--accent-green)');
+            }
+        });
+    }
+
+    function buildThreeIEChart() {
+        const svg = document.getElementById('three-ie-svg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const W = 550, H = 350;
+        const L = 42, R = 15, T = 20, B = 35;
+        const cW = W - L - R, cH = H - T - B;
+
+        const xOf = Z => L + ((Z - 1) / 19) * cW;
+        const yOf = ie => T + cH - (ie / 16000) * cH;
+        const mk = tag => document.createElementNS('http://www.w3.org/2000/svg', tag);
+
+        // Draw Y grid lines
+        [2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000].forEach(ie => {
+            const y = yOf(ie);
+            const line = mk('line');
+            line.setAttribute('x1', L);
+            line.setAttribute('y1', y);
+            line.setAttribute('x2', W - R);
+            line.setAttribute('y2', y);
+            line.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+            line.setAttribute('stroke-width', '1');
+            svg.appendChild(line);
+
+            const text = mk('text');
+            text.setAttribute('x', L - 5);
+            text.setAttribute('y', y + 3);
+            text.setAttribute('text-anchor', 'end');
+            text.setAttribute('fill', 'rgba(255,255,255,0.4)');
+            text.setAttribute('font-size', '9');
+            text.textContent = ie;
+            svg.appendChild(text);
+        });
+        
+        // Draw Y axis title
+        const yTitle = mk('text');
+        yTitle.setAttribute('x', 12);
+        yTitle.setAttribute('y', T - 5);
+        yTitle.setAttribute('fill', 'rgba(255,255,255,0.5)');
+        yTitle.setAttribute('font-size', '9');
+        yTitle.textContent = 'kJ/mol';
+        svg.appendChild(yTitle);
+
+        // Draw X ticks and labels (symbols)
+        successiveData.forEach(el => {
+            const x = xOf(el.Z);
+            const tick = mk('line');
+            tick.setAttribute('x1', x);
+            tick.setAttribute('y1', T + cH);
+            tick.setAttribute('x2', x);
+            tick.setAttribute('y2', T + cH + 4);
+            tick.setAttribute('stroke', 'rgba(255,255,255,0.2)');
+            svg.appendChild(tick);
+
+            const text = mk('text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', T + cH + 14);
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'rgba(255,255,255,0.6)');
+            text.setAttribute('font-size', '9.5');
+            text.setAttribute('font-weight', 'bold');
+            text.textContent = el.sym;
+            svg.appendChild(text);
+        });
+
+        // Plot Lines (IE1: red, IE2: green, IE3: blue)
+        const colors = ['#ef4444', '#10b981', '#3b82f6'];
+        
+        for (let ieIdx = 0; ieIdx < 3; ieIdx++) {
+            let points = [];
+            successiveData.forEach(el => {
+                const val = el.ies[ieIdx];
+                if (val !== null && val !== undefined) {
+                    points.push({ x: xOf(el.Z), y: yOf(val), el: el });
+                }
+            });
+            
+            if (points.length >= 2) {
+                let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+                for (let i = 1; i < points.length; i++) {
+                    d += ` L ${points[i].x.toFixed(1)} ${points[i].y.toFixed(1)}`;
+                }
+                const path = mk('path');
+                path.setAttribute('d', d);
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke', colors[ieIdx]);
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('opacity', '0.7');
+                svg.appendChild(path);
+            }
+        }
+
+        // Interactive Dots
+        successiveData.forEach(el => {
+            el.ies.forEach((val, ieIdx) => {
+                if (val === null || val === undefined) return;
+                const cx = xOf(el.Z).toFixed(1);
+                const cy = yOf(val).toFixed(1);
+                const color = colors[ieIdx];
+
+                // Outer glow circle (visible when selected)
+                const glow = mk('circle');
+                glow.setAttribute('cx', cx);
+                glow.setAttribute('cy', cy);
+                glow.setAttribute('r', '8');
+                glow.setAttribute('fill', 'none');
+                glow.setAttribute('stroke', color);
+                glow.setAttribute('stroke-width', '2');
+                glow.setAttribute('opacity', '0');
+                glow.setAttribute('class', `three-ie-glow`);
+                glow.id = `3ie-glow-${el.Z}-${ieIdx}`;
+                svg.appendChild(glow);
+
+                // Inner solid dot
+                const dot = mk('circle');
+                dot.setAttribute('cx', cx);
+                dot.setAttribute('cy', cy);
+                dot.setAttribute('r', '4');
+                dot.setAttribute('fill', color);
+                dot.setAttribute('stroke', '#070a16');
+                dot.setAttribute('stroke-width', '1.5');
+                dot.setAttribute('cursor', 'pointer');
+                dot.setAttribute('class', `three-ie-dot`);
+                dot.id = `3ie-dot-${el.Z}-${ieIdx}`;
+                
+                // Hover effect (scale slightly)
+                dot.addEventListener('mouseenter', () => {
+                    dot.setAttribute('r', '5.5');
+                });
+                dot.addEventListener('mouseleave', () => {
+                    const detailContent = document.getElementById('three-ie-detail-content');
+                    const activeId = detailContent ? detailContent.dataset.activeId : null;
+                    const thisId = `${el.Z}-${ieIdx}`;
+                    if (activeId !== thisId) {
+                        dot.setAttribute('r', '4');
+                    }
+                });
+
+                // Click action
+                dot.addEventListener('click', () => {
+                    selectThreeIEPoint(el, ieIdx, color);
+                });
+
+                svg.appendChild(dot);
+                
+                // Transparent larger click area
+                const hit = mk('circle');
+                hit.setAttribute('cx', cx);
+                hit.setAttribute('cy', cy);
+                hit.setAttribute('r', '9');
+                hit.setAttribute('fill', 'transparent');
+                hit.setAttribute('cursor', 'pointer');
+                hit.addEventListener('click', () => {
+                    selectThreeIEPoint(el, ieIdx, color);
+                });
+                svg.appendChild(hit);
+            });
+        });
+    }
+
+    function selectThreeIEPoint(el, ieIdx, color) {
+        // 1. Reset all glows and dot sizes
+        document.querySelectorAll('.three-ie-glow').forEach(g => g.setAttribute('opacity', '0'));
+        document.querySelectorAll('.three-ie-dot').forEach(d => d.setAttribute('r', '4'));
+
+        // 2. Highlight selected dot & glow
+        const activeGlow = document.getElementById(`3ie-glow-${el.Z}-${ieIdx}`);
+        if (activeGlow) activeGlow.setAttribute('opacity', '1');
+        const activeDot = document.getElementById(`3ie-dot-${el.Z}-${ieIdx}`);
+        if (activeDot) activeDot.setAttribute('r', '5.5');
+
+        // 3. Show details panel
+        const defaultMsg = document.getElementById('three-ie-default-msg');
+        const detailContent = document.getElementById('three-ie-detail-content');
+        
+        if (defaultMsg) defaultMsg.style.display = 'none';
+        if (detailContent) {
+            detailContent.style.display = 'flex';
+            detailContent.dataset.activeId = `${el.Z}-${ieIdx}`;
+        }
+
+        const ieNames = ['第一游離能 (IE₁)', '第二游離能 (IE₂)', '第三游離能 (IE₃)'];
+        const valenceLabels = [
+            '中性原子 ➔ 單價陽離子',
+            '單價陽離子 ➔ 雙價陽離子',
+            '雙價陽離子 ➔ 三價陽離子'
+        ];
+
+        const stateFrom = el.sym + (ieIdx === 0 ? '' : ieIdx === 1 ? '⁺' : '²⁺');
+        const stateTo = el.sym + (ieIdx === 0 ? '⁺' : ieIdx === 1 ? '²⁺' : '³⁺');
+        const cfgFrom = el.configs[ieIdx];
+        const cfgTo = el.configs[ieIdx + 1];
+        
+        const isJump = el.notes[ieIdx].includes('💥') || el.notes[ieIdx].includes('破壞');
+        const jumpStyle = isJump 
+            ? `background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 8px 10px; border-radius: 4px;`
+            : `background: rgba(255, 255, 255, 0.03); border-left: 4px solid ${color}; padding: 8px 10px; border-radius: 4px;`;
+
+        if (detailContent) {
+            detailContent.innerHTML = `
+                <!-- Block 1: Basic Info -->
+                <div style="display:flex; flex-direction:column; min-width:140px; border-right:1px solid rgba(255,255,255,0.1); padding-right:16px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.5rem; font-weight:900; color:#fff;">${el.sym}</span>
+                        <span style="font-size:0.85rem; font-weight:bold; color:${color}; padding:2px 6px; background:${color}22; border:1px solid ${color}44; border-radius:4px;">${ieNames[ieIdx].split(' ')[0]}</span>
+                    </div>
+                    <div style="font-size:1.6rem; font-weight:900; color:var(--accent-yellow); font-family:var(--font-mono); margin-top:4px;">
+                        ${el.ies[ieIdx]} <span style="font-size:0.85rem; font-weight:normal; color:rgba(255,255,255,0.6);">kJ/mol</span>
+                    </div>
+                </div>
+
+                <!-- Block 2: Equation & Config -->
+                <div style="display:flex; flex-direction:column; min-width:180px; padding:0 8px; gap:8px;">
+                    <div style="font-size:1.05rem; color:#fff; font-weight:bold; display:flex; align-items:center; gap:8px;">
+                        <span style="color:${color};">${stateFrom}</span> ➔ <span style="color:var(--accent-yellow);">${stateTo} + e⁻</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.2); padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05); width:fit-content;">
+                        <span style="font-family:monospace; font-size:1.1rem; color:var(--accent-cyan); font-weight:bold;">${cfgFrom}</span>
+                        <span style="color:rgba(255,255,255,0.3); font-size:1.1rem;">➔</span>
+                        <span style="font-family:monospace; font-size:1.1rem; color:var(--accent-cyan); font-weight:bold;">${cfgTo}</span>
+                    </div>
+                </div>
+
+                <!-- Block 3: Note -->
+                <div style="${jumpStyle} flex:1; font-size:0.9rem; line-height:1.45; color:rgba(255,255,255,0.9); height:100%; display:flex; align-items:center;">
+                    ${el.notes[ieIdx]}
+                </div>
+            `;
+        }
+    }
+
+    // ═══════════════ 視窗初始化 ═══════════════
+    window.onload = () => {
+        // 預設展開第一個軌域圖
+        showOrbital('Be');
+    };
+</script>
+</body>
+</html>

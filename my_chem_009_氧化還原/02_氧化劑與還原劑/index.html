@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>氧化劑與還原劑 - 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
+        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
+        
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0.5rem 6rem 1rem 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
+        
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+        
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+        
+        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 15px 10px; border-radius: 30px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 50; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        .btn { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
+        .btn:hover { background: rgba(255,255,255,0.1); }
+        .btn.active-tool, .btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        
+        .color-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 5px 0; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); width: 65px; justify-items: center; }
+        .color-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; }
+        .color-swatch.selected { border-color: white; transform: scale(1.2); }
+        
+        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-purple { color: var(--accent-purple); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-orange { color: var(--accent-orange); }
+        
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.1rem; }
+        #formulas-column .game-item { justify-content: flex-start; text-align: left; }
+        #names-column .game-item { justify-content: flex-end; text-align: right; }
+        .game-item span { word-break: keep-all; }
+        .game-item:hover { background: rgba(255,255,255,0.1); }
+        .game-item.highlight { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.15); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); transform: scale(1.02); }
+        .game-item.correct { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); }
+        .dot { width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .formulas-dot { margin-left: auto; }
+        .names-dot { margin-right: auto; }
+        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+        
+        .concept-card { border-radius: 15px; padding: 1.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); height: 100%; }
+        .highlight-box { padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; display: inline-block; margin: 0.5rem 0; }
+        .bg-red { background: rgba(248, 113, 113, 0.2); border: 1px solid var(--accent-red); color: var(--accent-red); }
+        .bg-blue { background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-blue); color: var(--accent-blue); }
+        
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; margin-bottom: 5px; margin-top: -5px; user-select: none; font-size: 1.2rem; line-height: 0.5; }
+        
+        /* Drag and Drop styles */
+        .drop-zone { display: inline-block; min-width: 100px; height: 32px; background: rgba(255,255,255,0.1); border: 2px dashed rgba(255,255,255,0.3); border-radius: 6px; vertical-align: middle; text-align: center; line-height: 28px; color: var(--accent-yellow); cursor: default; transition: all 0.2s; margin: 0 5px; }
+        .drop-zone.over { background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); transform: scale(1.05); }
+        .drop-zone.filled { border-style: solid; border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); color: #fff; font-weight: bold; }
+        .drag-item { padding: 8px 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; cursor: grab; font-size: 1rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .drag-item:hover { background: rgba(255,255,255,0.1); border-color: var(--accent-blue); }
+        .drag-item:active { cursor: grabbing; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .pulse { animation: pulse 2s infinite; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Start Overlay -->
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">氧化劑與還原劑</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">互動式全螢幕教學系統</p>
+            <button id="btn-start" class="btn primary pulse" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px; width: auto; border-radius: 50px;">▶ 進入教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+
+                <!-- Slide 1: Introduction -->
+                <div class="slide active">
+                    <h1>氧化與還原的定義</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-yellow">廣義定義 (電子得失)</h2>
+                            <div class="concept-card">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <span class="highlight-box bg-red">氧化 (Oxidation)</span>
+                                    <p style="font-size: 1.3rem; margin-top: 0.5rem;">失去電子 ($e^-$) 的反應</p>
+                                    <p class="text-red">氧化數增加</p>
+                                </div>
+                                <div style="margin-bottom: 0;">
+                                    <span class="highlight-box bg-blue">還原 (Reduction)</span>
+                                    <p style="font-size: 1.3rem; margin-top: 0.5rem;">得到電子 ($e^-$) 的反應</p>
+                                    <p class="text-blue">氧化數減少</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-yellow">狹義定義 (氧與氫)</h2>
+                            <table class="table-chem">
+                                <thead>
+                                    <tr>
+                                        <th>類型</th>
+                                        <th>氧 ($O$)</th>
+                                        <th>氫 ($H$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-red">氧化</td>
+                                        <td>獲得</td>
+                                        <td>失去</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-blue">還原</td>
+                                        <td>失去</td>
+                                        <td>獲得</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="formula-box" style="margin-top: 2rem;">
+                                $2Mg + O_2 \rightarrow 2MgO$ <br>
+                                <span style="font-size: 0.9rem; color: var(--accent-cyan);">$Mg$ 被氧化了！</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Agents -->
+                <div class="slide">
+                    <h1>氧化劑與還原劑</h1>
+                    <div class="flex-row" style="align-items: stretch;">
+                        <!-- Left Column (1/3) -->
+                        <div class="flex-col" style="flex: 1; gap: 0.8rem; background: transparent; padding: 0;">
+                            <div class="rule-card" style="border-left: 5px solid var(--accent-red); background: rgba(248, 113, 113, 0.05); margin-bottom: 0; padding: 1rem;">
+                                <h2 class="text-red" style="font-size: 1.4rem; margin-top: 0; margin-bottom: 0.5rem;">氧化劑 (Oxidizing Agent)</h2>
+                                <ul style="font-size: 1rem; margin-bottom: 0.5rem;">
+                                    <li><strong>行為：</strong>使他人氧化</li>
+                                    <li><strong>自身：</strong>被還原 (得到電子)</li>
+                                    <li><strong>變化：</strong>氧化數減少</li>
+                                </ul>
+                                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">實例：$KMnO_4, HNO_3, Cl_2$</p>
+                            </div>
+                            <div class="rule-card" style="border-left: 5px solid var(--accent-blue); background: rgba(56, 189, 248, 0.05); margin-bottom: 0; padding: 1rem;">
+                                <h2 class="text-blue" style="font-size: 1.4rem; margin-top: 0; margin-bottom: 0.5rem;">還原劑 (Reducing Agent)</h2>
+                                <ul style="font-size: 1rem; margin-bottom: 0.5rem;">
+                                    <li><strong>行為：</strong>使他人還原</li>
+                                    <li><strong>自身：</strong>被氧化 (失去電子)</li>
+                                    <li><strong>變化：</strong>氧化數增加</li>
+                                </ul>
+                                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">實例：$C, CO, H_2, Na, Mg$</p>
+                            </div>
+                        </div>
+                        <!-- Right Column (2/3) -->
+                        <div class="flex-col" style="flex: 2; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 2rem;">
+                            <div style="text-align: center; width: 100%;">
+                                <h2 class="text-yellow" style="margin-bottom: 2rem; font-size: 1.8rem;">反應實例分析</h2>
+                                <div style="width: 100%; display: flex; justify-content: center; margin: 2rem 0;">
+                                    <svg viewBox="0 0 700 300" style="width: 100%; max-width: 800px; height: auto; font-family: inherit; overflow: visible;">
+                                        <!-- Top Connection: Cu2+ to Cu (Reduction - Purple/Magenta) -->
+                                        <path d="M 235,85 L 235,30 L 595,30 L 595,85" fill="none" stroke="#d946ef" stroke-width="3" stroke-linecap="round" />
+                                        <path d="M 235,85 L 230,75 M 235,85 L 240,75" fill="none" stroke="#d946ef" stroke-width="3" />
+                                        <path d="M 595,85 L 590,75 M 595,85 L 600,75" fill="none" stroke="#d946ef" stroke-width="3" />
+                                        <text x="415" y="20" fill="#d946ef" font-size="22" text-anchor="middle" font-weight="bold">得到電子</text>
+                                        
+                                        <!-- Labels Top (Reduction) -->
+                                        <text x="235" y="105" fill="#d946ef" font-size="18" text-anchor="middle" font-weight="bold">氧化劑</text>
+                                        <text x="595" y="105" fill="#d946ef" font-size="18" text-anchor="middle" font-weight="bold">共軛還原劑</text>
+
+                                        <!-- The Equation Row (Blue) -->
+                                        <g font-size="42" font-weight="bold" fill="#3b82f6">
+                                            <text x="70" y="150" text-anchor="middle">Zn<tspan dy="10" font-size="18">(s)</tspan></text>
+                                            <text x="145" y="150" text-anchor="middle" fill="var(--text-main)">+</text>
+                                            <text x="235" y="150" text-anchor="middle">Cu<tspan dy="-15" font-size="24">2+</tspan><tspan dy="15" font-size="18">(aq)</tspan></text>
+                                            <text x="330" y="150" text-anchor="middle" fill="var(--text-main)">→</text>
+                                            <text x="430" y="150" text-anchor="middle">Zn<tspan dy="-15" font-size="24">2+</tspan><tspan dy="15" font-size="18">(aq)</tspan></text>
+                                            <text x="520" y="150" text-anchor="middle" fill="var(--text-main)">+</text>
+                                            <text x="595" y="150" text-anchor="middle">Cu<tspan dy="10" font-size="18">(s)</tspan></text>
+                                        </g>
+
+                                        <!-- Bottom Connection: Zn to Zn2+ (Oxidation - Green) -->
+                                        <path d="M 70,185 L 70,240 L 430,240 L 430,185" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" />
+                                        <path d="M 70,185 L 65,195 M 70,185 L 75,195" fill="none" stroke="#22c55e" stroke-width="3" />
+                                        <path d="M 430,185 L 425,195 M 430,185 L 435,195" fill="none" stroke="#22c55e" stroke-width="3" />
+                                        <text x="250" y="270" fill="#22c55e" font-size="22" text-anchor="middle" font-weight="bold">失去電子</text>
+
+                                        <!-- Labels Bottom (Oxidation) -->
+                                        <text x="70" y="175" fill="#22c55e" font-size="18" text-anchor="middle" font-weight="bold">還原劑</text>
+                                        <text x="430" y="175" fill="#22c55e" font-size="18" text-anchor="middle" font-weight="bold">共軛氧化劑</text>
+                                    </svg>
+                                </div>
+                                <div style="margin-top: 4rem; font-size: clamp(1rem, 1.3vw, 1.2rem); line-height: 1.6; color: rgba(255,255,255,0.7); font-style: italic;">
+                                    註：還原劑與其氧化後的產物（共軛氧化劑）組成氧化還原對。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Dual Role -->
+                <div class="slide">
+                    <h1>既是氧化劑也是還原劑</h1>
+                    <div class="flex-row">
+                        <!-- Left Column (Descriptions) -->
+                        <div class="flex-col" style="flex: 1; background: transparent; padding: 0; gap: 1.5rem;">
+                            <div class="rule-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 2rem;">
+                                <h2 class="text-yellow" style="margin-top: 0; font-size: 1.8rem; margin-bottom: 0.8rem;">過氧化氫 ($H_2O_2$)</h2>
+                                <p style="font-size: 1.2rem; margin-bottom: 1rem;">氧氧化數為 $-1$ (中間狀態)</p>
+                                <div style="font-size: 1.1rem; margin-top: 0.8rem; color: var(--accent-red); font-weight: bold;">作氧化劑：$H_2O_2 + 2H^+ + 2e^- \rightarrow 2H_2O$</div>
+                                <div style="font-size: 1.1rem; margin-top: 0.5rem; color: var(--accent-blue); font-weight: bold;">作還原劑：$H_2O_2 \rightarrow O_2 + 2H^+ + 2e^-$</div>
+                            </div>
+                            <div class="rule-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 2rem;">
+                                <h2 class="text-yellow" style="margin-top: 0; font-size: 1.8rem; margin-bottom: 0.8rem;">二氧化硫 ($SO_2$)</h2>
+                                <p style="font-size: 1.2rem; margin-bottom: 1rem;">硫氧化數為 $+4$ (中間狀態)</p>
+                                <div style="font-size: 1.1rem; margin-top: 0.8rem; color: var(--accent-red); font-weight: bold;">作氧化劑：$SO_2 + 4H^+ + 4e^- \rightarrow S + 2H_2O$</div>
+                                <div style="font-size: 1.1rem; margin-top: 0.5rem; color: var(--accent-blue); font-weight: bold;">作還原劑：$SO_2 + 2H_2O \rightarrow SO_4^{2-} + 4H^+ + 2e^-$</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column (Table) -->
+                        <div class="flex-col" style="flex: 1; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 2rem;">
+                            <h2 class="text-cyan" style="text-align: center; margin-bottom: 1.5rem; font-size: 1.6rem;">含硫物質中硫的氧化數和作用</h2>
+                            <table class="table-chem" style="font-size: 1.2rem; height: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>硫的氧化數</th>
+                                        <th>含硫物質</th>
+                                        <th>作用</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>+6</td>
+                                        <td>$H_2SO_4$</td>
+                                        <td>只能作氧化劑</td>
+                                    </tr>
+                                    <tr>
+                                        <td>+4</td>
+                                        <td>$SO_2$</td>
+                                        <td rowspan="3" style="background: rgba(255,255,255,0.05); color: var(--accent-yellow); font-weight: bold; vertical-align: middle;">可作氧化劑<br>又可作還原劑</td>
+                                    </tr>
+                                    <tr>
+                                        <td>+2</td>
+                                        <td>$SCl_2$</td>
+                                    </tr>
+                                    <tr>
+                                        <td>0</td>
+                                        <td>$S$</td>
+                                    </tr>
+                                    <tr>
+                                        <td>-2</td>
+                                        <td>$H_2S$</td>
+                                        <td>只能作還原劑</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Interactive Quiz -->
+                <div class="slide" id="slide-redox-quiz">
+                    <h1>互動練習：判斷氧化還原角色</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.5;">
+                            <div class="rule-card" style="padding: 1.5rem;">
+                                <h2 id="quiz-reaction" style="text-align: center; color: var(--accent-yellow); margin-bottom: 1.5rem;">$MnO_4^- + 5Fe^{2+} + 8H^+ \rightarrow Mn^{2+} + 5Fe^{3+} + 4H_2O$</h2>
+                                <p style="font-size: 1.2rem; text-align: center;">在這反應中，請拖曳正確角色到對應的方框：</p>
+                                <div id="quiz-questions-container" style="display: flex; flex-direction: column; gap: 20px; margin-top: 2rem; align-items: center;">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            <div id="quiz-feedback" style="display: none; text-align: center; margin-top: 1rem; padding: 1rem; border-radius: 10px;"></div>
+                        </div>
+                        <div class="flex-col" style="flex: 1;">
+                            <h2 class="text-cyan">可選角色</h2>
+                            <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div class="drag-item" draggable="true" data-type="oxidizer">氧化劑 (Oxidizer)</div>
+                                <div class="drag-item" draggable="true" data-type="reducer">還原劑 (Reducer)</div>
+                            </div>
+                            <button onclick="nextQuiz()" class="btn primary" style="margin-top: 2rem; width: auto; align-self: center; padding: 10px 30px;">下一題</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <canvas id="drawing-layer"></canvas>
+        </div>
+
+        <!-- Slide Indicator -->
+        <div id="slide-info">1 / 4</div>
+
+        <!-- Controls Toolbar -->
+        <div id="toolbar" style="padding: 10px 5px; border-radius: 20px; width: 45px;">
+            <div id="drag-handle" title="拖曳移動工具列">
+                <div style="pointer-events: none;">≡</div>
+            </div>
+            <button class="btn" id="btn-prev" title="上一頁">▲</button>
+            <button class="btn" id="btn-next" title="下一頁">▼</button>
+            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
+            
+            <button class="btn" id="btn-draw" title="手寫模式">✎</button>
+            
+            <div class="color-picker" id="color-picker" style="display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px;">
+                <div class="color-swatch selected" style="background: #f8fafc; width: 20px; height: 20px;" data-color="#f8fafc"></div>
+                <div class="color-swatch" style="background: #f87171; width: 20px; height: 20px;" data-color="#f87171"></div>
+                <div class="color-swatch" style="background: #38bdf8; width: 20px; height: 20px;" data-color="#38bdf8"></div>
+                <div class="color-swatch" style="background: #fbbf24; width: 20px; height: 20px;" data-color="#fbbf24"></div>
+                <div class="color-swatch" style="background: #34d399; width: 20px; height: 20px;" data-color="#34d399"></div>
+            </div>
+
+            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
+                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 100%; height: 4px; cursor: pointer;">
+            </div>
+
+            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
+                <button class="btn" id="btn-eraser" title="擦布">
+                    <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:currentColor;"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button class="btn" id="btn-clear" title="清除">🗑</button>
+            </div>
+            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
+            <button class="btn" id="btn-exit-fs" title="目錄">🏠</button>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let currentSlide = 0;
+        let connections = [];
+        let activeDot = null;
+        let tempLine = null;
+        const slides = document.querySelectorAll('.slide');
+        const slideInfo = document.getElementById('slide-info');
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        const btnExitFs = document.getElementById('btn-exit-fs');
+        
+        // --- Canvas State ---
+        let isDrawing = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let slideDrawings = {}; // Store drawings per slide
+
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+
+        // --- Data ---
+        const gameDataPool = [
+            { id: 1, formula: '$MnO_4^-$ (酸性)', product: '$Mn^{2+}$' },
+            { id: 2, formula: '$Cr_2O_7^{2-}$ (酸性)', product: '$Cr^{3+}$' },
+            { id: 3, formula: '$H_2C_2O_4$', product: '$CO_2$' },
+            { id: 4, formula: '$Fe^{2+}$', product: '$Fe^{3+}$' },
+            { id: 5, formula: '$HNO_3$ (濃)', product: '$NO_2$' },
+            { id: 6, formula: '$H_2S$', product: '$S$' },
+            { id: 7, formula: '$I^-$', product: '$I_2$' },
+            { id: 8, formula: '$S_2O_3^{2-}$', product: '$S_4O_6^{2-}$' },
+            { id: 9, formula: '$H_2O_2$ (氧化劑)', product: '$H_2O$' },
+            { id: 10, formula: '$H_2O_2$ (還原劑)', product: '$O_2$' }
+        ];
+
+        const quizData = [
+            { reaction: '$MnO_4^- + 5Fe^{2+} + 8H^+ \\rightarrow Mn^{2+} + 5Fe^{3+} + 4H_2O$', oxidizer: '$MnO_4^-$', reducer: '$Fe^{2+}$' },
+            { reaction: '$Zn + Cu^{2+} \\rightarrow Zn^{2+} + Cu$', oxidizer: '$Cu^{2+}$', reducer: '$Zn$' },
+            { reaction: '$2Na + Cl_2 \\rightarrow 2NaCl$', oxidizer: '$Cl_2$', reducer: '$Na$' },
+            { reaction: '$H_2 + CuO \\rightarrow Cu + H_2O$', oxidizer: '$CuO$', reducer: '$H_2$' },
+            { reaction: '$Cr_2O_7^{2-} + 6Fe^{2+} + 14H^+ \\rightarrow 2Cr^{3+} + 6Fe^{3+} + 7H_2O$', oxidizer: '$Cr_2O_7^{2-}$', reducer: '$Fe^{2+}$' },
+            { reaction: '$2MnO_4^- + 5H_2C_2O_4 + 6H^+ \\rightarrow 2Mn^{2+} + 10CO_2 + 8H_2O$', oxidizer: '$MnO_4^-$', reducer: '$H_2C_2O_4$' },
+            { reaction: '$2MnO_4^- + 10I^- + 16H^+ \\rightarrow 2Mn^{2+} + 5I_2 + 8H_2O$', oxidizer: '$MnO_4^-$', reducer: '$I^-$' },
+            { reaction: '$Cl_2 + 2I^- \\rightarrow 2Cl^- + I_2$', oxidizer: '$Cl_2$', reducer: '$I^-$' },
+            { reaction: '$H_2O_2 + 2I^- + 2H^+ \\rightarrow I_2 + 2H_2O$', oxidizer: '$H_2O_2$', reducer: '$I^-$' },
+            { reaction: '$2Fe^{3+} + Sn^{2+} \\rightarrow 2Fe^{2+} + Sn^{4+}$', oxidizer: '$Fe^{3+}$', reducer: '$Sn^{2+}$' },
+            { reaction: '$Cu + 4HNO_3(conc) \\rightarrow Cu(NO_3)_2 + 2NO_2 + 2H_2O$', oxidizer: '$HNO_3$', reducer: '$Cu$' },
+            { reaction: '$3Cu + 8HNO_3(dil) \\rightarrow 3Cu(NO_3)_2 + 2NO + 4H_2O$', oxidizer: '$HNO_3$', reducer: '$Cu$' },
+            { reaction: '$I_2 + 2S_2O_3^{2-} \\rightarrow 2I^- + S_4O_6^{2-}$', oxidizer: '$I_2$', reducer: '$S_2O_3^{2-}$' },
+            { reaction: '$Cr_2O_7^{2-} + 3H_2S + 8H^+ \\rightarrow 2Cr^{3+} + 3S + 7H_2O$', oxidizer: '$Cr_2O_7^{2-}$', reducer: '$H_2S$' },
+            { reaction: '$2Fe^{2+} + H_2O_2 + 2H^+ \\rightarrow 2Fe^{3+} + 2H_2O$', oxidizer: '$H_2O_2$', reducer: '$Fe^{2+}$' }
+        ];
+        let currentQuizIdx = 0;
+
+        // --- Core Functions ---
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+            clearCanvas();
+            restoreDrawing();
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            restoreDrawing();
+        }
+
+        function clearCanvas() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveDrawing() {
+            if (!canvas) return;
+            slideDrawings[currentSlide] = canvas.toDataURL();
+        }
+
+        function restoreDrawing() {
+            if (!ctx || !slideDrawings[currentSlide]) return;
+            const img = new Image();
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            img.src = slideDrawings[currentSlide];
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            saveDrawing();
+            currentSlide = Math.max(0, currentSlide - 1);
+            updateSlides();
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            saveDrawing();
+            currentSlide = Math.min(slides.length - 1, currentSlide + 1);
+            updateSlides();
+        });
+
+        // --- Drawing Logic ---
+        document.getElementById('btn-draw').addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            const isDrawingActive = canvas.classList.toggle('drawing-active');
+            btn.classList.toggle('active-tool', isDrawingActive);
+            document.getElementById('color-picker').style.display = isDrawingActive ? 'grid' : 'none';
+            document.getElementById('size-picker').style.display = isDrawingActive ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingActive ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', (e) => {
+                document.querySelector('.color-swatch.selected').classList.remove('selected');
+                e.target.classList.add('selected');
+                penColor = e.target.dataset.color;
+                drawMode = 'pen';
+                document.getElementById('btn-eraser').classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('pen-size').addEventListener('input', (e) => {
+            penSize = e.target.value;
+        });
+
+        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+            drawMode = (drawMode === 'eraser') ? 'pen' : 'eraser';
+            e.target.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            clearCanvas();
+            slideDrawings[currentSlide] = null;
+        });
+
+        function getPointerPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        }
+
+        function startDraw(e) {
+            if (!canvas.classList.contains('drawing-active')) return;
+            isDrawing = true;
+            const pos = getPointerPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function moveDraw(e) {
+            if (!isDrawing) return;
+            const pos = getPointerPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+            ctx.lineWidth = penSize * (drawMode === 'eraser' ? 2 : 1);
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function endDraw() {
+            isDrawing = false;
+            saveDrawing();
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', moveDraw);
+        canvas.addEventListener('mouseup', endDraw);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); });
+        canvas.addEventListener('touchend', endDraw);
+
+        // --- Fullscreen Logic ---
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(() => {});
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+
+        btnStart.addEventListener('click', () => {
+            enterFullscreen();
+            startOverlay.style.display = 'none';
+            resizeCanvas();
+            updateSlides();
+        });
+
+        btnExitFs.addEventListener('click', () => {
+            window.location.href = '../../index.html';
+        });
+
+        // --- Quiz Logic ---
+        function initQuiz() {
+            const q = quizData[currentQuizIdx];
+            document.getElementById('quiz-reaction').textContent = q.reaction;
+            
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = '';
+            
+            const items = [
+                { label: q.oxidizer, answer: 'oxidizer' },
+                { label: q.reducer, answer: 'reducer' }
+            ].sort(() => Math.random() - 0.5);
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.innerHTML = `<span>${item.label}</span> 是 <div class="drop-zone" data-answer="${item.answer}">?</div>`;
+                container.appendChild(div);
+            });
+            
+            if (window.MathJax) MathJax.typesetPromise();
+            document.getElementById('quiz-feedback').style.display = 'none';
+        }
+
+        function nextQuiz() {
+            let nextIdx;
+            do {
+                nextIdx = Math.floor(Math.random() * quizData.length);
+            } while (nextIdx === currentQuizIdx);
+            
+            currentQuizIdx = nextIdx;
+            initQuiz();
+        }
+
+        // Drag and Drop for Quiz
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('drag-item')) {
+                e.dataTransfer.setData('text/plain', e.target.dataset.type);
+            }
+        });
+
+        document.addEventListener('dragover', (e) => {
+            if (e.target.classList.contains('drop-zone')) e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            if (e.target.classList.contains('drop-zone')) {
+                e.preventDefault();
+                const type = e.dataTransfer.getData('text/plain');
+                const answer = e.target.dataset.answer;
+                
+                if (type === answer) {
+                    e.target.textContent = type === 'oxidizer' ? '氧化劑' : '還原劑';
+                    e.target.classList.add('filled');
+                    checkQuizComplete();
+                } else {
+                    showFeedback('再試一次！', 'bg-red');
+                }
+            }
+        });
+
+        function checkQuizComplete() {
+            const zones = document.querySelectorAll('#slide-redox-quiz .drop-zone');
+            if (Array.from(zones).every(z => z.classList.contains('filled'))) {
+                showFeedback('正確！太棒了！', 'bg-blue');
+            }
+        }
+
+        function showFeedback(text, cls) {
+            const fb = document.getElementById('quiz-feedback');
+            fb.textContent = text;
+            fb.className = cls;
+            fb.style.display = 'block';
+            fb.style.color = 'white';
+        }
+
+        // --- Game Logic ---
+        function initGame() {
+            const formulasCol = document.getElementById('formulas-column');
+            const namesCol = document.getElementById('names-column');
+            if (!formulasCol) return;
+            formulasCol.innerHTML = '';
+            namesCol.innerHTML = '';
+            connections = [];
+            document.getElementById('game-feedback').style.display = 'none';
+            document.getElementById('game-svg').innerHTML = '';
+
+            const selectedData = [...gameDataPool].sort(() => 0.5 - Math.random()).slice(0, 6);
+            const shuffledProducts = [...selectedData].sort(() => 0.5 - Math.random());
+
+            selectedData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'game-item';
+                div.innerHTML = `<span>${item.formula}</span><div class="dot formulas-dot" data-id="${item.id}"></div>`;
+                formulasCol.appendChild(div);
+            });
+
+            shuffledProducts.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'game-item';
+                div.innerHTML = `<div class="dot names-dot" data-id="${item.id}"></div><span>${item.product}</span>`;
+                namesCol.appendChild(div);
+            });
+
+            if (window.MathJax) MathJax.typesetPromise();
+            setupGameListeners();
+        }
+
+        function setupGameListeners() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach(dot => {
+                dot.addEventListener('mousedown', startConnection);
+                dot.addEventListener('touchstart', startConnection);
+            });
+        }
+
+        function startConnection(e) {
+            e.preventDefault();
+            const dot = e.target;
+            if (dot.classList.contains('active')) return;
+            
+            activeDot = dot;
+            dot.classList.add('active');
+            
+            const rect = dot.getBoundingClientRect();
+            const containerRect = document.getElementById('game-container').getBoundingClientRect();
+            const x = rect.left + rect.width / 2 - containerRect.left;
+            const y = rect.top + rect.height / 2 - containerRect.top;
+            
+            tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tempLine.setAttribute('x1', x);
+            tempLine.setAttribute('y1', y);
+            tempLine.setAttribute('x2', x);
+            tempLine.setAttribute('y2', y);
+            tempLine.setAttribute('stroke', 'var(--accent-blue)');
+            tempLine.setAttribute('stroke-width', '3');
+            document.getElementById('game-svg').appendChild(tempLine);
+            
+            window.addEventListener('mousemove', moveConnection);
+            window.addEventListener('touchmove', moveConnection);
+            window.addEventListener('mouseup', endConnection);
+            window.addEventListener('touchend', endConnection);
+        }
+
+        function moveConnection(e) {
+            if (!tempLine) return;
+            const containerRect = document.getElementById('game-container').getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            tempLine.setAttribute('x2', clientX - containerRect.left);
+            tempLine.setAttribute('y2', clientY - containerRect.top);
+        }
+
+        function endConnection(e) {
+            window.removeEventListener('mousemove', moveConnection);
+            window.removeEventListener('touchmove', moveConnection);
+            window.removeEventListener('mouseup', endConnection);
+            window.removeEventListener('touchend', endConnection);
+            
+            const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+            const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+            const targetDot = document.elementFromPoint(clientX, clientY);
+            
+            if (targetDot && targetDot.classList.contains('dot') && 
+                targetDot !== activeDot && 
+                targetDot.classList.contains('formulas-dot') !== activeDot.classList.contains('formulas-dot') &&
+                !targetDot.classList.contains('active')) {
+                
+                if (targetDot.dataset.id === activeDot.dataset.id) {
+                    // Correct match
+                    targetDot.classList.add('active');
+                    const rect = targetDot.getBoundingClientRect();
+                    const containerRect = document.getElementById('game-container').getBoundingClientRect();
+                    tempLine.setAttribute('x2', rect.left + rect.width / 2 - containerRect.left);
+                    tempLine.setAttribute('y2', rect.top + rect.height / 2 - containerRect.top);
+                    tempLine.setAttribute('stroke', 'var(--accent-green)');
+                    connections.push({ line: tempLine, from: activeDot, to: targetDot });
+                    tempLine = null;
+                    checkGameComplete();
+                } else {
+                    // Wrong match
+                    activeDot.classList.remove('active');
+                    tempLine.remove();
+                    tempLine = null;
+                }
+            } else {
+                activeDot.classList.remove('active');
+                if (tempLine) tempLine.remove();
+                tempLine = null;
+            }
+            activeDot = null;
+        }
+
+        function checkGameComplete() {
+            const totalDots = document.querySelectorAll('.dot').length;
+            const activeDots = document.querySelectorAll('.dot.active').length;
+            if (activeDots === totalDots) {
+                const fb = document.getElementById('game-feedback');
+                if (fb) fb.style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            initGame();
+        }
+
+        function updateAllLines() {
+            const containerRect = document.getElementById('game-container');
+            if (!containerRect) return;
+            const rect = containerRect.getBoundingClientRect();
+            connections.forEach(conn => {
+                const r1 = conn.from.getBoundingClientRect();
+                const r2 = conn.to.getBoundingClientRect();
+                conn.line.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+                conn.line.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+                conn.line.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+                conn.line.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+            });
+        }
+
+        // Toolbar Drag Logic
+        const toolbar = document.getElementById('toolbar');
+        const handle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false;
+        let toolbarY = 0;
+
+        if (handle) {
+            handle.addEventListener('mousedown', (e) => {
+                isDraggingToolbar = true;
+                toolbarY = e.clientY - toolbar.offsetTop;
+                document.body.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDraggingToolbar) return;
+                let newY = e.clientY - toolbarY;
+                newY = Math.max(20, Math.min(window.innerHeight - 300, newY));
+                toolbar.style.top = newY + 'px';
+                toolbar.style.transform = 'none';
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDraggingToolbar = false;
+                document.body.style.cursor = 'default';
+            });
+        }
+
+        // Initialize first slide
+        resizeCanvas();
+        initQuiz();
+
+    </script>
+</body>
+</html>

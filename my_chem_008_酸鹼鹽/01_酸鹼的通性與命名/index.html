@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>酸鹼鹽的命名 - 互動教學</title>
+    <!-- MathJax for rendering chemical equations and formulas -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #start-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-dark);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        #presentation-area {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #slides-container {
+            position: absolute;
+            top: 2vh; left: 5vw; right: 5vw; bottom: 5vh;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem 6rem 1rem 2rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 0.5rem 4.5rem 1rem 1.5rem;
+            }
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .slide h1 {
+            color: var(--accent-blue);
+            font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+            margin-bottom: 0.5rem;
+            text-align: center;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+            padding-bottom: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .slide h2 {
+            color: var(--accent-yellow);
+            font-size: clamp(1.4rem, 2vw, 1.8rem);
+            margin-top: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .slide p, .slide li {
+            font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+            line-height: 1.6;
+            margin-bottom: 0.6rem;
+        }
+
+        .slide ul {
+            margin-left: 1.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .formula-box {
+            background: rgba(0,0,0,0.3);
+            border-left: 5px solid var(--accent-green);
+            padding: clamp(0.5rem, 1.5vw, 1rem);
+            border-radius: 0 10px 10px 0;
+            margin: 1rem 0;
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            text-align: center;
+            overflow-x: auto;
+        }
+        
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .flex-col {
+            flex: 1 1 400px;
+            background: rgba(255,255,255,0.03);
+            padding: 1.5rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rule-card {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--accent-blue);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        #drawing-layer {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 20;
+            pointer-events: none;
+            touch-action: none;
+        }
+
+        #drawing-layer.drawing-active {
+            pointer-events: auto;
+        }
+
+        #toolbar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 2000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: auto;
+        }
+
+        .btn-tool {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0;
+        }
+
+        .btn-tool:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-tool.active-tool {
+            background: #3b82f6;
+            border-color: #60a5fa;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
+        #drag-handle {
+            width: 100%;
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            cursor: grab;
+            padding: 2px 0;
+            margin-bottom: 4px;
+            user-select: none;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .color-picker {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 4px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .color-swatch.selected {
+            border-color: white;
+            transform: scale(1.2);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        #slide-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 15;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.4);
+            background: rgba(0,0,0,0.3);
+            padding: 5px 12px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-purple { color: var(--accent-purple); }
+
+        .table-chem {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table-chem th, .table-chem td {
+            padding: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .table-chem th {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent-blue);
+        }
+        /* Matching Game Styles */
+        .game-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: 45px;
+            height: 9vh;
+            max-height: 80px;
+            transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+            font-size: 1.2rem;
+        }
+        #formulas-column .game-item { justify-content: flex-start; text-align: left; }
+        #names-column .game-item { justify-content: flex-end; text-align: right; }
+        
+        .game-item span {
+            word-break: keep-all;
+        }
+        .game-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .game-item.highlight {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.15);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+            transform: scale(1.02);
+        }
+        .game-item.correct {
+            border-color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.1);
+        }
+        .dot {
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transition: transform 0.2s, background 0.2s;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .formulas-dot { right: -35px; }
+        .names-dot { left: -35px; }
+        .dot:hover {
+            transform: translateY(-50%) scale(1.3);
+            background: var(--accent-blue);
+        }
+        .dot.active {
+            background: var(--accent-green);
+            box-shadow: 0 0 15px var(--accent-green);
+        }
+        .flash {
+            animation: flash-red-stroke 0.4s ease 2;
+        }
+        @keyframes flash-red-stroke {
+            0%, 100% { opacity: 1; stroke: var(--accent-red); }
+            50% { opacity: 0.3; stroke: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Start Overlay -->
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">酸、鹼、鹽的命名</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">互動式全螢幕教學系統</p>
+            <button id="btn-start" class="btn primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px;">▶ 點擊進入全螢幕教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+                
+                <!-- Slide 1: Cover -->
+                <div class="slide active">
+                    <div style="margin: auto; text-align: center;">
+                        <h1 style="border:none; font-size: clamp(3rem, 6vw, 4.5rem);">酸、鹼、鹽的命名</h1>
+                        <p style="font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--accent-green); margin-top: 2rem;">高中化學基礎概念</p>
+                        <div style="margin-top: 4rem; display: flex; flex-direction: column; gap: 1rem; color: rgba(255,255,255,0.6);">
+                            <p>使用左右方向鍵或工具列按鈕切換</p>
+                            <p>點擊「✎」進入手寫模式進行即時標註</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Acids - Binary -->
+                <div class="slide">
+                    <h1>酸的命名 (1/2)：無氧酸</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-yellow">命名規則：氫某酸</h2>
+                            <ul>
+                                <li>$HCl_{(aq)}$：<strong class="text-blue">氫氯酸</strong> (俗稱鹽酸)</li>
+                                <li>$HF_{(aq)}$：<strong class="text-blue">氫氟酸</strong></li>
+                                <li>$H_2S_{(aq)}$：<strong class="text-blue">氫硫酸</strong></li>
+                                <li>$HCN_{(aq)}$：<strong class="text-blue">氫氰酸</strong></li>
+                            </ul>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-green">重要提醒</h2>
+                            <p>若為氣體狀態，則命名為「某化氫」：</p>
+                            <ul>
+                                <li>$HCl_{(g)}$：<strong class="text-yellow">氯化氫</strong></li>
+                                <li>$H_2S_{(g)}$：<strong class="text-yellow">硫化氫</strong></li>
+                            </ul>
+                            <p style="margin-top: 1rem; font-style: italic; opacity: 0.8;">只有在「水溶液 (aq)」狀態下才稱為「酸」。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Acids - Oxyacids -->
+                <div class="slide">
+                    <h1>酸的命名 (2/2)：含氧酸</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-yellow">基本命名：某酸</h2>
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 150px;">
+                                    <p>以中心原子的名稱命名，如：</p>
+                                    <ul>
+                                        <li>$H_2SO_4$：硫酸</li>
+                                        <li>$HNO_3$：硝酸</li>
+                                        <li>$H_3PO_4$：磷酸</li>
+                                        <li>$H_2CO_3$：碳酸</li>
+                                    </ul>
+                                </div>
+                                <div style="flex: 2; min-width: 400px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center;">
+                                        <!-- H2SO4 -->
+                                        <div style="text-align:center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                            <img src="images/H2SO4.png" alt="H2SO4" style="height: 110px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                                            <p style="color: #38bdf8; font-size: 0.8rem; margin-top: 10px;">$H_2SO_4$</p>
+                                        </div>
+                                        <!-- HNO3 -->
+                                        <div style="text-align:center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                            <img src="images/HNO3.png" alt="HNO3" style="height: 70px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                                            <p style="color: #38bdf8; font-size: 0.8rem; margin-top: 10px;">$HNO_3$</p>
+                                        </div>
+                                        <!-- H3PO4 -->
+                                        <div style="text-align:center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                            <img src="images/H3PO4.png" alt="H3PO4" style="height: 150px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                                            <p style="color: #38bdf8; font-size: 0.8rem; margin-top: 10px;">$H_3PO_4$</p>
+                                        </div>
+                                        <!-- H2CO3 -->
+                                        <div style="text-align:center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                            <img src="images/H2CO3.png" alt="H2CO3" style="height: 70px; width: auto; object-fit: contain; filter: brightness(0) invert(1);">
+                                            <p style="color: #38bdf8; font-size: 0.8rem; margin-top: 10px;">$H_2CO_3$</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-blue">氧化態變化 (以氯酸為例)</h2>
+                            <p>氧原子數目不同時，使用前綴詞區分：</p>
+                            <table class="table-chem">
+                                <tr><th>化學式</th><th>名稱</th><th>氧數</th></tr>
+                                <tr class="text-red"><td>$HClO_4$</td><td><strong style="color:white">過</strong>氯酸</td><td>最多</td></tr>
+                                <tr class="text-yellow"><td>$HClO_3$</td><td>氯酸</td><td>標準</td></tr>
+                                <tr class="text-green"><td>$HClO_2$</td><td><strong style="color:white">亞</strong>氯酸</td><td>少一</td></tr>
+                                <tr class="text-purple"><td>$HClO$</td><td><strong style="color:white">次</strong>氯酸</td><td>最少</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Bases -->
+                <div class="slide">
+                    <h1>鹼的命名</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="background: rgba(168, 85, 247, 0.05); border: 1px solid var(--accent-purple);">
+                            <h2 class="text-purple">通用規則：氫氧化某</h2>
+                            <p>金屬陽離子（或銨根）與氫氧根離子 ($OH^-$) 結合而成。</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                                <div class="rule-card">
+                                    <p>$NaOH$</p>
+                                    <strong class="text-blue">氫氧化鈉</strong>
+                                </div>
+                                <div class="rule-card">
+                                    <p>$Ca(OH)_2$</p>
+                                    <strong class="text-blue">氫氧化鈣</strong>
+                                </div>
+                                <div class="rule-card">
+                                    <p>$Al(OH)_3$</p>
+                                    <strong class="text-blue">氫氧化鋁</strong>
+                                </div>
+                                <div class="rule-card" style="display: flex; flex-direction: column; gap: 0.5rem; justify-content: center;">
+                                    <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                                        <p style="margin-bottom: 0;">$Fe(OH)_3$</p>
+                                        <strong class="text-blue">氫氧化鐵</strong>
+                                    </div>
+                                    <div>
+                                        <p style="margin-bottom: 0;">$Fe(OH)_2$</p>
+                                        <strong class="text-blue">氫氧化亞鐵</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Salts - Normal -->
+                <div class="slide">
+                    <h1>鹽的命名 (1/2)：正鹽</h1>
+                    <h2 class="text-yellow">定義：酸鹼完全中和後的產物，分子中不含可解離的 $H^+$ 或 $OH^-$。</h2>
+                    <div class="formula-box" style="margin: 0.5rem auto 1.5rem auto; font-size: 1.8rem; max-width: 400px;">
+                        $\text{酸} + \text{鹼} \rightarrow \text{鹽} + \text{水}$
+                    </div>
+                    <div class="flex-row" style="align-items: stretch; gap: 1rem;">
+                        <div class="flex-col" style="flex: 1; padding: 1rem;">
+                            <h2 class="text-green" style="font-size: 1.1rem; white-space: nowrap;">1. 無氧酸鹽 (某化某)</h2>
+                            <ul style="font-size: 1rem;">
+                                <li>$NaCl$：氯化鈉</li>
+                                <li>$K_2S$：硫化鉀</li>
+                                <li>$AlF_3$：氟化鋁</li>
+                                <li>$CuCl_2$：氯化銅</li>
+                            </ul>
+                        </div>
+                        <div class="flex-col" style="flex: 1; padding: 1rem;">
+                            <h2 class="text-blue" style="font-size: 1.1rem; white-space: nowrap;">2. 含氧酸鹽 (某酸某)</h2>
+                            <ul style="font-size: 1rem;">
+                                <li>$KNO_3$：硝酸鉀</li>
+                                <li>$CaSO_4$：硫酸鈣</li>
+                                <li>$Na_3PO_4$：磷酸鈉</li>
+                                <li>$BaCO_3$：碳酸鋇</li>
+                            </ul>
+                        </div>
+                        <div class="flex-col" style="flex: 1; padding: 1rem; background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2);">
+                            <h2 class="text-yellow" style="font-size: 1.1rem; white-space: nowrap;">常見的酸根</h2>
+                            <table class="table-chem" style="font-size: 0.85rem; margin-top: 0;">
+                                <tr><td>$SO_4^{2-}$</td><td>硫酸根</td></tr>
+                                <tr><td>$NO_3^-$</td><td>硝酸根</td></tr>
+                                <tr><td>$PO_4^{3-}$</td><td>磷酸根</td></tr>
+                                <tr><td>$CO_3^{2-}$</td><td>碳酸根</td></tr>
+                                <tr><td>$ClO_3^-$</td><td>氯酸根</td></tr>
+                                <tr><td>$CH_3COO^-$</td><td>醋酸根</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6: Salts - Acidic -->
+                <div class="slide">
+                    <h1>鹽的命名 (2/2)：酸式鹽</h1>
+                    <h2 class="text-yellow">定義：多元酸中的氫原子未被完全取代，分子中仍含有可解離的 $H^+$。</h2>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-red">命名方式：某酸氫某</h2>
+                            <p>若含有兩個氫，則稱為「某酸二氫某」。</p>
+                            <table class="table-chem">
+                                <thead>
+                                    <tr><th>化學式</th><th>名稱</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>$NaHCO_3$</td><td class="text-blue">碳酸氫鈉 (小蘇打)</td></tr>
+                                    <tr><td>$NaHSO_4$</td><td class="text-blue">硫酸氫鈉</td></tr>
+                                    <tr><td>$NaH_2PO_4$</td><td class="text-blue">磷酸二氫鈉</td></tr>
+                                    <tr><td>$Na_2HPO_4$</td><td class="text-blue">磷酸一氫鈉</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-green">性質特點</h2>
+                            <p>酸式鹽的水溶液不一定呈酸性！</p>
+                            <ul>
+                                <li>$NaHSO_4$：酸性</li>
+                                <li>$NaHCO_3$：<strong class="text-yellow">鹼性</strong> (因水解程度 > 解離)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Slide: Phosphorus Acids & Salts -->
+                <div class="slide">
+                    <h1>含磷含氧酸及其鹽類的命名</h1>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; padding: 0.2rem 0;">
+                        <table class="table-chem" id="phosphorus-table" style="width: 100%; border-collapse: separate; border-spacing: 2px; font-size: 0.95rem;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 18%;">結構式</th>
+                                    <th style="width: 16%;">酸 (Acid)</th>
+                                    <th style="width: 22%;">少一個氫</th>
+                                    <th style="width: 22%;">少二個氫</th>
+                                    <th style="width: 22%;">少三個氫</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Row 1: H3PO4 -->
+                                <tr style="height: 90px;">
+                                    <td style="background: rgba(255,255,255,0.02);"><img src="images/H3PO4.png" style="height: 85px; width: auto; filter: brightness(0) invert(1);"></td>
+                                    <td>$H_3PO_4$<br><small>磷酸</small></td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$H_2PO_4^-$<br>磷酸二氫根</span>" data-salt="<span style='color:var(--accent-yellow)'>$NaH_2PO_4$<br>磷酸二氫鈉</span>">
+                                        <span style="color:var(--accent-blue)">$H_2PO_4^-$<br>磷酸二氫根</span>
+                                    </td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$HPO_4^{2-}$<br>磷酸氫根</span>" data-salt="<span style='color:var(--accent-yellow)'>$Na_2HPO_4$<br>磷酸一氫鈉</span>">
+                                        <span style="color:var(--accent-blue)">$HPO_4^{2-}$<br>磷酸氫根</span>
+                                    </td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$PO_4^{3-}$<br>磷酸根</span>" data-salt="<span style='color:var(--accent-yellow)'>$Na_3PO_4$<br>磷酸鈉</span>">
+                                        <span style="color:var(--accent-blue)">$PO_4^{3-}$<br>磷酸根</span>
+                                    </td>
+                                </tr>
+                                <!-- Row 2: H3PO3 -->
+                                <tr style="height: 90px;">
+                                    <td style="background: rgba(255,255,255,0.02);"><img src="images/H3PO3.png" style="height: 70px; width: auto; filter: brightness(0) invert(1);"></td>
+                                    <td>$H_3PO_3$<br><small>異亞磷酸</small></td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$H_2PO_3^-$<br>異亞磷酸氫根</span>" data-salt="<span style='color:var(--accent-yellow)'>$NaH_2PO_3$<br>異亞磷酸氫鈉</span>">
+                                        <span style="color:var(--accent-blue)">$H_2PO_3^-$<br>異亞磷酸氫根</span>
+                                    </td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$HPO_3^{2-}$<br>異亞磷酸根</span>" data-salt="<span style='color:var(--accent-yellow)'>$Na_2HPO_3$<br>異亞磷酸鈉</span>">
+                                        <span style="color:var(--accent-blue)">$HPO_3^{2-}$<br>異亞磷酸根</span>
+                                    </td>
+                                    <td class="text-muted" style="opacity:0.2; background: rgba(0,0,0,0.2);">—</td>
+                                </tr>
+                                <!-- Row 3: H3PO2 -->
+                                <tr style="height: 90px;">
+                                    <td style="background: rgba(255,255,255,0.02);"><img src="images/H3PO2.png" style="height: 60px; width: auto; filter: brightness(0) invert(1);"></td>
+                                    <td>$H_3PO_2$<br><small>異次磷酸</small></td>
+                                    <td class="p-cell" data-radical="<span style='color:var(--accent-blue)'>$H_2PO_2^-$<br>異次磷酸根</span>" data-salt="<span style='color:var(--accent-yellow)'>$NaH_2PO_2$<br>異次磷酸鈉</span>">
+                                        <span style="color:var(--accent-blue)">$H_2PO_2^-$<br>異次磷酸根</span>
+                                    </td>
+                                    <td class="text-muted" style="opacity:0.2; background: rgba(0,0,0,0.2);">—</td>
+                                    <td class="text-muted" style="opacity:0.2; background: rgba(0,0,0,0.2);">—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div style="display: flex; gap: 2rem; justify-content: center; margin-top: 1rem; padding: 0.5rem 0;">
+                            <button class="btn primary" id="btn-show-radicals" style="width: auto; padding: 10px 30px; font-weight: bold; border-radius: 30px; background: var(--accent-blue); color: black;">酸與酸根模式</button>
+                            <button class="btn primary" id="btn-show-salts" style="width: auto; padding: 10px 30px; font-weight: bold; border-radius: 30px; background: var(--accent-yellow); color: black;">酸與鈉鹽模式</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 8: Basic, Double & Complex -->
+                <div class="slide">
+                    <h1>其他種類的鹽</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-purple">1. 鹼式鹽</h2>
+                            <p>含有未中和的 $OH^-$ 離子。</p>
+                            <ul>
+                                <li>$Cu_2(OH)_2CO_3$：<strong class="text-blue">鹼式碳酸銅</strong> (孔雀石)</li>
+                                <li>$Bi(OH)_2NO_3$：<strong class="text-blue">鹼式硝酸鉍</strong></li>
+                            </ul>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-yellow">2. 複鹽 (Double Salts)</h2>
+                            <p>由兩種或兩種以上的簡單鹽類按固定比例組成。</p>
+                            <ul>
+                                <li>$KAl(SO_4)_2 \cdot 12H_2O$：<strong class="text-blue">明礬</strong> (硫酸鋁鉀)</li>
+                            </ul>
+                            <h2 class="text-green" style="margin-top: 1.5rem;">3. 錯鹽 (Complex Salts)</h2>
+                            <p>含有配位鍵組成的錯離子。</p>
+                            <ul>
+                                <li>$K_4[Fe(CN)_6]$：鐵氰化鉀</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 9: Interactive Matching Game -->
+                <div class="slide" id="slide-game">
+                    <h1>綜合練習：化學命名配對挑戰</h1>
+                    <p style="text-align: center; color: var(--accent-green); margin-top: -10px; font-size: 0.9rem;">
+                        請連接左側化學式與右側正確名稱。完成 8 組後將自動評分！
+                        <button onclick="resetGame()" class="btn" style="display: inline-block; width: auto; margin-left: 15px; padding: 4px 12px; background: rgba(56, 189, 248, 0.2); border-color: var(--accent-blue); color: var(--text-main); font-size: 0.9rem; cursor: pointer; z-index: 20; position: relative;">再測一次</button>
+                    </p>
+                    
+                    <div id="game-container" style="position: relative; flex: 1; display: flex; justify-content: space-between; align-items: stretch; padding: 20px 40px; margin-top: 10px; background: rgba(0,0,0,0.2); border-radius: 20px; user-select: none; overflow: hidden;">
+                        <!-- SVG Layer for Game Lines -->
+                        <svg id="game-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
+                        
+                        <!-- Left: Formulas (1/3) -->
+                        <div id="formulas-column" style="display: flex; flex-direction: column; justify-content: space-between; gap: 6px; z-index: 10; padding: 10px 0; width: 32%;">
+                            <!-- Will be populated by JS -->
+                        </div>
+
+                        <!-- Right: Names (1/3) -->
+                        <div id="names-column" style="display: flex; flex-direction: column; justify-content: space-between; gap: 6px; z-index: 10; padding: 10px 0; width: 32%;">
+                            <!-- Will be populated by JS -->
+                        </div>
+
+                        <!-- Success Message Overlay -->
+                        <div id="game-feedback" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.95); padding: 2rem 4rem; border-radius: 20px; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); z-index: 100; text-align: center;">
+                            太棒了！<br>全部答對了 🎉
+                            <button onclick="resetGame()" class="btn" style="margin-top: 1.5rem; background: white; color: #059669; border: none; font-size: 1.2rem; padding: 10px 25px;">再玩一次</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Canvas Layer for Drawing -->
+            <canvas id="drawing-layer"></canvas>
+        </div>
+        <!-- Slide Indicator -->
+        <div id="slide-info">1 / 8</div>
+
+        <!-- Controls Toolbar -->
+        <div id="toolbar">
+            <div id="drag-handle" title="拖曳移動工具列">≡</div>
+            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
+            <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            
+            <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
+            
+            <div class="color-picker" id="color-picker">
+                <div class="color-swatch selected" style="background: #f8fafc" data-color="#f8fafc"></div>
+                <div class="color-swatch" style="background: #f87171" data-color="#f87171"></div>
+                <div class="color-swatch" style="background: #38bdf8" data-color="#38bdf8"></div>
+                <div class="color-swatch" style="background: #fbbf24" data-color="#fbbf24"></div>
+                <div class="color-swatch" style="background: #34d399" data-color="#34d399"></div>
+                <div class="color-swatch" style="background: #a855f7" data-color="#a855f7"></div>
+            </div>
+
+            <div id="size-picker" style="display: none; padding: 4px 0;">
+                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 44px; height: 4px; cursor: pointer;">
+            </div>
+
+            <div id="eraser-tools" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
+                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:currentColor;"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
+            </div>
+            <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            <button class="btn-tool" id="btn-exit-fs" title="回目錄">🏠</button>
+        </div>
+    </div>
+
+        // --- Global Variables ---
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        const btnExitFs = document.getElementById('btn-exit-fs');
+        const slides = document.querySelectorAll('.slide');
+        const slideInfo = document.getElementById('slide-info');
+        let currentSlide = 0;
+
+        // --- Drawing Canvas Logic ---
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+        let slideDrawings = {};
+        let isDrawingMode = false;
+        let isDrawing = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let lastX = 0;
+        let lastY = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            restoreDrawing();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true;
+            [lastX, lastY] = getCoords(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = drawMode === 'eraser' ? '#0b1120' : penColor;
+            ctx.lineWidth = drawMode === 'eraser' ? penSize * 10 : penSize;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                slideDrawings[currentSlide] = canvas.toDataURL();
+            }
+        }
+
+        function restoreDrawing() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (slideDrawings[currentSlide]) {
+                const img = new Image();
+                img.onload = () => ctx.drawImage(img, 0, 0);
+                img.src = slideDrawings[currentSlide];
+            }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // --- Functions ---
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+            restoreDrawing();
+
+            if (slides[currentSlide].id === 'slide-game') {
+                if (document.getElementById('formulas-column').children.length === 0) {
+                    initGame();
+                }
+            }
+        }
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            try {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(() => {});
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            } catch (e) {}
+        }
+
+        btnStart.addEventListener('click', () => {
+            enterFullscreen();
+            startOverlay.style.display = 'none';
+            resizeCanvas();
+            updateSlides();
+        });
+
+        btnExitFs.addEventListener('click', () => {
+            window.location.href = '../../index.html';
+        });
+
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            currentSlide = Math.max(0, currentSlide - 1);
+            updateSlides();
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            currentSlide = Math.min(slides.length - 1, currentSlide + 1);
+            updateSlides();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (startOverlay.style.display !== 'none') return;
+            if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+                currentSlide = Math.min(slides.length - 1, currentSlide + 1);
+                updateSlides();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                currentSlide = Math.max(0, currentSlide - 1);
+                updateSlides();
+            }
+        });
+
+        // --- Toolbar Logic ---
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false;
+        let startX, startY, initialLeft, initialTop;
+
+        dragHandle.addEventListener('pointerdown', (e) => {
+            isDraggingToolbar = true;
+            dragHandle.style.cursor = 'grabbing';
+            const rect = toolbar.getBoundingClientRect();
+            if (!toolbar.dataset.isAbsolute) {
+                toolbar.style.right = 'auto';
+                toolbar.style.top = rect.top + 'px';
+                toolbar.style.left = rect.left + 'px';
+                toolbar.style.transform = 'none';
+                toolbar.dataset.isAbsolute = "true";
+            }
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = parseFloat(toolbar.style.left);
+            initialTop = parseFloat(toolbar.style.top);
+            document.addEventListener('pointermove', onDragToolbar);
+            document.addEventListener('pointerup', onStopDragToolbar);
+        });
+
+        function onDragToolbar(e) {
+            if (!isDraggingToolbar) return;
+            toolbar.style.left = (initialLeft + (e.clientX - startX)) + 'px';
+            toolbar.style.top = (initialTop + (e.clientY - startY)) + 'px';
+        }
+
+        function onStopDragToolbar() {
+            isDraggingToolbar = false;
+            dragHandle.style.cursor = 'grab';
+            document.removeEventListener('pointermove', onDragToolbar);
+            document.removeEventListener('pointerup', onStopDragToolbar);
+        }
+
+        document.getElementById('btn-draw').addEventListener('click', (e) => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
+            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', (e) => {
+                document.querySelector('.color-swatch.selected').classList.remove('selected');
+                swatch.classList.add('selected');
+                penColor = swatch.dataset.color;
+                drawMode = 'pen';
+                document.getElementById('btn-eraser').classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('pen-size').addEventListener('input', (e) => {
+            penSize = e.target.value;
+        });
+
+        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+            drawMode = (drawMode === 'eraser') ? 'pen' : 'eraser';
+            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            slideDrawings[currentSlide] = null;
+        });
+
+        // --- Phosphorus Table Toggle ---
+        const pCells = document.querySelectorAll('.p-cell');
+        const btnRadicals = document.getElementById('btn-show-radicals');
+        const btnSalts = document.getElementById('btn-show-salts');
+
+        if (btnRadicals && btnSalts) {
+            btnRadicals.addEventListener('click', () => {
+                pCells.forEach(cell => { cell.innerHTML = cell.dataset.radical; });
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('phosphorus-table')]);
+            });
+            btnSalts.addEventListener('click', () => {
+                pCells.forEach(cell => { cell.innerHTML = cell.dataset.salt; });
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('phosphorus-table')]);
+            });
+        }
+
+        // --- Matching Game Logic ---
+        const gamePairs = [
+            { f: "$HCl_{(aq)}$", n: "氫氯酸" }, { f: "$HF_{(aq)}$", n: "氫氟酸" },
+            { f: "$H_2S_{(aq)}$", n: "氫硫酸" }, { f: "$HCN_{(aq)}$", n: "氫氰酸" },
+            { f: "$H_2SO_4$", n: "硫酸" }, { f: "$HNO_3$", n: "硝酸" },
+            { f: "$H_3PO_4$", n: "磷酸" }, { f: "$H_2CO_3$", n: "碳酸" },
+            { f: "$HClO_4$", n: "過氯酸" }, { f: "$HClO_3$", n: "氯酸" },
+            { f: "$HClO_2$", n: "亞氯酸" }, { f: "$HClO$", n: "次氯酸" },
+            { f: "$H_3PO_3$", n: "異亞磷酸" }, { f: "$H_3PO_2$", n: "異次磷酸" },
+            { f: "$CH_3COOH$", n: "醋酸" }, { f: "$H_2SO_3$", n: "亞硫酸" },
+            { f: "$NaOH$", n: "氫氧化鈉" }, { f: "$Ca(OH)_2$", n: "氫氧化鈣" },
+            { f: "$Al(OH)_3$", n: "氫氧化鋁" }, { f: "$Fe(OH)_3$", n: "氫氧化鐵" },
+            { f: "$Fe(OH)_2$", n: "氫氧化亞鐵" }, { f: "$KOH$", n: "氫氧化鉀" },
+            { f: "$Ba(OH)_2$", n: "氫氧化鋇" }, { f: "$Mg(OH)_2$", n: "氫氧化鎂" },
+            { f: "$NaCl$", n: "氯化鈉" }, { f: "$K_2S$", n: "硫化鉀" },
+            { f: "$AlF_3$", n: "氟化鋁" }, { f: "$CuCl_2$", n: "氯化銅" },
+            { f: "$KNO_3$", n: "硝酸鉀" }, { f: "$CaSO_4$", n: "硫酸鈣" },
+            { f: "$Na_3PO_4$", n: "磷酸鈉" }, { f: "$BaCO_3$", n: "碳酸鋇" },
+            { f: "$AgNO_3$", n: "硝酸銀" }, { f: "$Na_2CO_3$", n: "碳酸鈉" },
+            { f: "$NaHCO_3$", n: "碳酸氫鈉" }, { f: "$NaHSO_4$", n: "硫酸氫鈉" },
+            { f: "$NaH_2PO_4$", n: "磷酸二氫鈉" }, { f: "$Na_2HPO_4$", n: "磷酸一氫鈉" },
+            { f: "$Cu_2(OH)_2CO_3$", n: "鹼式碳酸銅" }, { f: "$Bi(OH)_2NO_3$", n: "鹼式硝酸鉍" },
+            { f: "$KAl(SO_4)_2 \\cdot 12H_2O$", n: "明礬" }, { f: "$K_4[Fe(CN)_6]$", n: "鐵氰化鉀" }
+        ];
+
+        let connections = []; 
+        let activeDot = null;
+        let tempLine = null;
+
+        function initGame() {
+            const formulasCol = document.getElementById('formulas-column');
+            const namesCol = document.getElementById('names-column');
+            const svg = document.getElementById('game-svg');
+            formulasCol.innerHTML = '';
+            namesCol.innerHTML = '';
+            svg.innerHTML = '';
+            connections = [];
+            document.getElementById('game-feedback').style.display = 'none';
+
+            const shuffledAll = [...gamePairs].sort(() => Math.random() - 0.5);
+            const selectedPairs = shuffledAll.slice(0, 8);
+            const shuffledNames = [...selectedPairs].sort(() => Math.random() - 0.5);
+            const shuffledFormulas = [...selectedPairs].sort(() => Math.random() - 0.5);
+
+            shuffledFormulas.forEach(pair => {
+                formulasCol.innerHTML += `<div class="game-item"><span>${pair.f}</span><div class="dot formulas-dot" data-id="${pair.f}" data-type="formula"></div></div>`;
+            });
+            shuffledNames.forEach(pair => {
+                namesCol.innerHTML += `<div class="game-item"><div class="dot names-dot" data-id="${pair.f}" data-type="name"></div><span>${pair.n}</span></div>`;
+            });
+            if (window.MathJax) MathJax.typesetPromise([formulasCol, namesCol]);
+            document.querySelectorAll('.dot').forEach(dot => dot.addEventListener('pointerdown', onDotStart));
+        }
+
+        function onDotStart(e) {
+            if (activeDot) return;
+            activeDot = e.target;
+            activeDot.classList.add('active');
+            const rect = activeDot.getBoundingClientRect();
+            const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+            const x = rect.left + rect.width / 2 - svgRect.left;
+            const y = rect.top + rect.height / 2 - svgRect.top;
+            tempLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            tempLine.setAttribute("x1", x); tempLine.setAttribute("y1", y);
+            tempLine.setAttribute("x2", x); tempLine.setAttribute("y2", y);
+            tempLine.setAttribute("stroke", "white"); tempLine.setAttribute("stroke-width", "3");
+            tempLine.setAttribute("stroke-dasharray", "5,5");
+            document.getElementById('game-svg').appendChild(tempLine);
+            document.addEventListener('pointermove', onDotMove);
+            document.addEventListener('pointerup', onDotEnd);
+        }
+
+        function onDotMove(e) {
+            const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+            tempLine.setAttribute("x2", e.clientX - svgRect.left);
+            tempLine.setAttribute("y2", e.clientY - svgRect.top);
+        }
+
+        function onDotEnd(e) {
+            document.removeEventListener('pointermove', onDotMove);
+            document.removeEventListener('pointerup', onDotEnd);
+            const overElem = document.elementFromPoint(e.clientX, e.clientY);
+            const targetDot = overElem && overElem.classList.contains('dot') ? overElem : null;
+            if (targetDot && targetDot.dataset.type !== activeDot.dataset.type) {
+                const rect2 = targetDot.getBoundingClientRect();
+                const svgRect = document.getElementById('game-svg').getBoundingClientRect();
+                tempLine.setAttribute("x2", rect2.left + rect2.width / 2 - svgRect.left);
+                tempLine.setAttribute("y2", rect2.top + rect2.height / 2 - svgRect.top);
+                tempLine.setAttribute("stroke-dasharray", "");
+                tempLine.setAttribute("stroke", "#38bdf8");
+                connections.push({ fromId: activeDot.dataset.id, toId: targetDot.dataset.id, fromDot: activeDot, toDot: targetDot, line: tempLine });
+                if (connections.length === 8) checkResults();
+            } else {
+                if (tempLine) tempLine.remove();
+            }
+            if (activeDot) activeDot.classList.remove('active');
+            activeDot = null;
+        }
+
+        function checkResults() {
+            let correctCount = 0;
+            const toRemove = [];
+            connections.forEach(conn => {
+                if (conn.fromId === conn.toId) {
+                    conn.line.setAttribute("stroke", "#34d399"); 
+                    conn.fromDot.parentElement.classList.add('correct');
+                    conn.toDot.parentElement.classList.add('correct');
+                    correctCount++;
+                } else {
+                    conn.line.classList.add('flash');
+                    toRemove.push(conn);
+                }
+            });
+            if (toRemove.length > 0) {
+                setTimeout(() => {
+                    toRemove.forEach(conn => {
+                        conn.line.remove();
+                        connections = connections.filter(c => c !== conn);
+                    });
+                }, 1000);
+            }
+            if (correctCount === 8) document.getElementById('game-feedback').style.display = 'block';
+        }
+
+        function resetGame() { initGame(); }
+    </script>
+</body>
+</html>
+    </script>
+</body>
+</html>
