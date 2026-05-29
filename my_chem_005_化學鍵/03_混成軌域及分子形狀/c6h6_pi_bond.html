@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>苯 C₆H₆ 的 π 鍵共振與混成軌域</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@700&display=swap');
+
+    :root {
+      --bg: #0b0e1a; --panel: #111827; --border: #1e2d4a;
+      --c1: #38bdf8; --c2: #a78bfa; --c3: #34d399;
+      --gold: #fbbf24; --text: #e2e8f0; --dim: #94a3b8;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Noto Sans TC',sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; display: flex; flex-direction: column;
+      padding:16px; overflow: hidden;
+    }
+    
+    .anim-section {
+      width: 100%; height: 100%; flex: 1;
+      background:var(--panel); border:1px solid var(--border);
+      border-radius:12px; padding:16px; display: flex; flex-direction: column;
+      box-shadow: inset 0 0 40px rgba(167, 139, 250, 0.05);
+    }
+    .anim-header {
+      margin-bottom: 12px;
+    }
+    .anim-title { font-size:1.4rem; font-weight:700; color:var(--c2); margin-bottom:6px; }
+    .anim-subtitle { font-size:1rem; color:var(--dim); line-height:1.5; }
+    
+    .anim-content-row { display:flex; flex: 1; gap:16px; align-items:stretch; min-height: 0; }
+    
+    .anim-left { 
+      flex:0.35; display:flex; flex-direction:column; justify-content:center;
+      background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; border: 1px solid var(--border);
+    }
+    .anim-center { flex:1; display:flex; flex-direction:column; position: relative; }
+    
+    #three-container {
+      position: relative; width: 100%; height: 100%; border-radius: 10px; 
+      overflow: hidden; background: #070a14; cursor: grab;
+      border: 1px solid var(--border);
+    }
+    #three-container:active { cursor: grabbing; }
+    
+    .step-label {
+      font-size:1.1rem; color:var(--text); font-weight: 700;
+      text-align:left; min-height:80px; line-height:1.6; margin-bottom: 20px;
+    }
+    
+    .controls {
+      display: flex; flex-direction: column; gap: 10px; margin-top: auto;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0b0e1a; border: none; padding: 12px 20px;
+      border-radius: 8px; font-size: 1.05rem; font-weight: 700;
+      cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+    button:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+      height: 6px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--c1);
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    @media(max-width:800px){
+      .anim-content-row{flex-direction:column;}
+      .anim-left { flex: auto; padding: 12px; }
+      #three-container { min-height: 350px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="anim-section">
+  <div class="anim-header">
+    <div class="anim-title">⚛️ C₆H₆ 苯的 π 鍵共振形成動畫</div>
+    <div class="anim-subtitle">6 個碳原子（sp² 混成）與 6 個氫原子形成正六邊形平面，未混成的 p 軌域形成上下兩團連續的 π 電子雲。支援滑鼠拖曳旋轉與縮放。</div>
+  </div>
+  <div class="anim-content-row">
+    <div class="anim-left">
+      <div class="step-label" id="stepLabel">動畫載入中，請稍候…</div>
+      <div class="controls">
+        <input type="range" id="animSlider" min="0" max="1" step="0.001" value="0" style="margin-bottom: 12px;">
+        <button id="playBtn" onclick="window.play3DAnim()">▶ 自動播放</button>
+      </div>
+    </div>
+    <div class="anim-center">
+      <div id="three-container"></div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+    }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const container = document.getElementById('three-container');
+
+// Scene Setup
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+camera.position.set(0, -8, 14); // Angled view to see XY plane and Z axis clearly
+
+// WebGL Renderer
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+// CSS2D Renderer for HTML Labels
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(container.clientWidth, container.clientHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none';
+container.appendChild(labelRenderer.domElement);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+scene.add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(5, 5, 10);
+scene.add(dirLight);
+
+const molGroup = new THREE.Group();
+// Tilt the molecule slightly so the XY plane is easier to view
+molGroup.rotation.x = Math.PI / 6;
+scene.add(molGroup);
+
+// Colors
+const CSP2 = 0x34d399; // Green for sp2
+const CPZ  = 0xa78bfa; // Purple for pz
+const C1S  = 0x38bdf8; // Blue for H 1s
+const CPI  = 0xff6b6b; // Red/Pink for pi bond overlay (delocalized)
+
+// Geometries & Materials
+const cGeo = new THREE.SphereGeometry(0.35, 32, 32);
+const cMat = new THREE.MeshPhongMaterial({ color: 0x1e293b, shininess: 30 });
+const lobeGeo = new THREE.SphereGeometry(0.65, 32, 32);
+const sp2Mat = new THREE.MeshPhongMaterial({ color: CSP2, transparent: true, opacity: 0.75, shininess: 80 });
+const pzMat = new THREE.MeshPhongMaterial({ color: CPZ, transparent: true, opacity: 0.6, shininess: 80 });
+const hGeo = new THREE.SphereGeometry(0.45, 32, 32);
+const hMat = new THREE.MeshPhongMaterial({ color: C1S, transparent: true, opacity: 0.7, shininess: 60 });
+
+// Torus for delocalized pi rings (one above, one below the XY plane)
+const torusGeo = new THREE.TorusGeometry(1.4, 0.45, 32, 64);
+const piMat = new THREE.MeshPhongMaterial({ color: CPI, transparent: true, opacity: 0, shininess: 90 });
+
+const pzLobesTop = [];
+const pzLobesBot = [];
+
+// Construct a Carbon with 3 sp2 and 1 pz
+function createCarbonGroup(angleDeg) {
+    const group = new THREE.Group();
+    
+    // Core
+    const core = new THREE.Mesh(cGeo, cMat);
+    group.add(core);
+
+    const cDiv = document.createElement('div');
+    cDiv.textContent = 'C';
+    cDiv.style.color = '#fff';
+    cDiv.style.fontFamily = 'Noto Sans TC, sans-serif';
+    cDiv.style.fontWeight = 'bold';
+    cDiv.style.fontSize = '16px';
+    cDiv.style.textShadow = '0 0 4px #000';
+    const cLabel = new CSS2DObject(cDiv);
+    group.add(cLabel);
+
+    // sp2 lobes (XY plane)
+    // The angles relative to the Carbon's position vector (which is angleDeg)
+    // One points outward (angleDeg), two point to neighbors (angleDeg + 120, angleDeg - 120)
+    const angles = [angleDeg, angleDeg + 120, angleDeg - 120];
+    
+    angles.forEach(deg => {
+        const rad = deg * Math.PI / 180;
+        const mesh = new THREE.Mesh(lobeGeo, sp2Mat);
+        mesh.scale.set(0.45, 1.2, 0.45);
+        mesh.position.y = 0.6; // move along local Y before rotation
+        const pivot = new THREE.Group();
+        pivot.add(mesh);
+        // Rotate around Z to lie on XY plane pointing at 'rad'
+        pivot.rotation.z = rad - Math.PI / 2;
+        group.add(pivot);
+    });
+
+    // pz lobes (along Z axis)
+    const pzTop = new THREE.Mesh(lobeGeo, pzMat);
+    pzTop.scale.set(0.4, 1.3, 0.4);
+    pzTop.rotation.x = Math.PI / 2; // Elongate along Z
+    pzTop.position.z = 0.75;
+    group.add(pzTop);
+    pzLobesTop.push(pzTop);
+
+    const pzBot = new THREE.Mesh(lobeGeo, pzMat);
+    pzBot.scale.set(0.4, 1.3, 0.4);
+    pzBot.rotation.x = Math.PI / 2; // Elongate along Z
+    pzBot.position.z = -0.75;
+    group.add(pzBot);
+    pzLobesBot.push(pzBot);
+
+    return group;
+}
+
+// Target positions
+const C_DIST = 1.4; // Distance from center to C
+const H_DIST = 1.09; // Distance from C to H
+
+const carbons = [];
+const hydrogens = [];
+
+// Create the 6 Carbons and 6 Hydrogens
+for (let i = 0; i < 6; i++) {
+    const angle = i * 60; // 0, 60, 120, 180, 240, 300
+    const rad = angle * Math.PI / 180;
+    
+    // Carbon
+    const cGroup = createCarbonGroup(angle);
+    molGroup.add(cGroup);
+    carbons.push({ group: cGroup, angle: rad });
+    
+    // Hydrogen
+    const hMesh = new THREE.Mesh(hGeo, hMat);
+    const hDiv = document.createElement('div');
+    hDiv.textContent = 'H';
+    hDiv.style.color = '#fff';
+    hDiv.style.fontFamily = 'Noto Sans TC, sans-serif';
+    hDiv.style.fontWeight = 'bold';
+    hDiv.style.fontSize = '14px';
+    hDiv.style.textShadow = '0 0 4px #000';
+    hMesh.add(new CSS2DObject(hDiv));
+    molGroup.add(hMesh);
+    hydrogens.push({ mesh: hMesh, angle: rad });
+}
+
+// Delocalized Pi Bond visualizers (Toruses on the XY plane)
+const piTop = new THREE.Mesh(torusGeo, piMat);
+// By default Torus is on XY plane, so just move it along Z
+piTop.position.set(0, 0, 0.75);
+molGroup.add(piTop);
+
+const piBot = new THREE.Mesh(torusGeo, piMat);
+piBot.position.set(0, 0, -0.75);
+molGroup.add(piBot);
+
+// Animation State
+window.animPlaying = false;
+let animProg = 0;
+let t0 = 0;
+const DUR = 10000; // 10 seconds total
+
+function updatePositions(prog) {
+    // Stage 1: Carbons approach (0 to 0.3)
+    const tC = Math.min(Math.max(prog / 0.3, 0), 1);
+    const currCDist = 4.0 - (4.0 - C_DIST) * tC;
+    
+    carbons.forEach(c => {
+        c.group.position.set(Math.cos(c.angle) * currCDist, Math.sin(c.angle) * currCDist, 0);
+    });
+
+    // Stage 2: Hydrogens approach (0.3 to 0.6)
+    const tH = Math.min(Math.max((prog - 0.3) / 0.3, 0), 1);
+    // H absolute distance from center: starts far, ends at C_DIST + H_DIST
+    const currHDist = 5.5 - (5.5 - (C_DIST + H_DIST)) * tH;
+    
+    hydrogens.forEach(h => {
+        h.mesh.position.set(Math.cos(h.angle) * currHDist, Math.sin(h.angle) * currHDist, 0);
+    });
+
+    // Stage 3: Delocalized pi bonds form (0.6 to 0.9)
+    const tPi = Math.min(Math.max((prog - 0.6) / 0.3, 0), 1);
+    piMat.opacity = tPi * 0.7; // Fade in toruses
+    
+    // Scale up slightly for dramatic effect
+    piTop.scale.set(0.8 + tPi*0.2, 0.8 + tPi*0.2, 0.8 + tPi*0.2);
+    piBot.scale.set(0.8 + tPi*0.2, 0.8 + tPi*0.2, 0.8 + tPi*0.2);
+
+    // Fade out individual pz orbitals as the ring forms
+    const pzOpacity = 0.6 - (tPi * 0.6);
+    pzMat.opacity = pzOpacity;
+
+    // Update Text
+    let txt = '準備開始';
+    if (prog > 0 && prog < 0.3) txt = '① 6 個碳原子彼此靠近，以 sp² 軌域頭對頭重疊，形成正六邊形的 σ 單鍵骨架。';
+    else if (prog >= 0.3 && prog < 0.6) txt = '② 6 個氫原子的 1s 軌域與碳的剩餘 sp² 軌域重疊，形成 6 個 C-H σ 鍵。平面六環成形。';
+    else if (prog >= 0.6 && prog < 0.95) txt = '③ 碳原子上未參與混成的垂直 pz 軌域開始側向重疊，形成上下兩大團連續的 π 電子雲。';
+    else if (prog >= 0.95) txt = '✓ 苯環的三個 π 鍵呈現「共振」狀態，電子均勻分佈在整個環上，使分子非常穩定。';
+    
+    document.getElementById('stepLabel').textContent = txt;
+}
+
+// Initial state
+updatePositions(0);
+
+const slider = document.getElementById('animSlider');
+
+slider.addEventListener('input', (e) => {
+    window.animPlaying = false;
+    animProg = parseFloat(e.target.value);
+    
+    const easeProg = animProg < 0.5 ? 2 * animProg * animProg : 1 - Math.pow(-2 * animProg + 2, 2) / 2;
+    updatePositions(easeProg);
+    
+    document.getElementById('playBtn').textContent = '▶ 自動播放';
+});
+
+window.play3DAnim = function() {
+    if(window.animPlaying) {
+        window.animPlaying = false;
+        document.getElementById('playBtn').textContent = '▶ 自動播放';
+    } else {
+        if (animProg >= 1) {
+            animProg = 0;
+            slider.value = 0;
+        }
+        window.animPlaying = true;
+        document.getElementById('playBtn').textContent = '⏸ 暫停播放';
+        t0 = Date.now() - (animProg * DUR);
+    }
+};
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    if(window.animPlaying) {
+        animProg = Math.min((Date.now() - t0) / DUR, 1);
+        slider.value = animProg;
+        const easeProg = animProg < 0.5 ? 2 * animProg * animProg : 1 - Math.pow(-2 * animProg + 2, 2) / 2;
+        
+        updatePositions(easeProg);
+
+        if(animProg >= 1) {
+            window.animPlaying = false;
+            document.getElementById('playBtn').textContent = '▶ 重播動畫';
+        }
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+    if(!container.clientWidth) return;
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    labelRenderer.setSize(container.clientWidth, container.clientHeight);
+});
+
+</script>
+</body>
+</html>
