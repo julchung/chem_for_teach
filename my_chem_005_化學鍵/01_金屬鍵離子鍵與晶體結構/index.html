@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>金屬鍵、離子鍵與晶體結構 | 互動教學</title>
+    <meta name="description" content="高中選修化學二 第二章 物質結構與化學鍵：金屬鍵、離子鍵、晶體堆積互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0f1e;
+            --text-main: #f0f4ff;
+            --accent-gold: #fbbf24;
+            --accent-blue: #60a5fa;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fde047;
+            --accent-purple: #c084fc;
+            --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 15% 40%, rgba(251,191,36,0.07) 0%, transparent 55%),
+                radial-gradient(circle at 85% 25%, rgba(192,132,252,0.07) 0%, transparent 55%),
+                radial-gradient(rgba(96,165,250,0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: auto;
+        }
+        #app:not(.started) #presentation-area { pointer-events: none; }
+        #app:not(.started) ~ #toolbar,
+        #app:not(.started) ~ #slide-info { visibility: hidden; pointer-events: none; }
+        .start-badge, .start-title, .start-sub, .start-info { pointer-events: none; }
+        .btn-start {
+            pointer-events: auto; position: relative; z-index: 2; cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(251,191,36,0.35);
+        }
+        .start-badge {
+            font-size: 0.95rem; color: var(--accent-cyan);
+            background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
+            padding: 0.3rem 1.2rem; border-radius: 40px; margin-bottom: 1.2rem; letter-spacing: 0.12em;
+        }
+        .start-title {
+            font-size: clamp(2rem, 5.5vw, 4.2rem); font-weight: 900; text-align: center; line-height: 1.15;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-orange) 45%, var(--accent-purple) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .start-sub { font-size: 1.3rem; color: rgba(240,244,255,0.55); margin: 0.8rem 0 2.5rem; text-align: center; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
+            color: #0a0f1e; border: none; padding: 1.1rem 3.2rem;
+            border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 40px rgba(251,191,36,0.45);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-start:hover { transform: scale(1.07); }
+        .start-info { margin-top: 2rem; display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: rgba(240,244,255,0.5); }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 0.8rem 0.5rem; opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-gold); font-size: clamp(1.45rem, 2.5vw, 2.1rem);
+            margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.7rem;
+            border-bottom: 2px solid rgba(251,191,36,0.25); padding-bottom: 0.35rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: linear-gradient(var(--accent-gold), var(--accent-orange)); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1rem, 1.55vw, 1.3rem); margin: 0.35rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.92rem, 1.25vw, 1.1rem); margin: 0.25rem 0; font-weight: 600; }
+        p, li { font-size: clamp(0.88rem, 1.2vw, 1.08rem); line-height: 1.5; margin-bottom: 0.35rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-gold); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border);
+            border-radius: 18px; padding: 1rem 1.1rem;
+            backdrop-filter: blur(14px); display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        .formula-box {
+            background: rgba(0,0,0,0.4); border-radius: 12px; border-left: 6px solid var(--accent-green);
+            padding: 0.8rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.2rem, 1.8vw, 1.55rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(96,165,250,0.07); border-radius: 12px;
+            padding: 0.75rem; border: 1px solid rgba(96,165,250,0.25); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(251,191,36,0.08); border-radius: 12px;
+            padding: 0.75rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        .tag {
+            display: inline-block; padding: 0.12rem 0.6rem; border-radius: 20px;
+            font-size: 0.78rem; font-weight: 700; margin: 0.1rem;
+        }
+        .tag-gold { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-gold); }
+        .tag-purple { background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.4); color: var(--accent-purple); }
+        .tag-green { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-blue { background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.4); color: var(--accent-blue); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.8rem, 1.1vw, 0.95rem); }
+        table.data-table th, table.data-table td {
+            border: 1px solid rgba(255,255,255,0.15); padding: 0.45rem 0.5rem; text-align: center;
+        }
+        table.data-table th { background: rgba(251,191,36,0.12); color: var(--accent-gold); }
+        table.data-table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+        .crystal-btn {
+            background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 0.5rem 0.8rem; border-radius: 10px;
+            cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; margin: 0.2rem;
+        }
+        .crystal-btn.active { background: var(--accent-gold); color: #0a0f1e; border-color: var(--accent-gold); }
+        .quiz-item {
+            background: rgba(0,0,0,0.25); border-radius: 12px; padding: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 0.6rem;
+            position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0;
+        }
+        .quiz-half-panel {
+            position: relative; flex: 1; display: flex; flex-direction: column;
+            min-height: 0; overflow: hidden;
+        }
+        .quiz-half-panel .quiz-item { margin-bottom: 0; height: 100%; }
+        .quiz-options {
+            list-style: none; margin: 0.6rem 0 0; padding: 0; flex: 1;
+            display: flex; flex-direction: column; gap: 0.15rem;
+        }
+        .quiz-options li {
+            font-size: clamp(0.95rem, 1.35vw, 1.12rem);
+            line-height: 1.5; padding: 0.4rem 0.6rem;
+            border-radius: 8px; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .quiz-options li span.opt-label {
+            display: inline-block; min-width: 2.2em;
+            color: var(--accent-gold); font-weight: 700;
+        }
+        .props-stack { display: flex; flex-direction: column; gap: 1.2rem; flex: 1; }
+        .props-block {
+            background: rgba(0,0,0,0.2); border-radius: 14px; padding: 1.1rem 1.2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .props-block h2 { margin-top: 0; }
+
+        .grid-1-2 { grid-template-columns: 1fr 2fr !important; gap: 1rem; }
+        .ion-text-panel { padding: 0.85rem 1rem; }
+        .ion-text-block {
+            margin-bottom: 0.75rem; padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .ion-text-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .ion-text-block h2 { margin: 0 0 0.35rem; font-size: clamp(0.88rem, 1.25vw, 1.05rem); }
+        .ion-text-block p, .ion-text-block li {
+            font-size: clamp(0.78rem, 1.05vw, 0.9rem);
+            line-height: 1.5; margin-bottom: 0.3rem;
+        }
+        .ion-text-panel .info-card p {
+            font-size: clamp(0.72rem, 0.95vw, 0.82rem) !important;
+            line-height: 1.45;
+        }
+        .ion-step-list { list-style: none; margin: 0; padding: 0; counter-reset: ionstep; }
+        .ion-step-list li {
+            counter-increment: ionstep; padding: 0.45rem 0 0.45rem 2.2rem;
+            position: relative; margin-bottom: 0.25rem;
+        }
+        .ion-step-list li::before {
+            content: counter(ionstep);
+            position: absolute; left: 0; top: 0.4rem;
+            width: 1.55rem; height: 1.55rem; border-radius: 50%;
+            background: rgba(192,132,252,0.25); color: var(--accent-purple);
+            font-size: 0.8rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ion-vis-panel { padding: 1rem; display: flex; flex-direction: column; min-height: 0; }
+        .ion-step-btns {
+            display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .ion-step-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.75); padding: 0.35rem 0.65rem; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+            font-family: inherit;
+        }
+        .ion-step-btn.active { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); }
+        #ion-step-caption {
+            font-size: clamp(0.88rem, 1.2vw, 1rem); color: var(--accent-cyan);
+            text-align: center; margin-top: 0.45rem; flex-shrink: 0; line-height: 1.45;
+        }
+        .ion-diagram-row {
+            flex: 1; min-height: 0; display: flex; gap: 0.5rem;
+            align-items: stretch; overflow: hidden;
+        }
+        #ion-hess-chart {
+            flex: 0 0 58%; min-width: 0; display: flex;
+            align-items: center; justify-content: flex-start;
+        }
+        #ion-hess-chart svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+        #ion-agg-chart {
+            flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.2); border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        #ion-agg-chart svg { width: 100%; height: 100%; max-height: 100%; display: block; }
+        #ion-hess-chart .hess-eq {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            font-size: clamp(13px, 1.35vw, 16px);
+            line-height: 1.25;
+            text-align: left;
+            white-space: nowrap;
+            margin: 0;
+            padding: 0;
+        }
+        #ion-hess-chart .hess-eq sub { font-size: 0.78em; }
+        #ion-eq-strip {
+            background: rgba(0,0,0,0.35); border-radius: 10px; padding: 0.5rem 0.75rem;
+            font-size: clamp(0.82rem, 1.15vw, 0.98rem); color: var(--accent-cyan);
+            text-align: center; flex-shrink: 0; margin-bottom: 0.45rem; line-height: 1.5;
+            border: 1px solid rgba(34,211,238,0.25);
+        }
+        .svg-container { flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; }
+        .svg-container svg, canvas.sim-canvas { max-width: 100%; max-height: 100%; }
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(10, 15, 30, 0.92); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px; pointer-events: auto;
+        }
+        #toolbar .btn-tool, #toolbar .color-dot { pointer-events: auto; cursor: pointer; }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-gold); color: #0a0f1e; border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(251,191,36,0.5); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 18px; left: 18px; z-index: 9000;
+            font-size: 0.95rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        #canvas-sea {
+            display: block; width: 100%; flex: 1 1 auto;
+            min-height: 360px; height: min(52vh, 480px);
+            border-radius: 12px; background: rgba(0,0,0,0.35);
+        }
+        .ans-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 12, 26, 0.97); z-index: 100; flex-direction: column;
+            pointer-events: auto;
+            padding: 1.5rem; border-radius: 18px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-orange));
+            color: #0a0f1e; border: none; padding: 0.7rem 1.6rem; border-radius: 10px;
+            cursor: pointer; font-weight: 700; font-size: 1rem; transition: 0.2s;
+            align-self: flex-start; flex-shrink: 0; margin-top: 0.5rem;
+            position: relative; z-index: 110;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.04); }
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.15); outline: none; cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+            background: var(--accent-gold); box-shadow: 0 0 10px rgba(251,191,36,0.6);
+        }
+        /* 第二頁：加大文字與版面 */
+        #slide-metal-props h1 {
+            font-size: clamp(1.75rem, 3vw, 2.5rem);
+            margin-bottom: 0.9rem;
+            padding-bottom: 0.5rem;
+        }
+        #slide-metal-props h1::before { height: 32px; width: 8px; }
+        #slide-metal-props h2 {
+            font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+            margin: 0.5rem 0 0.75rem;
+        }
+        #slide-metal-props p,
+        #slide-metal-props li {
+            font-size: clamp(1.1rem, 1.75vw, 1.42rem);
+            line-height: 1.65;
+            margin-bottom: 0.55rem;
+        }
+        #slide-metal-props ul { margin-left: 1.75rem; }
+        #slide-metal-props li { margin-bottom: 0.65rem; }
+        #slide-metal-props .grid-2 { gap: 1.75rem; flex: 1; }
+        #slide-metal-props .panel {
+            padding: 1.5rem 1.65rem;
+            border-radius: 22px;
+        }
+        #slide-metal-props .data-table {
+            font-size: clamp(1.05rem, 1.6vw, 1.32rem);
+            flex: 1;
+        }
+        #slide-metal-props .data-table th,
+        #slide-metal-props .data-table td {
+            padding: 0.85rem 1rem;
+        }
+        #slide-metal-props .highlight-box,
+        #slide-metal-props .info-card {
+            padding: 1.15rem 1.25rem;
+            margin: 0.75rem 0;
+        }
+        #slide-metal-props .info-card p { margin-bottom: 0; }
+
+        #slide-ionic-props h1 {
+            font-size: clamp(1.65rem, 2.8vw, 2.35rem);
+            margin-bottom: 0.65rem;
+        }
+        #slide-ionic-props .grid-ion-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+            min-height: 0;
+        }
+        #slide-ionic-props .grid-ion-4 .panel {
+            padding: 1rem 1.1rem;
+            overflow-y: auto;
+        }
+        #slide-ionic-props .grid-ion-4 h2 {
+            font-size: clamp(1.15rem, 1.75vw, 1.45rem);
+            margin: 0 0 0.5rem;
+        }
+        #slide-ionic-props .grid-ion-4 p,
+        #slide-ionic-props .grid-ion-4 li {
+            font-size: clamp(0.98rem, 1.45vw, 1.18rem);
+            line-height: 1.5;
+            margin-bottom: 0.35rem;
+        }
+        #slide-ionic-props .formula-box {
+            font-size: clamp(1rem, 1.45vw, 1.2rem);
+            padding: 0.7rem;
+            margin: 0.45rem 0;
+        }
+        #slide-ionic-props .data-table { font-size: clamp(0.92rem, 1.3vw, 1.08rem); }
+        #slide-ionic-props .data-table th,
+        #slide-ionic-props .data-table td { padding: 0.6rem 0.7rem; }
+        #slide-ionic-props .highlight-box,
+        #slide-ionic-props .info-card { padding: 0.75rem 0.85rem; margin: 0.45rem 0; }
+        #slide-ionic-props .highlight-box p {
+            font-size: clamp(0.9rem, 1.25vw, 1.05rem);
+            margin: 0;
+            line-height: 1.45;
+        }
+        #slide-lattice .grid-2,
+        #slide-ionic-quiz .grid-2 { flex: 1; min-height: 0; gap: 1rem; }
+        #slide-lattice .quiz-q,
+        #slide-ionic-quiz .quiz-q {
+            font-size: clamp(1.08rem, 1.7vw, 1.38rem);
+            line-height: 1.55;
+            margin-bottom: 0.55rem;
+        }
+        #slide-lattice .quiz-options li,
+        #slide-ionic-quiz .quiz-options li {
+            font-size: clamp(1.02rem, 1.55vw, 1.22rem);
+            padding: 0.5rem 0.75rem;
+        }
+        .ans-inline {
+            display: none;
+            margin-top: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: rgba(52, 211, 153, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-green);
+            flex-shrink: 0;
+        }
+        .ans-inline p {
+            margin: 0.3rem 0;
+            font-size: clamp(0.95rem, 1.35vw, 1.1rem);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2, .grid-1-2, #slide-ionic-props .grid-ion-4 { grid-template-columns: 1fr !important; grid-template-rows: auto !important; }
+            .ion-diagram-row { flex-direction: column; }
+            #ion-hess-chart { flex: 1 1 auto; }
+            #slides-container { right: 58px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- Slide 1: 金屬鍵 電子海 -->
+            <div class="slide active">
+                <h1>金屬鍵與「電子海」</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>一、金屬鍵的形成</h2>
+                        <p>金屬鍵是指在<strong>合金或金屬晶體</strong>中，將兩個或更多金屬原子結合在一起的一種吸引力。</p>
+                        <div class="highlight-box">
+                            <p><strong>電子海觀念：</strong>許多金屬陽離子分佈在游離價電子構成的「電子海」中；金屬陽離子與電子間的引力即為<strong>金屬鍵</strong>，<em>不具方向性</em>。</p>
+                        </div>
+                        <p>金屬固體受外力時，原子層面可沿受力方向滑動變形，自由電子仍維繫鍵結而不斷裂（離子固體則因同號離子相斥，一滑動即斷裂）。鍵能約 <strong>50～134 kJ/mol</strong>。</p>
+                        <div class="info-card">
+                            <p><strong>形成金屬晶體的條件：</strong></p>
+                            <ul>
+                                <li>低游離能的價電子（低電負度元素）— 易釋出電子</li>
+                                <li>原子空價軌域多 — 價電子數 &lt; 價軌域數</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>軌域重疊 → 電子海</h2>
+                        <canvas id="canvas-sea" class="sim-canvas"></canvas>
+                        <input type="range" id="slider-slip" min="0" max="100" value="0" style="margin-top:0.5rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: 金屬特性 -->
+            <div class="slide" id="slide-metal-props">
+                <h1>金屬的特性</h1>
+                <div class="grid-2 slide-props-grid">
+                    <div class="panel scroll-panel slide-props-panel">
+                        <ul style="margin-top:0.4rem;">
+                            <li><strong>熱、電傳導性：</strong>自由電子可攜帶能量與電荷；溫度上升時原子振動加劇，<em>導電性下降</em>。</li>
+                            <li><strong>金屬光澤：</strong>價電子易在軌域間轉移，吸收並再放射可見光。</li>
+                            <li><strong>延展性：</strong>層面可滑動而不斷裂。</li>
+                            <li><strong>易成陽離子</strong>，氧化物多呈鹼性。</li>
+                            <li>摻入 C、P、S 等不純物會阻礙滑動，<strong>硬度增大</strong>。</li>
+                        </ul>
+                        <div class="highlight-box" style="margin-top:0.6rem;">
+                            <p><strong>補充 — 能帶理論：</strong>原子軌域重疊形成能帶；金屬的價帶與傳導帶重疊或極接近，故易導電。</p>
+                        </div>
+                    </div>
+                    <div class="panel slide-props-panel">
+                        <h2>金屬 vs 離子固體</h2>
+                        <table class="data-table slide-props-table">
+                            <tr><th>性質</th><th>金屬晶體</th><th>離子晶體</th></tr>
+                            <tr><td>鍵結方向性</td><td>無</td><td>無</td></tr>
+                            <tr><td>固態導電</td><td>✓ 自由電子</td><td>✗</td></tr>
+                            <tr><td>延展性</td><td>✓ 層面滑動</td><td>✗ 易碎裂</td></tr>
+                            <tr><td>熔點</td><td>變化大</td><td>通常較高</td></tr>
+                            <tr><td>溶於水</td><td>—</td><td>多數可（易溶）</td></tr>
+                        </table>
+                        <div class="info-card" style="margin-top:0.8rem;">
+                            <p>銅中摻銀 → 自由電子變少 → <strong>電阻變大、導電度變小</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: 金屬鍵強弱 + 範例一 -->
+            <div class="slide">
+                <h1>影響金屬鍵強弱的因素</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <div class="props-stack">
+                            <section class="props-block">
+                                <h2>同週期：隨原子序增加 → 鍵變強</h2>
+                                <p>價電子數與金屬離子電荷增加，半徑反而變小，電子海與離子作用力增強。</p>
+                                <div class="formula-box" style="font-size:1.1rem; margin-bottom:0;">熔點：Al &gt; Mg &gt; Na</div>
+                            </section>
+                            <section class="props-block">
+                                <h2>同族：隨原子序增加 → 鍵變弱</h2>
+                                <p>價電子數不變，陽離子半徑變大，作用力變弱。</p>
+                                <div class="formula-box" style="font-size:1.1rem; border-left-color:var(--accent-purple); margin-bottom:0.4rem;">熔點：Li &gt; Na &gt; K</div>
+                                <p style="font-size:0.88rem; color:rgba(255,255,255,0.5); margin:0;">（2A 族因堆積方式不同，熔點可能不規則）</p>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p><span class="tag tag-gold">範例 1</span> 關於金屬晶體的敘述，下列何者正確？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> 價軌域重疊性高</li>
+                                <li><span class="opt-label">(B)</span> 金屬鍵具強烈方向性</li>
+                                <li><span class="opt-label">(C)</span> 易失電子且有空價軌域</li>
+                                <li><span class="opt-label">(D)</span> 導電因自由電子</li>
+                                <li><span class="opt-label">(E)</span> 受壓時層面可滑動而有延展性</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-m1', this)">顯示解答</button>
+                            <div class="ans-overlay" id="ans-m1">
+                                <p style="font-size:1.25rem; color:var(--accent-green);"><strong>解答：(A)(C)(D)(E)</strong></p>
+                                <p>金屬鍵<strong>不具</strong>方向性，(B) 錯誤。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 金屬鍵範例二、三 -->
+            <div class="slide">
+                <h1>金屬鍵 — 範例練習</h1>
+                <div class="grid-2">
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p><span class="tag tag-gold">範例 2</span> 第三週期元素外層組態，何者最容易形成金屬鍵？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> s²p⁵</li>
+                                <li><span class="opt-label">(B)</span> s²p³</li>
+                                <li><span class="opt-label">(C)</span> s²p²</li>
+                                <li><span class="opt-label">(D)</span> s²p¹</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-m2', this)">顯示解答</button>
+                            <div class="ans-overlay" id="ans-m2">
+                                <p style="font-size:1.25rem; color:var(--accent-green);"><strong>解答：(D)</strong></p>
+                                <p>價電子少、空軌域多，最易形成金屬鍵。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p><span class="tag tag-gold">範例 3</span> 導電度大小順序？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> 鋁＞石墨＞鍺＞硫</li>
+                                <li><span class="opt-label">(B)</span> 鍺＞鋁＞石墨＞硫</li>
+                                <li><span class="opt-label">(C)</span> 石墨＞硫＞鋁＞鍺</li>
+                                <li><span class="opt-label">(D)</span> 硫＞石墨＞鋁＞鍺</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-m3', this)">顯示解答</button>
+                            <div class="ans-overlay" id="ans-m3">
+                                <p style="font-size:1.25rem; color:var(--accent-green);"><strong>解答：(A)</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 離子鍵 -->
+            <div class="slide" id="slide-ionic-bond">
+                <h1>離子鍵與離子晶體</h1>
+                <div class="grid-2 grid-1-2">
+                    <div class="panel scroll-panel ion-text-panel">
+                        <div class="ion-text-block">
+                            <h2>離子鍵的定義</h2>
+                            <p>帶<strong>相反電荷</strong>的陽離子與陰離子之間，以<strong>靜電吸引力</strong>結合的化學鍵。</p>
+                        </div>
+                        <div class="ion-text-block">
+                            <h2>形成過程（須在氣相進行電子轉移）</h2>
+                            <ul class="ion-step-list">
+                                <li>金屬原子<strong>失去電子</strong> → 陽離子</li>
+                                <li>非金屬原子<strong>得到電子</strong> → 陰離子</li>
+                                <li>陰、陽離子以靜電力吸引 → <strong>離子鍵</strong>（固態離子晶體）</li>
+                            </ul>
+                        </div>
+                        <div class="ion-text-block">
+                            <h2>形成條件</h2>
+                            <p>鍵結原子<strong>電負度相差大</strong>；常見於金屬＋非金屬、氫氧化物、含氧酸鹽等。</p>
+                        </div>
+                        <div class="info-card" style="margin:0;">
+                            <p style="margin:0;"><strong>右圖：</strong>點選 ΔH 按鈕看赫斯循環（左）與離子聚集位能遞降（右）。</p>
+                        </div>
+                    </div>
+                    <div class="panel ion-vis-panel">
+                        <div class="ion-step-btns" id="ion-step-btns"></div>
+                        <div id="ion-eq-strip"></div>
+                        <div class="ion-diagram-row">
+                            <div id="ion-hess-chart"></div>
+                            <div id="ion-agg-chart"></div>
+                        </div>
+                        <p id="ion-step-caption"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 離子特性與強度（合併原第 6、7 頁） -->
+            <div class="slide" id="slide-ionic-props">
+                <h1>離子鍵及離子固體的特性與強度</h1>
+                <div class="grid-ion-4">
+                    <div class="panel scroll-panel">
+                        <h2>離子固體的特性</h2>
+                        <ul>
+                            <li><span class="tag tag-purple">無方向性</span></li>
+                            <li>化學式以<strong>實驗式</strong>表示（最簡整數比）</li>
+                            <li>具一定晶形與晶面</li>
+                            <li><strong>熔沸點高</strong>、硬度大、<em>不具延展性</em></li>
+                            <li>多<strong>易溶於水</strong></li>
+                            <li><strong>導電性：</strong>固態不導電；熔融態與水溶液可導電（離子可移動）</li>
+                        </ul>
+                        <div class="highlight-box">
+                            <p>可導電物質：碳棒、電解質水溶液、金屬、半導體、熔融離子化合物（後兩類溶液導電常伴化學變化）。</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>常見離子晶體堆積型式</h2>
+                        <table class="data-table">
+                            <tr><th>晶體</th><th>堆積型式</th><th>配位數</th></tr>
+                            <tr><td>CsCl</td><td>體心立方</td><td>8</td></tr>
+                            <tr><td>NaCl、MgO</td><td>面心立方（NaCl型）</td><td>6</td></tr>
+                            <tr><td>ZnS</td><td>四面體</td><td>4</td></tr>
+                            <tr><td>CaF₂</td><td>螢石型</td><td>8:4</td></tr>
+                            <tr><td>TiO₂</td><td>金紅石型</td><td>—</td></tr>
+                        </table>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>電荷相同時</h2>
+                        <p>電荷數愈大、鍵長愈短 → 離子鍵愈強 → <strong>熔點愈高</strong></p>
+                        <div class="formula-box">MgO(2800℃) &gt; LiF(870℃) &gt; NaCl(801℃) &gt; KI(723℃)</div>
+                        <p>NaF &gt; NaCl &gt; NaBr &gt; NaI</p>
+                        <p>MgO &gt; CaO &gt; SrO &gt; BaO</p>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>電荷不同 — 離子性因素</h2>
+                        <p>電負度差愈大，鍵的離子性愈強。</p>
+                        <div class="info-card">
+                            <p>BeCl₂(440℃) &lt; MgCl₂(708℃) &lt; … &lt; BaCl₂(962℃)</p>
+                            <p>LiF(847℃) &gt; BeF₂(800℃) &gt; BF₃(−127℃)</p>
+                        </div>
+                        <div class="highlight-box">
+                            <p><strong>庫侖定律：</strong> \(U \propto \dfrac{Q_1 Q_2}{r}\)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 晶格能範例 -->
+            <div class="slide" id="slide-lattice">
+                <h1>晶格能與 Born-Haber 循環</h1>
+                <div class="grid-2">
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p class="quiz-q"><span class="tag tag-purple">範例</span> 已知：Na(s)昇華熱 93、Na(g)游離能 496、Cl₂解離能 244、Cl(g) EA 348、NaCl(s)生成熱 417 kJ/mol，求晶格能？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> 720</li>
+                                <li><span class="opt-label">(B)</span> 780</li>
+                                <li><span class="opt-label">(C)</span> 860</li>
+                                <li><span class="opt-label">(D)</span> 960</li>
+                            </ul>
+                            <button class="btn-action" data-show-label="顯示解答與計算" onclick="toggleAns('ans-lattice', this)">顯示解答與計算</button>
+                            <div class="ans-inline" id="ans-lattice">
+                                <p>ΔH<sub>f</sub> = 昇華 + 游離 + ½解離 + EA + (−晶格能)</p>
+                                <p>417 = 93 + 496 + 122 + (−348) + (−U) → <strong style="color:var(--accent-green);">U ≈ 780 kJ/mol，答 (B)</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p class="quiz-q"><span class="tag tag-purple">範例 1</span> 原子序 17 的元素可與哪一原子序形成離子化合物？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> 35</li>
+                                <li><span class="opt-label">(B)</span> 19</li>
+                                <li><span class="opt-label">(C)</span> 17</li>
+                                <li><span class="opt-label">(D)</span> 9</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-i1', this)">顯示解答</button>
+                            <div class="ans-inline" id="ans-i1"><p><strong>解答：(B)</strong> Cl(17) 與 K(19)。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: 離子範例（例題二、三） -->
+            <div class="slide" id="slide-ionic-quiz">
+                <h1>離子鍵 — 範例練習</h1>
+                <div class="grid-2">
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p class="quiz-q"><span class="tag tag-purple">範例 2</span> 何組可形成 AB₂ 型離子化合物？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> 4s¹, 3s²3p³</li>
+                                <li><span class="opt-label">(B)</span> 4s², 3s²3p⁵</li>
+                                <li><span class="opt-label">(C)</span> 3s², 3s²3p⁴</li>
+                                <li><span class="opt-label">(D)</span> 2s²2p², 2s²2p⁴</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-i2', this)">顯示解答</button>
+                            <div class="ans-inline" id="ans-i2"><p><strong>解答：(B)</strong> Ca²⁺ 與 Cl⁻。</p></div>
+                        </div>
+                    </div>
+                    <div class="panel quiz-half-panel">
+                        <div class="quiz-item">
+                            <p class="quiz-q"><span class="tag tag-purple">範例 3</span> NaF、MgO、KF、KI、BaO（皆 NaCl 型），熔點由高至低順序？</p>
+                            <ul class="quiz-options">
+                                <li><span class="opt-label">(A)</span> MgO &gt; BaO &gt; NaF &gt; KF &gt; KI</li>
+                                <li><span class="opt-label">(B)</span> MgO &gt; NaF &gt; BaO &gt; KF &gt; KI</li>
+                                <li><span class="opt-label">(C)</span> BaO &gt; MgO &gt; NaF &gt; KI &gt; KF</li>
+                                <li><span class="opt-label">(D)</span> KI &gt; KF &gt; NaF &gt; BaO &gt; MgO</li>
+                            </ul>
+                            <button class="btn-action" onclick="toggleAns('ans-i3', this)">顯示解答</button>
+                            <div class="ans-inline" id="ans-i3"><p><strong>解答：(A)</strong> 依離子電荷與半徑（q/r）比較：MgO &gt; BaO &gt; NaF &gt; KF &gt; KI。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: 概念總覽 -->
+            <div class="slide">
+                <h1>單元概念總覽</h1>
+                <div class="panel" style="flex:1;">
+                    <svg viewBox="0 0 520 280" style="width:100%; max-height:100%;">
+                        <rect x="200" y="10" width="120" height="50" rx="10" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="2"/>
+                        <text x="260" y="40" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="bold">化學鍵與晶體</text>
+                        <line x1="230" y1="60" x2="100" y2="100" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+                        <line x1="290" y1="60" x2="420" y2="100" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+                        <rect x="30" y="100" width="140" height="70" rx="10" fill="rgba(251,191,36,0.12)" stroke="#fbbf24"/>
+                        <text x="100" y="125" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="bold">金屬鍵</text>
+                        <text x="100" y="145" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">電子海·無方向性</text>
+                        <text x="100" y="160" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">導電·延展·光澤</text>
+                        <rect x="350" y="100" width="140" height="70" rx="10" fill="rgba(192,132,252,0.12)" stroke="#c084fc"/>
+                        <text x="420" y="125" text-anchor="middle" fill="#c084fc" font-size="12" font-weight="bold">離子鍵</text>
+                        <text x="420" y="145" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">靜電力·實驗式</text>
+                        <text x="420" y="160" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">高熔點·水溶液導電</text>
+                        <line x1="100" y1="170" x2="100" y2="210" stroke="rgba(255,255,255,0.25)"/>
+                        <line x1="420" y1="170" x2="420" y2="210" stroke="rgba(255,255,255,0.25)"/>
+                        <rect x="30" y="210" width="140" height="55" rx="8" fill="rgba(96,165,250,0.1)" stroke="#60a5fa"/>
+                        <text x="100" y="235" text-anchor="middle" fill="#60a5fa" font-size="11" font-weight="bold">SC·BCC·FCC</text>
+                        <text x="100" y="252" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">52%·68%·74%</text>
+                        <rect x="350" y="210" width="140" height="55" rx="8" fill="rgba(52,211,153,0.1)" stroke="#34d399"/>
+                        <text x="420" y="235" text-anchor="middle" fill="#34d399" font-size="11" font-weight="bold">CsCl·NaCl·ZnS</text>
+                        <text x="420" y="252" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">配位 8·6·4</text>
+                        <rect x="175" y="200" width="170" height="65" rx="10" fill="rgba(34,211,238,0.1)" stroke="#22d3ee"/>
+                        <text x="260" y="225" text-anchor="middle" fill="#22d3ee" font-size="11" font-weight="bold">晶格能 · Born-Haber</text>
+                        <text x="260" y="245" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-size="10">U ∝ Q₁Q₂/r</text>
+                    </svg>
+                    <p style="text-align:center; margin-top:0.5rem; color:rgba(255,255,255,0.5); font-size:0.9rem;">資料來源：選化二 第二章 物質結構與化學鍵（講義 pp.1–20）</p>
+                </div>
+            </div>
+
+        </div>
+        <canvas id="drawing-layer"></canvas>
+    </div>
+</div>
+
+<div id="slide-info">1 / 14</div>
+
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+    <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f0f4ff;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f0f4ff"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#60a5fa;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#60a5fa"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
+</div>
+
+<div id="start-overlay">
+    <div class="start-badge">選修化學二 · 第二章 · 物質結構與化學鍵</div>
+    <h1 class="start-title" style="border:none; padding:0;">金屬鍵 · 離子鍵</h1>
+    <p class="start-sub">與晶體結構 — 互動教學（支援 iPad 全螢幕手寫）</p>
+    <button type="button" class="btn-start" id="btn-start">開始探索教學 ✦</button>
+    <div class="start-info">
+        <div class="info-chip"><span>⚗️</span><span>電子海與金屬特性</span></div>
+        <div class="info-chip"><span>💎</span><span>離子鍵與晶格能</span></div>
+        <div class="info-chip"><span>📐</span><span>立方晶系堆積</span></div>
+        <div class="info-chip"><span>✏️</span><span>手寫 · 範例解析</span></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return;
+        starting = true;
+        const overlay = document.getElementById('start-overlay');
+        const app = document.getElementById('app');
+        if (overlay) overlay.style.display = 'none';
+        if (app) app.classList.add('started');
+        const el = document.documentElement;
+        try {
+            const p = el.requestFullscreen && el.requestFullscreen();
+            if (p && p.catch) p.catch(function () {});
+        } catch (e) { /* ignore */ }
+        try {
+            if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        } catch (e) { /* ignore */ }
+        window.__teachingStarted = true;
+        window.dispatchEvent(new Event('teaching-start'));
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof window.updateSlides === 'function') window.updateSlides();
+            });
+        });
+    }
+    window.startTeaching = startTeaching;
+    function bindStartBtn() {
+        const btn = document.getElementById('btn-start');
+        if (!btn || btn.dataset.boot) return;
+        btn.dataset.boot = '1';
+        btn.addEventListener('click', startTeaching);
+        btn.addEventListener('touchend', startTeaching, { passive: false });
+    }
+    bindStartBtn();
+    document.addEventListener('DOMContentLoaded', bindStartBtn);
+})();
+</script>
+
+<script>
+    function toggleAns(id, btn) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const inline = el.classList.contains('ans-inline');
+        const openDisplay = inline ? 'block' : 'flex';
+        const isOpen = el.style.display === openDisplay;
+        el.style.display = isOpen ? 'none' : openDisplay;
+        const button = btn || el.parentElement.querySelector('.btn-action');
+        if (button) {
+            const showLabel = button.getAttribute('data-show-label') || '顯示解答';
+            button.textContent = isOpen ? showLabel : '隱藏解答';
+        }
+    }
+
+    let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f0f4ff';
+    let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+    const slides = document.querySelectorAll('.slide');
+    const slideInfo = document.getElementById('slide-info');
+    const canvas = document.getElementById('drawing-layer');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    function resizeCanvas() {
+        if (!canvas || !ctx) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        restoreDrawing();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    if (canvas && ctx) resizeCanvas();
+
+    function getCoords(e) {
+        if (!canvas) return [0, 0];
+        const rect = canvas.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return [cx - rect.left, cy - rect.top];
+    }
+    function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+    function draw(e) {
+        if (!isDrawing || !ctx) return;
+        const [x, y] = getCoords(e);
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+        ctx.strokeStyle = drawMode === 'eraser' ? '#0a0f1e' : penColor;
+        ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+        ctx.lineCap = 'round'; ctx.stroke();
+        [lastX, lastY] = [x, y];
+    }
+    function stopDrawing() {
+        if (isDrawing && canvas) {
+            isDrawing = false;
+            slideDrawings[currentSlide] = canvas.toDataURL();
+        }
+    }
+    function restoreDrawing() {
+        if (!ctx || !canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (slideDrawings[currentSlide]) {
+            const img = new Image();
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            img.src = slideDrawings[currentSlide];
+        }
+    }
+    if (canvas) {
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+        canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function updateSlides() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        if (slideInfo) slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+        restoreDrawing();
+        if (currentSlide === 0) scheduleInitSea();
+        else if (seaAnim) { cancelAnimationFrame(seaAnim); seaAnim = null; }
+        try {
+            if (slides[currentSlide].id === 'slide-ionic-bond') initIonicFormation();
+        } catch (err) { console.error('updateSlides:', err); }
+    }
+    window.updateSlides = updateSlides;
+
+    function bindToolbar() {
+        const tb = document.getElementById('toolbar');
+        if (!tb || tb.dataset.bound) return;
+        tb.dataset.bound = '1';
+
+        const colorPicker = document.getElementById('color-picker');
+        const eraserTools = document.getElementById('eraser-tools');
+
+        tb.addEventListener('click', (e) => {
+            const dot = e.target.closest('.color-dot');
+            if (dot && dot.dataset.color) {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
+                drawMode = 'pen';
+                const er = document.getElementById('btn-eraser');
+                if (er) er.classList.remove('active-tool');
+                return;
+            }
+            const btn = e.target.closest('button');
+            if (!btn || !tb.contains(btn)) return;
+            const id = btn.id;
+            if (id === 'btn-next') {
+                if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
+            } else if (id === 'btn-prev') {
+                if (currentSlide > 0) { currentSlide--; updateSlides(); }
+            } else if (id === 'btn-draw') {
+                isDrawingMode = !isDrawingMode;
+                if (isDrawingMode) drawMode = 'pen';
+                btn.classList.toggle('active-tool', isDrawingMode);
+                if (canvas) canvas.classList.toggle('drawing-active', isDrawingMode);
+                if (colorPicker) colorPicker.style.display = isDrawingMode ? 'flex' : 'none';
+                if (eraserTools) eraserTools.style.display = isDrawingMode ? 'flex' : 'none';
+            } else if (id === 'btn-eraser') {
+                drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+                btn.classList.toggle('active-tool', drawMode === 'eraser');
+            } else if (id === 'btn-clear') {
+                if (ctx && canvas) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    slideDrawings[currentSlide] = null;
+                }
+            } else if (id === 'btn-home') {
+                window.location.href = '../../index.html';
+            }
+        });
+
+        const dh = document.getElementById('drag-handle');
+        if (dh) {
+            let isDT = false, tOY = 0;
+            dh.addEventListener('mousedown', ev => { isDT = true; tOY = ev.clientY - tb.offsetTop; });
+            window.addEventListener('mousemove', ev => { if (isDT) { tb.style.top = (ev.clientY - tOY) + 'px'; tb.style.transform = 'none'; } });
+            window.addEventListener('mouseup', () => { isDT = false; });
+            dh.addEventListener('touchstart', ev => { isDT = true; tOY = ev.touches[0].clientY - tb.offsetTop; }, { passive: true });
+            window.addEventListener('touchmove', ev => { if (isDT) { tb.style.top = (ev.touches[0].clientY - tOY) + 'px'; tb.style.transform = 'none'; } }, { passive: true });
+            window.addEventListener('touchend', () => { isDT = false; });
+        }
+    }
+
+    bindToolbar();
+    window.addEventListener('teaching-start', () => updateSlides());
+
+    let touchStartY = 0;
+    document.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+        if (isDrawingMode) return;
+        const overlay = document.getElementById('start-overlay');
+        if (overlay && overlay.style.display !== 'none' && getComputedStyle(overlay).display !== 'none') return;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dy) > 55) {
+            if (dy < 0 && currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
+            if (dy > 0 && currentSlide > 0) { currentSlide--; updateSlides(); }
+        }
+    }, { passive: true });
+
+    // ── 電子海動畫：M⁺ 晶格 + 重疊軌道 + 電子交換 ──
+    let seaAnim = null;
+    let seaState = null;
+    let seaAutoGrow = 0;
+    let seaInitRetries = 0;
+    let seaInitTimer = null;
+
+    function scheduleInitSea() {
+        seaInitRetries = 0;
+        if (seaInitTimer) clearTimeout(seaInitTimer);
+        seaInitTimer = setTimeout(() => {
+            seaInitTimer = null;
+            requestAnimationFrame(initSea);
+        }, 120);
+    }
+
+    function buildSeaLattice(w, h) {
+        const scale = Math.min(w, h) / 260;
+        const ionR = Math.max(8, Math.min(13, 9 * scale));
+        const ionLabelPx = Math.max(6, Math.min(9, Math.round(6.5 * scale)));
+        const orbitalR = Math.max(28, Math.min(42, 34 * scale));
+        // 方格排列：上下左右圓心距 = 2R，僅四向相切、對角不重疊
+        const spacing = orbitalR * 2;
+        const padX = 20, padY = 18;
+        let cols = Math.max(2, Math.floor((w - padX * 2) / spacing) + 1);
+        let rows = Math.max(2, Math.floor((h - padY * 2) / spacing) + 1);
+        cols = Math.min(cols, 5);
+        rows = Math.min(rows, 4);
+        const gridW = (cols - 1) * spacing;
+        const gridH = (rows - 1) * spacing;
+        const startX = (w - gridW) / 2;
+        const startY = (h - gridH) / 2;
+        const atoms = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                atoms.push({ x: startX + c * spacing, y: startY + r * spacing });
+            }
+        }
+        const valenceElectrons = atoms.map((_, i) => ({
+            angle: Math.random() * Math.PI * 2,
+            omega: 0.085 + Math.random() * 0.035,
+            px: 0, py: 0,
+            inExchange: false,
+            exchangeWith: -1,
+            trail: []
+        }));
+        const syncValenceElectrons = (visible) => {
+            while (valenceElectrons.length < visible) {
+                valenceElectrons.push({
+                    angle: Math.random() * Math.PI * 2,
+                    omega: 0.09, px: 0, py: 0, inExchange: false, exchangeWith: -1, trail: []
+                });
+            }
+            valenceElectrons.length = visible;
+        };
+        return { w, h, spacing, orbitalR, ionR, ionLabelPx, scale, atoms, valenceElectrons, syncValenceElectrons, cols, rows };
+    }
+
+    function orbitOverlap(atoms, i, j, R) {
+        const dx = atoms[j].x - atoms[i].x, dy = atoms[j].y - atoms[i].y;
+        return Math.hypot(dx, dy) < R * 2 - 0.5;
+    }
+
+    function orbitTangent(atoms, i, j, R) {
+        const dx = Math.abs(atoms[j].x - atoms[i].x);
+        const dy = Math.abs(atoms[j].y - atoms[i].y);
+        const touch = R * 2;
+        const onAxis = (dx < 1.5 && Math.abs(dy - touch) <= 1.5) || (dy < 1.5 && Math.abs(dx - touch) <= 1.5);
+        return onAxis;
+    }
+
+    function orbitContactPoint(atoms, i, j) {
+        const a = atoms[i], b = atoms[j];
+        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    }
+
+    function electronInLens(x, y, atoms, i, j, R) {
+        const d1 = Math.hypot(x - atoms[i].x, y - atoms[i].y);
+        const d2 = Math.hypot(x - atoms[j].x, y - atoms[j].y);
+        return d1 <= R && d2 <= R;
+    }
+
+    function getSeaCanvasSize(c) {
+        const rect = c.getBoundingClientRect();
+        const parent = c.parentElement;
+        const w = Math.max(rect.width, c.offsetWidth, c.clientWidth, parent ? parent.clientWidth - 24 : 0);
+        const h = Math.max(rect.height, c.offsetHeight, c.clientHeight, parent ? parent.clientHeight - 56 : 0);
+        return { w: w >= 24 ? w : 360, h: h >= 24 ? h : 360 };
+    }
+
+    function initSea() {
+        try {
+        const c = document.getElementById('canvas-sea');
+        if (!c || currentSlide !== 0) return;
+        const { w: rw, h: rh } = getSeaCanvasSize(c);
+        if ((c.getBoundingClientRect().width < 24 || c.getBoundingClientRect().height < 24) && seaInitRetries < 60) {
+            seaInitRetries++;
+            requestAnimationFrame(initSea);
+            return;
+        }
+        seaInitRetries = 0;
+
+        const slip = document.getElementById('slider-slip');
+        if (!slip) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        const pw = Math.round(rw * dpr);
+        const ph = Math.round(rh * dpr);
+        if (c.width !== pw || c.height !== ph) {
+            c.width = pw;
+            c.height = ph;
+        }
+        const g = c.getContext('2d');
+        if (!g) return;
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        if (!seaState || seaState.w !== rw || seaState.h !== rh) {
+            seaState = buildSeaLattice(rw, rh);
+            seaState.syncValenceElectrons(1);
+            seaAutoGrow = 0;
+            slip.value = 0;
+        }
+
+        if (seaAnim) cancelAnimationFrame(seaAnim);
+
+        function drawOrbitContact(atoms, i, j, sc) {
+            const cp = orbitContactPoint(atoms, i, j);
+            const r = Math.max(3, 3.2 * sc);
+            g.beginPath();
+            g.arc(cp.x, cp.y, r, 0, Math.PI * 2);
+            g.fillStyle = 'rgba(34, 211, 238, 0.35)';
+            g.fill();
+            g.strokeStyle = 'rgba(34, 211, 238, 0.85)';
+            g.lineWidth = Math.max(1.5, 1.8 * sc);
+            g.stroke();
+        }
+
+        function drawOrbitIntersection(atoms, i, j, R, sc) {
+            const a = atoms[i], b = atoms[j];
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const d = Math.hypot(dx, dy);
+            if (d < 4 || d >= R * 2) return;
+            const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+            const halfChord = Math.sqrt(R * R - (d * 0.5) * (d * 0.5));
+            const nx = -dy / d, ny = dx / d;
+            const lw = Math.max(2, 2.2 * sc);
+
+            g.beginPath();
+            g.ellipse(mx, my, d * 0.42, halfChord * 0.95, Math.atan2(dy, dx), 0, Math.PI * 2);
+            g.fillStyle = 'rgba(34, 211, 238, 0.24)';
+            g.fill();
+            g.strokeStyle = 'rgba(34, 211, 238, 0.7)';
+            g.lineWidth = lw;
+            g.setLineDash([4, 3]);
+            g.stroke();
+            g.setLineDash([]);
+
+            g.beginPath();
+            g.moveTo(mx + nx * halfChord * 0.5, my + ny * halfChord * 0.5);
+            g.lineTo(mx - nx * halfChord * 0.5, my - ny * halfChord * 0.5);
+            g.strokeStyle = 'rgba(34, 211, 238, 0.95)';
+            g.lineWidth = lw + 0.5;
+            g.stroke();
+        }
+
+        function updateValenceElectron(e, atomIdx, atoms, visible, R, sc) {
+            const home = atoms[atomIdx];
+            e.inExchange = false;
+            e.exchangeWith = -1;
+            e.angle += e.omega;
+
+            let x = home.x + Math.cos(e.angle) * R;
+            let y = home.y + Math.sin(e.angle) * R;
+            const contactTol = Math.max(11, 9 * sc);
+
+            for (let j = 0; j < visible; j++) {
+                if (j === atomIdx) continue;
+                const other = atoms[j];
+                if (orbitOverlap(atoms, atomIdx, j, R) && electronInLens(x, y, atoms, atomIdx, j, R)) {
+                    e.inExchange = true;
+                    e.exchangeWith = j;
+                    const lx = (home.x + other.x) * 0.5;
+                    const ly = (home.y + other.y) * 0.5;
+                    const onOther = Math.atan2(y - other.y, x - other.x);
+                    const ox = other.x + Math.cos(onOther) * R;
+                    const oy = other.y + Math.sin(onOther) * R;
+                    x += (lx - x) * 0.16 + (ox - x) * 0.08;
+                    y += (ly - y) * 0.16 + (oy - y) * 0.08;
+                    e.angle += 0.055;
+                    break;
+                }
+                if (orbitTangent(atoms, atomIdx, j, R)) {
+                    const cp = orbitContactPoint(atoms, atomIdx, j);
+                    if (Math.hypot(x - cp.x, y - cp.y) < contactTol) {
+                        e.inExchange = true;
+                        e.exchangeWith = j;
+                        const onOther = Math.atan2(cp.y - other.y, cp.x - other.x);
+                        const ox = other.x + Math.cos(onOther) * R;
+                        const oy = other.y + Math.sin(onOther) * R;
+                        x += (cp.x - x) * 0.22 + (ox - x) * 0.1;
+                        y += (cp.y - y) * 0.22 + (oy - y) * 0.1;
+                        e.angle += 0.06;
+                        break;
+                    }
+                }
+            }
+
+            const distHome = Math.hypot(x - home.x, y - home.y);
+            if (distHome > R + 1) {
+                const ang = Math.atan2(y - home.y, x - home.x);
+                x = home.x + Math.cos(ang) * R;
+                y = home.y + Math.sin(ang) * R;
+            }
+
+            e.px = x;
+            e.py = y;
+            e.trail.push({ x, y });
+            if (e.trail.length > (e.inExchange ? 16 : 5)) e.trail.shift();
+        }
+
+        function frame() {
+            if (currentSlide !== 0 || !seaState) {
+                seaAnim = null;
+                return;
+            }
+            const { atoms, orbitalR, ionR, ionLabelPx, scale, valenceElectrons, syncValenceElectrons } = seaState;
+            const sc = scale || 1;
+            const eRad = Math.max(2.2, Math.min(4, 2.6 * sc));
+            const eRadEx = Math.max(3, Math.min(5, 3.4 * sc));
+            const total = atoms.length;
+            if (parseFloat(slip.value) < 100) {
+                seaAutoGrow++;
+                if (seaAutoGrow % 10 === 0) {
+                    slip.value = Math.min(100, parseFloat(slip.value) + 1);
+                }
+            }
+            const visible = Math.max(1, Math.ceil((slip.value / 100) * total));
+            syncValenceElectrons(visible);
+
+            g.fillStyle = 'rgba(5, 10, 22, 0.42)';
+            g.fillRect(0, 0, rw, rh);
+
+            for (let i = 0; i < visible; i++) {
+                const a = atoms[i];
+                g.beginPath();
+                g.arc(a.x, a.y, orbitalR, 0, Math.PI * 2);
+                g.strokeStyle = 'rgba(96, 165, 250, 0.4)';
+                g.lineWidth = Math.max(2, 2.2 * sc);
+                g.setLineDash([6, 5]);
+                g.stroke();
+                g.setLineDash([]);
+                g.fillStyle = 'rgba(96, 165, 250, 0.05)';
+                g.fill();
+            }
+
+            for (let i = 0; i < visible; i++) {
+                for (let j = i + 1; j < visible; j++) {
+                    if (orbitOverlap(atoms, i, j, orbitalR)) {
+                        drawOrbitIntersection(atoms, i, j, orbitalR, sc);
+                    } else if (orbitTangent(atoms, i, j, orbitalR)) {
+                        drawOrbitContact(atoms, i, j, sc);
+                    }
+                }
+            }
+
+            for (let i = 0; i < visible; i++) {
+                const a = atoms[i];
+                g.beginPath();
+                g.arc(a.x, a.y, ionR, 0, Math.PI * 2);
+                g.fillStyle = 'rgba(251, 191, 36, 0.5)';
+                g.fill();
+                g.strokeStyle = '#fbbf24';
+                g.lineWidth = Math.max(1.8, 2 * sc);
+                g.stroke();
+                g.fillStyle = '#fffef5';
+                g.font = `600 ${ionLabelPx}px "Microsoft JhengHei", sans-serif`;
+                g.textAlign = 'center';
+                g.textBaseline = 'middle';
+                g.fillText('M⁺', a.x, a.y + 0.5);
+            }
+
+            valenceElectrons.forEach((e, atomIdx) => {
+                if (atomIdx >= visible) return;
+                updateValenceElectron(e, atomIdx, atoms, visible, orbitalR, sc);
+
+                if (e.trail.length > 1) {
+                    g.beginPath();
+                    g.moveTo(e.trail[0].x, e.trail[0].y);
+                    for (let t = 1; t < e.trail.length; t++) g.lineTo(e.trail[t].x, e.trail[t].y);
+                    g.strokeStyle = e.inExchange ? 'rgba(34, 211, 238, 0.45)' : 'rgba(147, 197, 253, 0.25)';
+                    g.lineWidth = e.inExchange ? Math.max(1.6, 1.8 * sc) : Math.max(1, 1.2 * sc);
+                    g.stroke();
+                }
+
+                g.beginPath();
+                g.arc(e.px, e.py, e.inExchange ? eRadEx : eRad, 0, Math.PI * 2);
+                g.fillStyle = e.inExchange ? '#22d3ee' : '#93c5fd';
+                g.shadowColor = e.inExchange ? '#22d3ee' : '#60a5fa';
+                g.shadowBlur = e.inExchange ? Math.min(8, 5 * sc) : Math.min(4, 2.5 * sc);
+                g.fill();
+                g.shadowBlur = 0;
+            });
+
+            seaAnim = requestAnimationFrame(frame);
+        }
+        frame();
+        } catch (err) {
+            console.error('initSea 失敗:', err);
+            if (seaAnim) cancelAnimationFrame(seaAnim);
+            seaAnim = null;
+        }
+    }
+
+    let seaResizeTimer = null;
+    window.addEventListener('resize', () => {
+        if (currentSlide !== 0) return;
+        clearTimeout(seaResizeTimer);
+        seaResizeTimer = setTimeout(scheduleInitSea, 120);
+    });
+
+    // ── 第五頁：依講義 Born-Haber 與位能聚集邏輯 ──
+    let ionicStepIndex = 0;
+    const ionicSteps = [
+        {
+            label: 'ΔH₁ 昇華',
+            eq: 'Na<sub>(s)</sub> → Na<sub>(g)</sub>　<span style="color:#f87171">ΔH₁ 昇華熱（吸熱）</span>',
+            caption: '固態鈉先昇華為氣態原子，才能進行後續氣相反應。'
+        },
+        {
+            label: 'ΔH₃ 解離',
+            eq: '½ Cl₂<sub>(g)</sub> → Cl<sub>(g)</sub>　<span style="color:#f87171">ΔH₃ 解離能（吸熱，鍵能×½）</span>',
+            caption: '氯分子鍵結斷裂，產生氯原子。'
+        },
+        {
+            label: 'ΔH₂ 游離',
+            eq: 'Na<sub>(g)</sub> → Na⁺<sub>(g)</sub> + e⁻　<span style="color:#f87171">ΔH₂ 游離能 IE（吸熱）</span>',
+            caption: '鈉原子失去最外層電子，形成陽離子。'
+        },
+        {
+            label: 'ΔH₄ 得電子',
+            eq: 'Cl<sub>(g)</sub> + e⁻ → Cl⁻<sub>(g)</sub>　<span style="color:#34d399">ΔH₄ 電子親和力 EA（放熱）</span>',
+            caption: '氯原子獲得電子，形成陰離子（須在氣相完成電子轉移）。'
+        },
+        {
+            label: 'ΔH₅ 晶格能',
+            eq: 'Na⁺<sub>(g)</sub> + Cl⁻<sub>(g)</sub> → NaCl<sub>(s)</sub>　<span style="color:#34d399">ΔH₅ 晶格能（大量放熱）</span>',
+            caption: '氣態離子結合成離子晶體，釋出晶格能 U = −786 kJ/mol。'
+        },
+        {
+            label: 'ΔH 反應熱',
+            eq: 'Na<sub>(s)</sub> + ½Cl₂<sub>(g)</sub> → NaCl<sub>(s)</sub>　<span style="color:#c084fc">ΔH = ΔH₁+ΔH₂+ΔH₃+ΔH₄+ΔH₅（赫斯定律）</span>',
+            caption: '① 與 ⑥ 能階之差 = 總反應熱（生成熱約 −417 kJ/mol）。'
+        }
+    ];
+
+    function renderIonDiagram(activeStep) {
+        const Y = { L4: 58, L5: 118, L3: 172, L2: 210, L1: 248, L6: 318 };
+        const EQ_W = 210, EQ_X = 4, LINE_X0 = 214, LINE_END = 418;
+        const VB_W = 430, VB_H = 360;
+        const EQ_H = 26;
+        const GAP = 18; /* 水平線與垂直箭頭間留白 */
+        const clipR = (ax) => Math.max(LINE_X0 + 8, ax - GAP);
+        const clipL = (ax) => ax + GAP;
+
+        /* 由上而下：②左端內縮；③④⑤右端內縮，避免與垂直箭頭交疊 */
+        const levels = [
+            { n: 4, y: Y.L4, eq: 'Na⁺<sub>(g)</sub> + e⁻ + Cl<sub>(g)</sub>', x1: LINE_X0, x2: clipR(358) },
+            { n: 5, y: Y.L5, eq: 'Na⁺<sub>(g)</sub> + Cl⁻<sub>(g)</sub>', x1: clipL(358), x2: LINE_END },
+            { n: 3, y: Y.L3, eq: 'Na<sub>(g)</sub> + Cl<sub>(g)</sub>', x1: LINE_X0, x2: clipR(288) },
+            { n: 2, y: Y.L2, eq: 'Na<sub>(g)</sub> + ½Cl₂<sub>(g)</sub>', x1: LINE_X0, x2: clipR(262) },
+            { n: 1, y: Y.L1, eq: 'Na<sub>(s)</sub> + ½Cl₂<sub>(g)</sub>', start: true, x1: LINE_X0, x2: clipR(238) },
+            { n: 6, y: Y.L6, eq: 'NaCl<sub>(s)</sub>', prod: true, x1: LINE_X0, x2: clipR(398) }
+        ];
+
+        const arrows = [
+            { step: 0, yHi: Y.L2, yLo: Y.L1, x: 262, label: 'ΔH₁', sub: '昇華熱', endo: true },
+            { step: 1, yHi: Y.L3, yLo: Y.L2, x: 288, label: 'ΔH₃', sub: '½Cl₂鍵能', endo: true },
+            { step: 2, yHi: Y.L4, yLo: Y.L3, x: 314, label: 'ΔH₂', sub: '游離能', endo: true },
+            { step: 3, yHi: Y.L4, yLo: Y.L5, x: 358, label: 'ΔH₄', sub: '電子親和力', endo: false },
+            { step: 4, yHi: Y.L5, yLo: Y.L6, x: 398, label: 'ΔH₅', sub: '晶格能', endo: false },
+            { step: 5, yHi: Y.L1, yLo: Y.L6, x: 238, label: 'ΔH', sub: '生成熱', endo: false, special: true }
+        ];
+
+        const C_GREEN = '#34d399';
+        const C_PURPLE = '#c084fc';
+
+        const levelOn = (n) => {
+            if (activeStep === 5) return n === 1 || n === 6;
+            const ends = { 0: [1, 2], 1: [2, 3], 2: [3, 4], 3: [4, 5], 4: [5, 6] };
+            return ends[activeStep] && ends[activeStep].includes(n);
+        };
+
+        const arrowOn = (a) => a.special ? activeStep === 5 : activeStep === a.step;
+
+        /* 作用中：上下水平線＝綠；垂直箭頭與化學式＝紫 */
+        const lineColor = (lv) => {
+            if (levelOn(lv.n)) return C_GREEN;
+            if (lv.start) return '#fbbf24';
+            return '#d8dee9';
+        };
+
+        const eqColor = (lv) => {
+            if (levelOn(lv.n)) return C_PURPLE;
+            if (lv.start) return '#fbbf24';
+            return '#d8dee9';
+        };
+
+        const arrowColor = (a) => arrowOn(a) ? C_PURPLE : '#8b95a8';
+
+        let svg = `<svg viewBox="0 0 ${VB_W} ${VB_H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`;
+
+        arrows.forEach(a => {
+            const on = arrowOn(a);
+            const c = arrowColor(a);
+            const sw = on ? 3.2 : 2;
+            const dash = a.special && !on ? ' stroke-dasharray="7,5"' : '';
+            const cap = 9;
+            const mid = (a.yHi + a.yLo) / 2;
+            const subCol = on ? C_PURPLE : (a.endo ? '#f87171' : '#34d399');
+            svg += `<g>`;
+            svg += `<line x1="${a.x}" y1="${a.yHi}" x2="${a.x}" y2="${a.yLo}" stroke="${c}" stroke-width="${sw}"${dash}/>`;
+            svg += `<line x1="${a.x - cap}" y1="${a.yHi}" x2="${a.x + cap}" y2="${a.yHi}" stroke="${c}" stroke-width="${sw}"/>`;
+            svg += `<line x1="${a.x - cap}" y1="${a.yLo}" x2="${a.x + cap}" y2="${a.yLo}" stroke="${c}" stroke-width="${sw}"/>`;
+            svg += `<text x="${a.x + 12}" y="${mid + 5}" fill="${c}" font-size="14" font-weight="bold" font-family="Microsoft JhengHei,sans-serif">${a.label}</text>`;
+            svg += `<text x="${a.x + 12}" y="${mid + 20}" fill="${subCol}" font-size="12" font-family="Microsoft JhengHei,sans-serif">${a.sub}</text>`;
+            svg += '</g>';
+        });
+
+        levels.forEach(lv => {
+            const lCol = lineColor(lv);
+            const eCol = eqColor(lv);
+            const on = levelOn(lv.n);
+            const lw = on ? 3.5 : 2.5;
+            const foY = lv.y - EQ_H / 2 - 2;
+            const x1 = lv.x1 ?? LINE_X0, x2 = lv.x2 ?? LINE_END;
+            if (x2 > x1) {
+                svg += `<line x1="${x1}" y1="${lv.y}" x2="${x2}" y2="${lv.y}" stroke="${lCol}" stroke-width="${lw}" stroke-linecap="round"/>`;
+            }
+            svg += `<foreignObject x="${EQ_X}" y="${foY}" width="${EQ_W}" height="${EQ_H}">`;
+            svg += `<div xmlns="http://www.w3.org/1999/xhtml" class="hess-eq" style="color:${eCol};font-weight:${on || lv.start ? '700' : '500'};">${lv.eq}</div>`;
+            svg += '</foreignObject>';
+        });
+
+        svg += '</svg>';
+        return svg;
+    }
+
+    function renderIonAgg(activeStep) {
+        const NA = '#c084fc', CL = '#34d399';
+        const LINE_X1 = 44, LINE_X2 = 198, ARR_X = 38;
+        const Y_REF = 54;
+        const levels = [
+            { key: 'pair', label: '離子對', e: '−504', y: 118 },
+            { key: 'sq', label: '離子正方', e: '−636', y: 182 },
+            { key: 'cube', label: '離子立方', e: '−716', y: 246 },
+            { key: 'xtal', label: '離子晶體', e: '−786', y: 310 }
+        ];
+        const hiLevel = activeStep >= 4 ? 4 : (activeStep === 3 ? 0 : -1);
+
+        const ball = (cx, cy, r, c, stroke) =>
+            `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" stroke="${stroke || 'rgba(0,0,0,0.4)'}" stroke-width="1"/>`;
+
+        const drawIons = (key, ox, oy) => {
+            const g = (dx, dy, r, c) => ball(ox + dx, oy + dy, r, c);
+            if (key === 'gas') {
+                return g(-22, 0, 7, NA) + g(14, 0, 8, CL);
+            }
+            if (key === 'pair') {
+                return g(-8, 0, 8, NA) + g(8, 0, 9, CL);
+            }
+            if (key === 'sq') {
+                const pts = [[-14, -10, NA], [2, -10, CL], [-14, 6, CL], [2, 6, NA]];
+                return pts.map(([x, y, c]) => g(x, y, 6, c)).join('');
+            }
+            if (key === 'cube') {
+                const pts = [[-16, 2, NA], [-2, 2, CL], [-16, 14, CL], [-2, 14, NA],
+                    [-9, 8, NA], [5, 8, CL], [-9, 20, CL], [5, 20, NA]];
+                return pts.map(([x, y, c]) => g(x, y, 5, c)).join('');
+            }
+            if (key === 'xtal') {
+                let s = '';
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        s += g(-20 + j * 11, -6 + i * 11, 4, (i + j) % 2 === 0 ? NA : CL);
+                    }
+                }
+                return s;
+            }
+            return '';
+        };
+
+        let svg = `<svg viewBox="0 0 220 372" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft JhengHei,sans-serif">`;
+        svg += `<defs>
+            <linearGradient id="agg-axis-grad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#f87171"/>
+                <stop offset="55%" stop-color="#60a5fa"/>
+                <stop offset="100%" stop-color="#93c5fd"/>
+            </linearGradient>
+            <marker id="agg-arr-up" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+                <path d="M0,7 L3.5,0 L7,7 Z" fill="#93c5fd"/>
+            </marker>
+            <marker id="agg-arr-dn" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto">
+                <path d="M0,0 L3.5,7 L7,0 Z" fill="#60a5fa"/>
+            </marker>
+        </defs>`;
+
+        svg += `<line x1="28" y1="348" x2="28" y2="42" stroke="url(#agg-axis-grad)" stroke-width="3" marker-end="url(#agg-arr-up)"/>`;
+        svg += `<text x="12" y="196" fill="rgba(240,244,255,0.75)" font-size="9" text-anchor="middle" transform="rotate(-90 12 196)">能量</text>`;
+        svg += `<text x="12" y="212" fill="rgba(240,244,255,0.55)" font-size="8" text-anchor="middle" transform="rotate(-90 12 212)">kJ·mol⁻¹</text>`;
+
+        const refOn = hiLevel >= 0;
+        const refCol = refOn ? '#60a5fa' : 'rgba(96,165,250,0.45)';
+        svg += `<line x1="${LINE_X1}" y1="${Y_REF}" x2="${LINE_X2}" y2="${Y_REF}" stroke="${refCol}" stroke-width="${refOn ? 2.5 : 1.8}"/>`;
+        svg += `<text x="${LINE_X1 + 4}" y="${Y_REF - 8}" fill="${refOn ? '#e2e8f0' : 'rgba(255,255,255,0.55)'}" font-size="9" font-weight="600">Na⁺(g) + Cl⁻(g)</text>`;
+        svg += `<g transform="translate(168,${Y_REF})">${drawIons('gas', 0, 0)}</g>`;
+
+        levels.forEach((lv, idx) => {
+            const n = idx + 1;
+            const on = hiLevel >= n;
+            const lineCol = on ? '#60a5fa' : 'rgba(96,165,250,0.4)';
+            const arrCol = on ? '#38bdf8' : 'rgba(56,189,248,0.45)';
+            const lblCol = on ? '#f0f4ff' : 'rgba(255,255,255,0.6)';
+            const eCol = on ? '#34d399' : 'rgba(52,211,153,0.7)';
+
+            svg += `<line x1="${ARR_X}" y1="${Y_REF}" x2="${ARR_X}" y2="${lv.y}" stroke="${arrCol}" stroke-width="${on ? 2.2 : 1.5}" marker-end="url(#agg-arr-dn)"/>`;
+            svg += `<line x1="${LINE_X1}" y1="${lv.y}" x2="${LINE_X2}" y2="${lv.y}" stroke="${lineCol}" stroke-width="${on ? 2.5 : 1.8}"/>`;
+            svg += `<text x="${LINE_X1 + 2}" y="${lv.y - 6}" fill="${lblCol}" font-size="9" font-weight="bold">${lv.label}</text>`;
+            svg += `<text x="${LINE_X1 + 2}" y="${lv.y + 12}" fill="${eCol}" font-size="10" font-weight="bold">${lv.e}</text>`;
+            svg += `<g transform="translate(168,${lv.y})">${drawIons(lv.key, 0, 0)}</g>`;
+        });
+
+        svg += '</svg>';
+        return svg;
+    }
+
+    function setIonicStep(idx) {
+        ionicStepIndex = idx;
+        const s = ionicSteps[idx];
+        document.getElementById('ion-eq-strip').innerHTML = s.eq;
+        document.getElementById('ion-step-caption').textContent = s.caption;
+        document.getElementById('ion-hess-chart').innerHTML = renderIonDiagram(idx);
+        document.getElementById('ion-agg-chart').innerHTML = renderIonAgg(idx);
+        document.querySelectorAll('.ion-step-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === idx);
+        });
+    }
+
+    function initIonicFormation() {
+        const btns = document.getElementById('ion-step-btns');
+        if (!btns) return;
+        if (btns.dataset.ready) {
+            setIonicStep(ionicStepIndex);
+            return;
+        }
+        btns.dataset.ready = '1';
+        ionicSteps.forEach((s, i) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'ion-step-btn' + (i === 0 ? ' active' : '');
+            b.textContent = s.label;
+            b.addEventListener('click', () => setIonicStep(i));
+            btns.appendChild(b);
+        });
+        setIonicStep(0);
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown' || e.key === 'PageDown') { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } }
+        if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (currentSlide > 0) { currentSlide--; updateSlides(); } }
+    });
+</script>
+</body>
+</html>
