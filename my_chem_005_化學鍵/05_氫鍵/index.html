@@ -7604,7 +7604,7 @@ document.getElementById('btn-home').addEventListener('click', () => { window.loc
 <div id="cif-modal" style="display:none; position:fixed; inset:0; z-index:10001; background:rgba(0,0,0,0.85); flex-direction:column; justify-content:center; align-items:center;">
     <div style="position:relative; width:90%; height:80%; max-width:800px; background:var(--bg-dark); border-radius:12px; border:1px solid rgba(255,255,255,0.15); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 20px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.05);">
-            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-purple);">NaHCO₃ 3D晶體模型</div>
+            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-purple);">NaHCO₃ — HCO₃⁻ 氫鍵排列 3D 模型</div>
             <button onclick="closeCifModal()" style="background:var(--accent-red); color:#fff; border:none; border-radius:6px; padding:6px 16px; cursor:pointer; font-weight:bold; font-size:0.9rem; transition:background 0.2s;" onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='var(--accent-red)'">關閉</button>
         </div>
         <div id="cif-viewer" style="flex:1; width:100%; position:relative;"></div>
@@ -7619,6 +7619,112 @@ function openCifModal(filename) {
     if (!cifViewer) {
         cifViewer = $3Dmol.createViewer('cif-viewer', {backgroundColor: 'var(--bg-dark)'});
     }
+    // 為了解決本地端(無伺服器)開啟的 CORS 限制，直接內建 CIF 資料
+    if (filename === 'NaHCO3.cif') {
+        cifViewer.setBackgroundColor('#1e2a3a');
+        cifViewer.clear();
+
+        // ─── 動態生成多層 HCO₃⁻ 氫鍵平面 (3層堆疊) ───
+        let atomLines = [];
+        let coBonds = [];
+        let ohBonds = [];
+        let hBonds = [];
+
+        const numLayers = 3;       // 總共 3 層 (上下堆疊)
+        const chainsPerLayer = 3;  // 每層有 3 條平行的氫鍵鏈 (構成一個平面)
+        const groupsPerChain = 4;  // 每條鏈有 4 個碳酸氫根分子
+        
+        // 空間向量設定
+        const vChain = {x: 3.437, y: -3.320, z: 0};  // 同一條鏈上相鄰分子的位移
+        const vLateral = {x: 4.5, y: 4.5, z: 0};     // 同一層內相鄰平行鏈的位移 (橫向推展出平面)
+        const vLayer = {x: 1.5, y: 1.2, z: 4.5};     // 層與層之間的位移 (Z 軸向上堆疊)
+
+        // 計算座標與鍵結
+        for (let l = 0; l < numLayers; l++) {
+            for (let c = 0; c < chainsPerLayer; c++) {
+                for (let i = 0; i < groupsPerChain; i++) {
+                    // 計算基準座標，並減去偏移量使整體模型置中
+                    const cx = l * vLayer.x + c * vLateral.x + i * vChain.x - 12.0;
+                    const cy = l * vLayer.y + c * vLateral.y + i * vChain.y + 0.0;
+                    const cz = l * vLayer.z + c * vLateral.z + i * vChain.z - 4.5;
+
+                    // 碳酸氫根 (HCO₃⁻)
+                    atomLines.push(`C  ${cx.toFixed(3)} ${cy.toFixed(3)} ${cz.toFixed(3)}`);
+                    atomLines.push(`O  ${(cx).toFixed(3)} ${(cy+1.3).toFixed(3)} ${cz.toFixed(3)}`);
+                    atomLines.push(`O  ${(cx-1.1).toFixed(3)} ${(cy-0.65).toFixed(3)} ${cz.toFixed(3)}`);
+                    atomLines.push(`O  ${(cx+1.1).toFixed(3)} ${(cy-0.65).toFixed(3)} ${cz.toFixed(3)}`);
+                    atomLines.push(`H  ${(cx+1.935).toFixed(3)} ${(cy-1.144).toFixed(3)} ${cz.toFixed(3)}`);
+                    
+                    // 鈉離子 (Na⁺) - 均勻分佈於鏈之間與層之間
+                    atomLines.push(`Na ${(cx - 0.5).toFixed(3)} ${(cy + 2.5).toFixed(3)} ${(cz + 2.2).toFixed(3)}`);
+
+                    // 分子內共價鍵 (實線)
+                    coBonds.push([[cx, cy, cz], [cx, cy+1.3, cz]]);
+                    coBonds.push([[cx, cy, cz], [cx-1.1, cy-0.65, cz]]);
+                    coBonds.push([[cx, cy, cz], [cx+1.1, cy-0.65, cz]]);
+                    ohBonds.push([[cx+1.1, cy-0.65, cz], [cx+1.935, cy-1.144, cz]]);
+
+                    // 分子間氫鍵 (虛線)，連接同一條鏈上的下一個分子
+                    if (i < groupsPerChain - 1) {
+                        const nx = cx + vChain.x;
+                        const ny = cy + vChain.y;
+                        const nz = cz + vChain.z;
+                        // 當前分子的 H，連向鏈上右側下一個分子的頂端 O
+                        hBonds.push([[cx+1.935, cy-1.144, cz], [nx, ny+1.3, nz]]);
+                    }
+                }
+            }
+        }
+
+        // 組裝 XYZ 格式資料並載入
+        const xyzStr = [atomLines.length, 'NaHCO3 3 Layers', ...atomLines].join('\n');
+        cifViewer.addModel(xyzStr, 'xyz');
+
+        // 原子的渲染樣式 (大小與顏色)
+        cifViewer.setStyle({elem:'Na'}, {sphere:{radius:0.60, color:'#9b59b6'}});
+        cifViewer.setStyle({elem:'C'},  {sphere:{radius:0.42, color:'#555555'}});
+        cifViewer.setStyle({elem:'O'},  {sphere:{radius:0.46, color:'#e74c3c'}});
+        cifViewer.setStyle({elem:'H'},  {sphere:{radius:0.29, color:'#EEEEEE'}});
+
+        // 畫出分子內的共價鍵 (深灰/淺灰圓柱)
+        coBonds.forEach(([s,e]) => cifViewer.addCylinder({start:{x:s[0],y:s[1],z:s[2]}, end:{x:e[0],y:e[1],z:e[2]}, radius:0.14, color:'#888888', fromCap:2, toCap:2}));
+        ohBonds.forEach(([s,e]) => cifViewer.addCylinder({start:{x:s[0],y:s[1],z:s[2]}, end:{x:e[0],y:e[1],z:e[2]}, radius:0.11, color:'#BBBBBB', fromCap:2, toCap:2}));
+        
+        // 畫出分子間的氫鍵 (金黃色虛線)
+        hBonds.forEach(([s,e]) => {
+            const dx = e[0]-s[0], dy = e[1]-s[1], dz = e[2]-s[2];
+            const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            const ux = dx/len, uy = dy/len, uz = dz/len;
+            // 每隔一段距離畫一截短圓柱，產生虛線感
+            for (let t = 0; t < len; t += 0.45) {
+                const t2 = Math.min(t + 0.27, len);
+                cifViewer.addCylinder({
+                    start:{x:s[0]+ux*t, y:s[1]+uy*t, z:s[2]+uz*t}, 
+                    end:{x:s[0]+ux*t2, y:s[1]+uy*t2, z:s[2]+uz*t2}, 
+                    radius:0.08, color:'#FFD700', fromCap:2, toCap:2
+                });
+            }
+        });
+
+        // 圖例覆蓋層
+        try {
+            const vEl = document.getElementById('cif-viewer');
+            if (!vEl.querySelector('.hb-legend')) {
+                const lg = document.createElement('div');
+                lg.className = 'hb-legend';
+                lg.style.cssText = 'position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.75);color:#fff;padding:8px 14px;border-radius:8px;font-size:0.8rem;line-height:2;z-index:100;pointer-events:none;';
+                lg.innerHTML = '<b style="color:#93c5fd;">HCO₃⁻ 氫鍵排列</b><br>'
+                    + '<span style="color:#9b59b6;">●</span> Na⁺&nbsp;&nbsp;<span style="color:#888;">●</span> C&nbsp;&nbsp;<span style="color:#e74c3c;">●</span> O&nbsp;&nbsp;<span style="color:#ddd;">●</span> H<br>'
+                    + '<span style="color:#888;">━━</span> C-O 鍵&nbsp;&nbsp;<span style="color:#bbb;">━━</span> O-H 鍵&nbsp;&nbsp;<span style="color:#FFD700;">╌╌</span> 氫鍵 O-H···O';
+                vEl.appendChild(lg);
+            }
+        } catch(e) {}
+
+        cifViewer.zoomTo();
+        cifViewer.render();
+        return;
+    }
+
     fetch('./' + filename)
         .then(res => {
             if (!res.ok) throw new Error("HTTP error " + res.status);
