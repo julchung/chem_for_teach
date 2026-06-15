@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>碰撞學說 | 互動教學</title>
+    <meta name="description" content="選修化學二：碰撞學說、正確位向、活化能與低限能互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warning-box {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(52,211,153,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        /* Mechanism Practice Slide */
+        .mech-tab-btn {
+            padding: 0.45rem 1.5rem; border-radius: 999px; border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.2s;
+        }
+        .mech-tab-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .mech-tab-active { background: var(--accent-blue) !important; color: #0f172a !important; border-color: var(--accent-blue) !important; }
+        .mech-reveal-btn {
+            margin-top: 0.6rem; padding: 0.5rem 1.2rem; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: opacity 0.2s; align-self: flex-start;
+        }
+        .mech-reveal-btn:hover { opacity: 0.85; }
+        .mech-case { display: flex; flex-direction: column; gap: 0.4rem; height: 100%; }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 1rem; color: #fff;
+            text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+
+        /* Animation canvas */
+        #collision-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+        #energy-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+
+        /* Orientation animation */
+        .orient-container { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .orient-row { display: flex; gap: 0.7rem; flex: 1; min-height: 0; }
+        .orient-box {
+            flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1.5px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; position: relative; overflow: hidden;
+        }
+        .orient-label {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px;
+            white-space: nowrap;
+        }
+        .label-fail { background: rgba(248,113,113,0.2); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .label-ok { background: rgba(52,211,153,0.2); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+
+        /* Energy diagram styles */
+        .energy-diagram-wrapper { flex: 1; min-height: 0; position: relative; }
+        .energy-label-box {
+            position: absolute; background: rgba(15,23,42,0.85); border-radius: 8px;
+            padding: 3px 8px; font-size: 0.78rem; font-weight: 700; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Slider styles */
+        .slider-row { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; margin-top: 0.4rem; }
+        .slider-row label { font-size: 0.9rem; color: var(--accent-yellow); white-space: nowrap; }
+        input[type=range] { flex: 1; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* btn-action */
+        .btn-action {
+            padding: 0.5rem 1.2rem; border-radius: 10px; font-size: 1rem; cursor: pointer;
+            border: 1.5px solid var(--accent-blue); background: rgba(56,189,248,0.12);
+            color: #fff; font-weight: 700; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #0f172a; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.82rem;
+            font-weight: 700; margin: 0 3px;
+        }
+        .badge-red { background: rgba(248,113,113,0.18); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .badge-green { background: rgba(52,211,153,0.18); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+        .badge-yellow { background: rgba(251,191,36,0.18); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-blue { background: rgba(56,189,248,0.18); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4); }
+        .badge-orange { background: rgba(251,146,60,0.18); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.4); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 58px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="intro-screen">
+    <h1>碰撞學說</h1>
+    <h2 style="color: var(--accent-blue); margin-bottom: 0.5rem; font-weight: normal;">Collision Theory</h2>
+    <p style="color: rgba(255,255,255,0.55); margin-bottom: 2.5rem; font-size: 1.05rem;">選修化學 II 第三章</p>
+    <button class="btn-start" onclick="startApp()">進入教學</button>
+</div>
+
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- Slide 1: 碰撞學說總覽 -->
+            <div class="slide slide-intro active" id="slide-overview">
+                <h1>碰撞學說 (Collision Theory)</h1>
+                <div class="grid-2" style="height:100%; gap:0.6rem; align-items:stretch; grid-template-columns: 1.6fr 1fr;">
+                    <!-- 左欄：理論總覽 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.3rem; padding:0.6rem 0.8rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0.1rem;">理論概念</h2>
+                        <div class="info-card" style="padding:0.5rem 0.8rem;">
+                            <p style="margin:0; font-size:1.0rem; line-height:1.5;">
+                                要使化學反應發生，反應物的粒子（原子、分子或離子）必須<strong>相互碰撞</strong>。<br>
+                                每次碰撞以<strong>兩個粒子相互碰撞</strong>機會最大。<br>
+                                但<strong>並非所有碰撞都能引發反應</strong>——只有<em>有效碰撞</em>才能促成反應。
+                            </p>
+                        </div>
+                        <h2 style="color:var(--accent-cyan); margin-top:0.2rem; margin-bottom:0.1rem;">有效碰撞的兩大條件</h2>
+                        <div style="display:flex; flex-direction:column; gap:0.3rem; flex:1;">
+                            <div style="background:rgba(52,211,153,0.1); border-radius:12px; border:1.5px solid rgba(52,211,153,0.35); padding:0.5rem 0.8rem; display:flex; align-items:flex-start; gap:0.6rem;">
+                                <span style="font-size:1.5rem; flex-shrink:0;">🎯</span>
+                                <div>
+                                    <p style="font-weight:800; color:var(--accent-green); margin-bottom:0.1rem; font-size:0.95rem;">條件一：正確的碰撞位向</p>
+                                    <p style="margin:0; font-size:0.85rem; line-height:1.4;">分子碰撞時，必須符合正確的碰撞位向，才可能發生反應。方位不正確的碰撞，即使能量足夠，也不會引發反應。</p>
+                                </div>
+                            </div>
+                            <div style="background:rgba(251,191,36,0.1); border-radius:12px; border:1.5px solid rgba(251,191,36,0.35); padding:0.5rem 0.8rem; display:flex; align-items:flex-start; gap:0.6rem;">
+                                <span style="font-size:1.5rem; flex-shrink:0;">⚡</span>
+                                <div>
+                                    <p style="font-weight:800; color:var(--accent-yellow); margin-bottom:0.1rem; font-size:0.95rem;">條件二：足夠的碰撞能量</p>
+                                    <p style="margin:0; font-size:0.85rem; line-height:1.4;">反應粒子所具動能應超越<strong>低限能 (threshold energy)</strong>。低限能為造成有效碰撞時最低動能，其大小與活化能(位能)相同。受反應物種類及催化劑影響，但不受溫度及壓力影響。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="highlight-box" style="margin-top:0.2rem; padding:0.5rem 0.8rem;">
+                            <p style="margin:0; font-size:0.9rem;">
+                                <strong>反應速率</strong> ∝ 有效碰撞頻率 = 碰撞總次數 × 有效碰撞比率<br>
+                                (當反應物濃度增加時，碰撞頻率增加，故速率可隨之增加)
+                            </p>
+                        </div>
+                    </div>
+                    <!-- 右欄：動畫示意 -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.5rem;">
+                        <h2 style="text-align:center; margin-bottom:0.3rem;">碰撞動畫示意</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="collision-canvas" style="height:100%;"></canvas>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; flex-shrink:0;">
+                            <div style="display:flex; align-items:center; gap:5px;"><div style="width:14px;height:14px;border-radius:50%;background:#38bdf8;"></div><span style="font-size:0.85rem;">A 分子</span></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><div style="width:14px;height:14px;border-radius:50%;background:#f87171;"></div><span style="font-size:0.85rem;">B 分子</span></div>
+                            <div style="display:flex; align-items:center; gap:5px;"><div style="width:14px;height:14px;border-radius:50%;background:#34d399;"></div><span style="font-size:0.85rem;">產物 C (有效碰撞後)</span></div>
+                        </div>
+                        <div class="slider-row">
+                            <label>溫度：</label>
+                            <input type="range" id="temp-slider" min="1" max="5" value="2" step="1">
+                            <span id="temp-label" style="color:var(--accent-cyan);font-weight:700;min-width:40px;text-align:right;">低</span>
+                        </div>
+                        <p style="font-size:0.82rem; text-align:center; color:rgba(255,255,255,0.45); margin:0;">↑ 拖動滑桿改變溫度，觀察碰撞頻率變化</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: 正確碰撞方位 -->
+            <div class="slide slide-intro" id="slide-orientation">
+                <h1>條件一：正確的碰撞方位 (Proper Orientation)</h1>
+                <div style="text-align: center; margin: 0.5rem 0;">
+                    <div class="formula-box" style="display: inline-block; padding: 0.6rem 2rem; font-size: clamp(1.2rem, 2vw, 1.6rem);">
+                        $$\text{I}^- + \text{CH}_3\text{Cl} \rightarrow \text{CH}_3\text{I} + \text{Cl}^-$$
+                    </div>
+                </div>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch;">
+                    <!-- Left: Correct Orientation -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.4rem;">
+                        <h2 style="text-align:center; color:var(--accent-green); margin-bottom:0.2rem;">✅ 正確位向 (背面攻擊)</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="orientation-correct-canvas" style="height:100%; width:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <p style="text-align:center; font-size:0.95rem; margin:0.3rem 0; line-height: 1.4;">
+                            I⁻ 從 Cl 的背面撞擊，形成過渡狀態<br>碳原子發生<strong style="color:var(--accent-yellow);">結構反轉 (傘翻轉)</strong>，Cl⁻ 離去。
+                        </p>
+                    </div>
+                    <!-- Right: Incorrect Orientation -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.4rem;">
+                        <h2 style="text-align:center; color:var(--accent-red); margin-bottom:0.2rem;">❌ 錯誤位向 (正面攻擊)</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="orientation-incorrect-canvas" style="height:100%; width:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <p style="text-align:center; font-size:0.95rem; margin:0.3rem 0; line-height: 1.4;">
+                            I⁻ 從 Cl 的同側撞擊<br>受到電子雲排斥影響，<strong style="color:var(--accent-red);">無法發生反應</strong>。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: I- 和 CH3Cl 分子反應過程的能量變化 -->
+            <div class="slide slide-intro" id="slide-co-no2">
+                <h1>反應途徑與位能變化 ($\text{I}^- + \text{CH}_3\text{Cl} \rightarrow \text{CH}_3\text{I} + \text{Cl}^-$)</h1>
+                <div style="height:100%; display:flex; flex-direction:column; padding:0 2rem;">
+                    <div style="flex:1; min-height:0; position:relative; background:rgba(15,23,42,0.6); border-radius:16px; border:1.5px solid var(--glass-border); overflow:hidden; padding: 1rem;">
+                        <canvas id="co-no2-canvas" style="width:100%; height:100%; display:block;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 足夠能量 - 活化能概念 -->
+            <div class="slide slide-intro" id="slide-energy">
+                <h1>條件二：足夠的碰撞能量 — 活化能</h1>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch; grid-template-columns: 1.2fr 1fr;">
+                    <!-- 左欄：說明 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding:1rem;">
+                        <h2 style="color:var(--accent-yellow);">能量相關名詞定義</h2>
+
+                        <div style="background:rgba(251,191,36,0.1); border-radius:12px; border:1.5px solid rgba(251,191,36,0.3); padding:0.7rem;">
+                            <p style="margin:0; color:var(--accent-yellow); font-weight:800; font-size:1.0rem;">⚡ 活化能 (Activation Energy, $E_a$)</p>
+                            <p style="margin:0.3rem 0 0; font-size:0.93rem; line-height:1.55;">
+                                定義：活化錯合物與反應物位能差。即反應物轉變為活化錯合物所需之位能。<br>受反應物本性及催化劑影響，但不受溫度、濃度及壓力影響。
+                            </p>
+                        </div>
+
+                        <div style="background:rgba(167,139,250,0.1); border-radius:12px; border:1.5px solid rgba(167,139,250,0.3); padding:0.7rem;">
+                            <p style="margin:0; color:var(--accent-purple); font-weight:800; font-size:1.0rem;">🔴 活化錯合物 (Activated Complex)</p>
+                            <p style="margin:0.3rem 0 0; font-size:0.93rem; line-height:1.55;">
+                                反應物形成有效碰撞時之<strong>暫時性產物</strong>（位能最高點），非中間產物。能量高度不穩定，可自發生成物或退回反應物。
+                            </p>
+                        </div>
+
+                        <div style="background:rgba(52,211,153,0.1); border-radius:12px; border:1.5px solid rgba(52,211,153,0.3); padding:0.7rem;">
+                            <p style="margin:0; color:var(--accent-green); font-weight:800; font-size:1.0rem;">🌡️ 反應熱 (Heat of Reaction, $\Delta H$)</p>
+                            <p style="margin:0.3rem 0 0; font-size:0.93rem; line-height:1.55;">
+                                產物與反應物能量的<strong>差值</strong>。活化能大小不影響反應熱的大小。
+                            </p>
+                        </div>
+                        
+                        <h2 style="color:var(--accent-cyan); margin-top:0.2rem;">活化能在反應中之功用</h2>
+                        <ul style="font-size:0.93rem; line-height:1.6; margin-left:1.2rem; color:var(--text-main);">
+                            <li>減弱或破壞反應物原有化學鍵。</li>
+                            <li>使反應物抗拒相斥力而相互接近。</li>
+                            <li>使分子儲存較多共振動能，碰撞後即起反應。</li>
+                        </ul>
+                    </div>
+                    <!-- 右欄：活化能位能圖 -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.4rem;">
+                        <h2 style="text-align:center; margin-bottom:0.2rem;">位能反應座標圖（互動）</h2>
+                        <div style="display:flex; gap:0.5rem; justify-content:center; flex-shrink:0;">
+                            <button class="btn-action" id="btn-exo" onclick="setReactionType('exo')" style="background:rgba(52,211,153,0.2); border-color:var(--accent-green); font-size:0.9rem; padding:0.35rem 0.9rem;">放熱反應</button>
+                            <button class="btn-action" id="btn-endo" onclick="setReactionType('endo')" style="font-size:0.9rem; padding:0.35rem 0.9rem;">吸熱反應</button>
+                        </div>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="energy-canvas" style="height:100%; width:100%;"></canvas>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:center; flex-shrink:0;">
+                            <span class="badge badge-yellow">$E_a$：活化能</span>
+                            <span class="badge badge-blue">$E_{th}$：低限能</span>
+                            <span class="badge badge-green">$\Delta H$：反應熱</span>
+                            <span class="badge badge-orange">活化錯合物</span>
+                        </div>
+                        <div class="slider-row" style="margin-top:0.1rem;">
+                            <label>$E_a$ 大小：</label>
+                            <input type="range" id="ea-slider" min="30" max="150" value="80" step="5">
+                            <span id="ea-label" style="color:var(--accent-yellow);font-weight:700;min-width:60px;text-align:right;">80 kJ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 正逆反應活化能關係 -->
+            <div class="slide slide-intro" id="slide-forward-reverse">
+                <h1>正逆反應的活化能關係</h1>
+                <div style="display: flex; flex-direction: column; height: 100%; gap: 1rem; padding: 0.5rem 1rem;">
+                    <!-- 上方橫排：定義 -->
+                    <div class="panel" style="padding: 0.8rem 1rem; flex-shrink: 0;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom: 0.3rem;">正逆反應活化能與反應熱的關係</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: nowrap;">
+                            <p style="margin:0; font-size:1.0rem; line-height:1.5; flex: 1;">
+                                設正反應活化能為 $E_{a(	ext{正})}$，逆反應活化能為 $E_{a(	ext{逆})}$，反應熱為 $\Delta H$。<br>
+                                <strong>注意：</strong>催化劑可同時降低正逆反應的活化能，<em>但不改變 $\Delta H$</em>（反應熱不變）。
+                            </p>
+                            <div class="formula-box" style="font-size:1.15rem; margin:0; padding:0.4rem 1.2rem; flex-shrink: 0;">
+                                $$\Delta H = E_{a(	ext{正})} - E_{a(	ext{逆})}$$
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 下方左右並列：放熱與吸熱 -->
+                    <div class="grid-2" style="flex: 1; min-height: 0; gap: 1rem;">
+                        <!-- 左：放熱 -->
+                        <div class="panel" style="display:flex; flex-direction:column; padding:0.8rem; gap:0.5rem;">
+                            <h2 style="color:var(--accent-green); text-align:center; font-size:1.2rem;">放熱反應 ($\Delta H < 0$)</h2>
+                            <div class="success-box" style="margin:0; padding:0.5rem;">
+                                <ul style="font-size:0.95rem; line-height:1.5; margin-left:1.2rem; margin-bottom:0;">
+                                    <li>$E_{a(	ext{正})} < E_{a(	ext{逆})}$，產物能量 &lt; 反應物能量</li>
+                                    <li>$|\Delta H| = E_{a(	ext{逆})} - E_{a(	ext{正})}$</li>
+                                </ul>
+                            </div>
+                            <div style="flex:1; min-height:0; position:relative;">
+                                <canvas id="forward-reverse-exo-canvas" style="width:100%; height:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- 右：吸熱 -->
+                        <div class="panel" style="display:flex; flex-direction:column; padding:0.8rem; gap:0.5rem;">
+                            <h2 style="color:var(--accent-red); text-align:center; font-size:1.2rem;">吸熱反應 ($\Delta H > 0$)</h2>
+                            <div style="background:rgba(248,113,113,0.08); border-radius:11px; padding:0.5rem; border:1px solid rgba(248,113,113,0.3); margin:0;">
+                                <ul style="font-size:0.95rem; line-height:1.5; margin-left:1.2rem; margin-bottom:0;">
+                                    <li>$E_{a(	ext{正})} > E_{a(	ext{逆})}$，產物能量 &gt; 反應物能量</li>
+                                    <li>$|\Delta H| = E_{a(	ext{正})} - E_{a(	ext{逆})}$</li>
+                                </ul>
+                            </div>
+                            <div style="flex:1; min-height:0; position:relative;">
+                                <canvas id="forward-reverse-endo-canvas" style="width:100%; height:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 反應機構與速率決定步驟 -->
+            <div class="slide slide-intro" id="slide-mechanism">
+                <h1>反應機構與速率決定步驟</h1>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch; grid-template-columns: 1.5fr 1fr;">
+                    <!-- 左欄：說明 -->
+                    <div class="panel" style="display:flex; flex-direction:column; gap:0.4rem; padding:1.2rem;">
+                        <h2 style="color:var(--accent-yellow); margin-top:0;">反應機構 (Reaction Mechanism)</h2>
+                        <div class="info-card" style="padding: 0.6rem;">
+                            <p style="margin:0; font-size:0.95rem; line-height:1.5;">
+                                根據碰撞學說，粒子間發生碰撞，同一時間以<strong>兩個粒子相互碰撞的機率最高</strong>。<br>
+                                大多數的化學反應是經由<strong>連續性多步驟碰撞</strong>所完成，這些步驟的總和稱為反應機構。
+                            </p>
+                        </div>
+                        <h2 style="color:var(--accent-cyan); margin-top:0.2rem;">速率決定步驟 (Rate-Determining Step)</h2>
+                        <div class="highlight-box" style="padding: 0.6rem;">
+                            <p style="margin:0; font-size:0.95rem; line-height:1.5;">
+                                每一步驟反應都是基本步驟，其中<strong>反應速率最慢的步驟</strong>，稱為速率決定步驟，又稱<strong>瓶頸反應</strong>。<br>
+                                此步驟的活化能最大，<strong>決定了整個反應的快慢</strong>。
+                            </p>
+                        </div>
+                        <h2 style="color:var(--accent-green); margin-top:0.2rem;">實例探討</h2>
+                        <p style="font-size:0.95rem; line-height:1.5; margin-bottom: 0;">以二氧化氮和一氧化碳反應為例：</p>
+                        <div class="formula-box" style="font-size: 1.15rem; padding: 0.5rem; border-left-color: var(--accent-blue);">
+                            總反應式：$NO_{2(g)} + CO_{(g)} \rightarrow NO_{(g)} + CO_{2(g)}$
+                        </div>
+                        <p style="font-size:0.95rem; line-height:1.5; margin-bottom: 0;">由實驗得知其速率定律為 <strong style="color:var(--accent-yellow);">$R = k[NO_2]^2$</strong>，推論反應機構為：</p>
+                        <div class="formula-box" style="font-size: 1.15rem; padding: 0.5rem; background: rgba(0,0,0,0.25); border-left-color: var(--accent-purple);">
+                            第一步 (慢)：$NO_2 + NO_2 \rightarrow NO_3 + NO$ <span style="font-size:0.9rem; color:#aaa;">(活化能較高)</span><br>
+                            第二步 (快)：$NO_3 + CO \rightarrow NO_2 + CO_2$ <span style="font-size:0.9rem; color:#aaa;">(活化能較低)</span>
+                        </div>
+                    </div>
+                    <!-- 右欄：反應機構位能圖 -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.4rem;">
+                        <h2 style="text-align:center; margin-bottom:0.2rem;">反應機構位能示意圖</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="mechanism-canvas" style="height:100%; width:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-shrink:0; flex-wrap:wrap; justify-content:center; margin-top:0.5rem;">
+                            <span class="badge badge-yellow">E₁：第一步活化能 (最大，為速率決定步驟)</span>
+                            <span class="badge badge-purple">E₂：第二步活化能</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 反應機構互動練習 -->
+            <div class="slide slide-intro" id="slide-mechanism-practice">
+                <h1>反應機構互動練習：$2A + B \rightarrow D$</h1>
+                <div style="display:flex; gap:0.6rem; margin-bottom:0.5rem; justify-content:center; flex-shrink:0;">
+                    <button onclick="showMechCase(1)" id="mech-btn-1" class="mech-tab-btn mech-tab-active">機構甲</button>
+                    <button onclick="showMechCase(2)" id="mech-btn-2" class="mech-tab-btn">機構乙</button>
+                    <button onclick="showMechCase(3)" id="mech-btn-3" class="mech-tab-btn">機構丙</button>
+                </div>
+                <div style="display:flex; gap:1rem; height:calc(100% - 4.5rem); min-height:0;">
+                    <!-- 左欄：步驟推導 -->
+                    <div class="panel" style="flex:1.5; display:flex; flex-direction:column; gap:0.5rem; padding:1.2rem; overflow:hidden;">
+
+                        <!-- 機構甲 -->
+                        <div id="mech-case-1" class="mech-case">
+                            <h2 style="color:var(--accent-yellow); margin:0 0 0.3rem;">機構甲</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-red);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + A \rightarrow C$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_1$ 大</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$C + B \rightleftharpoons D$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[D]}{[C][B]}$</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第一步（慢），$Ea_1$ 最大<br>
+                                    ➤ 速率定律依<strong>慢步驟</strong>的反應物寫出：
+                                </p>
+                            </div>
+                            <div id="mech1-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.1rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse;">
+                                        <tr><td style="padding:3px 0; color:#94a3b8;">速率定律：</td><td style="padding:3px 6px;">$R = k[A][A]$</td></tr>
+                                        <tr><td></td><td style="padding:3px 6px;">$\Rightarrow R = k[A]^2$</td></tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k[A]^2}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">B 只在快步驟出現，故不影響速率定律。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech1-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                        <!-- 機構乙：case-2 (內容互換後：A+B→E 慢；E+A→D 快) -->
+                        <div id="mech-case-2" class="mech-case" style="display:none;">
+                            <h2 style="color:var(--accent-cyan); margin:0 0 0.3rem;">機構乙</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-cyan);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + B \rightarrow E$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_1$ 大</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$E + A \rightleftharpoons D$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[D]}{[E][A]}$</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第一步（慢），$Ea_1$ 最大<br>
+                                    ➤ 速率定律直接依<strong>慢步驟</strong>的反應物寫出：
+                                </p>
+                            </div>
+                            <div id="mech2-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.1rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse;">
+                                        <tr><td style="padding:3px 0; color:#94a3b8;">速率定律：</td><td style="padding:3px 6px;">$R = k[A][B]$</td></tr>
+                                        <tr><td></td><td style="padding:3px 6px; color:#34d399; font-weight:700;">$\Rightarrow R = k[A][B]$</td></tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k[A][B]}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">E 為中間物，僅在快步驟出現，不影響速率定律。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech2-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                        <!-- 機構丙：case-3 (內容互換後：A+A⇌C 快；C+B→D 慢) -->
+                        <div id="mech-case-3" class="mech-case" style="display:none;">
+                            <h2 style="color:var(--accent-green); margin:0 0 0.3rem;">機構丙</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-green);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + A \rightleftharpoons C$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[C]}{[A]^2}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$C + B \rightarrow D$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_2$ 大</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第二步（慢），$Ea_2$ 最大<br>
+                                    ➤ 慢步驟初步速率式 $R = k[B][C]$，但 C 為中間物須消去：
+                                </p>
+                            </div>
+                            <div id="mech3-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.05rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse; line-height:1.9;">
+                                        <tr>
+                                            <td style="padding:1px 0; color:#94a3b8; white-space:nowrap;">速率定律：</td>
+                                            <td style="padding:1px 8px;">$R = k[B][C]$</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#94a3b8;">由平衡：</td>
+                                            <td style="padding:1px 8px;">$[C] = K[A]^2$</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#94a3b8;">代入：</td>
+                                            <td style="padding:1px 8px;">$R = k[B] \cdot K[A]^2$</td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td style="padding:1px 8px; color:#34d399; font-weight:700;">$\Rightarrow R = k'[B][A]^2$</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k'[A]^2[B]}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">將快平衡的 K 代入，消去中間物 C。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech3-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                    </div>
+                    <!-- 右欄：位能圖 -->
+                    <div class="panel" style="flex:1; display:flex; flex-direction:column; padding:0.8rem; gap:0.4rem;">
+                        <h2 style="text-align:center; margin:0 0 0.3rem; font-size:1rem;">位能示意圖</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="mech-practice-canvas" style="width:100%; height:100%; border-radius:10px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <div id="mech-legend" style="font-size:0.8rem; color:#94a3b8; text-align:center; flex-shrink:0;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7 (old): 實戰演練 -->
+            <div class="slide slide-intro" id="slide-example">
+                <h1>實戰演練：碰撞學說與活化能計算</h1>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding:1rem;">
+                        <h2 style="color:var(--accent-yellow);">題目</h2>
+                        <div class="info-card">
+                            <p style="font-size:1.05rem; line-height:1.6; margin:0;">
+                                某反應 $A + B \rightarrow C + D$ 在 25°C 下進行，已知：
+                            </p>
+                            <ul style="font-size:1.0rem; line-height:1.7; margin-top:0.4rem; margin-left:1rem;">
+                                <li>正反應活化能 $E_{a(\text{正})} = 80 \text{ kJ/mol}$</li>
+                                <li>逆反應活化能 $E_{a(\text{逆})} = 50 \text{ kJ/mol}$</li>
+                            </ul>
+                        </div>
+                        <h2 style="color:var(--accent-cyan); margin-top:0.3rem;">問題</h2>
+                        <ul style="font-size:1.05rem; line-height:1.8; margin-left:1.2rem;">
+                            <li>(1) 此反應的反應熱 $\Delta H$ 為多少 kJ/mol？</li>
+                            <li>(2) 此反應為放熱還是吸熱反應？</li>
+                            <li>(3) 反應物的平均能量與低限能 $E_{th}$ 之差（即活化能）為何？</li>
+                            <li>(4) 若加入催化劑，使正反應活化能降為 50 kJ/mol，則逆反應活化能變為多少？</li>
+                        </ul>
+                        <div class="highlight-box" style="margin-top:0.3rem;">
+                            <p style="margin:0; font-size:0.9rem; color:rgba(255,255,255,0.6);">
+                                提示：$\Delta H = E_{a(\text{正})} - E_{a(\text{逆})}$
+                            </p>
+                        </div>
+                    </div>
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding:1rem; position:relative;">
+                        <div id="solution-ex1" style="display:none; flex-direction:column; gap:0.4rem; padding-bottom:3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">(1) 反應熱 $\Delta H$</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem;">
+                                $$\Delta H = E_{a(\text{正})} - E_{a(\text{逆})} = 80 - 50 = \mathbf{+30 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">(2) 反應類型</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">
+                                $\Delta H = +30 \text{ kJ/mol} > 0$，故此反應為<strong style="color:var(--accent-red);">吸熱反應</strong>。<br>
+                                （產物能量高於反應物能量，反應需從外界吸收熱量。）
+                            </p>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">(3) 活化能</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">
+                                活化能就是正反應活化能，即：
+                            </p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-cyan);">
+                                $$E_a = E_{a(\text{正})} = \mathbf{80 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">(4) 催化劑後的逆反應活化能</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">
+                                催化劑<strong>不改變 $\Delta H$</strong>，故：
+                            </p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-green);">
+                                $$E_{a(\text{逆})}' = E_{a(\text{正})}' - \Delta H = 50 - 30 = \mathbf{20 \text{ kJ/mol}}$$
+                            </div>
+                            <div class="success-box">
+                                <p style="margin:0; font-size:0.9rem;">催化劑將正反應活化能從 80→50 kJ/mol（降 30），逆反應活化能也從 50→20 kJ/mol（降 30），反應熱 +30 kJ/mol 不變。</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleSolution('solution-ex1')" style="position:absolute; bottom:15px; right:15px; padding:10px 20px; background:var(--accent-blue); color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem; z-index:100; box-shadow:0 4px 10px rgba(0,0,0,0.3);">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 實戰演練 2 -->
+            <div class="slide slide-intro" id="slide-example2">
+                <h1>實戰演練：判斷正逆反應活化能與位能圖</h1>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding:1rem;">
+                        <h2 style="color:var(--accent-yellow);">題目</h2>
+                        <p style="font-size:1.05rem; line-height:1.6;">
+                            反應 $\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$ 的位能反應座標圖如下所示，$E_1 = 230 \text{ kJ/mol}$，$E_2 = 138 \text{ kJ/mol}$，回答下列問題：
+                        </p>
+                        <div style="background:rgba(0,0,0,0.25); border-radius:12px; padding:0.5rem; text-align:center;">
+                            <canvas id="example2-canvas" style="width:100%; max-width:320px; height:180px; border-radius:8px; border:1px solid var(--glass-border); display:inline-block;"></canvas>
+                        </div>
+                        <ul style="font-size:1.05rem; line-height:1.8; margin-left:1.2rem; margin-top:0.3rem;">
+                            <li>(1) 正反應活化能 $E_{a(\text{正})}$ 為何？</li>
+                            <li>(2) 逆反應活化能 $E_{a(\text{逆})}$ 為何？</li>
+                            <li>(3) 此反應的反應熱 $\Delta H$ 為何？放熱或吸熱？</li>
+                            <li>(4) 此反應在一般條件下是否容易自發進行？</li>
+                        </ul>
+                    </div>
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding:1rem; position:relative;">
+                        <div id="solution-ex2" style="display:none; flex-direction:column; gap:0.4rem; padding-bottom:3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <div class="info-card" style="margin-bottom:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    <strong>圖形分析：</strong>$E_1$ 為反應物到活化錯合物的能量差（正反應活化能），$E_2$ 為產物到活化錯合物的能量差（逆反應活化能）。
+                                </p>
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(1) 正反應活化能</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-yellow);">
+                                $$E_{a(\text{正})} = E_1 = \mathbf{230 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(2) 逆反應活化能</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-purple);">
+                                $$E_{a(\text{逆})} = E_2 = \mathbf{138 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(3) 反應熱</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-green);">
+                                $$\Delta H = E_{a(\text{正})} - E_{a(\text{逆})} = 230 - 138 = \mathbf{+92 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-size:0.93rem;">$\Delta H > 0$，故為<strong style="color:var(--accent-red);">吸熱反應</strong>（逆向合成氨為吸熱）。</p>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(4) 自發性討論</p>
+                            <p style="font-size:0.93rem; line-height:1.5;">正反應活化能 230 kJ/mol 相當高，在一般溫度下分子難以具有足夠能量，反應速率極慢，需加<strong>催化劑（鐵催化劑）</strong>和<strong>高溫高壓</strong>條件才能使工業合成氨具有可行的速率。</p>
+                        </div>
+                        <button onclick="toggleSolution('solution-ex2')" style="position:absolute; bottom:15px; right:15px; padding:10px 20px; background:var(--accent-blue); color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem; z-index:100; box-shadow:0 4px 10px rgba(0,0,0,0.3);">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: 互動連連看 -->
+            <div class="slide" id="slide-game">
+                <h1>互動學習：連連看 (碰撞學說)</h1>
+                <div class="game-area">
+                    <div class="game-columns">
+                        <div id="left-column"></div>
+                        <div id="right-column"></div>
+                    </div>
+                    <svg id="game-svg"></svg>
+                    <div id="game-feedback">全對！太棒了！🎉</div>
+                </div>
+                <div style="text-align:center; margin-top:0.5rem; flex-shrink:0;">
+                    <button class="btn-action" onclick="resetGame()">隨機換題 (重新開始)</button>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+        <canvas id="drawing-layer" role="application" aria-label="手寫塗鴉層" tabindex="0"></canvas>
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<div id="slide-info">1 / 8</div>
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="畫筆模式">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清空畫布">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="返回">⌂</button>
+</div>
+
+<script>
+/* ========== UTILITY ========== */
+function toggleSolution(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+/* ========== INTRO ========== */
+function startApp() {
+    const el = document.documentElement;
+    try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(() => {}); } catch(e) {}
+    try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch(e) {}
+    const intro = document.getElementById('intro-screen');
+    intro.style.opacity = '0';
+    setTimeout(() => { intro.style.display = 'none'; }, 500);
+}
+
+/* ========== DRAWING LAYER ========== */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+    ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ========== SLIDE NAVIGATION ========== */
+window.updateSlides = function () {
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    const sid = slides[currentSlide] ? slides[currentSlide].id : '';
+    if (sid === 'slide-game') { initGame(); setTimeout(drawConnections, 80); }
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([slides[currentSlide]]).catch(() => {});
+    }
+    // Trigger canvas redraws when switching to those slides
+    setTimeout(() => {
+        if (sid === 'slide-energy') drawEnergyDiagram();
+        if (sid === 'slide-maxwell') 
+        if (sid === 'slide-forward-reverse') drawCompareDiagram();
+        if (sid === 'slide-mechanism') drawMechanismCanvas();
+        if (sid === 'slide-mechanism-practice') { drawMechPracticeCanvas(1); }
+        if (sid === 'slide-example2') drawExample2Canvas();
+    }, 50);
+};
+
+document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') { currentSlide = 0; window.updateSlides(); }
+    else if (ev.key === 'End') { currentSlide = slides.length - 1; window.updateSlides(); }
+});
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+/* ========== TOOLBAR DRAG ========== */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+/* ========================================================
+   ANIMATION 1: Collision Canvas (Slide 1)
+   ======================================================== */
+(function() {
+    const cvs = document.getElementById('collision-canvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    let W, H, animId;
+    let molecules = [];
+    let flashes = [];
+    let speedFactor = 1.5;
+
+    function resize() {
+        W = cvs.offsetWidth; H = cvs.offsetHeight;
+        cvs.width = W; cvs.height = H;
+    }
+
+    function initMolecules() {
+        molecules = [];
+        for (let i = 0; i < 40; i++) {
+            molecules.push({
+                x: Math.random() * W, y: Math.random() * H,
+                r: 8 + Math.random() * 4,
+                vx: (Math.random() - 0.5) * 3 * speedFactor,
+                vy: (Math.random() - 0.5) * 3 * speedFactor,
+                type: i < 20 ? 'A' : 'B'
+            });
+        }
+    }
+
+    function checkCollisions() {
+        for (let i = 0; i < molecules.length; i++) {
+            for (let j = i + 1; j < molecules.length; j++) {
+                const a = molecules[i], b = molecules[j];
+                const dx = a.x - b.x, dy = a.y - b.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < a.r + b.r) {
+                    // Elastic bounce
+                    const angle = Math.atan2(dy, dx);
+                    const speed1 = Math.sqrt(a.vx*a.vx + a.vy*a.vy);
+                    const speed2 = Math.sqrt(b.vx*b.vx + b.vy*b.vy);
+                    const dir1 = Math.atan2(a.vy, a.vx);
+                    const dir2 = Math.atan2(b.vy, b.vx);
+                    const newVx1 = speed2 * Math.cos(dir2 - angle);
+                    const newVy1 = speed2 * Math.sin(dir2 - angle);
+                    const newVx2 = speed1 * Math.cos(dir1 - angle);
+                    const newVy2 = speed1 * Math.sin(dir1 - angle);
+                    a.vx = Math.cos(angle) * newVx1 + Math.cos(angle + Math.PI/2) * newVy1;
+                    a.vy = Math.sin(angle) * newVx1 + Math.sin(angle + Math.PI/2) * newVy1;
+                    b.vx = Math.cos(angle) * newVx2 + Math.cos(angle + Math.PI/2) * newVy2;
+                    b.vy = Math.sin(angle) * newVx2 + Math.sin(angle + Math.PI/2) * newVy2;
+                    // Add flash for A-B collisions (effective)
+                    if (a.type !== b.type && (a.type === 'A' || a.type === 'B') && (b.type === 'A' || b.type === 'B') && Math.random() < 0.35) {
+                        flashes.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, life: 1.0 });
+                        a.type = 'C';
+                        b.type = 'C';
+                    }
+                    // Separate
+                    const overlap = (a.r + b.r - dist) / 2;
+                    a.x += Math.cos(angle) * overlap;
+                    a.y += Math.sin(angle) * overlap;
+                    b.x -= Math.cos(angle) * overlap;
+                    b.y -= Math.sin(angle) * overlap;
+                }
+            }
+        }
+    }
+
+    function animate() {
+        if (!document.getElementById('slide-overview').classList.contains('active')) {
+            animId = requestAnimationFrame(animate); return;
+        }
+        c.clearRect(0, 0, W, H);
+        // bg
+        c.fillStyle = 'rgba(15,23,42,0.95)';
+        c.fillRect(0, 0, W, H);
+        // flashes
+        flashes = flashes.filter(f => f.life > 0);
+        flashes.forEach(f => {
+            c.beginPath();
+            c.arc(f.x, f.y, 22 * f.life, 0, Math.PI * 2);
+            c.fillStyle = `rgba(52,211,153,${f.life * 0.5})`;
+            c.fill();
+            f.life -= 0.05;
+        });
+        // molecules
+        molecules.forEach(m => {
+            m.x += m.vx; m.y += m.vy;
+            if (m.x < m.r) { m.x = m.r; m.vx = Math.abs(m.vx); }
+            if (m.x > W - m.r) { m.x = W - m.r; m.vx = -Math.abs(m.vx); }
+            if (m.y < m.r) { m.y = m.r; m.vy = Math.abs(m.vy); }
+            if (m.y > H - m.r) { m.y = H - m.r; m.vy = -Math.abs(m.vy); }
+            // glow
+            const grd = c.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 1.8);
+            const col = m.type === 'A' ? '56,189,248' : m.type === 'B' ? '248,113,113' : '52,211,153';
+            grd.addColorStop(0, `rgba(${col},0.3)`);
+            grd.addColorStop(1, `rgba(${col},0)`);
+            c.beginPath(); c.arc(m.x, m.y, m.r * 1.8, 0, Math.PI * 2);
+            c.fillStyle = grd; c.fill();
+            // circle
+            c.beginPath(); c.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+            c.fillStyle = m.type === 'A' ? '#38bdf8' : m.type === 'B' ? '#f87171' : '#34d399';
+            c.fill();
+            c.font = `bold ${m.r * 0.9}px sans-serif`;
+            c.fillStyle = '#0f172a'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText(m.type === 'C' ? 'C' : m.type, m.x, m.y);
+        });
+        checkCollisions();
+        animId = requestAnimationFrame(animate);
+    }
+
+    const tempSlider = document.getElementById('temp-slider');
+    const tempLabel = document.getElementById('temp-label');
+    const labels = ['極低', '低', '中', '高', '極高'];
+    if (tempSlider) {
+        tempSlider.addEventListener('input', () => {
+            const v = parseInt(tempSlider.value);
+            speedFactor = v * 1.2;
+            tempLabel.textContent = labels[v - 1];
+            molecules.forEach(m => {
+                const speed = (0.5 + Math.random()) * speedFactor;
+                const angle = Math.random() * Math.PI * 2;
+                m.vx = Math.cos(angle) * speed;
+                m.vy = Math.sin(angle) * speed;
+            });
+        });
+    }
+
+    function onResize() {
+        resize();
+        initMolecules();
+    }
+    window.addEventListener('resize', onResize);
+    setTimeout(() => { resize(); initMolecules(); animate(); }, 100);
+})();
+
+/* ========================================================
+   ANIMATION 2: Orientation Canvases (Slide 2)
+   ======================================================== */
+(function() {
+    const cvsCorrect = document.getElementById('orientation-correct-canvas');
+    const cvsIncorrect = document.getElementById('orientation-incorrect-canvas');
+    if (!cvsCorrect || !cvsIncorrect) return;
+    
+    const c1 = cvsCorrect.getContext('2d');
+    const c2 = cvsIncorrect.getContext('2d');
+    
+    let animId;
+    let progress = 0; // 0 to 1
+    
+    function drawAtom(ctx, x, y, r, color1, color2, label, labelColor = '#fff') {
+        const grd = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+        grd.addColorStop(0, color1);
+        grd.addColorStop(1, color2);
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+        
+        ctx.font = `bold ${Math.floor(r)}px sans-serif`;
+        ctx.fillStyle = labelColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x, y);
+    }
+    
+    function drawCorrect() {
+        const W = cvsCorrect.width, H = cvsCorrect.height;
+        c1.clearRect(0, 0, W, H);
+        c1.fillStyle = 'rgba(15,23,42,0.95)';
+        c1.fillRect(0, 0, W, H);
+        
+        const cx = W / 2, cy = H / 2;
+        
+        // I- (attacking from left)
+        // Transition from x = 40 to cx - 40
+        // Cl- (leaving to right)
+        // Transition from cx + 40 to W - 40
+        
+        let iX, clX, hBend; 
+        // hBend: -1 (left bent), 0 (planar), 1 (right bent)
+        
+        if (progress < 0.4) {
+            // Approaching
+            let p = progress / 0.4; // 0 to 1
+            iX = 40 + p * (cx - 70 - 40);
+            clX = cx + 45;
+            hBend = -1;
+        } else if (progress < 0.6) {
+            // Transition state
+            let p = (progress - 0.4) / 0.2; // 0 to 1
+            iX = cx - 70 + p * 15;
+            clX = cx + 45 + p * 15;
+            hBend = -1 + p * 2; // -1 to 1
+        } else {
+            // Leaving
+            let p = (progress - 0.6) / 0.4; // 0 to 1
+            iX = cx - 55 + p * 10;
+            clX = cx + 60 + p * (W - 40 - (cx + 60));
+            hBend = 1;
+        }
+        
+        // Draw I
+        drawAtom(c1, iX, cy, 22, '#c084fc', '#7e22ce', 'I⁻');
+        // Draw Cl
+        drawAtom(c1, clX, cy, 20, '#6ee7b7', '#047857', progress >= 0.7 ? 'Cl⁻' : 'Cl');
+        
+        // Draw C (center)
+        const cX = cx;
+        
+        // Bonds to H (depending on hBend)
+        // H1 (up), H2 (down-back), H3 (down-front)
+        const hDist = 35;
+        const bendAng = hBend * 0.5; // rad
+        
+        c1.strokeStyle = 'rgba(255,255,255,0.4)';
+        c1.lineWidth = 3;
+        
+        // H positions
+        const hy1 = cy - hDist * Math.cos(bendAng);
+        const hx1 = cX + hDist * Math.sin(bendAng);
+        
+        const hy2 = cy + hDist * 0.5 * Math.cos(bendAng);
+        const hx2 = cX + hDist * Math.sin(bendAng);
+        
+        // Draw bonds
+        c1.beginPath(); c1.moveTo(cX, cy); c1.lineTo(hx1, hy1); c1.stroke();
+        c1.beginPath(); c1.moveTo(cX, cy); c1.lineTo(hx2, hy2 - 15); c1.stroke();
+        c1.beginPath(); c1.moveTo(cX, cy); c1.lineTo(hx2, hy2 + 15); c1.stroke();
+        
+        // Draw partially forming/breaking bonds in TS
+        if (progress > 0.3 && progress < 0.7) {
+            c1.strokeStyle = 'rgba(255,255,255,0.2)';
+            c1.setLineDash([4, 4]);
+            c1.beginPath(); c1.moveTo(iX + 22, cy); c1.lineTo(cX - 18, cy); c1.stroke();
+            c1.beginPath(); c1.moveTo(cX + 18, cy); c1.lineTo(clX - 20, cy); c1.stroke();
+            c1.setLineDash([]);
+        } else if (progress >= 0.7) {
+            // New I-C bond
+            c1.strokeStyle = 'rgba(255,255,255,0.4)';
+            c1.beginPath(); c1.moveTo(iX + 22, cy); c1.lineTo(cX - 18, cy); c1.stroke();
+        } else if (progress <= 0.3) {
+            // Old C-Cl bond
+            c1.strokeStyle = 'rgba(255,255,255,0.4)';
+            c1.beginPath(); c1.moveTo(cX + 18, cy); c1.lineTo(clX - 20, cy); c1.stroke();
+        }
+        
+        // Draw C
+        drawAtom(c1, cX, cy, 18, '#94a3b8', '#334155', 'C');
+        
+        // Draw H
+        drawAtom(c1, hx1, hy1, 10, '#f1f5f9', '#94a3b8', 'H', '#0f172a');
+        drawAtom(c1, hx2, hy2 - 15, 10, '#f1f5f9', '#94a3b8', 'H', '#0f172a');
+        drawAtom(c1, hx2, hy2 + 15, 10, '#f1f5f9', '#94a3b8', 'H', '#0f172a');
+    }
+    
+    function drawIncorrect() {
+        const W = cvsIncorrect.width, H = cvsIncorrect.height;
+        c2.clearRect(0, 0, W, H);
+        c2.fillStyle = 'rgba(15,23,42,0.95)';
+        c2.fillRect(0, 0, W, H);
+        
+        const cx1 = W * 0.25, cy = H / 2 + 15;
+        const cx2 = W * 0.75;
+        
+        function drawScenario(cx, cy, attackFromLeft) {
+            // Draw CH3Cl
+            const cX = cx - 15;
+            const clX = cX + 45;
+            
+            // C-Cl bond
+            c2.strokeStyle = 'rgba(255,255,255,0.4)'; c2.lineWidth = 3;
+            c2.beginPath(); c2.moveTo(cX, cy); c2.lineTo(clX, cy); c2.stroke();
+            
+            // H bonds
+            const hDist = 35;
+            const bendAng = -0.5; // Up-left
+            const hy1 = cy - hDist * Math.cos(bendAng);
+            const hx1 = cX + hDist * Math.sin(bendAng);
+            
+            const hy2 = cy + hDist * 0.5 * Math.cos(bendAng);
+            const hx2 = cX + hDist * Math.sin(bendAng);
+            
+            c2.beginPath(); c2.moveTo(cX, cy); c2.lineTo(hx1, hy1); c2.stroke();
+            c2.beginPath(); c2.moveTo(cX, cy); c2.lineTo(hx2, hy2 - 15); c2.stroke();
+            c2.beginPath(); c2.moveTo(cX, cy); c2.lineTo(hx2, hy2 + 15); c2.stroke();
+            
+            drawAtom(c2, cX, cy, 18, '#94a3b8', '#334155', 'C'); // Grey
+            drawAtom(c2, hx1, hy1, 10, '#f8fafc', '#94a3b8', 'H', '#0f172a'); // White
+            drawAtom(c2, hx2, hy2 - 15, 10, '#f8fafc', '#94a3b8', 'H', '#0f172a');
+            drawAtom(c2, hx2, hy2 + 15, 10, '#f8fafc', '#94a3b8', 'H', '#0f172a');
+            drawAtom(c2, clX, cy, 22, '#6ee7b7', '#047857', 'Cl', '#0f172a'); // Green
+            
+            if (attackFromLeft) {
+                // I- attacks H from top-left, aligned with C-H bond
+                const dx = hx1 - cX;
+                const dy = hy1 - cy;
+                const len = Math.hypot(dx, dy);
+                const nx = dx / len;
+                const ny = dy / len;
+                
+                const dist = 60;
+                const iX = hx1 + nx * dist;
+                const iY = hy1 + ny * dist;
+                
+                drawAtom(c2, iX, iY, 26, '#c084fc', '#7e22ce', 'I⁻', '#fff'); // Purple
+                
+                // Motion lines (parallel to the movement)
+                c2.strokeStyle = 'rgba(192,132,252,0.5)';
+                c2.lineWidth = 1.5;
+                for(let i=-2; i<=2; i++) {
+                    c2.beginPath();
+                    const px = iX + ny * (i * 6); // perpendicular offset
+                    const py = iY - nx * (i * 6);
+                    c2.moveTo(px + nx * 18, py + ny * 18);
+                    c2.lineTo(px + nx * 50, py + ny * 50);
+                    c2.stroke();
+                }
+                
+                // Red Arrow
+                c2.strokeStyle = '#ef4444'; c2.lineWidth = 2.5;
+                const arrStartX = iX - nx * 30;
+                const arrStartY = iY - ny * 30;
+                const arrEndX = hx1 + nx * 14;
+                const arrEndY = hy1 + ny * 14;
+                
+                c2.beginPath(); c2.moveTo(arrStartX, arrStartY); c2.lineTo(arrEndX, arrEndY); c2.stroke();
+                
+                // Arrowhead
+                const angle = Math.atan2(-ny, -nx);
+                c2.beginPath(); 
+                c2.moveTo(arrEndX, arrEndY); 
+                c2.lineTo(arrEndX - 10 * Math.cos(angle - Math.PI/6), arrEndY - 10 * Math.sin(angle - Math.PI/6)); 
+                c2.lineTo(arrEndX - 10 * Math.cos(angle + Math.PI/6), arrEndY - 10 * Math.sin(angle + Math.PI/6)); 
+                c2.fillStyle = '#ef4444'; c2.fill();
+            } else {
+                // I- attacks Cl from top-right. Let's make an angle.
+                const nx = Math.cos(-Math.PI/4); // top-right
+                const ny = Math.sin(-Math.PI/4);
+                
+                const dist = 60;
+                const iX = clX + nx * dist;
+                const iY = cy + ny * dist;
+                
+                drawAtom(c2, iX, iY, 26, '#c084fc', '#7e22ce', 'I⁻', '#fff'); // Purple
+                
+                // Motion lines
+                c2.strokeStyle = 'rgba(192,132,252,0.5)';
+                c2.lineWidth = 1.5;
+                for(let i=-2; i<=2; i++) {
+                    c2.beginPath();
+                    const px = iX + ny * (i * 6); 
+                    const py = iY - nx * (i * 6);
+                    c2.moveTo(px + nx * 18, py + ny * 18);
+                    c2.lineTo(px + nx * 50, py + ny * 50);
+                    c2.stroke();
+                }
+                
+                // Red Arrow
+                c2.strokeStyle = '#ef4444'; c2.lineWidth = 2.5;
+                const arrStartX = iX - nx * 30;
+                const arrStartY = iY - ny * 30;
+                const arrEndX = clX + nx * 26;
+                const arrEndY = cy + ny * 26;
+                
+                c2.beginPath(); c2.moveTo(arrStartX, arrStartY); c2.lineTo(arrEndX, arrEndY); c2.stroke();
+                
+                // Arrowhead
+                const pointAngle = Math.atan2(-ny, -nx); 
+                c2.beginPath(); 
+                c2.moveTo(arrEndX, arrEndY); 
+                c2.lineTo(arrEndX - 10 * Math.cos(pointAngle - Math.PI/6), arrEndY - 10 * Math.sin(pointAngle - Math.PI/6)); 
+                c2.lineTo(arrEndX - 10 * Math.cos(pointAngle + Math.PI/6), arrEndY - 10 * Math.sin(pointAngle + Math.PI/6)); 
+                c2.fillStyle = '#ef4444'; c2.fill();
+            }
+        }
+        
+        drawScenario(cx1, cy, true);
+        drawScenario(cx2, cy, false);
+    }
+    
+    function animate() {
+        if (!document.getElementById('slide-orientation').classList.contains('active')) {
+            animId = requestAnimationFrame(animate); return;
+        }
+        progress += 0.005;
+        if (progress > 1.2) progress = 0; // Loop with some pause
+        
+        drawCorrect();
+        drawIncorrect(); // Static but redraws when active
+        
+        animId = requestAnimationFrame(animate);
+    }
+    
+    function onResize() {
+        cvsCorrect.width = cvsCorrect.offsetWidth;
+        cvsCorrect.height = cvsCorrect.offsetHeight;
+        cvsIncorrect.width = cvsIncorrect.offsetWidth;
+        cvsIncorrect.height = cvsIncorrect.offsetHeight;
+        drawIncorrect();
+    }
+    
+    window.addEventListener('resize', onResize);
+    setTimeout(() => { onResize(); animate(); }, 100);
+})();
+
+/* ========================================================
+   ANIMATION 3: Energy Diagram (Slide 3)
+   ======================================================== */
+let reactionType = 'exo';
+function setReactionType(type) {
+    reactionType = type;
+    document.getElementById('btn-exo').style.background = type === 'exo' ? 'rgba(52,211,153,0.2)' : '';
+    document.getElementById('btn-exo').style.borderColor = type === 'exo' ? 'var(--accent-green)' : '';
+    document.getElementById('btn-endo').style.background = type === 'endo' ? 'rgba(248,113,113,0.2)' : '';
+    document.getElementById('btn-endo').style.borderColor = type === 'endo' ? 'var(--accent-red)' : '';
+    drawEnergyDiagram();
+}
+
+function drawEnergyDiagram() {
+    const cvs = document.getElementById('energy-canvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    const W = cvs.offsetWidth, H = cvs.offsetHeight;
+    cvs.width = W; cvs.height = H;
+
+    const Ea = parseInt(document.getElementById('ea-slider')?.value || 80);
+    const exo = reactionType === 'exo';
+
+    // Coordinate system
+    const ox = 55, oy = H - 45, maxW = W - 80, maxH = H - 75;
+
+    c.clearRect(0, 0, W, H);
+    c.fillStyle = 'rgba(15,23,42,0.95)';
+    c.fillRect(0, 0, W, H);
+
+    // Axes
+    c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(ox, oy + 5); c.lineTo(ox, oy - maxH - 10); c.stroke();
+    c.beginPath(); c.moveTo(ox - 5, oy); c.lineTo(ox + maxW + 10, oy); c.stroke();
+    // Axis arrowheads
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    c.beginPath(); c.moveTo(ox - 5, oy - maxH - 5); c.lineTo(ox, oy - maxH - 15); c.lineTo(ox + 5, oy - maxH - 5); c.fill();
+    c.beginPath(); c.moveTo(ox + maxW + 5, oy - 5); c.lineTo(ox + maxW + 15, oy); c.lineTo(ox + maxW + 5, oy + 5); c.fill();
+
+    // Labels
+    c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px sans-serif'; c.textAlign = 'center';
+    c.fillText('反應座標', ox + maxW / 2, H - 12);
+    c.save(); c.translate(18, H / 2); c.rotate(-Math.PI / 2);
+    c.fillText('位能 (Energy)', 0, 0); c.restore();
+
+    // Energy levels — keep product well above x-axis
+    const reactantE = 0.30;  // fraction of maxH from bottom
+    const deltaH = exo ? -0.18 : 0.20;
+    const productE = reactantE + deltaH;
+    const peakFrac = Ea / 200;
+    const peakE = reactantE + peakFrac;
+
+    const ry  = oy - reactantE * maxH;  // reactant y
+    const py  = oy - productE  * maxH;  // product y
+    const tsy = oy - peakE     * maxH;  // peak y
+
+    const rx1 = ox + maxW * 0.03, rx2 = ox + maxW * 0.25;
+    const px1 = ox + maxW * 0.75, px2 = ox + maxW * 0.97;
+    const tsx = ox + maxW * 0.5;
+
+    // ---- Horizontal dashed reference lines ----
+    function hDash(y, col) {
+        c.save(); c.strokeStyle = col; c.lineWidth = 1; c.setLineDash([6, 4]);
+        c.beginPath(); c.moveTo(ox, y); c.lineTo(ox + maxW, y); c.stroke();
+        c.restore();
+    }
+    hDash(ry,  'rgba(56,189,248,0.35)');   // reactant
+    hDash(py,  exo ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)'); // product
+    hDash(tsy, 'rgba(251,191,36,0.35)');    // peak
+
+    // ---- Smooth curve ----
+    c.beginPath();
+    c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+    c.bezierCurveTo(rx2 + maxW * 0.1, ry, tsx - maxW * 0.12, tsy + 5, tsx, tsy);
+    c.bezierCurveTo(tsx + maxW * 0.12, tsy + 5, px1 - maxW * 0.1, py, px1, py);
+    c.lineTo(px2, py);
+    c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2.5; c.stroke();
+
+    // ---- Reactant level label ----
+    c.beginPath(); c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+    c.strokeStyle = '#38bdf8'; c.lineWidth = 2.5; c.stroke();
+    c.fillStyle = '#38bdf8'; c.font = 'bold 11px sans-serif'; c.textAlign = 'left';
+    c.fillText('反應物', rx1 + 2, ry - 6);
+
+    // ---- Product level label ----
+    c.beginPath(); c.moveTo(px1, py); c.lineTo(px2, py);
+    c.strokeStyle = exo ? '#34d399' : '#f87171'; c.lineWidth = 2.5; c.stroke();
+    c.fillStyle = exo ? '#34d399' : '#f87171'; c.font = 'bold 11px sans-serif'; c.textAlign = 'right';
+    c.fillText('產物', px2 - 2, py - 6);
+
+    // ---- Activated complex ----
+    c.beginPath(); c.arc(tsx, tsy, 6, 0, Math.PI * 2);
+    c.fillStyle = '#fb923c'; c.fill();
+    c.fillStyle = '#fb923c'; c.font = 'bold 10px sans-serif'; c.textAlign = 'center';
+    c.fillText('活化錯合物', tsx, tsy - 10);
+
+    // ---- Helper: draw a double-headed arrow with label ----
+    function drawBiArrow(x, y1, y2, col, label, labelSide) {
+        c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 1.5;
+        c.setLineDash([4, 3]);
+        c.beginPath(); c.moveTo(x, y1); c.lineTo(x, y2); c.stroke();
+        c.setLineDash([]);
+        // arrowhead at y2
+        c.beginPath(); c.moveTo(x - 5, y2 + 10); c.lineTo(x, y2); c.lineTo(x + 5, y2 + 10); c.stroke();
+        // arrowhead at y1
+        c.beginPath(); c.moveTo(x - 5, y1 - 10); c.lineTo(x, y1); c.lineTo(x + 5, y1 - 10); c.stroke();
+        c.fillStyle = col; c.font = 'bold 12px sans-serif';
+        c.textAlign = labelSide === 'right' ? 'left' : 'right';
+        c.fillText(label, x + (labelSide === 'right' ? 6 : -6), (y1 + y2) / 2 + 4);
+    }
+
+    // Ea正: reactant → peak  (left side, clear of curve)
+    const eaX = ox + maxW * 0.16;
+    drawBiArrow(eaX, ry, tsy, '#fbbf24', 'Ea正', 'left');
+
+    // Ea逆: product → peak  (right side, clear of curve)
+    const earX = ox + maxW * 0.84;
+    drawBiArrow(earX, py, tsy, '#fb923c', 'Ea逆', 'right');
+
+    // ΔH: reactant → product  (centre of diagram) — always green
+    const dhX = tsx;
+    const dhCol = '#34d399';
+    c.strokeStyle = dhCol; c.fillStyle = dhCol; c.lineWidth = 1.5;
+    c.setLineDash([4, 3]);
+    c.beginPath(); c.moveTo(dhX, ry); c.lineTo(dhX, py); c.stroke();
+    c.setLineDash([]);
+    if (exo) {
+        c.beginPath(); c.moveTo(dhX - 5, py + 10); c.lineTo(dhX, py); c.lineTo(dhX + 5, py + 10); c.stroke();
+    } else {
+        c.beginPath(); c.moveTo(dhX - 5, ry - 10); c.lineTo(dhX, ry); c.lineTo(dhX + 5, ry - 10); c.stroke();
+    }
+    c.fillStyle = dhCol; c.font = 'bold 12px sans-serif'; c.textAlign = 'left';
+    c.fillText('ΔH ' + (exo ? '< 0 (放熱)' : '> 0 (吸熱)'), dhX + 6, (ry + py) / 2 + 4);
+
+    // Eth dashed line label
+    c.fillStyle = '#fbbf24'; c.font = '10px sans-serif'; c.textAlign = 'left';
+    c.fillText('Eth (低限能)', ox + 3, tsy - 4);
+}
+
+// Init energy canvas
+setTimeout(() => {
+    const easl = document.getElementById('ea-slider');
+    const eal = document.getElementById('ea-label');
+    if (easl) {
+        easl.addEventListener('input', () => {
+            eal.textContent = easl.value + ' kJ';
+            drawEnergyDiagram();
+        });
+    }
+    setReactionType('exo');
+    const cvs = document.getElementById('energy-canvas');
+    if (cvs) {
+        cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
+        drawEnergyDiagram();
+    }
+    window.addEventListener('resize', drawEnergyDiagram);
+}, 200);
+
+/* ========================================================
+   ANIMATION 4: Maxwell-Boltzmann Distribution (Slide 4)
+   ======================================================== */
+function drawMaxwell() {
+    const cvs = document.getElementById('maxwell-canvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    const W = cvs.offsetWidth, H = cvs.offsetHeight;
+    cvs.width = W; cvs.height = H;
+
+    const T = parseInt(document.getElementById('maxwell-temp')?.value || 300);
+    const EaFrac = parseInt(document.getElementById('maxwell-ea')?.value || 50) / 100;
+    const T2 = T * 1.8;
+
+    c.clearRect(0, 0, W, H);
+    c.fillStyle = 'rgba(15,23,42,0.95)';
+    c.fillRect(0, 0, W, H);
+
+    const ox = 45, oy = H - 35, maxW = W - 65, maxH = H - 55;
+
+    // Axes
+    c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(ox, oy + 5); c.lineTo(ox, oy - maxH - 5); c.stroke();
+    c.beginPath(); c.moveTo(ox - 5, oy); c.lineTo(ox + maxW + 5, oy); c.stroke();
+    // axis labels
+    c.fillStyle = 'rgba(255,255,255,0.4)'; c.font = '11px sans-serif'; c.textAlign = 'center';
+    c.fillText('動能 (Kinetic Energy)', ox + maxW / 2, H - 8);
+    c.save(); c.translate(15, oy - maxH/2); c.rotate(-Math.PI/2);
+    c.fillText('分子數', 0, 0); c.restore();
+
+    // Maxwell-Boltzmann shape: f(E) ∝ E^0.5 * exp(-E/(kT))
+    function mbCurve(E, Temp) {
+        const kT = Temp / 300 * 0.7;
+        return Math.sqrt(E + 0.01) * Math.exp(-(E) / kT);
+    }
+
+    // Normalize both curves
+    const steps = 200;
+    let max1 = 0, max2 = 0;
+    for (let i = 0; i <= steps; i++) {
+        const E = i / steps;
+        max1 = Math.max(max1, mbCurve(E, T));
+        max2 = Math.max(max2, mbCurve(E, T2));
+    }
+    const maxAll = Math.max(max1, max2);
+
+    function drawCurve(Temp, color, fillColor) {
+        c.beginPath();
+        c.moveTo(ox, oy);
+        for (let i = 0; i <= steps; i++) {
+            const E = i / steps;
+            const y = mbCurve(E, Temp) / maxAll * maxH * 0.88;
+            c.lineTo(ox + i / steps * maxW, oy - y);
+        }
+        c.lineTo(ox + maxW, oy);
+        c.closePath();
+        c.fillStyle = fillColor; c.fill();
+        c.beginPath();
+        c.moveTo(ox, oy);
+        for (let i = 0; i <= steps; i++) {
+            const E = i / steps;
+            const y = mbCurve(E, Temp) / maxAll * maxH * 0.88;
+            c.lineTo(ox + i / steps * maxW, oy - y);
+        }
+        c.strokeStyle = color; c.lineWidth = 2.5; c.stroke();
+    }
+
+    // Draw T1 curve
+    drawCurve(T, '#38bdf8', 'rgba(56,189,248,0.08)');
+    // Draw T2 curve
+    drawCurve(T2, '#f87171', 'rgba(248,113,113,0.08)');
+
+    // Ea vertical line
+    const EaX = ox + EaFrac * maxW;
+    c.beginPath(); c.moveTo(EaX, oy); c.lineTo(EaX, oy - maxH);
+    c.strokeStyle = '#fbbf24'; c.lineWidth = 2; c.setLineDash([5,4]); c.stroke(); c.setLineDash([]);
+    c.fillStyle = '#fbbf24'; c.font = 'bold 11px sans-serif'; c.textAlign = 'center';
+    c.fillText('Ea', EaX, oy - maxH + 14);
+
+    // Shade "active" area (above Ea)
+    // T1
+    c.beginPath();
+    c.moveTo(EaX, oy);
+    for (let i = Math.round(EaFrac * steps); i <= steps; i++) {
+        const E = i / steps;
+        const y = mbCurve(E, T) / maxAll * maxH * 0.88;
+        c.lineTo(ox + i / steps * maxW, oy - y);
+    }
+    c.lineTo(ox + maxW, oy);
+    c.closePath();
+    c.fillStyle = 'rgba(56,189,248,0.25)'; c.fill();
+
+    // T2
+    c.beginPath();
+    c.moveTo(EaX, oy);
+    for (let i = Math.round(EaFrac * steps); i <= steps; i++) {
+        const E = i / steps;
+        const y = mbCurve(E, T2) / maxAll * maxH * 0.88;
+        c.lineTo(ox + i / steps * maxW, oy - y);
+    }
+    c.lineTo(ox + maxW, oy);
+    c.closePath();
+    c.fillStyle = 'rgba(248,113,113,0.25)'; c.fill();
+
+    // Legend
+    c.font = '11px sans-serif'; c.textAlign = 'left';
+    [[`T₁ = ${T} K`, '#38bdf8'], [`T₂ = ${Math.round(T2)} K`, '#f87171']].forEach(([txt, col], i) => {
+        c.fillStyle = col;
+        c.fillRect(ox + 8, oy - maxH + 4 + i * 18, 16, 3);
+        c.fillStyle = 'rgba(255,255,255,0.7)';
+        c.fillText(txt, ox + 28, oy - maxH + 10 + i * 18);
+    });
+    c.fillStyle = '#fbbf24';
+    c.fillText('■ 超過Ea的分子（有效碰撞）', ox + 8, oy - maxH + 44);
+}
+
+setTimeout(() => {
+    const mtSlider = document.getElementById('maxwell-temp');
+    const mtLabel = document.getElementById('maxwell-temp-label');
+    const meSlider = document.getElementById('maxwell-ea');
+    const meLabel = document.getElementById('maxwell-ea-label');
+    if (mtSlider) mtSlider.addEventListener('input', () => { mtLabel.textContent = mtSlider.value + ' K';  });
+    if (meSlider) meSlider.addEventListener('input', () => { meLabel.textContent = meSlider.value + '%';  });
+    const cvs = document.getElementById('maxwell-canvas');
+    if (cvs) { cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight; }
+    window.addEventListener('resize', drawMaxwell);
+    
+}, 250);
+
+/* ========================================================
+   ANIMATION 5: Compare Forward/Reverse (Slide 5)
+   ======================================================== */
+function drawCompareDiagram() {
+    function drawSingle(cvsId, exo) {
+        const cvs = document.getElementById(cvsId);
+        if (!cvs) return;
+        const c = cvs.getContext('2d');
+        const W = cvs.offsetWidth, H = cvs.offsetHeight;
+        cvs.width = W; cvs.height = H;
+        c.clearRect(0, 0, W, H);
+        c.fillStyle = 'rgba(15,23,42,0.95)';
+        c.fillRect(0, 0, W, H);
+
+        const ox = 45, oy = H - 40, dW = W - 65, dH = H - 70;
+        
+        c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(ox, oy + 5); c.lineTo(ox, oy - dH - 10); c.stroke();
+        c.beginPath(); c.moveTo(ox - 5, oy); c.lineTo(ox + dW + 10, oy); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,0.4)';
+        c.beginPath(); c.moveTo(ox - 5, oy - dH - 5); c.lineTo(ox, oy - dH - 15); c.lineTo(ox + 5, oy - dH - 5); c.fill();
+        c.beginPath(); c.moveTo(ox + dW + 5, oy - 5); c.lineTo(ox + dW + 15, oy); c.lineTo(ox + dW + 5, oy + 5); c.fill();
+        
+        c.font = '11px sans-serif'; c.textAlign = 'center';
+        c.fillText('反應座標', ox + dW / 2, H - 10);
+        c.save(); c.translate(15, oy - dH / 2); c.rotate(-Math.PI / 2);
+        c.fillText('位能', 0, 0); c.restore();
+
+        const reactantE = 0.30;
+        const deltaH = exo ? -0.18 : 0.20;
+        const productE = reactantE + deltaH;
+        const peakE = 0.85;
+
+        const ry = oy - reactantE * dH;
+        const py = oy - productE * dH;
+        const tsy = oy - peakE * dH;
+
+        const rx1 = ox + dW * 0.03, rx2 = ox + dW * 0.25;
+        const px1 = ox + dW * 0.75, px2 = ox + dW * 0.97;
+        const tsx = ox + dW * 0.5;
+
+        function hDash(y, col) {
+            c.save(); c.strokeStyle = col; c.lineWidth = 1; c.setLineDash([6, 4]);
+            c.beginPath(); c.moveTo(ox, y); c.lineTo(ox + dW, y); c.stroke();
+            c.restore();
+        }
+        hDash(ry, 'rgba(56,189,248,0.35)');
+        hDash(py, exo ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)');
+        hDash(tsy, 'rgba(251,191,36,0.35)');
+
+        c.beginPath();
+        c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+        c.bezierCurveTo(rx2 + dW * 0.1, ry, tsx - dW * 0.12, tsy + 5, tsx, tsy);
+        c.bezierCurveTo(tsx + dW * 0.12, tsy + 5, px1 - dW * 0.1, py, px1, py);
+        c.lineTo(px2, py);
+        c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2.5; c.stroke();
+
+        c.beginPath(); c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+        c.strokeStyle = '#38bdf8'; c.lineWidth = 2.5; c.stroke();
+        c.fillStyle = '#38bdf8'; c.font = 'bold 11px sans-serif'; c.textAlign = 'left';
+        c.fillText('反應物', rx1 + 2, ry - 6);
+
+        c.beginPath(); c.moveTo(px1, py); c.lineTo(px2, py);
+        c.strokeStyle = exo ? '#34d399' : '#f87171'; c.lineWidth = 2.5; c.stroke();
+        c.fillStyle = exo ? '#34d399' : '#f87171'; c.font = 'bold 11px sans-serif'; c.textAlign = 'right';
+        c.fillText('產物', px2 - 2, py - 6);
+
+        c.beginPath(); c.arc(tsx, tsy, 5, 0, Math.PI * 2);
+        c.fillStyle = '#fb923c'; c.fill();
+        c.font = 'bold 10px sans-serif'; c.textAlign = 'center';
+        c.fillText('活化錯合物', tsx, tsy - 8);
+
+        function drawBiArrow(x, y1, y2, col, label, labelSide) {
+            c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 1.5;
+            c.setLineDash([4, 3]);
+            c.beginPath(); c.moveTo(x, y1); c.lineTo(x, y2); c.stroke();
+            c.setLineDash([]);
+            c.beginPath(); c.moveTo(x - 4, y2 + 8); c.lineTo(x, y2); c.lineTo(x + 4, y2 + 8); c.stroke();
+            c.beginPath(); c.moveTo(x - 4, y1 - 8); c.lineTo(x, y1); c.lineTo(x + 4, y1 - 8); c.stroke();
+            c.font = 'bold 11px sans-serif';
+            c.textAlign = labelSide === 'right' ? 'left' : 'right';
+            c.fillText(label, x + (labelSide === 'right' ? 6 : -6), (y1 + y2) / 2 + 4);
+        }
+
+        drawBiArrow(ox + dW * 0.16, ry, tsy, '#fbbf24', 'Ea正', 'left');
+        drawBiArrow(ox + dW * 0.84, py, tsy, '#a78bfa', 'Ea逆', 'right');
+
+        const dhX = tsx;
+        const dhCol = exo ? '#34d399' : '#f87171';
+        c.strokeStyle = dhCol; c.fillStyle = dhCol; c.lineWidth = 1.5;
+        c.setLineDash([4, 3]);
+        c.beginPath(); c.moveTo(dhX, ry); c.lineTo(dhX, py); c.stroke();
+        c.setLineDash([]);
+        if (exo) {
+            c.beginPath(); c.moveTo(dhX - 4, py + 8); c.lineTo(dhX, py); c.lineTo(dhX + 4, py + 8); c.stroke();
+        } else {
+            c.beginPath(); c.moveTo(dhX - 4, ry - 8); c.lineTo(dhX, ry); c.lineTo(dhX + 4, ry - 8); c.stroke();
+        }
+        c.font = 'bold 11px sans-serif'; c.textAlign = 'left';
+        c.fillText('ΔH' + (exo ? '<0' : '>0'), dhX + 6, (ry + py) / 2 + 4);
+    }
+
+    drawSingle('forward-reverse-exo-canvas', true);
+    drawSingle('forward-reverse-endo-canvas', false);
+}
+setTimeout(() => {
+    window.addEventListener('resize', drawCompareDiagram);
+    drawCompareDiagram();
+}, 300);
+
+/* ========================================================
+   SLIDE 7: Mechanism Practice Interactive
+   ======================================================== */
+let currentMechCase = 1;
+
+function showMechCase(n) {
+    currentMechCase = n;
+    [1,2,3].forEach(i => {
+        document.getElementById('mech-case-' + i).style.display = (i === n) ? 'flex' : 'none';
+        const btn = document.getElementById('mech-btn-' + i);
+        btn.classList.toggle('mech-tab-active', i === n);
+    });
+    drawMechPracticeCanvas(n);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([document.getElementById('slide-mechanism-practice')]).catch(()=>{});
+    }
+}
+
+function revealMech(id, btn) {
+    const el = document.getElementById(id);
+    const visible = el.style.display === 'block';
+    el.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? '▶ 展開推導' : '▼ 隱藏推導';
+    if (!visible && window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([el]).catch(()=>{});
+    }
+}
+
+function drawMechPracticeCanvas(caseNum) {
+    const cvs = document.getElementById('mech-practice-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 340;
+    const H = cvs.height = cvs.offsetHeight || 340;
+    ctx.clearRect(0, 0, W, H);
+
+    const mL = 52, mB = 38, mT = 30, mR = 20;
+    const gW = W - mL - mR;
+    const gH = H - mT - mB;
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#1a1035'); bg.addColorStop(1, '#0f172a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+        const y = mT + gH * i / 5;
+        ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(W - mR, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(mL, mT); ctx.lineTo(mL, H - mB); ctx.lineTo(W - mR + 10, H - mB); ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    // axis arrows
+    ctx.beginPath(); ctx.moveTo(mL-4, mT+6); ctx.lineTo(mL, mT); ctx.lineTo(mL+4, mT+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-mR+5, H-mB-4); ctx.lineTo(W-mR+12, H-mB); ctx.lineTo(W-mR+5, H-mB+4); ctx.fill();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應途徑', mL + gW/2, H - 8);
+    ctx.save(); ctx.translate(14, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('能  量', 0, 0); ctx.restore();
+
+    // Define energy levels per case
+    // Case 1 (甲): reactant=0.75, peak1=0.15, product=0.85 — one peak
+    // Case 2 (乙): reactant=0.75, peak1=0.15 (via fast equilib), valley=0.40, peak2=0.35, product=0.85
+    // Case 3 (丙): reactant=0.75, peak1=0.15, product=0.85 — one peak
+
+    const yR = mT + gH * 0.78; // reactant
+    const yP = mT + gH * 0.90; // product
+
+    function eY(frac) { return mT + gH * frac; }
+
+    const xStart = mL;
+    const xEnd = W - mR;
+
+    // Color by case
+    const colors = ['', '#e11d48', '#06b6d4', '#22c55e'];
+    ctx.strokeStyle = colors[caseNum]; ctx.lineWidth = 3.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+    if (caseNum === 1) {
+        // 機構甲: A+A->C (慢, high Ea1), C+B->D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = C+B intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow)
+        const yVly = eY(0.50);   // C+B intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above C+B)
+
+        const x1  = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B',  xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 double-arrow (left of peak1, tall)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 double-arrow (right of valley, short)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge
+        ctx.fillStyle = 'rgba(251,191,36,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 115, 22, 5); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A]²', mL+8, mT+18);
+
+    } else if (caseNum === 2) {
+        // 機構乙 (互換後): A+B→E (慢, high Ea1), E+A⇌D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = E+A intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow step)
+        const yVly = eY(0.50);   // E+A intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above valley)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('E+A', xVly, yVly + 14);
+        // 中間物 bubble (cyan)
+        ctx.fillStyle = '#06b6d4'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 large arrow (slow, left of peak1)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 small arrow (fast, right of valley)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (cyan)
+        ctx.fillStyle = 'rgba(6,182,212,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 120, 22, 5); ctx.fill();
+        ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A][B]', mL+8, mT+18);
+
+    } else {
+        // 機構丙 (互換後): A+A⇌C (快, small Ea1), C+B→D (慢, large Ea2)
+        // Two peaks: peak1 LOW (fast equilibrium), valley = C+B, peak2 HIGH (slow)
+        const yPk1 = eY(0.42);   // first peak LOW (fast equil)
+        const yVly = eY(0.55);   // C+B intermediate level
+        const yPk2 = eY(0.10);   // second peak HIGH (slow step)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.30;
+        const xVly = mL + gW*0.50;
+        const xPk2 = mL + gW*0.70;
+        const x2   = mL + gW*0.87;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.09, yR, xPk1-gW*0.09, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.08, yPk1, xVly-gW*0.08, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.08, yVly, xPk2-gW*0.10, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        // 中間物 bubble (green)
+        ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 small arrow (fast equilibrium, left of peak1)
+        const aX1 = mL + gW*0.17;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#94a3b8', 'Ea₁(快)', 'right');
+        // Ea2 large arrow (slow, right of valley)
+        const aX2 = xVly + gW*0.09;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#f87171', 'Ea₂(慢)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.58, yR, mL+gW*0.58, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (green)
+        ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 138, 22, 5); ctx.fill();
+        ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k′[A]²[B]', mL+8, mT+18);
+    }
+}
+
+function drawMechArrow(ctx, sx, sy, ex, ey, color, label, side) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    const up = ey < sy;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey); ctx.lineTo(ex-4, ey+(up?6:-6)); ctx.lineTo(ex+4, ey+(up?6:-6)); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(sx-4, sy+(up?-6:6)); ctx.lineTo(sx+4, sy+(up?-6:6)); ctx.fill();
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = side === 'right' ? 'right' : 'left';
+    const tx = side === 'right' ? sx - 4 : sx + 4;
+    ctx.fillText(label, tx, (sy+ey)/2 + 4);
+    ctx.restore();
+}
+function drawMechDash(ctx, x1, y1, x2, y2) {
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+}
+
+/* ========================================================
+   ANIMATION 5.5: Mechanism Canvas
+   ======================================================== */
+function drawMechanismCanvas() {
+    const cvs = document.getElementById('mechanism-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 500;
+    const H = cvs.height = cvs.offsetHeight || 300;
+    
+    ctx.clearRect(0, 0, W, H);
+    
+    // Set background slightly warm/transparent
+    ctx.fillStyle = 'rgba(250, 240, 230, 0.03)';
+    ctx.fillRect(0, 0, W, H);
+
+    const marginL = 50, marginB = 30, marginT = 100, marginR = 30;
+    const graphW = W - marginL - marginR;
+    const graphH = H - marginT - marginB;
+
+    // Draw axes
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(marginL, marginT-30); ctx.lineTo(marginL, H-marginB); ctx.lineTo(W-marginR+15, H-marginB); ctx.stroke();
+    // Arrows
+    ctx.beginPath(); ctx.moveTo(marginL-4, marginT-25); ctx.lineTo(marginL, marginT-33); ctx.lineTo(marginL+4, marginT-25); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-marginR+10, H-marginB-4); ctx.lineTo(W-marginR+18, H-marginB); ctx.lineTo(W-marginR+10, H-marginB+4); ctx.fill();
+    
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應進行方向', marginL + graphW/2, H - marginB + 20);
+    ctx.save(); ctx.translate(18, H/2 + 20); ctx.rotate(-Math.PI/2); ctx.fillText('能 量', 0, 0); ctx.restore();
+
+    const yReactant = marginT + graphH * 0.75;
+    const yPeak1 = marginT + graphH * 0.15;
+    const yValley = marginT + graphH * 0.50;
+    const yPeak2 = marginT + graphH * 0.35;
+    const yProduct = marginT + graphH * 0.90;
+
+    // Dashed lines
+    function drawDash(y) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(marginL, y); ctx.lineTo(W-marginR, y); ctx.stroke(); ctx.setLineDash([]);
+    }
+    drawDash(yReactant); drawDash(yPeak1); drawDash(yValley); drawDash(yPeak2); drawDash(yProduct);
+
+    // Curve
+    ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    const x0 = marginL;
+    const x1 = marginL + graphW * 0.12;
+    const xPeak1 = marginL + graphW * 0.35;
+    const xValley = marginL + graphW * 0.52;
+    const xPeak2 = marginL + graphW * 0.68;
+    const x2 = marginL + graphW * 0.85;
+    const xEnd = W - marginR;
+
+    ctx.moveTo(x0, yReactant);
+    ctx.lineTo(x1, yReactant);
+    ctx.bezierCurveTo(x1 + (xPeak1-x1)*0.5, yReactant, xPeak1 - (xPeak1-x1)*0.2, yPeak1, xPeak1, yPeak1);
+    ctx.bezierCurveTo(xPeak1 + (xValley-xPeak1)*0.3, yPeak1, xValley - (xValley-xPeak1)*0.3, yValley, xValley, yValley);
+    ctx.bezierCurveTo(xValley + (xPeak2-xValley)*0.3, yValley, xPeak2 - (xPeak2-xValley)*0.3, yPeak2, xPeak2, yPeak2);
+    ctx.bezierCurveTo(xPeak2 + (x2-xPeak2)*0.4, yPeak2, x2 - (x2-xPeak2)*0.5, yProduct, x2, yProduct);
+    ctx.lineTo(xEnd, yProduct);
+    ctx.stroke();
+
+    // Text & Labels
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#a78bfa'; ctx.textAlign = 'left';
+    ctx.fillText('NO₂ + NO₂ + CO', x0 + 5, yReactant + 14);
+    ctx.fillStyle = '#fb923c'; ctx.textAlign = 'center';
+    ctx.fillText('NO + NO₃ + CO', xValley, yValley + 16);
+    
+    // Draw bubble for intermediate
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.roundRect(xValley - 25, yValley + 24, 50, 18, 5); ctx.fill();
+    ctx.fillStyle = '#0f172a'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('中間物', xValley, yValley + 36);
+
+    ctx.fillStyle = '#93c5fd'; ctx.textAlign = 'right';
+    ctx.fillText('NO + CO₂ + NO₂', xEnd - 5, yProduct + 14);
+
+    // Ea1 arrow
+    ctx.strokeStyle = '#c084fc'; ctx.fillStyle = '#c084fc'; ctx.lineWidth = 1.5;
+    const arrowX1 = marginL + graphW * 0.16;
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1, yPeak1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yPeak1); ctx.lineTo(arrowX1-3, yPeak1+6); ctx.lineTo(arrowX1+3, yPeak1+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1-3, yReactant-6); ctx.lineTo(arrowX1+3, yReactant-6); ctx.fill();
+    ctx.textAlign = 'right'; ctx.fillText('慢 Ea₁', arrowX1 - 6, (yReactant + yPeak1)/2 + 4);
+
+    // Ea2 arrow
+    const arrowX2 = xValley + 15;
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2, yPeak2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yPeak2); ctx.lineTo(arrowX2-3, yPeak2+6); ctx.lineTo(arrowX2+3, yPeak2+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2-3, yValley-6); ctx.lineTo(arrowX2+3, yValley-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('Ea₂ 快', arrowX2 + 6, (yValley + yPeak2)/2 + 4);
+
+    // dH arrow
+    const dHx = xValley - 20;
+    ctx.strokeStyle = '#38bdf8'; ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.moveTo(dHx, yReactant); ctx.lineTo(dHx, yProduct); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dHx, yProduct); ctx.lineTo(dHx-3, yProduct-6); ctx.lineTo(dHx+3, yProduct-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('ΔH<0', dHx + 8, (yReactant + yProduct)/2 + 4);
+
+    // Transition State Drawings
+    function drawMoleculeTS(x, y, type) {
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath(); ctx.roundRect(x-45, y-26, 90, 40, 6); ctx.fill();
+        ctx.fillStyle = '#8a5a44'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('活化複合體', x, y-14);
+        
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        if(type === 1) {
+            ctx.moveTo(x, y+14); ctx.lineTo(xPeak1, yPeak1); ctx.lineTo(x+8, y+14); ctx.fill();
+        } else {
+            ctx.moveTo(x-8, y+14); ctx.lineTo(xPeak2, yPeak2); ctx.lineTo(x, y+14); ctx.fill();
+        }
+
+        const r = 5.5;
+        function da(cx, cy, c, lbl) {
+            ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#fff'; ctx.font='bold 8px sans-serif'; ctx.fillText(lbl, cx, cy+3);
+        }
+        function dL(x1,y1, x2,y2, dash) {
+            ctx.strokeStyle='#777'; ctx.lineWidth=1.5; 
+            if(dash) ctx.setLineDash([2,1.5]); else ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        const colO = '#dc2626', colN = '#2563eb', colC = '#334155';
+        if (type === 1) {
+            dL(x-30, y-2, x-18, y+5); dL(x-30, y+12, x-18, y+5);
+            dL(x-18, y+5, x-3, y+5, true); dL(x-3, y+5, x+12, y+5, true); dL(x+12, y+5, x+27, y-2);
+            da(x-30, y-2, colO, 'O'); da(x-30, y+12, colO, 'O');
+            da(x-18, y+5, colN, 'N'); da(x-3, y+5, colO, 'O'); da(x+12, y+5, colN, 'N'); da(x+27, y-2, colO, 'O');
+        } else {
+            dL(x-35, y-2, x-22, y+5); dL(x-35, y+12, x-22, y+5);
+            dL(x-22, y+5, x-10, y+5); dL(x-10, y+5, x+5, y+5, true);
+            dL(x+5, y+3.5, x+20, y+3.5); dL(x+5, y+6.5, x+20, y+6.5);
+            da(x-35, y-2, colO, 'O'); da(x-35, y+12, colO, 'O');
+            da(x-22, y+5, colN, 'N'); da(x-10, y+5, colO, 'O');
+            da(x+5, y+5, colC, 'C'); da(x+20, y+5, colO, 'O');
+        }
+    }
+
+    drawMoleculeTS(xPeak1 - 10, yPeak1 - 50, 1);
+    drawMoleculeTS(xPeak2 + 10, yPeak2 - 50, 2);
+}
+
+/* ========================================================
+   ANIMATION 6: Example 2 Canvas (N2 + 3H2 diagram)
+   ======================================================== */
+function drawExample2Canvas() {
+    const cvs = document.getElementById('example2-canvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 320;
+    const H = cvs.height = 180;
+    c.clearRect(0, 0, W, H);
+    c.fillStyle = '#1e293b';
+    c.fillRect(0, 0, W, H);
+
+    const ox = 45, oy = H - 30, dW = W - 70, dH = H - 50;
+    // axes
+    c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(ox, oy+3); c.lineTo(ox, oy-dH-3); c.stroke();
+    c.beginPath(); c.moveTo(ox-3, oy); c.lineTo(ox+dW+3, oy); c.stroke();
+    c.fillStyle = '#94a3b8'; c.font = '10px sans-serif';
+    c.textAlign = 'center'; c.fillText('反應座標', ox+dW/2, H-8);
+    c.save(); c.translate(14, oy-dH/2); c.rotate(-Math.PI/2); c.fillText('位能', 0, 0); c.restore();
+
+    // Energy levels (N2+3H2 → 2NH3 is exothermic but we use endo for demonstration with E1>E2)
+    // E1=230, E2=138, ΔH = E1-E2 = +92 (endo)
+    const rFrac = 0.18, pFrac = 0.55, peakFrac = 0.85;
+    const ry = oy - rFrac*dH, py = oy - pFrac*dH, tsy = oy - peakFrac*dH;
+    const rx2 = ox+dW*0.22, px1 = ox+dW*0.78, tsx = ox+dW*0.5;
+
+    c.beginPath();
+    c.moveTo(ox+3, ry); c.lineTo(rx2, ry);
+    c.bezierCurveTo(rx2+dW*0.08,ry, tsx-dW*0.1,tsy+3, tsx,tsy);
+    c.bezierCurveTo(tsx+dW*0.1,tsy+3, px1-dW*0.08,py, px1,py);
+    c.lineTo(ox+dW-3, py);
+    c.strokeStyle = '#e2e8f0'; c.lineWidth = 2; c.stroke();
+
+    // Reactant
+    c.beginPath(); c.moveTo(ox+3,ry); c.lineTo(rx2,ry); c.strokeStyle='#38bdf8'; c.lineWidth=2; c.stroke();
+    c.fillStyle='#38bdf8'; c.font='9px sans-serif'; c.textAlign='left'; c.fillText('NO₂+CO', ox+4, ry-4);
+    // Product
+    c.beginPath(); c.moveTo(px1,py); c.lineTo(ox+dW-3,py); c.strokeStyle='#f87171'; c.lineWidth=2; c.stroke();
+    c.fillStyle='#f87171'; c.textAlign='right'; c.fillText('NO+CO₂', ox+dW-4, py-4);
+    // Peak
+    c.beginPath(); c.arc(tsx,tsy,4,0,Math.PI*2); c.fillStyle='#fb923c'; c.fill();
+    c.fillStyle='#fb923c'; c.font='9px sans-serif'; c.textAlign='center'; c.fillText('活化錯合物', tsx, tsy-8);
+
+    // E1 label
+    c.strokeStyle='#fbbf24'; c.lineWidth=1.2;
+    c.beginPath(); c.moveTo(ox+dW*0.34, ry); c.lineTo(ox+dW*0.34, tsy); c.stroke();
+    c.fillStyle='#fbbf24'; c.font='bold 9px sans-serif'; c.textAlign='right';
+    c.fillText('E₁(慢)', ox+dW*0.32, (ry+tsy)/2+3);
+
+    // E2 label
+    c.strokeStyle='#a78bfa'; c.lineWidth=1.2;
+    c.beginPath(); c.moveTo(ox+dW*0.66, py); c.lineTo(ox+dW*0.66, tsy); c.stroke();
+    c.fillStyle='#a78bfa'; c.font='bold 9px sans-serif'; c.textAlign='left';
+    c.fillText('E₂(快)', ox+dW*0.68, (py+tsy)/2+3);
+}
+setTimeout(() => { drawExample2Canvas(); }, 350);
+
+/* ========================================================
+   GAME (Slide 8)
+   ======================================================== */
+const GAME_POOL = [
+    { left: '碰撞學說有效條件', right: '正確方位 + 能量超越低限能' },
+    { left: '低限能 (Threshold Energy)', right: '造成有效碰撞的最低動能' },
+    { left: '活化能 (Ea)', right: '反應物轉變為活化錯合物所需位能' },
+    { left: '活化錯合物', right: '有效碰撞時之暫時性產物，位能最高' },
+    { left: '反應熱 ΔH', right: 'Ea(正) - Ea(逆)，與活化能大小無關' },
+    { left: '放熱反應 (ΔH < 0)', right: '正反應活化能 < 逆反應活化能' },
+    { left: '吸熱反應 (ΔH > 0)', right: '正反應活化能 > 逆反應活化能' },
+    { left: '活化能的功用', right: '破壞原有化學鍵，克服相斥力' },
+    { left: '速率決定步驟 (瓶頸反應)', right: '多步驟反應中，反應速率最慢的步驟' },
+    { left: '活化能受何者影響', right: '反應物本性及催化劑' },
+    { left: '常溫氫氧混合不反應原因', right: '反應活化能太高' },
+    { left: '大多數化學反應', right: '經由連續性多步驟碰撞所完成' },
+    { left: '每次碰撞', right: '以兩個粒子相互碰撞機會最大' }
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const lc = document.getElementById('left-column'), rc = document.getElementById('right-column');
+    if (!lc || !rc) return;
+    lc.innerHTML = ''; rc.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        lc.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rc.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width/2 - rect.left, y = dr.top + dr.height/2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-blue)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left); currentLine.setAttribute('y2', cy - rect.top);
+}
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(dot => {
+        const r = dot.getBoundingClientRect();
+        if (cx >= r.left-14 && cx <= r.right+14 && cy >= r.top-14 && cy <= r.bottom+14) targetDot = dot;
+    });
+    if (targetDot && targetDot !== startDot &&
+        startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') &&
+        !targetDot.classList.contains('active')) {
+        const svg = document.getElementById('game-svg');
+        const rect = svg.getBoundingClientRect(), r2 = targetDot.getBoundingClientRect();
+        const x2 = r2.left + r2.width/2 - rect.left;
+        const y2 = r2.top + r2.height/2 - rect.top;
+        if (startDot.dataset.index === targetDot.dataset.index) {
+            startDot.classList.add('active'); targetDot.classList.add('active');
+            connections.push({ from: startDot, to: targetDot });
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            currentLine.setAttribute('stroke', 'var(--accent-green)');
+            currentLine = null;
+            if (connections.length === GAME_COUNT) {
+                const fb = document.getElementById('game-feedback');
+                fb.style.display = 'block';
+                setTimeout(() => { fb.style.display = 'none'; }, 3000);
+            }
+        } else {
+            currentLine.setAttribute('stroke', 'var(--accent-red)');
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            const bad = currentLine; currentLine = null;
+            setTimeout(() => { if (bad && bad.parentNode) bad.remove(); }, 450);
+        }
+    } else {
+        if (currentLine) currentLine.remove();
+        currentLine = null;
+    }
+    startDot = null;
+}
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(conn => {
+        const r1 = conn.from.getBoundingClientRect(), r2 = conn.to.getBoundingClientRect();
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', r1.left + r1.width/2 - rect.left);
+        l.setAttribute('y1', r1.top + r1.height/2 - rect.top);
+        l.setAttribute('x2', r2.left + r2.width/2 - rect.left);
+        l.setAttribute('y2', r2.top + r2.height/2 - rect.top);
+        l.setAttribute('stroke', 'var(--accent-green)');
+        l.setAttribute('stroke-width', '4'); l.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(l);
+    });
+}
+function resetGame() { initGame(); }
+document.addEventListener('mousemove', gameDragMove);
+document.addEventListener('mouseup', gameDragEnd);
+document.addEventListener('touchmove', gameDragMove, { passive: false });
+document.addEventListener('touchend', gameDragEnd);
+
+/* Initial draw on page load */
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        drawEnergyDiagram();
+        
+        drawCompareDiagram();
+        drawMechanismCanvas();
+        drawExample2Canvas();
+        drawMechPracticeCanvas(1);
+    }, 400);
+    // ========== SLIDE 3: CO + NO2 Energy Diagram ==========
+    const cvsCoNo2 = document.getElementById('co-no2-canvas');
+    if (cvsCoNo2) {
+        function drawCoNo2() {
+            if (!document.getElementById('slide-co-no2').classList.contains('active')) {
+                requestAnimationFrame(drawCoNo2);
+                return;
+            }
+            
+            const rect = cvsCoNo2.parentElement.getBoundingClientRect();
+            if (cvsCoNo2.width !== rect.width || cvsCoNo2.height !== rect.height) {
+                cvsCoNo2.width = rect.width;
+                cvsCoNo2.height = rect.height;
+            }
+            
+            const ctx = cvsCoNo2.getContext('2d');
+            const W = cvsCoNo2.width, H = cvsCoNo2.height;
+            
+            ctx.clearRect(0, 0, W, H);
+            
+            const marginL = 80, marginB = 90, marginR = 40, marginT = 70;
+            const graphW = W - marginL - marginR;
+            const graphH = H - marginB - marginT;
+            
+            // Axes
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(marginL, marginT - 20); ctx.lineTo(marginL, H - marginB);
+            ctx.lineTo(W - marginR + 20, H - marginB); ctx.stroke();
+            
+            // Arrows for axes
+            ctx.beginPath(); ctx.moveTo(marginL - 6, marginT - 15); ctx.lineTo(marginL, marginT - 25); ctx.lineTo(marginL + 6, marginT - 15); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(W - marginR + 15, H - marginB - 6); ctx.lineTo(W - marginR + 25, H - marginB); ctx.lineTo(W - marginR + 15, H - marginB + 6); ctx.fill();
+            
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.save(); ctx.translate(marginL - 45, H / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('位能 (kJ/mol)', 0, 0); ctx.restore();
+            ctx.fillText('反應途徑', marginL + graphW / 2, H - marginB + 35);
+            
+            const yReactant = marginT + graphH * 0.85;
+            const yPeak = marginT + graphH * 0.1;
+            const yProduct = marginT + graphH * 0.55;
+            
+            ctx.strokeStyle = '#34d399'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            const x1 = marginL; const x2 = marginL + graphW * 0.25; const x3 = marginL + graphW * 0.5; const x4 = marginL + graphW * 0.75; const x5 = marginL + graphW;
+            
+            ctx.beginPath(); ctx.moveTo(x1, yReactant); ctx.lineTo(x2, yReactant);
+            ctx.bezierCurveTo(x2 + graphW*0.1, yReactant, x3 - graphW*0.1, yPeak, x3, yPeak);
+            ctx.bezierCurveTo(x3 + graphW*0.1, yPeak, x4 - graphW*0.1, yProduct, x4, yProduct);
+            ctx.lineTo(x5, yProduct); ctx.stroke();
+            
+            function drawDashedLine(sx, sy, ex, ey, color) {
+                ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
+                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke(); ctx.restore();
+            }
+            drawDashedLine(marginL, yPeak, x5, yPeak, 'rgba(255,255,255,0.4)');
+            drawDashedLine(marginL, yReactant, x5, yReactant, 'rgba(255,255,255,0.4)');
+            drawDashedLine(marginL, yProduct, x5, yProduct, 'rgba(255,255,255,0.4)');
+            
+            function drawArrow(sx, sy, ex, ey, color, text, offset, tCol='#fff') {
+                ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+                ctx.beginPath(); const sign = ey > sy ? -1 : 1;
+                ctx.moveTo(ex, ey); ctx.lineTo(ex - 10, ey + sign * 14); ctx.lineTo(ex + 10, ey + sign * 14); ctx.fill();
+                ctx.font = 'bold 16px sans-serif'; ctx.fillStyle = tCol; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(text, (sx + ex)/2 + offset.x, (sy + ey)/2 + offset.y);
+            }
+            drawArrow(x2 + graphW*0.02, yReactant, x2 + graphW*0.02, yPeak, '#fbbf24', 'Ea正', {x: -30, y: 0}, '#fbbf24');
+            drawArrow(x4 - graphW*0.02, yProduct, x4 - graphW*0.02, yPeak, '#fbbf24', "Ea逆", {x: 30, y: 0}, '#fbbf24');
+            drawArrow(x3, yReactant, x3, yProduct, '#38bdf8', 'ΔH', {x: 25, y: 0}, '#38bdf8');
+            
+            function drawAtom(ctx, x, y, r, c1, c2, label) {
+                const grad = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+                grad.addColorStop(0, c1); grad.addColorStop(1, c2); ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+                if(label){ ctx.fillStyle='#fff'; ctx.font=`bold ${r*1.1}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label, x, y+1); }
+            }
+            
+            const colC = ['#94a3b8', '#334155'], colI = ['#d8b4fe', '#9333ea'], colCl = ['#6ee7b7', '#059669'], colH = ['#f8fafc', '#cbd5e1'];
+            const atomR = 12;
+            const atomRH = 7;
+            
+            function drawReactants(x, y) {
+                // I-
+                drawAtom(ctx, x - 40, y, atomR + 3, colI[0], colI[1], 'I');
+                
+                // CH3Cl
+                const cx = x + 30;
+                ctx.strokeStyle = '#999'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 25, y); ctx.stroke(); // C-Cl
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 15, y - 18); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 15, y + 18); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 6, y); ctx.stroke();
+                
+                drawAtom(ctx, cx + 30, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+                drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+                drawAtom(ctx, cx - 15, y - 18, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx - 15, y + 18, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx - 20, y + 4, atomRH, colH[0], colH[1], 'H');
+            }
+            
+            function drawTransitionState(x, y) {
+                // [I---CH3---Cl]-
+                const cx = x;
+                ctx.strokeStyle = '#fde047'; ctx.lineWidth = 3; ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(cx - 35, y); ctx.lineTo(cx, y); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 35, y); ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.strokeStyle = '#999'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx, y - 22); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 12, y + 18); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 12, y + 18); ctx.stroke();
+                
+                drawAtom(ctx, cx - 40, y, atomR + 3, colI[0], colI[1], 'I');
+                drawAtom(ctx, cx + 40, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+                drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+                drawAtom(ctx, cx, y - 22, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx - 12, y + 18, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx + 12, y + 18, atomRH, colH[0], colH[1], 'H');
+            }
+            
+            function drawProducts(x, y) {
+                // CH3I
+                const cx = x - 30;
+                ctx.strokeStyle = '#999'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 25, y); ctx.stroke(); // C-I
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 15, y - 18); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 15, y + 18); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 6, y); ctx.stroke();
+                
+                drawAtom(ctx, cx - 30, y, atomR + 3, colI[0], colI[1], 'I');
+                drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+                drawAtom(ctx, cx + 15, y - 18, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx + 15, y + 18, atomRH, colH[0], colH[1], 'H');
+                drawAtom(ctx, cx + 20, y + 4, atomRH, colH[0], colH[1], 'H');
+                
+                // Cl-
+                drawAtom(ctx, x + 40, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+            }
+            
+            const positions = [
+                {x: x1 + (x2-x1)*0.5, y: yReactant - 80, label: '❶ 反應物'},
+                {x: x3, y: yPeak - 90, label: '❷ 活化複合體'},
+                {x: x4 + (x5-x4)*0.5, y: yProduct + 70, label: '❸ 產物'}
+            ];
+            
+            positions.forEach((p, i) => {
+                ctx.fillStyle = 'rgba(15,23,42,0.8)';
+                ctx.beginPath(); ctx.roundRect(p.x - 90, p.y - 45, 180, 90, 12); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(p.label, p.x, p.y + 35);
+                
+                if (i === 0) { 
+                    drawReactants(p.x, p.y - 10);
+                } else if (i === 1) {
+                    drawTransitionState(p.x, p.y - 10);
+                } else if (i === 2) {
+                    drawProducts(p.x, p.y - 10);
+                }
+            });
+            
+            function drawNumBadge(x, y, num) {
+                ctx.fillStyle = '#0f172a'; ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(num, x, y + 1);
+            }
+            drawNumBadge(x1 + (x2-x1)*0.5, yReactant, '1');
+            drawNumBadge(x3, yPeak, '2');
+            drawNumBadge(x4 + (x5-x4)*0.5, yProduct, '3');
+            
+            requestAnimationFrame(drawCoNo2);
+        }
+        requestAnimationFrame(drawCoNo2);
+    }
+});
+</script>
+</body>
+</html>

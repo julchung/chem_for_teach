@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>極性與分子間作用力 | 互動教學</title>
+    <meta name="description" content="選修化學二：共價鍵極性、極性分子、分子間作用力互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="chem-diagrams.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        #app:not(.started) #presentation-area { pointer-events: none; }
+        #app:not(.started) ~ #toolbar, #app:not(.started) ~ #slide-info { visibility: hidden; pointer-events: none; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-cyan);
+            background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56,189,248,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: var(--accent-blue); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(56,189,248,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.08rem 0.5rem; border-radius: 18px; font-size: 0.74rem; font-weight: 700; margin-right: 0.2rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.72rem, 0.95vw, 0.88rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.32rem 0.35rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+        .svg-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .svg-wrap svg, .chem-svg { max-width: 100%; max-height: 100%; display: block; }
+        .diagram-panel {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.32); border-radius: 12px; padding: 0.35rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .diagram-panel:focus { outline: 3px solid rgba(56,189,248,0.12); box-shadow: 0 6px 20px rgba(56,189,248,0.06); }
+        .diagram-stack { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .diagram-label { font-size: 0.78rem; color: rgba(248,250,252,0.5); text-align: center; flex-shrink: 0; }
+        .panel-diagram-only { padding: 0.5rem 0.65rem; }
+        #slide-en .slide-en-left { display: flex; flex-direction: column; min-height: 0; gap: 0.45rem; }
+        #slide-en .slide-en-text { flex: 1; min-height: 0; overflow-y: auto; }
+        #slide-en .slide-en-text h2 { font-size: clamp(1.05rem, 1.55vw, 1.28rem); }
+        #slide-en .slide-en-text p,
+        #slide-en .slide-en-text li { font-size: clamp(0.95rem, 1.28vw, 1.12rem); line-height: 1.52; }
+        #slide-en .slide-en-text .formula-box { font-size: clamp(1.05rem, 1.45vw, 1.22rem); }
+        #slide-en .formula-inline {
+            font-size: clamp(0.78rem, 1vw, 0.9rem); line-height: 1.35; padding: 0.3rem 0.55rem; margin: 0.3rem 0;
+            text-align: center; white-space: nowrap; overflow-x: auto;
+            background: rgba(0,0,0,0.35); border-radius: 8px; border-left: 3px solid var(--accent-green);
+        }
+        #slide-en .slide-en-hf { flex: 0 0 auto; max-height: 32%; min-height: 100px; margin-top: 0; }
+        #slide-en .grid-2-slide-en { grid-template-columns: 1.3fr 1fr; }
+        #slide-en .slide-en-right { display: flex; flex-direction: column; min-height: 0; gap: 0.5rem; padding: 0.55rem 0.7rem; }
+        #slide-en .slide-en-right-caption { flex-shrink: 0; padding-bottom: 0.15rem; }
+        #slide-en .slide-en-right-caption h2 {
+            font-size: clamp(1.05rem, 1.55vw, 1.28rem); margin: 0 0 0.35rem; color: var(--accent-yellow);
+        }
+        #slide-en .slide-en-right-caption p {
+            font-size: clamp(0.92rem, 1.22vw, 1.08rem); line-height: 1.48; margin: 0;
+            color: rgba(248,250,252,0.88);
+        }
+        #slide-en .slide-en-right .diagram-panel { flex: 1; min-height: 0; margin-top: 0; }
+        #slide-dipole .grid-2-dipole { flex: 1; min-height: 0; grid-template-columns: 1fr 1.2fr; }
+        #slide-dipole .slide-dipole-left h2 { font-size: clamp(1rem, 1.4vw, 1.2rem); margin: 0.5rem 0 0.3rem; color: var(--accent-yellow); }
+        #slide-dipole .slide-dipole-left h2:first-of-type { margin-top: 0; }
+        #slide-dipole .mol-example {
+            background: rgba(0,0,0,0.22); border-radius: 10px; padding: 0.55rem 0.7rem;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 0.45rem;
+        }
+        #slide-dipole .mol-example p { font-size: clamp(0.88rem, 1.1vw, 1rem); margin-bottom: 0.2rem; }
+        #slide-dipole .mol-example .mu-val { color: #f87171; font-weight: 800; font-size: clamp(0.95rem, 1.2vw, 1.08rem); }
+        #slide-dipole .slide-dipole-right { display: flex; flex-direction: column; min-height: 0; padding: 0.5rem 0.65rem; }
+        #slide-dipole .slide-dipole-right h2 { font-size: clamp(0.95rem, 1.3vw, 1.15rem); margin: 0 0 0.4rem; color: var(--accent-yellow); text-align: center; flex-shrink: 0; }
+        #slide-dipole .en-table-wrap { flex: 1; min-height: 0; overflow: auto; }
+        #slide-dipole .en-periodic { width: 100%; border-collapse: collapse; font-size: clamp(0.58rem, 0.72vw, 0.68rem); }
+        #slide-dipole .en-periodic th, #slide-dipole .en-periodic td { border: 1px solid rgba(255,255,255,0.12); padding: 0.12rem 0.08rem; text-align: center; vertical-align: middle; }
+        #slide-dipole .en-periodic th { background: rgba(56,189,248,0.12); color: var(--accent-blue); font-weight: 600; }
+        #slide-dipole .en-periodic .en-sym { display: block; font-weight: 700; color: var(--accent-cyan); line-height: 1.1; }
+        #slide-dipole .en-periodic .en-val { display: block; color: #f87171; font-size: 0.92em; line-height: 1.1; }
+        #slide-dipole .en-periodic .en-empty { background: rgba(0,0,0,0.15); }
+        #slide-dipole .en-periodic .en-p-label { background: rgba(167,139,250,0.1); color: #c4b5fd; font-weight: 700; width: 1.8rem; }
+        #slide-dipole .en-sub-table { margin-top: 0.45rem; font-size: clamp(0.55rem, 0.68vw, 0.65rem); }
+        .mol-btn {
+            padding: 0.4rem 0.7rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.85rem;
+            font-weight: 600; transition: 0.2s; touch-action: manipulation;
+        }
+        .mol-btn.active { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); }
+        .mol-btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; flex-shrink: 0; }
+        #slide-mol .mol-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; flex: 1; min-height: 0; }
+        #slide-mol .mol-png-panel, #slide-mol .mol-pdb-panel {
+            flex: 1; min-height: 0; display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.32); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.4rem; overflow: hidden;
+        }
+        #slide-mol .mol-img-box { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+        #slide-mol .mol-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        #slide-mol #pdb-viewer-wrap { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+        #slide-mol #pdb-viewer { width: 100%; height: 100%; min-height: 200px; }
+        #slide-mol .mol-desc-panel { flex-shrink: 0; max-height: 28%; margin-top: 0.5rem; }
+        .status-pill {
+            text-align: center; padding: 0.45rem; border-radius: 10px; font-size: 0.88rem; font-weight: 700; flex-shrink: 0;
+        }
+        .pill-polar { background: rgba(248,113,113,0.15); border: 1px solid var(--accent-red); color: #fca5a5; }
+        .pill-nonpolar { background: rgba(52,211,153,0.12); border: 1px solid var(--accent-green); color: #6ee7b7; }
+        #canvas-bp { display: block; width: 100%; flex: 1; min-height: 160px; border-radius: 12px; background: rgba(0,0,0,0.35); }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+        .quiz-options li { font-size: clamp(0.86rem, 1.1vw, 0.98rem); padding: 0.3rem 0.45rem; margin-bottom: 0.12rem; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+        .quiz-options li span.opt-label { color: var(--accent-blue); font-weight: 700; min-width: 2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-blue); color: #0f172a; border: none; padding: 0.6rem 1.3rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.92rem;
+            align-self: flex-start; margin-top: 0.35rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .imf-bar { display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem 0; font-size: 0.82rem; }
+        .imf-bar .bar { flex: 1; height: 14px; border-radius: 7px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .imf-bar .fill { height: 100%; border-radius: 7px; transition: width 0.5s ease; }
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 16px 32px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 8px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 45px; height: 9vh; max-height: 72px; position: relative;
+            font-size: clamp(0.78rem, 1.1vw, 1rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot {
+            width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; box-shadow: 0 0 0 4px rgba(56,189,248,0.12); }
+        .panel p, .panel li { color: rgba(248,250,252,0.92); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slide-mol .mol-split { grid-template-columns: 1fr; }
+            #slides-container { right: 58px; }
+            .game-columns { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <div class="slide slide-intro active" id="slide-bond-types">
+                <h1>共價鍵的極性</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>依電子雲分布分類</h2>
+                        <p>共用電子對的分布決定鍵的極性；由<strong>非極性共價鍵</strong> → <strong>極性共價鍵</strong> → <strong>離子鍵</strong>，離子性逐漸增高。</p>
+                        <ul>
+                            <li><strong>非極性共價鍵</strong>：相同原子，電子雲對稱（H₂、Cl₂）</li>
+                            <li><strong>極性共價鍵</strong>：不同原子，電子雲偏向電負度大者（HCl）→ $\delta^+$、$\delta^-$</li>
+                            <li><strong>離子鍵</strong>：電子幾乎完全轉移，形成正、負離子</li>
+                        </ul>
+                        <div class="highlight-box">
+                            <p><strong>鍵極性</strong>：$|\Delta\chi|$ 愈大，鍵愈極性；約 $> 1.7$ 以離子性為主。</p>
+                        </div>
+                    </div>
+                    <div class="panel panel-diagram-only">
+                        <p class="diagram-label">教材示意：電子雲與部分電荷（對照右頁圖）</p>
+                        <div class="diagram-panel" id="diag-slide1" role="img" aria-label="示意：電子雲與鍵極性示意圖" tabindex="0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-en">
+                <h1>電負度與鍵極性</h1>
+                <div class="grid-2 grid-2-slide-en">
+                    <div class="panel slide-en-left">
+                        <div class="slide-en-text scroll-panel">
+                            <h2>以 HF 為例</h2>
+                            <p>F 電負度（4.0）大於 H（2.1），共用電子偏向 F → H 端 $\delta^+$、F 端 $\delta^-$。</p>
+                            <p class="formula-inline">$|\Delta\chi| \approx 0$ 非極性　｜　$0.4\!\sim\!1.7$ 極性共價　｜　$>1.7$ 離子性</p>
+                            <h2>鍵偶極矩 dipole moment</h2>
+                            <p>偶極矩 = 帶電體的帶電量 × 兩帶電體的距離</p>
+                            <div class="formula-box">$\mu = \delta(\text{帶電量}) \times r(\text{鍵長})$</div>
+                            <p>單位：<strong>狄拜</strong>（Debye，D）</p>
+                            <ul>
+                                <li>$1\,D = 3.33 \times 10^{-30}$ C·m</li>
+                                <li>相距 1 Å、轉移 1 個電子電量 → $\mu \approx 4.8\,D$</li>
+                            </ul>
+                        </div>
+                        <div class="diagram-panel slide-en-hf" id="diag-slide2-hf" role="img" aria-label="HF 電子雲與部分電荷示意"></div>
+                    </div>
+                    <div class="panel slide-en-right">
+                        <div class="slide-en-right-caption">
+                            <h2>氫鹵酸比較</h2>
+                            <p><strong>Δ(EN) 與偶極矩</strong>由 HF → HI 遞減。圖中紅色十字箭頭在 H—X 鍵上方，表示法與左側 HF 相同。</p>
+                        </div>
+                        <div class="diagram-panel" id="diag-slide2-hx" role="img" aria-label="氫鹵酸 Δ(EN) 與偶極矩比較圖" tabindex="0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-dipole">
+                <h1>分子的偶極矩</h1>
+                <div class="grid-2 grid-2-dipole">
+                    <div class="panel scroll-panel slide-dipole-left">
+                        <p style="font-size:clamp(0.9rem,1.12vw,1.02rem);margin-bottom:0.5rem;"><strong>鍵偶極</strong>描述單一共價鍵的極性；<strong>分子偶極</strong>為各鍵偶極的向量和，決定分子是否為極性分子。</p>
+                        <h2>範例 1：水 H₂O</h2>
+                        <div class="mol-example">
+                            <p>彎曲形（約 104.5°）；兩個 O—H 鍵偶極向 O 疊加，另有孤對電子影響方向。</p>
+                            <p>分子偶極矩 <span class="mu-val">μ ≈ 1.8 D</span></p>
+                        </div>
+                        <h2>範例 2：甲醇 CH₃OH</h2>
+                        <div class="mol-example">
+                            <p>含 O—H 極性鍵與 C—O 鍵；分子不對稱，鍵偶極無法完全抵消。</p>
+                            <p>分子偶極矩 <span class="mu-val">μ ≈ 1.7 D</span></p>
+                        </div>
+                        <h2>範例 3：氯甲烷 CH₃Cl</h2>
+                        <div class="mol-example">
+                            <p>四面體形但四個鍵不同（C—H 與 C—Cl），鍵偶極向量和 ≠ 0。</p>
+                            <p>分子偶極矩 <span class="mu-val">μ ≈ 1.9 D</span></p>
+                        </div>
+                    </div>
+                    <div class="panel slide-dipole-right">
+                        <h2>元素電負度（Pauling）</h2>
+                        <div class="en-table-wrap" id="diag-slide3-en" role="region" aria-label="元素電負度表"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-polar">
+                <h1>極性分子與非極性分子</h1>
+                <div class="panel scroll-panel" style="display: flex; flex-direction: column; flex: 1; min-height: 0;">
+                    <div>
+                        <h2>判定原則</h2>
+                        <p><span class="tag tag-red">極性分子</span> $\mu \neq 0$　｜　<span class="tag tag-green">非極性分子</span> $\mu = 0$</p>
+                        <div class="highlight-box">
+                            <p><strong>注意</strong>：有極性鍵 ≠ 極性分子！</p>
+                            <p>CO₂（直線）、BF₃（平面三角）、反式 C₂H₂Cl₂ 等，鍵偶極互相抵消。</p>
+                        </div>
+                    </div>
+                    <div class="diagram-stack" style="margin-top: 0.5rem; flex: 1; min-height: 0;">
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                            <p class="diagram-label"><span class="tag tag-red">極性</span> HCl · NH₃ · 順-1,2-二氯乙烯</p>
+                            <div class="diagram-panel" id="diag-slide4a" role="img" aria-label="極性分子示意（HCl、NH3、順式二氯乙烯）" style="flex: 1; min-height: 0;"></div>
+                        </div>
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                            <p class="diagram-label"><span class="tag tag-green">非極性</span> CO₂ · BF₃ · 反-1,2-二氯乙烯</p>
+                            <div class="diagram-panel" id="diag-slide4b" role="img" aria-label="非極性分子示意（CO2、BF3、反式二氯乙烯）" style="flex: 1; min-height: 0;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-mol">
+                <h1>互動：分子極性探索</h1>
+                <div class="mol-btn-row" id="mol-btns"></div>
+                <div class="mol-split">
+                    <div class="mol-png-panel">
+                        <div class="mol-img-box" id="mol-img-panel">
+                            <img id="mol-image" src="./H2O.jpg" alt="H2O 分子結構圖" />
+                        </div>
+                    </div>
+                    <div class="mol-pdb-panel">
+                        <div id="pdb-viewer-wrap">
+                            <div id="pdb-viewer"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel scroll-panel mol-desc-panel">
+                    <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.35rem;">
+                        <h2 id="mol-title" style="margin:0;">說明</h2>
+                        <div class="status-pill pill-nonpolar" id="mol-status" role="status" aria-live="polite">請選擇分子</div>
+                    </div>
+                    <p id="mol-desc">點選上方分子：左欄 JPG、右欄 PDB 3D。共 10 種分子（H₂O、CO₂、NH₃、NF₃、BF₃、O₃、CH₄、CF₄、順/反式二氯乙烯）。</p>
+                    <div class="highlight-box" id="mol-tip">
+                        <p><strong>建議比較</strong>：NH₃ vs NF₃（孤對與鍵偶極）；順式 vs 反式 C₂H₂Cl₂（同分異構物極性）。</p>
+                        <p><strong>口訣</strong>：先看鍵極性 → 再看分子對稱性與孤對電子。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-molview" style="padding-bottom: 0.5rem;">
+                <h1>進階探索：MolView 3D 建模</h1>
+                <div style="margin-bottom: 0.6rem; flex-shrink: 0;">
+                    <p style="margin: 0; font-size: clamp(0.9rem, 1.2vw, 1.05rem); color: rgba(248,250,252,0.85);">
+                        外部資源：<a href="https://app.molview.com/" target="_blank" style="color: var(--accent-blue); text-decoration: underline; font-weight: 700;">https://app.molview.com/</a>
+                        <span style="color: rgba(255,255,255,0.55); font-size: 0.9em; margin-left: 0.5rem;">(註記：提供豐富的 3D 分子結構繪製與化學資料庫搜尋功能，若畫面被瀏覽器阻擋請點擊網址直接前往)</span>
+                    </p>
+                </div>
+                <div class="panel" style="flex: 1; min-height: 0; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; background: #fff;">
+                    <iframe src="https://app.molview.com/" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h1>分子間作用力</h1>
+                <div class="grid-2" style="grid-template-columns: 0.85fr 1.15fr;">
+                    <div class="panel scroll-panel">
+                        <h2 style="font-size: clamp(1.2rem, 1.6vw, 1.4rem); margin-bottom: 0.8rem;">種類與適用</h2>
+                        <table class="data-table" style="font-size: clamp(0.9rem, 1.2vw, 1.1rem);">
+                            <tr><th>作用力</th><th>發生對象</th><th>相對強度</th></tr>
+                            <tr><td>倫敦分散力</td><td>所有分子</td><td>最弱</td></tr>
+                            <tr><td>偶極–偶極力</td><td>極性分子</td><td>中等</td></tr>
+                            <tr><td>氫鍵</td><td>H 與 F、O、N</td><td>較強</td></tr>
+                            <tr><td>離子–偶極力</td><td>離子與極性分子</td><td>強</td></tr>
+                        </table>
+                        <div class="info-card" style="margin-top: 1.2rem; padding: 1rem;">
+                            <p style="font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.6; margin: 0;"><strong>倫敦力</strong>：瞬間偶極誘發鄰近分子產生誘導偶極；分子愈大、電子數愈多，分散力愈強。</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column; gap: 0.55rem; padding: 0.55rem;">
+                        <div style="display: flex; align-items: center; gap: 0.9rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.6rem; flex: 1; min-height: 0;">
+                            <div class="diagram-panel" id="diag-slide7a" role="img" aria-label="偶極-偶極力示意圖" style="flex: 0 0 44%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);"></div>
+                            <div style="flex: 1; overflow-y: auto; padding-right: 0.3rem;">
+                                <h3 style="color: var(--accent-blue); margin: 0 0 0.35rem 0; font-size: clamp(1rem, 1.3vw, 1.15rem);">偶極–偶極力</h3>
+                                <p style="font-size: clamp(0.9rem, 1.15vw, 1.05rem); color: rgba(248,250,252,0.9); margin: 0; line-height: 1.5;">
+                                    存在於<strong>極性分子</strong>之間。極性分子的恆久偶極，其正端與負端互相吸引。極性愈大，作用力愈強。
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.9rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.6rem; flex: 1; min-height: 0;">
+                            <div class="diagram-panel" id="diag-slide7b" role="img" aria-label="偶極-誘導偶極力示意圖" style="flex: 0 0 44%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);"></div>
+                            <div style="flex: 1; overflow-y: auto; padding-right: 0.3rem;">
+                                <h3 style="color: var(--accent-green); margin: 0 0 0.35rem 0; font-size: clamp(1rem, 1.3vw, 1.15rem);">偶極–誘導偶極力</h3>
+                                <p style="font-size: clamp(0.9rem, 1.15vw, 1.05rem); color: rgba(248,250,252,0.9); margin: 0; line-height: 1.5;">
+                                    極性分子的偶極，導致鄰近<strong>非極性分子</strong>的電子雲發生變形，產生<strong>誘導偶極</strong>而互相吸引。
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.9rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.6rem; flex: 1; min-height: 0;">
+                            <div class="diagram-panel" id="diag-slide7c" role="img" aria-label="分散力示意圖" style="flex: 0 0 44%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; background: rgba(0,0,0,0.2);"></div>
+                            <div style="flex: 1; overflow-y: auto; padding-right: 0.3rem;">
+                                <h3 style="color: var(--accent-purple); margin: 0 0 0.35rem 0; font-size: clamp(1rem, 1.3vw, 1.15rem);">倫敦分散力</h3>
+                                <p style="font-size: clamp(0.9rem, 1.15vw, 1.05rem); color: rgba(248,250,252,0.9); margin: 0; line-height: 1.5;">
+                                    存在於<strong>所有分子</strong>之間。電子雲瞬間不均勻分布產生<strong>瞬間偶極</strong>，並誘發周圍分子產生誘導偶極。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-noble" style="display: flex; flex-direction: column;">
+                <h1>分子大小與分子間作用力</h1>
+                <div class="panel" style="flex-shrink: 0; margin-bottom: 0.8rem; padding: 0.8rem 1rem;">
+                    <h2 style="font-size: 1.4rem;">分子大小（電子總數）對作用力的影響（惰性氣體）</h2>
+                    <p style="font-size: 1.15rem; line-height: 1.6; margin: 0;">隨著惰性氣體原子序增加，電子總數增多，原子尺寸變大，倫敦色散力會顯著增強，導致沸點與熔點持續升高。此圖展示 He ‒ Rn 的沸點與熔點走勢，點擊任意資料點即可在中央看到對應原子的 3D 球狀模型。</p>
+                </div>
+                <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div style="flex: 1; position:relative; min-height:0;">
+                            <canvas id="canvas-noble-boil" role="img" aria-label="惰性氣體沸點折線圖" style="width:100%; height:100%;"></canvas>
+                        </div>
+                        <div style="text-align:center; font-size:0.85rem; color:#cbd5e1; margin-top:5px; flex-shrink:0;">沸點 (°C)</div>
+                    </div>
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div id="noble-title" style="text-align:center; font-size:1rem; font-weight:bold; color:var(--accent-yellow); margin-bottom:5px; flex-shrink:0;">原子結構</div>
+                        <div id="noble-model" style="flex:1; border:1px solid #334155; background:#0f172a; position:relative; border-radius:8px; min-height:0;">
+                            <!-- 3Dmol viewer will be injected here -->
+                        </div>
+                    </div>
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div style="flex: 1; position:relative; min-height:0;">
+                            <canvas id="canvas-noble-melt" role="img" aria-label="惰性氣體熔點折線圖" style="width:100%; height:100%;"></canvas>
+                        </div>
+                        <div style="text-align:center; font-size:0.85rem; color:#cbd5e1; margin-top:5px; flex-shrink:0;">熔點 (°C)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-alkane" style="display: flex; flex-direction: column;">
+                <h1>分子大小與分子間作用力</h1>
+                <div class="panel" style="flex-shrink: 0; margin-bottom: 0.8rem; padding: 0.8rem 1rem;">
+                    <h2 style="font-size: 1.4rem;">分子大小（電子總數）對作用力的影響</h2>
+                    <p style="font-size: 1.15rem; line-height: 1.6; margin: 0;">隨著正烷類碳數增加，電子總數增多，分子尺寸變大，倫敦色散力（瞬時偶極‑瞬時偶極）會顯著增強，導致沸點與熔點持續升高。</p>
+                </div>
+                <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div style="flex: 1; position:relative; min-height:0;">
+                            <canvas id="canvas-boil" role="img" aria-label="正烷類沸點折線圖" style="width:100%; height:100%;"></canvas>
+                        </div>
+                        <div style="text-align:center; font-size:0.85rem; color:#cbd5e1; margin-top:5px; flex-shrink:0;">沸點 (°C)</div>
+                    </div>
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div id="alkane-title" style="text-align:center; font-size:1rem; font-weight:bold; color:var(--accent-yellow); margin-bottom:5px; flex-shrink:0;">分子結構</div>
+                        <div id="alkane-model" style="flex:1; border:1px solid #334155; background:#0f172a; position:relative; border-radius:8px; min-height:0;">
+                            <!-- 3Dmol viewer will be injected here -->
+                        </div>
+                    </div>
+                    <div class="panel" style="flex: 1; display:flex; flex-direction:column;">
+                        <div style="flex: 1; position:relative; min-height:0;">
+                            <canvas id="canvas-melt" role="img" aria-label="正烷類熔點折線圖" style="width:100%; height:100%;"></canvas>
+                        </div>
+                        <div style="text-align:center; font-size:0.85rem; color:#cbd5e1; margin-top:5px; flex-shrink:0;">熔點 (°C)</div>
+                    </div>
+                </div>
+            </div>
+
+                        <!-- SLIDE 10: Polar vs Non-polar -->
+            <div class="slide" id="slide-polar-nonpolar" style="display:flex; flex-direction:column;">
+                <h1>分子量相近時：極性 vs 非極性 → 沸點差異</h1>
+                <div style="display:flex; flex-direction:column; gap:10px; flex:1; min-height:0;">
+                    <div class="panel" style="padding:0.6rem 1rem; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
+                        <p style="font-size:1.05rem; margin:0; line-height:1.4;">分子量相近時，<strong>極性分子</strong>因額外具備永久偶極-偶極力，其分子間作用力較強。</p>
+                        <p style="font-size:1.05rem; margin:0; line-height:1.4;"><span style="color:#94a3b8;">非極性</span>：僅倫敦力 ｜ <span style="color:#38bdf8;">極性</span>：倫敦力+偶極力 ➔ <strong style="color:#f87171;">沸點：極性 &gt; 非極性</strong></p>
+                    </div>
+                    <div class="panel" style="flex:1; padding:0.7rem; overflow:auto; display:flex; flex-direction:column;">
+                        <table class="data-table" style="width:100%; font-size:clamp(0.8rem,1vw,0.94rem); table-layout:fixed;">
+                            <thead>
+                                <tr>
+                                    <th colspan="4" style="background:rgba(100,116,139,0.25); color:#94a3b8; text-align:center;">非極性分子（μ = 0）</th>
+                                    <th style="background:transparent; border:none; width:22px;"></th>
+                                    <th colspan="4" style="background:rgba(56,189,248,0.15); color:#38bdf8; text-align:center;">極性分子（μ ≠ 0）</th>
+                                </tr>
+                                <tr style="font-size:0.82em; color:#94a3b8;">
+                                    <th style="width:92px; text-align:center;">分子結構</th>
+                                    <th>分子</th><th>分子量</th><th>沸點(°C)</th>
+                                    <th style="border:none;"></th>
+                                    <th style="width:92px; text-align:center;">分子結構</th>
+                                    <th>分子</th><th>分子量</th><th>沸點(°C)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 90 56" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="26" cy="27" r="14" fill="#3b82f6" opacity="0.85"/>
+  <circle cx="64" cy="27" r="14" fill="#3b82f6" opacity="0.85"/>
+  <line x1="40" y1="22" x2="50" y2="22" stroke="#e2e8f0" stroke-width="1.8"/>
+  <line x1="40" y1="27" x2="50" y2="27" stroke="#e2e8f0" stroke-width="1.8"/>
+  <line x1="40" y1="32" x2="50" y2="32" stroke="#e2e8f0" stroke-width="1.8"/>
+  <text x="26" y="32" text-anchor="middle" fill="white" font-size="11" font-weight="bold">N</text>
+  <text x="64" y="32" text-anchor="middle" fill="white" font-size="11" font-weight="bold">N</text>
+  <text x="45" y="51" text-anchor="middle" fill="#475569" font-size="9">對稱 μ=0</text>
+</svg></td>
+                                    <td>N₂</td><td>28</td><td>−196</td>
+                                    <td style="border:none; text-align:center; color:#475569; font-size:0.9em;">vs</td>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 100 60" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="28" cy="30" r="14" fill="#374151" opacity="0.9"/>
+  <circle cx="72" cy="30" r="14" fill="#dc2626" opacity="0.75"/>
+  <line x1="42" y1="25" x2="58" y2="25" stroke="#e2e8f0" stroke-width="1.8"/>
+  <line x1="42" y1="30" x2="58" y2="30" stroke="#e2e8f0" stroke-width="1.8"/>
+  <line x1="42" y1="35" x2="58" y2="35" stroke="#e2e8f0" stroke-width="1.8"/>
+  <text x="28" y="35" text-anchor="middle" fill="white" font-size="11" font-weight="bold">C</text>
+  <text x="72" y="35" text-anchor="middle" fill="white" font-size="11" font-weight="bold">O</text>
+  <text x="12" y="15" fill="#93c5fd" font-size="9">δ+</text>
+  <text x="78" y="15" fill="#fca5a5" font-size="9">δ−</text>
+  <line x1="16" y1="52" x2="66" y2="52" stroke="#38bdf8" stroke-width="1.5"/>
+  <polygon points="63,48 73,52 63,56" fill="#38bdf8"/>
+</svg></td>
+                                    <td style="color:#93c5fd;">CO</td><td>28</td>
+                                    <td style="color:#f87171; font-weight:700;">−192 ↑</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 90 74" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="45" cy="40" r="14" fill="#14b8a6" opacity="0.85"/>
+  <circle cx="16" cy="18" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="18" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="16" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <line x1="33" y1="33" x2="24" y2="26" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="57" y1="33" x2="66" y2="26" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="33" y1="50" x2="24" y2="56" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <line x1="57" y1="50" x2="66" y2="56" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <text x="45" y="45" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Si</text>
+  <text x="16" y="22" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="22" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="16" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+</svg></td>
+                                    <td>SiH₄</td><td>32</td><td>−112</td>
+                                    <td style="border:none; text-align:center; color:#475569; font-size:0.9em;">vs</td>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 90 74" style="width:86px;height:auto;display:block;margin:auto;">
+  <ellipse cx="45" cy="8" rx="10" ry="5" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="45" y="12" text-anchor="middle" fill="#fbbf24" font-size="7.5">孤對電子</text>
+  <circle cx="45" cy="36" r="14" fill="#f97316" opacity="0.85"/>
+  <circle cx="16" cy="58" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="45" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="58" r="9" fill="#9ca3af" opacity="0.8"/>
+  <line x1="33" y1="47" x2="24" y2="52" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="45" y1="50" x2="45" y2="55" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="57" y1="47" x2="66" y2="52" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="45" y1="18" x2="45" y2="26" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <polygon points="41,18 45,10 49,18" fill="#38bdf8"/>
+  <text x="45" y="41" text-anchor="middle" fill="white" font-size="10" font-weight="bold">P</text>
+  <text x="16" y="62" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="45" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="62" text-anchor="middle" fill="white" font-size="9">H</text>
+</svg></td>
+                                    <td style="color:#93c5fd;">PH₃</td><td>34</td>
+                                    <td style="color:#f87171; font-weight:700;">−85 ↑</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 90 74" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="45" cy="40" r="14" fill="#059669" opacity="0.85"/>
+  <circle cx="16" cy="18" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="18" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="16" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <line x1="33" y1="33" x2="24" y2="26" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="57" y1="33" x2="66" y2="26" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="33" y1="50" x2="24" y2="56" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <line x1="57" y1="50" x2="66" y2="56" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="4,2"/>
+  <text x="45" y="45" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Ge</text>
+  <text x="16" y="22" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="22" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="16" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+</svg></td>
+                                    <td>GeH₄</td><td>77</td><td>−90</td>
+                                    <td style="border:none; text-align:center; color:#475569; font-size:0.9em;">vs</td>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 90 74" style="width:86px;height:auto;display:block;margin:auto;">
+  <ellipse cx="45" cy="8" rx="10" ry="5" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <text x="45" y="12" text-anchor="middle" fill="#fbbf24" font-size="7.5">孤對電子</text>
+  <circle cx="45" cy="36" r="14" fill="#7c3aed" opacity="0.85"/>
+  <circle cx="16" cy="58" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="45" cy="64" r="9" fill="#9ca3af" opacity="0.8"/>
+  <circle cx="74" cy="58" r="9" fill="#9ca3af" opacity="0.8"/>
+  <line x1="33" y1="47" x2="24" y2="52" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="45" y1="50" x2="45" y2="55" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="57" y1="47" x2="66" y2="52" stroke="#cbd5e1" stroke-width="1.8"/>
+  <line x1="45" y1="18" x2="45" y2="26" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <polygon points="41,18 45,10 49,18" fill="#38bdf8"/>
+  <text x="45" y="41" text-anchor="middle" fill="white" font-size="10" font-weight="bold">As</text>
+  <text x="16" y="62" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="45" y="68" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="74" y="62" text-anchor="middle" fill="white" font-size="9">H</text>
+</svg></td>
+                                    <td style="color:#93c5fd;">AsH₃</td><td>78</td>
+                                    <td style="color:#f87171; font-weight:700;">−62.5 ↑</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 96 56" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="25" cy="27" r="16" fill="#92400e" opacity="0.85"/>
+  <circle cx="71" cy="27" r="16" fill="#92400e" opacity="0.85"/>
+  <line x1="41" y1="27" x2="55" y2="27" stroke="#e2e8f0" stroke-width="2.5"/>
+  <text x="25" y="32" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Br</text>
+  <text x="71" y="32" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Br</text>
+  <text x="48" y="51" text-anchor="middle" fill="#475569" font-size="9">對稱 μ=0</text>
+</svg></td>
+                                    <td>Br₂</td><td>160</td><td>59</td>
+                                    <td style="border:none; text-align:center; color:#475569; font-size:0.9em;">vs</td>
+                                    <td style="padding:0.3rem; text-align:center;"><svg viewBox="0 0 100 60" style="width:86px;height:auto;display:block;margin:auto;">
+  <circle cx="28" cy="30" r="17" fill="#7c3aed" opacity="0.8"/>
+  <circle cx="72" cy="30" r="13" fill="#16a34a" opacity="0.85"/>
+  <line x1="45" y1="30" x2="59" y2="30" stroke="#e2e8f0" stroke-width="2.5"/>
+  <text x="28" y="35" text-anchor="middle" fill="white" font-size="11" font-weight="bold">I</text>
+  <text x="72" y="35" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Cl</text>
+  <text x="10" y="14" fill="#93c5fd" font-size="9">δ+</text>
+  <text x="78" y="14" fill="#fca5a5" font-size="9">δ−</text>
+  <line x1="16" y1="52" x2="66" y2="52" stroke="#38bdf8" stroke-width="1.5"/>
+  <polygon points="63,48 73,52 63,56" fill="#38bdf8"/>
+</svg></td>
+                                    <td style="color:#93c5fd;">ICl</td><td>162</td>
+                                    <td style="color:#f87171; font-weight:700;">97 ↑</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+                        <!-- SLIDE 11: C5H12 Isomers - Contact Area & Symmetry -->
+            <div class="slide" id="slide-isomers-contact" style="display:flex; flex-direction:column;">
+                <h1>接觸面積 vs 對稱性：C₅H₁₂ 同分異構物</h1>
+                <div class="panel" style="flex-shrink:0; margin-bottom:0.6rem; padding:0.55rem 1rem;">
+                    <p style="font-size:1.02rem; margin:0; line-height:1.6;">三種同分異構物（分子量均為 72），因<strong>形狀不同</strong>導致接觸面積與對稱性差異，進而影響<strong style="color:#f87171;">沸點</strong>與<strong style="color:#4ade80;">熔點</strong>。</p>
+                </div>
+                <div class="panel" style="flex:1; overflow:auto; padding:0.7rem;">
+                    <table class="data-table" style="width:100%; font-size:clamp(0.86rem,1.1vw,1rem);">
+                        <thead>
+                            <tr>
+                                <th style="width:170px; text-align:center; background:rgba(56,189,248,0.08);">分子結構圖</th>
+                                <th>分子名稱</th>
+                                <th>形狀</th>
+                                <th>接觸面積</th>
+                                <th>沸點 (°C)</th>
+                                <th>熔點 (°C)</th>
+                                <th>說明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align:center; padding:0.55rem;"><svg viewBox="0 0 200 80" style="width:100%;max-width:180px;height:auto;display:block;margin:auto;">
+  <defs>
+    <radialGradient id="gradC" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </radialGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Bonds -->
+  <line x1="25" y1="50" x2="62" y2="25" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="62" y1="25" x2="100" y2="50" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="100" y1="50" x2="137" y2="25" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="137" y1="25" x2="175" y2="50" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <!-- Atoms -->
+  <circle cx="25" cy="50" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="62" cy="25" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="100" cy="50" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="137" cy="25" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="175" cy="50" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+</svg></td>
+                                <td><strong style="color:#38bdf8;">正戊烷</strong><br><span style="color:#475569; font-size:0.88em;">n-Pentane</span></td>
+                                <td>直鏈狀</td>
+                                <td style="color:#f87171; font-weight:700;">最大 ↑</td>
+                                <td style="color:#f87171; font-weight:700;">36</td>
+                                <td>−129.7</td>
+                                <td style="color:#94a3b8; font-size:0.9em;">直鏈接觸面積最大，倫敦力最強 → 沸點最高</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center; padding:0.55rem;"><svg viewBox="0 0 200 110" style="width:100%;max-width:180px;height:auto;display:block;margin:auto;">
+  <defs>
+    <radialGradient id="gradC" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </radialGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Bonds -->
+  <line x1="40" y1="80" x2="80" y2="50" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="50" x2="120" y2="80" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="120" y1="80" x2="160" y2="50" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="50" x2="80" y2="15" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <!-- Atoms -->
+  <circle cx="40" cy="80" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="80" cy="50" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="120" cy="80" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="160" cy="50" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="80" cy="15" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+</svg></td>
+                                <td><strong style="color:#a78bfa;">異戊烷</strong><br><span style="color:#475569; font-size:0.88em;">Isopentane</span></td>
+                                <td>單支鏈</td>
+                                <td>中等</td>
+                                <td style="color:#f87171; font-weight:700;">28</td>
+                                <td>−159.8</td>
+                                <td style="color:#94a3b8; font-size:0.9em;">支鏈使接觸面積縮小，分散力較弱</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center; padding:0.55rem;"><svg viewBox="0 0 160 160" style="width:100%;max-width:130px;height:auto;display:block;margin:auto;">
+  <defs>
+    <radialGradient id="gradC" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9ca3af"/>
+      <stop offset="100%" stop-color="#374151"/>
+    </radialGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <!-- Bonds -->
+  <line x1="80" y1="80" x2="80" y2="25" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="80" x2="25" y2="105" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="80" x2="135" y2="105" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <line x1="80" y1="80" x2="80" y2="135" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+  <!-- Central Atom First (so it is behind, wait, front is better for 3D) -->
+  <circle cx="80" cy="25" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="25" cy="105" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="135" cy="105" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <circle cx="80" cy="135" r="14" fill="url(#gradC)" filter="url(#dropShadow)"/>
+  <!-- Central atom -->
+  <circle cx="80" cy="80" r="16" fill="url(#gradC)" filter="url(#dropShadow)"/>
+</svg></td>
+                                <td><strong style="color:#4ade80;">新戊烷</strong><br><span style="color:#475569; font-size:0.88em;">Neopentane</span></td>
+                                <td>球狀（高對稱）</td>
+                                <td style="color:#4ade80; font-weight:700;">最小 ↓</td>
+                                <td>9.5</td>
+                                <td style="color:#4ade80; font-weight:700;">−16.4 ↑</td>
+                                <td style="color:#94a3b8; font-size:0.9em;">高對稱球狀，接觸面積最小→沸點最低；晶格最緊密→熔點最高</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+                                    <!-- SLIDE 12: Cis-Trans Isomers -->
+            <div class="slide" id="slide-cistrans" style="display:flex; flex-direction:column;">
+                <h1>順反異構物：極性與對稱性對熔沸點的影響</h1>
+                <div class="panel" style="flex:1; padding:0.8rem; overflow:hidden; display:flex; flex-direction:column;">
+                    <table class="data-table" style="width:100%; height:100%; font-size:clamp(0.9rem,1.1vw,1.05rem);">
+                        <thead>
+                            <tr>
+                                <th style="width:18%;">化合物</th>
+                                <th style="width:12%;">異構物</th>
+                                <th style="width:20%;">分子結構圖</th>
+                                <th style="width:10%;">偶極矩</th>
+                                <th style="width:10%;">熔點(°C)</th>
+                                <th style="width:10%;">沸點(°C)</th>
+                                <th style="width:20%;">主要原因</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 1,2-二氯乙烯 -->
+                            <tr>
+                                <td rowspan="2" style="text-align:center; vertical-align:middle; font-weight:bold; color:var(--accent-purple);">1,2-二氯乙烯<br><span style="font-size:0.85em; color:#94a3b8;">C₂H₂Cl₂</span></td>
+                                <td style="color:#f9a8d4; font-weight:700; text-align:center;">順式 (cis)</td>
+                                <td style="text-align:center; padding:0.2rem;"><svg viewBox="0 0 155 104" style="width:100%;max-width:138px;height:auto;display:block;margin:auto;">
+  <circle cx="55" cy="56" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <circle cx="100" cy="56" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="68" y1="51" x2="87" y2="51" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="68" y1="61" x2="87" y2="61" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="46" y1="45" x2="28" y2="25" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="45" x2="127" y2="25" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="20" cy="17" r="14" fill="#16a34a" opacity="0.85"/>
+  <circle cx="135" cy="17" r="14" fill="#16a34a" opacity="0.85"/>
+  <line x1="46" y1="67" x2="28" y2="87" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="67" x2="127" y2="87" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="22" cy="93" r="10" fill="#6b7280" opacity="0.8"/>
+  <circle cx="133" cy="93" r="10" fill="#6b7280" opacity="0.8"/>
+  <text x="20" y="21" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Cl</text>
+  <text x="135" y="21" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Cl</text>
+  <text x="22" y="97" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="133" y="97" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="55" y="60" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <text x="100" y="60" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <line x1="77" y1="99" x2="77" y2="80" stroke="#f9a8d4" stroke-width="1.6" stroke-dasharray="3,2"/>
+  <polygon points="73,80 77,72 81,80" fill="#f9a8d4"/>
+  <text x="77" y="103" text-anchor="middle" fill="#f9a8d4" font-size="8">μ方向</text>
+</svg></td>
+                                <td style="color:#f87171; font-weight:700; text-align:center;">1.9 D</td>
+                                <td style="text-align:center;">−80</td>
+                                <td style="color:#f87171; font-weight:700; text-align:center;">60.1 ↑</td>
+                                <td style="color:#94a3b8; font-size:0.9em; text-align:left;">偶極-偶極力較強 → 沸點高</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#93c5fd; font-weight:700; text-align:center;">反式 (trans)</td>
+                                <td style="text-align:center; padding:0.2rem;"><svg viewBox="0 0 155 104" style="width:100%;max-width:138px;height:auto;display:block;margin:auto;">
+  <circle cx="55" cy="56" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <circle cx="100" cy="56" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="68" y1="51" x2="87" y2="51" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="68" y1="61" x2="87" y2="61" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="46" y1="45" x2="28" y2="25" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="20" cy="17" r="14" fill="#16a34a" opacity="0.85"/>
+  <line x1="109" y1="67" x2="127" y2="87" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="135" cy="95" r="14" fill="#16a34a" opacity="0.85"/>
+  <line x1="46" y1="67" x2="28" y2="87" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="22" cy="93" r="10" fill="#6b7280" opacity="0.8"/>
+  <line x1="109" y1="45" x2="127" y2="25" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="133" cy="17" r="10" fill="#6b7280" opacity="0.8"/>
+  <text x="20" y="21" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Cl</text>
+  <text x="135" y="99" text-anchor="middle" fill="white" font-size="10" font-weight="bold">Cl</text>
+  <text x="22" y="97" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="133" y="21" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="55" y="60" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <text x="100" y="60" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <line x1="77" y1="8" x2="77" y2="96" stroke="#93c5fd" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.65"/>
+  <text x="77" y="103" text-anchor="middle" fill="#93c5fd" font-size="8">對稱軸（μ=0）</text>
+</svg></td>
+                                <td style="text-align:center;">0 D</td>
+                                <td style="color:#86efac; font-weight:700; text-align:center;">−50 ↑</td>
+                                <td style="text-align:center;">48.7</td>
+                                <td style="color:#94a3b8; font-size:0.9em; text-align:left;">對稱，晶格緊密 → 熔點高</td>
+                            </tr>
+                            <!-- 2-丁烯 -->
+                            <tr>
+                                <td rowspan="2" style="text-align:center; vertical-align:middle; font-weight:bold; color:var(--accent-purple); border-top:2px solid #334155;">2-丁烯<br><span style="font-size:0.85em; color:#94a3b8;">C₄H₈</span></td>
+                                <td style="color:#f9a8d4; font-weight:700; text-align:center; border-top:2px solid #334155;">順式 (cis)</td>
+                                <td style="text-align:center; padding:0.2rem; border-top:2px solid #334155;"><svg viewBox="0 0 168 104" style="width:100%;max-width:150px;height:auto;display:block;margin:auto;">
+  <circle cx="68" cy="57" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <circle cx="100" cy="57" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="81" y1="52" x2="87" y2="52" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="81" y1="62" x2="87" y2="62" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="59" y1="46" x2="40" y2="26" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="46" x2="128" y2="26" stroke="#94a3b8" stroke-width="1.8"/>
+  <rect x="25" y="12" width="30" height="18" rx="4" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <rect x="113" y="12" width="30" height="18" rx="4" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="40" y="25" text-anchor="middle" fill="#94a3b8" font-size="9">CH₃</text>
+  <text x="128" y="25" text-anchor="middle" fill="#94a3b8" font-size="9">CH₃</text>
+  <line x1="59" y1="68" x2="40" y2="88" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="68" x2="128" y2="88" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="33" cy="95" r="9" fill="#6b7280" opacity="0.8"/>
+  <circle cx="135" cy="95" r="9" fill="#6b7280" opacity="0.8"/>
+  <text x="33" y="99" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="135" y="99" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="68" y="61" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <text x="100" y="61" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <line x1="84" y1="100" x2="84" y2="82" stroke="#f9a8d4" stroke-width="1.6" stroke-dasharray="3,2"/>
+  <polygon points="80,82 84,74 88,82" fill="#f9a8d4"/>
+</svg></td>
+                                <td style="color:#f87171; font-weight:700; text-align:center; border-top:2px solid #334155;">0.25 D</td>
+                                <td style="text-align:center; border-top:2px solid #334155;">−139</td>
+                                <td style="color:#f87171; font-weight:700; text-align:center; border-top:2px solid #334155;">3.7 ↑</td>
+                                <td style="color:#94a3b8; font-size:0.9em; text-align:left; border-top:2px solid #334155;">極性略大 → 沸點較高</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#93c5fd; font-weight:700; text-align:center;">反式 (trans)</td>
+                                <td style="text-align:center; padding:0.2rem;"><svg viewBox="0 0 168 104" style="width:100%;max-width:150px;height:auto;display:block;margin:auto;">
+  <circle cx="68" cy="57" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <circle cx="100" cy="57" r="13" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <line x1="81" y1="52" x2="87" y2="52" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="81" y1="62" x2="87" y2="62" stroke="#e2e8f0" stroke-width="2.2"/>
+  <line x1="59" y1="46" x2="40" y2="26" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="68" x2="128" y2="88" stroke="#94a3b8" stroke-width="1.8"/>
+  <rect x="25" y="12" width="30" height="18" rx="4" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <rect x="113" y="74" width="30" height="18" rx="4" fill="#374151" stroke="#6b7280" stroke-width="1.5"/>
+  <text x="40" y="25" text-anchor="middle" fill="#94a3b8" font-size="9">CH₃</text>
+  <text x="128" y="87" text-anchor="middle" fill="#94a3b8" font-size="9">CH₃</text>
+  <line x1="59" y1="68" x2="40" y2="88" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="109" y1="46" x2="128" y2="26" stroke="#94a3b8" stroke-width="1.8"/>
+  <circle cx="33" cy="95" r="9" fill="#6b7280" opacity="0.8"/>
+  <circle cx="135" cy="19" r="9" fill="#6b7280" opacity="0.8"/>
+  <text x="33" y="99" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="135" y="23" text-anchor="middle" fill="white" font-size="9">H</text>
+  <text x="68" y="61" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <text x="100" y="61" text-anchor="middle" fill="white" font-size="9" font-weight="bold">C</text>
+  <line x1="84" y1="8" x2="84" y2="96" stroke="#93c5fd" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.65"/>
+  <text x="84" y="103" text-anchor="middle" fill="#93c5fd" font-size="8">對稱軸（μ=0）</text>
+</svg></td>
+                                <td style="text-align:center;">0 D</td>
+                                <td style="color:#86efac; font-weight:700; text-align:center;">−106 ↑</td>
+                                <td style="text-align:center;">0.9</td>
+                                <td style="color:#94a3b8; font-size:0.9em; text-align:left;">完全對稱 → 熔點較高</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="slide" id="slide-bp">
+                <h1>分子間作用力與物理性質</h1>
+                <div class="grid-2" style="grid-template-columns: 1fr 1.3fr;">
+                    <div class="panel scroll-panel">
+                        <h2 style="font-size: 1.4rem;">沸點與分子間作用力</h2>
+                        <p style="font-size: 1.15rem; line-height: 1.6;">分子間作用力愈強 → 克服作用力所需能量愈大 → <strong>沸點愈高</strong>。</p>
+                        <ul style="font-size: 1.15rem; line-height: 1.6; margin-left: 1rem;">
+                            <li>同系列：分子量↑ → 倫敦力↑ → 沸點↑</li>
+                            <li>含氫鍵者：沸點明顯高於同分子量類似物</li>
+                            <li>極性分子通常高於非極性、相近分子量者</li>
+                        </ul>
+                        <div class="highlight-box" style="margin-top: 1.5rem; padding: 1rem;">
+                            <p style="font-size: 1.15rem; margin: 0;">例：H₂O (100°C) >> H₂S (−60°C)；NH₃ > PH₃</p>
+                        </div>
+                    </div>
+                    <div class="panel" style="display: flex; flex-direction: column;">
+                        <h2 style="margin-bottom: 0.5rem; text-align: center;">各族氫化物熔沸點變化</h2>
+                        <div style="display: flex; gap: 10px; flex: 1; padding: 0 10px;">
+                            <div style="flex: 1; display: flex; flex-direction: column; position: relative;">
+                                <canvas id="canvas-bp" role="img" aria-label="沸點折線圖" style="flex: 1; width: 100%; min-height: 200px;"></canvas>
+                                <div style="text-align:center;font-size:0.85rem;color:#cbd5e1; margin-top: 5px;">沸點 (°C)</div>
+                            </div>
+                            <div style="flex: 1; display: flex; flex-direction: column; position: relative;">
+                                <canvas id="canvas-mp" role="img" aria-label="熔點折線圖" style="flex: 1; width: 100%; min-height: 200px;"></canvas>
+                                <div style="text-align:center;font-size:0.85rem;color:#cbd5e1; margin-top: 5px;">熔點 (°C)</div>
+                            </div>
+                        </div>
+                        <div id="period-toggles" style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; padding-bottom: 5px; font-size: 0.95rem;">
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="period-sel" value="all" checked> 全部</label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="period-sel" value="2"> 第二週期 <span style="display:inline-block;width:12px;height:4px;background:#f87171; border-radius:2px;"></span></label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="period-sel" value="3"> 第三週期 <span style="display:inline-block;width:12px;height:4px;background:#38bdf8; border-radius:2px;"></span></label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;"><input type="radio" name="period-sel" value="4"> 第四週期 <span style="display:inline-block;width:12px;height:4px;background:#a78bfa; border-radius:2px;"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide">
+                <h1>綜合範例與思考</h1>
+                <div class="grid-2">
+                    <div class="quiz-item">
+                        <h2>範例 1</h2>
+                        <p>下列何者為<strong>極性分子</strong>？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> CO₂</li>
+                            <li><span class="opt-label">(B)</span> BF₃</li>
+                            <li><span class="opt-label">(C)</span> NH₃</li>
+                            <li><span class="opt-label">(D)</span> CCl₄</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans1">
+                            <h2 style="color:var(--accent-green);">解答：(C) NH₃</h2>
+                            <p>CO₂ 直線對稱、BF₃ 平面三角對稱、CCl₄ 四面體對稱 → 鍵偶極抵消。</p>
+                            <p>NH₃ 三角錐形，孤對電子使結構不對稱 → 分子偶極 ≠ 0。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">關閉</button>
+                        </div>
+                    </div>
+                    <div class="quiz-item">
+                        <h2>範例 2</h2>
+                        <p>沸點：CH₄ &lt; NH₃ &lt; H₂O，主因為何？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 僅分子量不同</li>
+                            <li><span class="opt-label">(B)</span> H₂O 可形成氫鍵</li>
+                            <li><span class="opt-label">(C)</span> CH₄ 為離子鍵</li>
+                            <li><span class="opt-label">(D)</span> NH₃ 無分子間作用力</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans2">
+                            <h2 style="color:var(--accent-green);">解答：(B)</h2>
+                            <p>H₂O 分子間氫鍵強；NH₃ 亦可形成氫鍵但較弱；CH₄ 僅倫敦分散力。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide" id="slide-game">
+                <h1 style="color:var(--accent-purple);">單元挑戰：觀念連連看</h1>
+                <p style="font-size:0.88rem;color:rgba(255,255,255,0.55);flex-shrink:0;">從左側概念拖曳連線至右側說明；正確顯示綠線並保留，錯誤顯示紅線後消失</p>
+                    <div class="game-area">
+                    <svg id="game-svg" role="img" aria-label="連連看互動區：拖曳連線配對概念與說明" tabindex="0"></svg>
+                    <div class="game-columns">
+                        <div id="left-column"></div>
+                        <div id="right-column"></div>
+                    </div>
+                    <div id="game-feedback">🎉 太棒了！全對！</div>
+                </div>
+                <div style="text-align:center;margin-top:0.5rem;flex-shrink:0;">
+                    <button type="button" class="btn-action" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid var(--accent-blue);" onclick="resetGame()">重新挑戰（隨機出題）</button>
+                </div>
+            </div>
+
+        </div>
+        <canvas id="drawing-layer" role="application" aria-label="手寫繪圖層" tabindex="0"></canvas>
+    </div>
+</div>
+
+<div id="slide-info">1 / 9</div>
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
+</div>
+<div id="start-overlay">
+    <div class="start-badge">選修化學二 · 第二章 · 物質結構與化學鍵</div>
+    <h1 class="start-title">極性與分子間作用力</h1>
+    <p class="start-sub">互動教學（支援 iPad 全螢幕 · 分頁 · 手寫 · 範例 · 觀念連連看）</p>
+    <button type="button" class="btn-start" id="btn-start">開始探索教學 ✦</button>
+    <div class="start-info">
+        <div class="info-chip"><span>⚡</span><span>鍵極性 · 偶極矩</span></div>
+        <div class="info-chip"><span>🧪</span><span>極性 / 非極性分子</span></div>
+        <div class="info-chip"><span>🔗</span><span>分子間作用力</span></div>
+        <div class="info-chip"><span>✏️</span><span>手寫 · 連連看</span></div>
+    </div>
+</div>
+<script>
+(function () {
+    const s = document.createElement('script');
+    s.src = './3Dmol-min.js';
+    s.async = true; s.defer = true; document.head.appendChild(s);
+})();
+
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return;
+        starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof window.updateSlides === 'function') window.updateSlides();
+            });
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+</script>
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.style.display === 'flex';
+    el.style.display = open ? 'none' : 'flex';
+    if (btn) btn.textContent = open ? '顯示解答' : '關閉';
+}
+
+function injectChemDiagrams() {
+    const mapIds = ['diag-slide1','diag-slide2-hf','diag-slide2-hx','diag-slide3-en','diag-slide4a','diag-slide4b','diag-slide7a','diag-slide7b','diag-slide7c'];
+    if (!window.ChemDiagrams) {
+        mapIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<div class="info-card" style="text-align:center;padding:0.8rem;">示意圖載入失敗，請確認 chem-diagrams.js 是否存在或已正確載入。</div>';
+        });
+        return;
+    }
+    const D = ChemDiagrams;
+    const map = {
+        'diag-slide1': D.slide1BondTypes,
+        'diag-slide2-hf': D.slide2HFDiagram,
+        'diag-slide2-hx': D.slide2HalidesCompare,
+        'diag-slide3-en': D.slide3EnPeriodicTable,
+        'diag-slide4a': D.slide4PolarMols,
+        'diag-slide4b': D.slide4NonpolarMols,
+        'diag-slide7a': D.slide7DpDp,
+        'diag-slide7b': D.slide7DpNdp,
+        'diag-slide7c': D.slide7NdpNdp
+    };
+    Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = map[id]();
+    });
+}
+
+const GAME_POOL = [
+    { left: '極性共價鍵', right: '電子對偏向電負度較大原子' },
+    { left: '非極性共價鍵', right: '相同原子共用電子對' },
+    { left: '偶極矩 μ', right: 'μ = q × d（德拜）' },
+    { left: '極性分子', right: '分子偶極矩 ≠ 0' },
+    { left: '非極性分子', right: '鍵偶極向量和為零' },
+    { left: 'CO₂', right: '有極性鍵但分子非極性' },
+    { left: 'H₂O', right: '彎曲形極性分子' },
+    { left: '倫敦分散力', right: '所有分子皆存在' },
+    { left: '偶極–偶極力', right: '極性分子之間' },
+    { left: '氫鍵', right: 'H 與 F、O、N 之間' },
+    { left: '離子–偶極力', right: '離子與極性分子間' },
+    { left: 'Δχ ≈ 0', right: '非極性共價鍵' },
+    { left: 'Δχ > 1.7', right: '離子性為主' },
+    { left: 'NH₃ 幾何', right: '三角錐形（極性）' },
+    { left: 'BF₃ 幾何', right: '平面三角形（非極性）' },
+    { left: '沸點較高主因', right: '分子間作用力較強' },
+    { left: 'H₂O 沸點異常', right: '氫鍵' },
+    { left: 'CH₄ 作用力', right: '僅倫敦分散力' },
+    { left: '孤對電子', right: '使分子幾何不對稱' },
+    { left: '電負度', right: '吸引共用電子對能力' }
+];
+
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false, alkaneViewer = null, nobleViewer = null;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+    ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+function drawChartGeneral(canvasId, type, dataset, groups, highlightIdx = -1) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    const g = canvas.getContext('2d');
+    g.scale(dpr, dpr);
+    const w = rect.width, h = rect.height;
+    g.clearRect(0, 0, w, h);
+    const pad = { l: 40, r: 25, t: 20, b: 30 };
+    const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+    const valsAll = dataset.flatMap(ds => type === 'bp' ? ds.bp : ds.mp);
+    const minT = Math.floor(Math.min(...valsAll) / 50) * 50;
+    const maxT = Math.ceil(Math.max(...valsAll) / 50) * 50;
+    const yScale = v => pad.t + gh - ((v - minT) / (maxT - minT)) * gh;
+    const xScale = i => pad.l + (i + 0.5) * (gw / groups.length);
+    g.strokeStyle = 'rgba(255,255,255,0.1)';
+    for(let t = minT; t <= maxT; t += 50) {
+        let yt = yScale(t);
+        g.beginPath(); g.moveTo(pad.l, yt); g.lineTo(pad.l + gw, yt); g.stroke();
+        g.fillStyle = '#94a3b8'; g.font = '10px sans-serif'; g.textAlign = 'right';
+        g.fillText(t, pad.l - 5, yt + 4);
+    }
+    groups.forEach((grp, i) => {
+        if (groups.length === 20 && grp === `C${i+1}`) {
+            if (i % 5 !== 0) return;
+        }
+        g.fillStyle = '#cbd5e1'; g.font = '12px sans-serif'; g.textAlign = 'center';
+        g.fillText(grp, xScale(i), pad.t + gh + 18);
+    });
+    dataset.forEach(ds => {
+        const vals = type === 'bp' ? ds.bp : ds.mp;
+        g.strokeStyle = ds.color; g.lineWidth = 2.5;
+        g.beginPath();
+        vals.forEach((v, i) => { const x = xScale(i), y = yScale(v); i === 0 ? g.moveTo(x, y) : g.lineTo(x, y); });
+        g.stroke();
+        vals.forEach((v, i) => {
+            const x = xScale(i), y = yScale(v);
+            if (i === highlightIdx) {
+                g.fillStyle = '#fde047';
+                g.beginPath(); g.arc(x, y, 6, 0, Math.PI*2); g.fill();
+                g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.stroke();
+            } else {
+                g.fillStyle = ds.color;
+                g.beginPath(); g.arc(x, y, 4, 0, Math.PI*2); g.fill();
+            }
+        });
+    });
+}
+
+
+function initNoble() {
+    const el = document.getElementById('noble-model');
+    if (!el) return;
+    const bpVals = [-268.9, -246.0, -185.8, -153.2, -108.1, -61.7];
+    const mpVals = [-272.2, -248.6, -189.3, -157.4, -111.8, -71.1];
+    const nobleGroups = ['He', 'Ne', 'Ar', 'Kr', 'Xe', 'Rn'];
+    const dataset = [{ color: '#a78bfa', bp: bpVals, mp: mpVals }];
+    drawChartGeneral('canvas-noble-boil', 'bp', dataset, nobleGroups);
+    drawChartGeneral('canvas-noble-melt', 'mp', dataset, nobleGroups);
+    function tryInit3D() {
+        if (!window.$3Dmol) { setTimeout(tryInit3D, 300); return; }
+        if (!nobleViewer) {
+            try { nobleViewer = $3Dmol.createViewer(el, { backgroundColor: '0x0f172a' }); } catch(e) {}
+        }
+    }
+    tryInit3D();
+    const handleClick = (e) => {
+        const cvs = e.currentTarget;
+        const rect = cvs.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const gw = rect.width - 65;
+        const colW = gw / nobleGroups.length;
+        let idx = Math.floor((x - 40) / colW);
+        idx = Math.max(0, Math.min(nobleGroups.length - 1, idx));
+        loadNobleModel(idx);
+        drawChartGeneral('canvas-noble-boil', 'bp', dataset, nobleGroups, idx);
+        drawChartGeneral('canvas-noble-melt', 'mp', dataset, nobleGroups, idx);
+    };
+    const cb = document.getElementById('canvas-noble-boil');
+    const cm = document.getElementById('canvas-noble-melt');
+    if (cb && !cb.dataset.nobleClick) { cb.addEventListener('click', handleClick); cb.dataset.nobleClick = '1'; }
+    if (cm && !cm.dataset.nobleClick) { cm.addEventListener('click', handleClick); cm.dataset.nobleClick = '1'; }
+}
+
+function loadNobleModel(idx) {
+    if (!nobleViewer) return;
+    nobleViewer.clear();
+    const nobleGroups = ['He', 'Ne', 'Ar', 'Kr', 'Xe', 'Rn'];
+    const n = nobleGroups[idx];
+    const titleEl = document.getElementById('noble-title');
+    if (titleEl) titleEl.innerHTML = `原子結構 <span style="color:#f8fafc;font-size:0.9em;margin-left:5px;">(${n})</span>`;
+    const radius = 0.8 + 0.2 * idx;
+    const colors = ['#fca5a5', '#fdba74', '#fde047', '#86efac', '#93c5fd', '#c4b5fd'];
+    nobleViewer.addSphere({ center: {x: 0, y: 0, z: 0}, radius: radius, color: colors[idx] });
+    nobleViewer.zoomTo();
+    nobleViewer.render();
+}
+
+function initAlkane() {
+    const alc = document.getElementById('alkane-model');
+    if (!alc) return;
+    const bpVals = [-162, -89, -42, -1, 36, 69, 98, 126, 151, 174, 196, 216, 235, 254, 271, 287, 302, 317, 331, 344];
+    const mpVals = [-183, -172, -188, -138, -130, -95, -91, -57, -54, -30, -26, -10, -5, 6, 10, 18, 22, 28, 32, 36];
+    const alkGroups = ['C1','C2','C3','C4','C5','C6','C7','C8','C9','C10','C11','C12','C13','C14','C15','C16','C17','C18','C19','C20'];
+    const dataset = [{ color: '#f87171', bp: bpVals, mp: mpVals }];
+    drawChartGeneral('canvas-boil', 'bp', dataset, alkGroups);
+    drawChartGeneral('canvas-melt', 'mp', dataset, alkGroups);
+    function tryInit3D() {
+        if (!window.$3Dmol) { setTimeout(tryInit3D, 300); return; }
+        if (!alkaneViewer) {
+            try { alkaneViewer = $3Dmol.createViewer(alc, { backgroundColor: '0x0f172a' }); } catch(e) {}
+        }
+    }
+    tryInit3D();
+    const handleClick = (e) => {
+        const cvs = e.currentTarget;
+        const rect = cvs.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const gw = rect.width - 65;
+        const colW = gw / alkGroups.length;
+        let idx = Math.floor((x - 40) / colW);
+        idx = Math.max(0, Math.min(alkGroups.length - 1, idx));
+        loadAlkaneModel(idx);
+        drawChartGeneral('canvas-boil', 'bp', dataset, alkGroups, idx);
+        drawChartGeneral('canvas-melt', 'mp', dataset, alkGroups, idx);
+    };
+    const cb = document.getElementById('canvas-boil');
+    const cm = document.getElementById('canvas-melt');
+    if (cb && !cb.dataset.alkClick) { cb.addEventListener('click', handleClick); cb.dataset.alkClick = '1'; }
+    if (cm && !cm.dataset.alkClick) { cm.addEventListener('click', handleClick); cm.dataset.alkClick = '1'; }
+}
+
+function generateAlkaneXYZ(n) {
+    if (n === 1) {
+        let atoms = [
+            "C 0.000 0.000 0.000",
+            "H 0.630 0.630 0.630",
+            "H -0.630 -0.630 0.630",
+            "H -0.630 0.630 -0.630",
+            "H 0.630 -0.630 -0.630"
+        ];
+        return `5\nAlkane C1\n${atoms.join('\n')}`;
+    }
+    let atoms = [];
+    const dx = 1.26, dy = 0.89; 
+    for (let i = 0; i < n; i++) {
+        let x = i * dx;
+        let isEven = (i % 2 === 0);
+        let y = isEven ? 0 : dy;
+        let z = 0;
+        atoms.push(`C ${x.toFixed(3)} ${y.toFixed(3)} ${z.toFixed(3)}`);
+        if (i === 0) {
+            atoms.push(`H ${(x - 0.89).toFixed(3)} ${(y + 0.63).toFixed(3)} ${z.toFixed(3)}`);
+        }
+        if (i === n - 1) {
+            let hx = x + 0.89;
+            let hy = isEven ? (y + 0.63) : (y - 0.63);
+            atoms.push(`H ${hx.toFixed(3)} ${hy.toFixed(3)} ${z.toFixed(3)}`);
+        }
+        let hy = isEven ? (y - 0.63) : (y + 0.63);
+        atoms.push(`H ${x.toFixed(3)} ${hy.toFixed(3)} 0.890`);
+        atoms.push(`H ${x.toFixed(3)} ${hy.toFixed(3)} -0.890`);
+    }
+    return `${atoms.length}\nAlkane C${n}\n${atoms.join('\n')}`;
+}
+
+// Load and display a true 3D structure for the selected alkane
+function loadAlkaneModel(idx) {
+    if (!alkaneViewer) return;
+    alkaneViewer.clear();
+    const n = idx + 1; // carbon count
+    const titleEl = document.getElementById('alkane-title');
+    if (titleEl) {
+        if (n === 1) {
+            titleEl.innerHTML = `分子結構 <span style="color:#f8fafc;font-size:0.9em;margin-left:5px;">(CH<sub>4</sub>)</span>`;
+        } else {
+            titleEl.innerHTML = `分子結構 <span style="color:#f8fafc;font-size:0.9em;margin-left:5px;">(C<sub>${n}</sub>H<sub>${2*n+2}</sub>)</span>`;
+        }
+    }
+    const xyz = generateAlkaneXYZ(n);
+    alkaneViewer.addModel(xyz, 'xyz');
+    alkaneViewer.setStyle({}, {stick: {radius: 0.15, color: '#64748b'}, sphere: {scale: 0.3, colorscheme: 'Jmol'}});
+    alkaneViewer.zoomTo();
+    alkaneViewer.render();
+}
+
+function initBP() {
+    const cb = document.getElementById('canvas-bp');
+    const cm = document.getElementById('canvas-mp');
+    if (!cb || !cm) return;
+    const groups = ['4A', '5A', '6A', '7A'];
+    const dataset = [
+        { p: '2', color: '#f87171', bp: [-161, -33, 100, 20], mp: [-182, -78, 0, -83], names: ['CH₄','NH₃','H₂O','HF'] },
+        { p: '3', color: '#38bdf8', bp: [-112, -88, -60, -85], mp: [-185, -134, -82, -114], names: ['SiH₄','PH₃','H₂S','HCl'] },
+        { p: '4', color: '#a78bfa', bp: [-88, -62, -41, -67], mp: [-165, -116, -66, -87], names: ['GeH₄','AsH₃','H₂Se','HBr'] },
+        { p: '5', color: '#4ade80', bp: [-52, -17, -2, -35], mp: [-150, -88, -49, -51], names: ['SnH₄','SbH₃','H₂Te','HI'] }
+    ];
+    const getSelectedPeriod = () => {
+        const rads = document.getElementsByName('period-sel');
+        for(let r of rads) if(r.checked) return r.value;
+        return 'all';
+    };
+    const draw = () => {
+        const sel = getSelectedPeriod();
+        const dsFiltered = sel === 'all' ? dataset : dataset.filter(d => d.p === sel);
+        drawChartGeneral('canvas-bp', 'bp', dsFiltered, groups);
+        drawChartGeneral('canvas-mp', 'mp', dsFiltered, groups);
+    };
+    draw();
+    window._bpDraw = draw;
+    document.getElementsByName('period-sel').forEach(r => r.addEventListener('change', draw));
+}
+
+function initMolExplorer() {
+    const row = document.getElementById('mol-btns');
+    if (!row || !window.ChemDiagrams) return;
+    initPDBViewer();
+    if (row.dataset.init !== '3') {
+        row.dataset.init = '3';
+        row.innerHTML = '';
+        ChemDiagrams.molKeys().forEach((key, i) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'mol-btn' + (i === 0 ? ' active' : '');
+            b.textContent = ChemDiagrams.getMolLabel ? ChemDiagrams.getMolLabel(key) : key;
+            b.dataset.key = key;
+            b.onclick = () => selectMol(b.dataset.key, b);
+            row.appendChild(b);
+        });
+    }
+    selectMol('H2O', row.querySelector('[data-key="H2O"]') || row.querySelector('.mol-btn'));
+}
+
+function selectMol(key, btn) {
+    key = (btn && btn.dataset.key) || key || 'H2O';
+    document.querySelectorAll('.mol-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    loadMolImage(key);
+    loadPDBModel(key);
+    const titleEl = document.getElementById('mol-title'), descEl = document.getElementById('mol-desc');
+    const m = ChemDiagrams.getMolMeta(key);
+    if (titleEl) titleEl.textContent = m ? m.title : key;
+    if (descEl && m) descEl.textContent = m.desc;
+    const st = document.getElementById('mol-status');
+    st.textContent = m.polar ? '極性分子' : '非極性分子';
+    st.className = 'status-pill ' + (m.polar ? 'pill-polar' : 'pill-nonpolar');
+}
+
+let _pdbViewer = null, _pdbPendingKey = null, _pdbInitTries = 0;
+function loadMolImage(key) {
+    const img = document.getElementById('mol-image');
+    if (!img) return;
+    img.alt = key + ' 分子結構圖';
+    img.onerror = () => img.removeAttribute('src');
+    img.src = './' + key + '.jpg';
+}
+function initPDBViewer() {
+    const el = document.getElementById('pdb-viewer');
+    if (!el || _pdbViewer) return;
+    if (!window.$3Dmol) { if (_pdbInitTries++ < 40) setTimeout(initPDBViewer, 250); return; }
+    try {
+        _pdbViewer = $3Dmol.createViewer(el, { backgroundColor: '0x0f172a' });
+        if (_pdbPendingKey) loadPDBModel(_pdbPendingKey);
+    } catch (e) { _pdbViewer = null; }
+}
+function loadPDBModel(key) {
+    _pdbPendingKey = key;
+    if (!_pdbViewer) { initPDBViewer(); setTimeout(() => { if (_pdbPendingKey === key) loadPDBModel(key); }, 400); return; }
+    _pdbViewer.clear();
+    const txt = ChemDiagrams.getPdbText ? ChemDiagrams.getPdbText(key) : "";
+    _pdbViewer.addModel(normalizeChem3DPdb(txt), 'pdb', { keepH: true });
+    _pdbViewer.setStyle({}, {stick: {radius: 0.22, color: '#64748b'}, sphere: {scale: 0.45, colorscheme: 'Jmol'}});
+    _pdbViewer.zoomTo(); _pdbViewer.render();
+}
+function normalizeChem3DPdb(txt) {
+    return txt.split(/\r?\n/).map(function (line) {
+        if (!/^HETATM|^ATOM/.test(line)) return line;
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 7) return line;
+        const serial = parts[1], ci = /^-?\d+$/.test(parts[3]) ? 4 : 3;
+        const x = parseFloat(parts[ci]), y = parseFloat(parts[ci + 1]), z = parseFloat(parts[ci + 2]);
+        return 'HETATM' + String(serial).padStart(5) + ' ' + (parts[2]||'C').padEnd(4) + ' MOL A' + String(serial).padStart(4) + '   ' + x.toFixed(3).padStart(8) + y.toFixed(3).padStart(8) + z.toFixed(3).padStart(8) + '  1.00  0.00           ' + (parts[parts.length-1].replace(/[0-9]/g, '')||'C').padStart(2);
+    }).join('\n');
+}
+
+setTimeout(initPDBViewer, 400);
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left, y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-blue)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left); currentLine.setAttribute('y2', cy - rect.top);
+}
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(dot => {
+        const r = dot.getBoundingClientRect();
+        if (cx >= r.left - 14 && cx <= r.right + 14 && cy >= r.top - 14 && cy <= r.bottom + 14) targetDot = dot;
+    });
+    if (targetDot && targetDot !== startDot && startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') && !targetDot.classList.contains('active')) {
+        const svg = document.getElementById('game-svg');
+        const rect = svg.getBoundingClientRect(), r2 = targetDot.getBoundingClientRect();
+        const x2 = r2.left + r2.width / 2 - rect.left;
+        const y2 = r2.top + r2.height / 2 - rect.top;
+        if (startDot.dataset.index === targetDot.dataset.index) {
+            startDot.classList.add('active'); targetDot.classList.add('active');
+            connections.push({ from: startDot, to: targetDot });
+            currentLine.setAttribute('x2', x2);
+            currentLine.setAttribute('y2', y2);
+            currentLine.setAttribute('stroke', 'var(--accent-green)');
+            currentLine = null;
+            if (connections.length === GAME_COUNT) {
+                const fb = document.getElementById('game-feedback');
+                fb.style.display = 'block';
+                setTimeout(() => { fb.style.display = 'none'; }, 2800);
+            }
+        } else {
+            currentLine.setAttribute('stroke', 'var(--accent-red)');
+            currentLine.setAttribute('x2', x2);
+            currentLine.setAttribute('y2', y2);
+            const bad = currentLine;
+            currentLine = null;
+            setTimeout(() => { if (bad && bad.parentNode) bad.remove(); }, 450);
+        }
+    } else {
+        if (currentLine) currentLine.remove();
+        currentLine = null;
+    }
+    startDot = null;
+}
+
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(c => {
+        const r1 = c.from.getBoundingClientRect(), r2 = c.to.getBoundingClientRect();
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+        l.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+        l.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+        l.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+        l.setAttribute('stroke', 'var(--accent-green)');
+        l.setAttribute('stroke-width', '4');
+        l.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(l);
+    });
+}
+
+function resetGame() { initGame(); }
+
+document.addEventListener('mousemove', gameDragMove);
+document.addEventListener('mouseup', gameDragEnd);
+document.addEventListener('touchmove', gameDragMove, { passive: false });
+document.addEventListener('touchend', gameDragEnd);
+
+// 鍵盤導覽：左右鍵翻頁，Home/End 跳到首尾，空白鍵啟動開始按鈕（若尚未聚焦到輸入）
+document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    } else if (ev.key === ' ' && document.activeElement === document.body) {
+        // 空白鍵在未聚焦輸入時啟動起始畫面
+        ev.preventDefault(); const bs = document.getElementById('btn-start'); if (bs) bs.click();
+    }
+});
+
+window.updateSlides = function () {
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    injectChemDiagrams();
+    const sid = slides[currentSlide] ? slides[currentSlide].id : '';
+    if (sid === 'slide-game') { initGame(); setTimeout(drawConnections, 80); }
+    if (sid === 'slide-noble') setTimeout(() => initNoble(), 80);
+    if (sid === 'slide-alkane') setTimeout(() => initAlkane(), 80);
+    if (sid === 'slide-bp') setTimeout(() => { initBP(); if (window._bpDraw) window._bpDraw(); }, 50);
+    if (sid === 'slide-mol') setTimeout(() => {
+        initMolExplorer();
+        if (_pdbViewer && _pdbViewer.resize) _pdbViewer.resize();
+    }, 80);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([slides[currentSlide]]).catch(() => {});
+    }
+};
+
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectChemDiagrams);
+} else {
+    injectChemDiagrams();
+}
+</script>
+
+</body>
+</html>

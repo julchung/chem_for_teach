@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>影響反應速率的因素 - 溫度 | 互動教學</title>
+    <meta name="description" content="選修化學二：溫度對影響反應速率因素的相關教學內容互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(248,113,113,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(248,113,113,0.15) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-red);
+            background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-red); text-shadow: 0 0 40px rgba(248,113,113,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-orange)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(248,113,113,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-red); font-size: clamp(1.4rem, 2.4vw, 2.05rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(248,113,113,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ''; width: 7px; height: 26px; background: var(--accent-red); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1.0rem, 1.5vw, 1.3rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.2vw, 1.1rem); line-height: 1.55; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-blue {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.12rem 0.65rem; border-radius: 18px; font-size: 0.88rem; font-weight: 700; margin-right: 0.3rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 1.1rem 1.25rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+        .quiz-options li { font-size: clamp(1.0rem, 1.3vw, 1.18rem); padding: 0.55rem 0.75rem; margin-bottom: 0.3rem; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+        .quiz-options li span.opt-label { color: var(--accent-yellow); font-weight: 700; min-width: 2.2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-red); color: #fff; border: none; padding: 0.75rem 1.6rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+            align-self: flex-start; margin-top: 0.5rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 16px 32px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 8px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 18px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 52px; height: 10vh; max-height: 82px; position: relative;
+            font-size: clamp(0.95rem, 1.3vw, 1.18rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none; }
+        .left-dot { margin-left: auto; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px; font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900; box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center; }
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-red); color: #fff; border-color: var(--accent-red); box-shadow: 0 0 15px rgba(248,113,113,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info { position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right; font-size: 0.92rem; color: rgba(255,255,255,0.6); background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.15); font-weight: 700; }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        .slide-intro h1 { font-size: clamp(2.0rem, 3.5vw, 2.9rem); }
+        .slide-intro h2 { font-size: clamp(1.3rem, 2.1vw, 1.7rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.12rem, 1.65vw, 1.32rem); line-height: 1.6; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr !important; } #slides-container { right: 58px; } .game-columns { padding: 12px 16px; } }
+        .sim-slider { width: 100%; accent-color: var(--accent-red); cursor: pointer; height: 6px; margin: 4px 0 8px; }
+        .sim-value { color: var(--accent-cyan); font-weight: 700; font-size: 1.2rem; }
+        canvas.rate-canvas { width: 100%; height: 100%; display: block; border-radius: 8px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- Slide 1 -->
+            <div class="slide slide-intro active" id="slide-1">
+                <h1>溫度對反應速率的定性效應</h1>
+
+                <!-- Top: full-width 定性效應 -->
+                <div class="panel" style="flex-shrink:0; margin-bottom:0.7rem;">
+                    <h2 style="margin-top:0;">溫度的定性效應</h2>
+                    <p style="margin:0;"><strong>溫度升高，反應速率加快。</strong>不論是吸熱或放熱反應，不論正向或逆向，升溫均加速，降溫均減慢。影響速率的機制分為兩種效應，說明如下：</p>
+                </div>
+
+                <!-- Bottom: two columns -->
+                <div class="grid-2" style="flex:1; min-height:0; grid-template-columns: 1fr 1.3fr;">
+                    <!-- Left: 主要效應 description + canvas -->
+                    <div class="panel" style="flex-direction:column;">
+                        <div class="info-card" style="flex-shrink:0; margin-bottom:0.5rem;">
+                            <p style="margin:0;"><strong>🔵 主要效應：有效碰撞比例增加</strong></p>
+                            <p style="margin:0.3rem 0 0;">升高溫度，超越低限能（活化能）的分子比例<em>大幅增加</em>，因此有效碰撞頻率顯著提升。</p>
+                        </div>
+                        <div style="flex:1; min-height:0; background:rgba(0,0,0,0.3); border-radius:8px; position:relative;">
+                            <canvas id="mb-canvas-1" class="mb-canvas rate-canvas"></canvas>
+                        </div>
+                        <div style="flex-shrink:0; margin-top:0.4rem;">
+                            <label style="font-size:0.85rem; color:rgba(255,255,255,0.7);">目前溫度：<span class="sim-value" id="temp-val-1">350</span> K</label>
+                            <input type="range" class="sim-slider" id="temp-slider-1" min="200" max="700" step="10" value="350">
+                            <p style="font-size:0.78rem; color:rgba(255,255,255,0.45); text-align:center; margin:0;">白虛線 = 300K 基準 | 彩色曲線 = 目前溫度 | 黃虛線 = 低限能 $E_a$（可左右拖曳）</p>
+                        </div>
+                    </div>
+
+                    <!-- Right: 次要效應 description + formula -->
+                    <div class="panel" style="overflow:hidden; font-size:clamp(0.78rem,1.05vw,0.95rem);">
+                        <div class="info-card-purple" style="flex-shrink:0; padding:0.55rem 0.8rem; margin-bottom:0.4rem;">
+                            <p style="margin:0; font-weight:700;">🟣 次要效應：碰撞次數增加</p>
+                            <p style="margin:0.2rem 0 0;">升溫使分子運動速率加快，碰撞總次數小幅增加，但對速率的貢獻遠小於主要效應。</p>
+                        </div>
+                        <div class="info-card-purple" style="padding:0.55rem 0.8rem; margin-bottom:0.4rem;">
+                            <p style="margin:0;">根據氣體動力論，分子平均運動速率與絕對溫度平方根成正比：</p>
+                            <div style="text-align:center; font-size:1rem; margin:0.2rem 0;">$v_{avg} \propto \sqrt{T}$</div>
+                            <p style="margin:0;">故碰撞頻率 $Z$ 亦與 $\sqrt{T}$ 成正比：</p>
+                        </div>
+                        <div class="formula-box" style="font-size:clamp(1rem,1.4vw,1.2rem); padding:0.6rem 0.8rem; margin:0.4rem 0;">
+                            $Z \propto \sqrt{T} \implies \dfrac{Z_2}{Z_1} = \sqrt{\dfrac{T_2}{T_1}}$
+                        </div>
+                        <div class="info-card-yellow" style="padding:0.55rem 0.8rem; margin-bottom:0.4rem;">
+                            <p style="margin:0; font-weight:700;">數值比較：</p>
+                            <p style="margin:0.15rem 0 0;">溫度 300K → 310K（升高 10K）：</p>
+                            <p style="margin:0.1rem 0 0;">碰撞頻率增加 $\sqrt{310/300} \approx 1.016$，僅 <strong>+1.6%</strong></p>
+                            <p style="margin:0.1rem 0 0;">但反應速率可增加 <strong>約 100%（2倍）</strong></p>
+                        </div>
+                        <div class="highlight-box" style="padding:0.55rem 0.8rem; margin:0;">
+                            <p style="text-align:center; margin:0;">⚖️ <strong>結論：</strong>碰撞次數增加的貢獻遠小於有效碰撞比例的增加，故稱為「次要效應」。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-2">
+                <h1>定性比較總結</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>定性比較總結</h2>
+                        <ul style="margin-top: 1rem; font-size: 1.45rem; line-height: 1.8;">
+                            <li><strong>放熱反應：</strong><br/>溫度↑ ➔ 正反應加速、逆反應加速 (逆向增加幅度大於正向)</li>
+                            <li><strong>吸熱反應：</strong><br/>溫度↑ ➔ 正反應加速、逆反應加速 (正向增加幅度大於逆向)</li>
+                            <li><strong>低限能：</strong>與溫度、壓力無關（僅受反應物種類或催化劑影響）。</li>
+                            <li style="color:var(--accent-yellow);"><strong>整體趨勢：</strong><br/>升高溫度時，反應朝<strong>吸熱方向</strong>進行。因為吸熱方向（活化能大的方向）受溫度影響大，升溫時變得更快，降溫時變得更慢。</li>
+                        </ul>
+                        <div class="highlight-box" style="margin-top:2rem;">
+                            <p style="text-align:center; font-size:1.15rem;">💡 <strong>結論：</strong>溫度是改變 $k$（速率常數）的關鍵因素，增溫能顯著放大 $k$ 值。</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h3 style="color:var(--accent-cyan); margin: 0 0 0.8rem 0; font-size: 1.4rem; text-align: center;">為何活化能大的方向，速率增加越顯著？</h3>
+                        <p style="font-size: 1.15rem; margin-bottom: 0.8rem; line-height: 1.6;">從<strong>動能分佈曲線</strong>可知，活化能 ($E_a$) 門檻越高，常溫下能超越門檻的分子極少。當溫度升高時，高動能分子比例會<strong>呈指數型暴增</strong>，因此<strong style="color:var(--accent-yellow);">高活化能方向的速率增加幅度，會遠大於低活化能方向</strong>。</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <!-- 放熱反應 -->
+                            <div class="info-card" style="display: flex; gap: 1rem; align-items: center; padding: 0.8rem; margin:0;">
+                                <div style="flex: 1;">
+                                    <svg viewBox="0 0 200 130" style="width: 100%; height: auto; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                                        <!-- Axes -->
+                                        <line x1="15" y1="110" x2="190" y2="110" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                        <line x1="15" y1="10" x2="15" y2="110" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                        
+                                        <!-- Curve (Exothermic) -->
+                                        <path d="M 25 50 C 60 50 80 15 100 15 C 120 15 140 90 175 90" fill="none" stroke="var(--accent-red)" stroke-width="2.5"/>
+                                        <line x1="15" y1="50" x2="40" y2="50" stroke="white" stroke-width="2"/>
+                                        <line x1="160" y1="90" x2="190" y2="90" stroke="white" stroke-width="2"/>
+                                        
+                                        <!-- Peak horizontal line -->
+                                        <line x1="60" y1="15" x2="140" y2="15" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <!-- Reactant & Product horizontal extension -->
+                                        <line x1="40" y1="50" x2="60" y2="50" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <line x1="140" y1="90" x2="160" y2="90" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+
+                                        <!-- Ea 正 (Left) -->
+                                        <line x1="60" y1="15" x2="60" y2="50" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                                        <path d="M 57 18 L 60 15 L 63 18 M 57 47 L 60 50 L 63 47" fill="none" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                                        <text x="55" y="36" fill="var(--accent-yellow)" font-size="12" text-anchor="end">Ea正</text>
+                                        
+                                        <!-- Ea 逆 (Right) -->
+                                        <line x1="140" y1="15" x2="140" y2="90" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                                        <path d="M 137 18 L 140 15 L 143 18 M 137 87 L 140 90 L 143 87" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                                        <text x="145" y="56" fill="var(--accent-cyan)" font-size="12" text-anchor="start">Ea逆</text>
+                                    </svg>
+                                </div>
+                                <div style="flex: 1.2; font-size: 1.05rem;">
+                                    <strong style="color:var(--accent-red); font-size: 1.25rem;">🔥 放熱反應</strong> ($\Delta H < 0$)
+                                    <p style="margin: 0.5rem 0;">正向活化能 < <strong>逆向活化能</strong></p>
+                                    <p style="margin: 0; font-size: 1.05rem; color: rgba(255,255,255,0.85);">升溫時，正逆速率皆變快，但<strong style="color:var(--accent-cyan);">逆反應 (Ea大) 增加幅度更大</strong>。</p>
+                                </div>
+                            </div>
+
+                            <!-- 吸熱反應 -->
+                            <div class="info-card-blue" style="display: flex; gap: 1rem; align-items: center; padding: 0.8rem; margin:0;">
+                                <div style="flex: 1;">
+                                    <svg viewBox="0 0 200 130" style="width: 100%; height: auto; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                                        <!-- Axes -->
+                                        <line x1="15" y1="110" x2="190" y2="110" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                        <line x1="15" y1="10" x2="15" y2="110" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+                                        
+                                        <!-- Curve (Endothermic) -->
+                                        <path d="M 25 90 C 60 90 80 15 100 15 C 120 15 140 50 175 50" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"/>
+                                        <line x1="15" y1="90" x2="40" y2="90" stroke="white" stroke-width="2"/>
+                                        <line x1="160" y1="50" x2="190" y2="50" stroke="white" stroke-width="2"/>
+                                        
+                                        <!-- Peak horizontal line -->
+                                        <line x1="60" y1="15" x2="140" y2="15" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <!-- Reactant & Product horizontal extension -->
+                                        <line x1="40" y1="90" x2="60" y2="90" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+                                        <line x1="140" y1="50" x2="160" y2="50" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+
+                                        <!-- Ea 正 (Left) -->
+                                        <line x1="60" y1="15" x2="60" y2="90" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                                        <path d="M 57 18 L 60 15 L 63 18 M 57 87 L 60 90 L 63 87" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                                        <text x="55" y="56" fill="var(--accent-cyan)" font-size="12" text-anchor="end">Ea正</text>
+                                        
+                                        <!-- Ea 逆 (Right) -->
+                                        <line x1="140" y1="15" x2="140" y2="50" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                                        <path d="M 137 18 L 140 15 L 143 18 M 137 47 L 140 50 L 143 47" fill="none" stroke="var(--accent-yellow)" stroke-width="1.5"/>
+                                        <text x="145" y="36" fill="var(--accent-yellow)" font-size="12" text-anchor="start">Ea逆</text>
+                                    </svg>
+                                </div>
+                                <div style="flex: 1.2; font-size: 1.05rem;">
+                                    <strong style="color:var(--accent-blue); font-size: 1.25rem;">❄️ 吸熱反應</strong> ($\Delta H > 0$)
+                                    <p style="margin: 0.5rem 0;"><strong>正向活化能</strong> > 逆向活化能</p>
+                                    <p style="margin: 0; font-size: 1.05rem; color: rgba(255,255,255,0.85);">升溫時，正逆速率皆變快，但<strong style="color:var(--accent-cyan);">正反應 (Ea大) 增加幅度更大</strong>。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-4">
+                <h1>溫度的定量效應與活化能的關係</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>溫度的定量效應</h2>
+                        
+                        <div style="margin-top: 0.8rem; margin-bottom: 1.2rem;">
+                            <h3 style="color:var(--accent-blue); font-size: 1.15rem; margin-bottom: 0.4rem;">1. 阿瑞尼士方程式 (Arrhenius Equation)</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.5;">描述速率常數 $k$ 與絕對溫度 $T$ 的精確數學關係：</p>
+                            <div class="formula-box" style="font-size: 1.3rem; margin: 0.6rem 0;">
+                                $k = A \cdot e^{-\frac{E_a}{RT}}$
+                            </div>
+                            <ul style="font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.85); margin-left: 1.5rem;">
+                                <li>$A$：頻率因子 (與碰撞頻率及位向有關)</li>
+                                <li>$E_a$：活化能</li>
+                                <li>$R$：理想氣體常數，$T$：絕對溫度</li>
+                                <li style="margin-top: 0.3rem;"><strong style="color:var(--accent-yellow);">意義：</strong> $T$ 越大或 $E_a$ 越小，則 $e^{-\frac{E_a}{RT}}$ 的值越大，$k$ 值越大，反應越快。</li>
+                            </ul>
+                        </div>
+
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.2rem;">
+                            <h3 style="color:var(--accent-cyan); font-size: 1.15rem; margin-bottom: 0.4rem;">2. 經驗法則 (Van't Hoff 規則)</h3>
+                            <p style="font-size: 1.05rem; line-height: 1.5;">一般而言，在室溫附近（且活化能約 $15 \text{ kcal/mol}$ 時），溫度每升高 $10^\circ\text{C}$，反應速率約增至原來的 <strong>2 倍</strong>。</p>
+                            <div class="formula-box" style="font-size: 1.2rem; margin: 0.6rem 0;">
+                                $\dfrac{r_2}{r_1} = 2^{\frac{T_2 - T_1}{10}}$
+                            </div>
+                            <p style="color:var(--accent-yellow); font-size: 0.95rem;">註：此為近似的經驗法則，實際倍數可能介於 2~4 倍之間。</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>活化能與反應速率的關係</h2>
+                        <div class="info-card">
+                            <p><strong>1. 活化能低的反應：</strong></p>
+                            <p>在常溫時反應速率大，受溫度變化的影響<strong>較小</strong>。</p>
+                        </div>
+                        <div class="info-card-purple">
+                            <p><strong>2. 活化能高的反應：</strong></p>
+                            <p>在常溫時反應速率慢，受溫度變化的影響<strong>較大</strong>（對溫度較敏感）。</p>
+                        </div>
+                        <div class="highlight-box" style="margin-top: 1rem;">
+                            <p>⚠️ <strong>注意：</strong>反應熱 $\Delta H$ 等於正、逆反應活化能的差值，但<strong>反應熱並不影響反應速率的快慢</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide" id="slide-5">
+                <h1>教學範例與練習</h1>
+                <div class="grid-2">
+                    <div class="quiz-item">
+                        <h2>範例 1：溫度的影響</h2>
+                        <p>關於溫度對反應速率影響的敘述，何者正確？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 溫度升高，只有放熱反應的速率會增加</li>
+                            <li><span class="opt-label">(B)</span> 溫度可改變分子的動能分佈曲線，使超越活化能的分子數增多</li>
+                            <li><span class="opt-label">(C)</span> 溫度可改變反應途徑，進而改變速率</li>
+                            <li><span class="opt-label">(D)</span> 溫度升高能降低活化能，增快反應</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans1">
+                            <h2 style="color:var(--accent-green);">解答：(B)</h2>
+                            <p><strong>解析：</strong></p>
+                            <p>(A) 錯誤：不論吸熱或放熱反應，溫度升高均會加速。</p>
+                            <p>(B) 正確：這是溫度增加反應速率的主要效應。</p>
+                            <p>(C) 錯誤：改變反應途徑是催化劑的作用。</p>
+                            <p>(D) 錯誤：溫度不會改變活化能，只有催化劑能改變。</p>
+                            <button type="button" class="btn-action" style="margin-top:1rem;" onclick="toggleAns('ans1', this)">關閉</button>
+                        </div>
+                    </div>
+                    <div class="quiz-item">
+                        <h2>範例 2：反應熱與速率變化</h2>
+                        <p>已知 $A + B \rightleftharpoons C + D$，$\Delta H = -100 \text{ kJ}$。若溫度升高，則正、逆反應的反應速率皆會變快，兩者增加的幅度為何？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 正反應增加幅度大於逆反應</li>
+                            <li><span class="opt-label">(B)</span> 正反應與逆反應增加幅度相同</li>
+                            <li><span class="opt-label">(C)</span> 逆反應增加幅度大於正反應</li>
+                            <li><span class="opt-label">(D)</span> 無法判斷</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans2">
+                            <h2 style="color:var(--accent-green);">解答：(C)</h2>
+                            <p><strong>解析：</strong></p>
+                            <p>由於 $\Delta H = -100 \text{ kJ}$，此為<strong>放熱反應</strong>。</p>
+                            <p>放熱反應的特性是：正反應活化能 $E_{a,\text{正}}$ ＜ 逆反應活化能 $E_{a,\text{逆}}$。</p>
+                            <p>活化能越大的反應，對溫度的改變越敏感。因此溫度升高時，活化能較大的<strong>逆反應，其速率增加的幅度會大於正反應</strong>。</p>
+                            <button type="button" class="btn-action" style="margin-top:1rem;" onclick="toggleAns('ans2', this)">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="slide" id="slide-game">
+                <h1 style="color:var(--accent-purple);">單元挑戰：溫度效應觀念連連看</h1>
+                <p style="font-size:0.88rem;color:rgba(255,255,255,0.55);flex-shrink:0;">從左側概念拖曳連線至右側說明；正確顯示綠線並保留，錯誤顯示紅線後消失</p>
+                <div class="game-area">
+                    <svg id="game-svg" role="img" aria-label="連連看互動區"></svg>
+                    <div class="game-columns">
+                        <div id="left-column"></div>
+                        <div id="right-column"></div>
+                    </div>
+                    <div id="game-feedback">🎉 太棒了！全對！</div>
+                </div>
+                <div style="text-align:center;margin-top:0.5rem;flex-shrink:0;">
+                    <button type="button" class="btn-action" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid var(--accent-yellow);" onclick="resetGame()">重新挑戰（隨機出題）</button>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+        <canvas id="drawing-layer" role="application" aria-label="手寫繪圖層" tabindex="0"></canvas>
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<div id="slide-info">1 / 5</div>
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
+</div>
+
+<div id="start-overlay">
+    <div class="start-badge">選修化學二 · 第三章 · 化學反應速率</div>
+    <h1 class="start-title">影響反應速率的因素 <br/> — 溫度 —</h1>
+    <p class="start-sub">互動教學（支援 iPad 全螢幕 · 分頁 · 手寫 · 範例 · 觀念連連看）</p>
+    <button type="button" class="btn-start" id="btn-start">開始探索教學 ✦</button>
+    <div class="start-info">
+        <div class="info-chip"><span>🌡️</span><span>定性與定量效應</span></div>
+        <div class="info-chip"><span>📈</span><span>動能分佈曲線模擬</span></div>
+        <div class="info-chip"><span>⚡</span><span>活化能關係</span></div>
+        <div class="info-chip"><span>✏️</span><span>手寫互動解題</span></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return;
+        starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof window.updateSlides === 'function') window.updateSlides();
+                if (typeof window.updateAllMB === 'function') window.updateAllMB();
+            });
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+</script>
+
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.style.display === 'flex';
+    el.style.display = open ? 'none' : 'flex';
+    if (btn) btn.textContent = open ? '顯示解答' : '關閉';
+}
+
+/* ---- Maxwell-Boltzmann Canvas ---- */
+let mbEa = 1000;
+const mbMaxE = 1600;
+
+function drawMB(canvasId, sliderId) {
+    const cvs = document.getElementById(canvasId);
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = rect.width * dpr; cvs.height = rect.height * dpr;
+    const g = cvs.getContext('2d');
+    g.scale(dpr, dpr);
+    const w = rect.width, h = rect.height;
+    const T = parseInt(document.getElementById(sliderId).value);
+    const T_ref = 300;
+
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(0, 0, w, h);
+
+    const pad = { l: 40, r: 15, t: 15, b: 45 };
+    const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+    const kB = 1.0;
+    const Ea = mbEa;
+    const maxE = mbMaxE;
+
+    const f = (T_val, E) => (Math.sqrt(E) * Math.exp(-E / (kB * T_val))) / Math.pow(kB * T_val, 1.5);
+
+    const minT = 200;
+    const peakValMinT = (Math.sqrt(minT / 2) * Math.exp(-0.5)) / Math.pow(minT, 1.5);
+    const scaleY = (0.9 * gh) / peakValMinT;
+
+    const drawShade = (T_val, isRef) => {
+        g.beginPath();
+        const xEa = pad.l + (Ea / maxE) * gw;
+        g.moveTo(xEa, pad.t + gh);
+        for (let xi = Math.floor((Ea / maxE) * gw); xi <= gw; xi++) {
+            const E = (xi / gw) * maxE;
+            const y = pad.t + gh - f(T_val, E) * scaleY;
+            g.lineTo(pad.l + xi, y);
+        }
+        g.lineTo(pad.l + gw, pad.t + gh);
+        g.closePath();
+        if (isRef) {
+            g.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        } else {
+            g.fillStyle = T_val > 450 ? 'rgba(248,113,113,0.3)' : 'rgba(52,211,153,0.25)';
+        }
+        g.fill();
+    };
+
+    const drawCurve = (T_val, isRef) => {
+        g.beginPath();
+        for (let xi = 0; xi <= gw; xi++) {
+            const E = (xi / gw) * maxE;
+            const y = pad.t + gh - f(T_val, E) * scaleY;
+            xi === 0 ? g.moveTo(pad.l + xi, y) : g.lineTo(pad.l + xi, y);
+        }
+        if (isRef) {
+            g.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            g.lineWidth = 1.5;
+            g.setLineDash([4, 4]);
+            g.stroke();
+            g.setLineDash([]);
+        } else {
+            const tempFrac = (T_val - 200) / 500;
+            const r = Math.round(56 + tempFrac * 200);
+            const b = Math.round(248 - tempFrac * 150);
+            g.strokeStyle = `rgb(${r},${Math.round(189-tempFrac*80)},${b})`;
+            g.lineWidth = 2.5;
+            g.stroke();
+        }
+    };
+
+    // Draw base shades
+    drawShade(T_ref, true);
+    drawShade(T, false);
+
+    // Draw difference area between the two curves above Ea
+    const xEaStart = Math.floor((Ea / maxE) * gw);
+    g.beginPath();
+    // Forward along higher curve
+    let firstDiff = true;
+    for (let xi = xEaStart; xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const yRef = pad.t + gh - f(T_ref, E) * scaleY;
+        const yCur = pad.t + gh - f(T, E) * scaleY;
+        const yTop = Math.min(yRef, yCur);
+        if (firstDiff) { g.moveTo(pad.l + xi, yTop); firstDiff = false; }
+        else g.lineTo(pad.l + xi, yTop);
+    }
+    // Back along lower curve
+    for (let xi = gw; xi >= xEaStart; xi--) {
+        const E = (xi / gw) * maxE;
+        const yRef = pad.t + gh - f(T_ref, E) * scaleY;
+        const yCur = pad.t + gh - f(T, E) * scaleY;
+        g.lineTo(pad.l + xi, Math.max(yRef, yCur));
+    }
+    g.closePath();
+    if (T === T_ref) {
+        // no difference
+    } else if (T > T_ref) {
+        g.fillStyle = 'rgba(251,191,36,0.55)'; // yellow-gold: gain in effective particles
+    } else {
+        g.fillStyle = 'rgba(248,113,113,0.55)'; // red: loss
+    }
+    if (T !== T_ref) g.fill();
+
+    // Draw curves on top
+    drawCurve(T_ref, true);
+    drawCurve(T, false);
+
+    // Axes
+    g.strokeStyle = 'rgba(255,255,255,0.4)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(pad.l, pad.t); g.lineTo(pad.l, pad.t + gh); g.lineTo(pad.l + gw, pad.t + gh); g.stroke();
+
+    // Ea vertical line
+    const xEa = pad.l + (Ea / maxE) * gw;
+    g.strokeStyle = '#fbbf24'; g.lineWidth = 2; g.setLineDash([6, 4]);
+    g.beginPath(); g.moveTo(xEa, pad.t + 8); g.lineTo(xEa, pad.t + gh); g.stroke();
+    g.setLineDash([]);
+
+    // 低限能 label — rotated vertically, to the right of the Ea line
+    g.save();
+    g.fillStyle = '#fbbf24';
+    g.font = 'bold 13px sans-serif';
+    g.textAlign = 'center';
+    g.translate(xEa + 14, pad.t + gh * 0.38);
+    g.rotate(Math.PI / 2);
+    g.fillText('低限能', 0, 0);
+    g.restore();
+
+    // Axis labels
+    g.fillStyle = 'rgba(255,255,255,0.5)'; g.font = '14px sans-serif'; g.textAlign = 'center';
+    g.fillText('分子能量 E', pad.l + gw / 2, h - 3);
+    g.save(); g.translate(14, pad.t + gh / 2); g.rotate(-Math.PI / 2);
+    g.fillText('分子數', 0, 0); g.restore();
+
+    // Stats — top-right
+    const getFrac = (t_v) => {
+        let sum = 0, total = 0;
+        for (let xi = 0; xi <= gw; xi++) {
+            const E = (xi / gw) * maxE;
+            const val = f(t_v, E);
+            if ((xi / gw) * maxE >= Ea) sum += val;
+            total += val;
+        }
+        return total > 0 ? (sum / total * 100).toFixed(1) : '0.0';
+    };
+
+    const frac = getFrac(T);
+    const frac_ref = getFrac(T_ref);
+    const rx = pad.l + gw - 4;
+
+    g.fillStyle = 'rgba(255,255,255,0.55)';
+    g.font = '12px sans-serif'; g.textAlign = 'right';
+    g.fillText(`基準(300K) 有效比例 ≈ ${frac_ref}%`, rx, pad.t + 16);
+
+    g.fillStyle = T > 450 ? '#f87171' : '#34d399';
+    g.font = 'bold 14px sans-serif';
+    g.fillText(`目前 T = ${T} K`, rx, pad.t + 33);
+    g.fillStyle = 'rgba(255,255,255,0.85)'; g.font = '13px sans-serif';
+    g.fillText(`有效碰撞比例 ≈ ${frac}%`, rx, pad.t + 50);
+
+    // Difference legend
+    if (T !== T_ref) {
+        const diffFrac = Math.abs(parseFloat(frac) - parseFloat(frac_ref)).toFixed(1);
+        g.fillStyle = T > T_ref ? '#fbbf24' : '#f87171';
+        g.font = 'bold 12px sans-serif';
+        g.fillText(`差異 ${T > T_ref ? '+' : '-'}${diffFrac}%`, rx, pad.t + 66);
+    }
+}
+
+window.updateAllMB = function() {
+    drawMB('mb-canvas-1', 'temp-slider-1');
+    drawMB('mb-canvas-3', 'temp-slider-3');
+};
+
+['1', '3'].forEach(id => {
+    const slider = document.getElementById('temp-slider-' + id);
+    if(slider) {
+        slider.addEventListener('input', function () {
+            const valSpan = document.getElementById('temp-val-' + id);
+            if(valSpan) valSpan.textContent = this.value;
+            window.updateAllMB();
+        });
+    }
+});
+
+(function initMBInteraction() {
+    ['1', '3'].forEach(id => {
+        const cvs = document.getElementById('mb-canvas-' + id);
+        if (!cvs) return;
+        let isDraggingEa = false;
+        
+        function getMousePos(evt) {
+            const rect = cvs.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            return clientX - rect.left;
+        }
+        
+        function getXEa(gw) {
+            return 40 + (mbEa / mbMaxE) * gw;
+        }
+        
+        function updateCursor(evt) {
+            if (isDraggingEa) return;
+            const x = getMousePos(evt);
+            const gw = cvs.getBoundingClientRect().width - 40 - 15;
+            if (Math.abs(x - getXEa(gw)) < 15) {
+                cvs.style.cursor = 'ew-resize';
+            } else {
+                cvs.style.cursor = 'default';
+            }
+        }
+        
+        cvs.addEventListener('mousedown', (e) => {
+            const gw = cvs.getBoundingClientRect().width - 40 - 15;
+            if (Math.abs(getMousePos(e) - getXEa(gw)) < 15) isDraggingEa = true;
+        });
+        
+        cvs.addEventListener('mousemove', (e) => {
+            updateCursor(e);
+            if (!isDraggingEa) return;
+            const gw = cvs.getBoundingClientRect().width - 40 - 15;
+            let newEa = ((getMousePos(e) - 40) / gw) * mbMaxE;
+            if (newEa < 50) newEa = 50;
+            if (newEa > mbMaxE - 10) newEa = mbMaxE - 10;
+            mbEa = newEa;
+            window.updateAllMB();
+        });
+        
+        cvs.addEventListener('mouseup', () => isDraggingEa = false);
+        cvs.addEventListener('mouseleave', () => {
+            isDraggingEa = false;
+            cvs.style.cursor = 'default';
+        });
+        
+        cvs.addEventListener('touchstart', (e) => {
+            const gw = cvs.getBoundingClientRect().width - 40 - 15;
+            if (Math.abs(getMousePos(e) - getXEa(gw)) < 25) {
+                isDraggingEa = true;
+                e.preventDefault();
+            }
+        }, {passive: false});
+        
+        cvs.addEventListener('touchmove', (e) => {
+            if (!isDraggingEa) return;
+            e.preventDefault();
+            const gw = cvs.getBoundingClientRect().width - 40 - 15;
+            let newEa = ((getMousePos(e) - 40) / gw) * mbMaxE;
+            if (newEa < 50) newEa = 50;
+            if (newEa > mbMaxE - 10) newEa = mbMaxE - 10;
+            mbEa = newEa;
+            window.updateAllMB();
+        }, {passive: false});
+        
+        cvs.addEventListener('touchend', () => isDraggingEa = false);
+        cvs.addEventListener('touchcancel', () => isDraggingEa = false);
+    });
+})();
+
+/* ---- Drawing layer ---- */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+    if (typeof window.updateAllMB === 'function') window.updateAllMB();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+window.addEventListener('load', () => {
+    setTimeout(() => { if (typeof window.updateAllMB === 'function') window.updateAllMB(); }, 150);
+});
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+    ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ---- Slide navigation ---- */
+window.updateSlides = function () {
+    slides.forEach((s, i) => {
+        s.classList.toggle('active', i === currentSlide);
+    });
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    setTimeout(() => {
+        if (slides[currentSlide] && (slides[currentSlide].id === 'slide-1' || slides[currentSlide].id === 'slide-3')) window.updateAllMB();
+        
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') { initGame(); drawConnections(); }
+    }, 100);
+};
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', e => {
+    if (isDrawingMode) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+    if (isDrawingMode) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 40) {
+        if (dy < 0 && currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+        else if (dy > 0 && currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    }
+}, { passive: true });
+
+document.addEventListener('keydown', ev => {
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+/* ---- Toolbar drag ---- */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+/* ---- Game ---- */
+const GAME_POOL = [
+    { left: '溫度升高', right: '正逆反應皆加快' },
+    { left: '溫度對活化能影響', right: '無影響 (不改變 Ea)' },
+    { left: '主要效應', right: '超越低限能分子增多' },
+    { left: '低限能 $E_a$', right: '有效碰撞的動能門檻' },
+    { left: '反應熱 $\\Delta H$', right: '不影響反應速率快慢' },
+    { left: '活化能高的反應', right: '對溫度變化較敏感' },
+    { left: '活化能低的反應', right: '常溫下速率較大' },
+    { left: '放熱反應升溫', right: '逆向增加幅度大於正向' },
+    { left: '溫度每升 10°C', right: '速率約增為 2 倍' },
+    { left: '分佈曲線向右移動', right: '分子平均動能增加' },
+    { left: '吸熱反應升溫', right: '正向增加幅度大於逆向' },
+    { left: '阿瑞尼士方程式', right: '速率常數精確數學關係' },
+    { left: '次要效應', right: '碰撞總次數小幅增加' },
+    { left: '溫度與k值的關係', right: '增溫能顯著放大 k 值' },
+    { left: '整體反應趨勢', right: '升溫時朝吸熱方向進行' }
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left, y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-yellow)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left);
+    currentLine.setAttribute('y2', cy - rect.top);
+}
+
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.touches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.touches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(d => {
+        if (d === startDot || d.classList.contains('active')) return;
+        const r = d.getBoundingClientRect();
+        if (cx >= r.left - 20 && cx <= r.right + 20 && cy >= r.top - 20 && cy <= r.bottom + 20) targetDot = d;
+    });
+    if (!targetDot || !currentLine) {
+        if (currentLine) currentLine.remove();
+        currentLine = null; startDot = null; return;
+    }
+    const si = parseInt(startDot.dataset.index), ti = parseInt(targetDot.dataset.index);
+    const correct = si === ti;
+    const svg = document.getElementById('game-svg');
+    const rect = svg.getBoundingClientRect();
+    const tr = targetDot.getBoundingClientRect();
+    currentLine.setAttribute('x2', tr.left + tr.width / 2 - rect.left);
+    currentLine.setAttribute('y2', tr.top + tr.height / 2 - rect.top);
+    if (correct) {
+        currentLine.setAttribute('stroke', 'var(--accent-green)'); currentLine.setAttribute('stroke-width', '4');
+        startDot.classList.add('active'); targetDot.classList.add('active');
+        connections.push({ from: startDot, to: targetDot, line: currentLine });
+        if (document.querySelectorAll('.dot.active').length === GAME_COUNT * 2) {
+            document.getElementById('game-feedback').style.display = 'block';
+        }
+    } else {
+        currentLine.setAttribute('stroke', 'var(--accent-red)');
+        const lineToRemove = currentLine;
+        setTimeout(() => { if (lineToRemove) lineToRemove.remove(); }, 600);
+    }
+    currentLine = null; startDot = null;
+}
+
+window.addEventListener('mousemove', gameDragMove);
+window.addEventListener('mouseup', gameDragEnd);
+window.addEventListener('touchmove', gameDragMove, { passive: false });
+window.addEventListener('touchend', gameDragEnd);
+
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(conn => {
+        const fr = conn.from.getBoundingClientRect(), tr = conn.to.getBoundingClientRect();
+        conn.line.setAttribute('x1', fr.left + fr.width / 2 - rect.left);
+        conn.line.setAttribute('y1', fr.top + fr.height / 2 - rect.top);
+        conn.line.setAttribute('x2', tr.left + tr.width / 2 - rect.left);
+        conn.line.setAttribute('y2', tr.top + tr.height / 2 - rect.top);
+    });
+}
+
+function resetGame() { initGame(); }
+
+window.updateSlides();
+</script>
+</body>
+</html>

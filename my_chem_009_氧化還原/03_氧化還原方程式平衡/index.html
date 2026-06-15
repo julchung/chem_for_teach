@@ -1,740 +1,672 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>氧化還原平衡——Google Blogger 專用版</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Fira+Math&family=Roboto+Mono&display=swap" rel="stylesheet">
-  
-  <style>
-    /* === 原 style.css 內容匯入 === */
-    :root {
-      --primary-bg: #0f172a;
-      --panel-bg: rgba(30, 41, 59, 0.7);
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --accent-ox: #ff4d6d;
-      --accent-red: #00b4d8;
-      --accent-success: #3ef2a0;
-      --accent-step2: #facc15;
-      --accent-step34: #c084fc;
-      --accent-step5: #3ef2a0;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --sidebar-width: 280px;
-      --transition-speed: 0.3s;
-    }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>氧化還原方程式平衡 | 互動教學</title>
+<!-- Fonts & MathJax -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Fira+Math&family=Roboto+Mono&display=swap" rel="stylesheet">
+<style>
+/* CSS from ref_index.html */
+:root {
+    --bg-dark: #0f172a; --text-main: #f8fafc;
+    --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+    --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+    --accent-orange: #fb923c;
+    --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+    /* Colors from index_old.html */
+    --accent-ox: #ff4d6d;
+    --accent-success: #3ef2a0;
+    --accent-step2: #facc15;
+    --accent-step34: #c084fc;
+    --accent-step5: #3ef2a0;
+    --text-muted: #94a3b8;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+body, html {
+    width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+    font-family: 'Noto Sans TC', sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+    background-size: 30px 30px;
+}
+#app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
 
-    /* 全螢幕與側邊欄切換樣式 */
-    .app-container.sidebar-hidden .sidebar {
-      margin-right: calc(-1 * var(--sidebar-width));
-      opacity: 0;
-      pointer-events: none;
-    }
-    
-    .sidebar {
-      transition: margin-right var(--transition-speed) ease, opacity var(--transition-speed) ease;
-    }
+/* Start Overlay */
+#start-overlay {
+    position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    background-image: radial-gradient(rgba(167,139,250,0.12) 2px, transparent 2px);
+    background-size: 60px 60px;
+}
+.start-badge {
+    font-size: 0.92rem; color: var(--accent-purple);
+    background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.35);
+    padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+}
+.start-title {
+    font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+    color: var(--accent-cyan); text-shadow: 0 0 40px rgba(34,211,238,0.35);
+}
+.btn-start {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+    padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+    box-shadow: 0 0 35px rgba(34,211,238,0.5); cursor: pointer; touch-action: manipulation;
+    transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+.btn-start:hover { transform: scale(1.06); }
 
-    .main-content {
-      transition: all var(--transition-speed) ease;
-    }
+/* Top Nav */
+#top-nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9500;
+    background: rgba(15,23,42,0.85); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; gap: 15px; padding: 10px 20px; overflow-x: auto;
+    white-space: nowrap; justify-content: center;
+}
+.nav-link {
+    color: var(--accent-cyan); text-decoration: none; font-weight: 700; font-size: 1.05rem;
+    padding: 6px 16px; border-radius: 20px; border: 1px solid transparent;
+    transition: 0.3s; cursor: pointer;
+}
+.nav-link:hover { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.4); }
+.nav-link.active { background: var(--accent-cyan); color: #0f172a; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+/* Slides Container */
+#presentation-area { position: relative; width: 100%; min-height: 100vh; }
+#slides-container { position: relative; padding: 70px 2rem 20px 2rem; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+.slide { width: 100%; display: flex; flex-direction: column; align-items: center; }
 
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: var(--primary-bg);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(255, 77, 109, 0.05) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(0, 180, 216, 0.05) 0px, transparent 50%);
-      color: var(--text-main);
-      height: 100vh;
-      overflow: hidden;
-    }
+/* Toolbar & Drawing Layer */
+#toolbar {
+    position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+    background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+    display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+    border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+    backdrop-filter: blur(20px); width: 50px;
+}
+.btn-tool {
+    background: transparent; color: rgba(255,255,255,0.65);
+    border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+    border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: 0.25s; font-size: 1.2rem;
+}
+.btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+#drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+#drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+#drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
 
-    .hidden { display: none !important; }
+/* Old CSS parts for Equation Workspace */
+.hidden { display: none !important; }
+sub, sup { font-size: 0.75em; }
 
-    sub, sup { font-size: 0.75em; }
+.main-header { margin-bottom: 1.5rem; text-align: center; width: 100%; }
+.main-header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--accent-cyan); }
+.subtitle { color: var(--text-muted); font-size: 1rem; }
 
-    /* Blogger 全畫面破框設定 */
-    .app-container {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      display: flex;
-      flex-direction: row-reverse;
-      z-index: 99999 !important;
-      background: var(--primary-bg);
-    }
+.step-nav-horizontal {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; justify-content: center; width: 100%;
+}
+.step-btn {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: 50px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+  cursor: pointer; transition: all 0.3s ease; color: var(--text-main); font-size: 0.9rem;
+}
+.step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.step-btn:not(:disabled):hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+.step-btn.active {
+  background: rgba(52, 211, 153, 0.1); border-color: var(--accent-success); box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
+}
+.step-num {
+  width: 26px; height: 26px; background: rgba(255, 255, 255, 0.1); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: 'Roboto Mono', monospace;
+}
+.step-btn.active .step-num { background: var(--accent-success); color: #000; }
 
-    .sidebar {
-      width: var(--sidebar-width);
-      background: var(--panel-bg);
-      backdrop-filter: blur(12px);
-      border-right: 1px solid var(--glass-border);
-      display: flex;
-      flex-direction: column;
-      padding: 1.5rem;
-      z-index: 100;
-    }
+.topic-display {
+  background: var(--glass-bg); border: 1px solid var(--accent-success); border-radius: 12px;
+  padding: 1rem 2rem; margin-bottom: 1rem; font-size: 1.2rem; text-align: center; display: none;
+  animation: fadeIn 0.5s ease;
+}
+.topic-display.show { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .main-content {
-      flex: 1;
-      padding: 2rem;
-      overflow-y: auto;
-      position: relative;
-    }
+.equation-workspace {
+  position: relative; min-height: 250px; display: flex; flex-direction: column; align-items: center;
+  padding-top: 40px; width: 100%; overflow-x: auto;
+}
+.equation-workspace.balancing .slot.filled { border-color: var(--glass-border) !important; box-shadow: none !important; }
+.equation-workspace.step5 .coeff { color: var(--accent-step5) !important; }
+.equation-workspace.step5 .slot.filled { border-color: var(--glass-border) !important; box-shadow: none !important; background: rgba(255, 255, 255, 0.02) !important; }
 
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 2.5rem;
-    }
+.equation-layout { display: flex; flex-direction: column; align-items: center; gap: 3rem; width: max-content; min-width: 100%; padding: 0 2rem; }
+.row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; position: relative; }
+.slot-group { display: flex; align-items: center; gap: 0.5rem; }
 
-    .logo-icon { font-size: 1.5rem; }
-    .sidebar-header h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: 1px; }
+.slot {
+  min-width: 160px; padding: 0 10px; min-height: 90px; border: 2px dashed var(--glass-border); border-radius: 12px;
+  position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.02);
+}
+.slot:hover:not(.locked) { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.05); }
+.slot.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+.slot-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--text-muted); font-size: 0.85rem; pointer-events: none; width: 100%; text-align: center; }
+.slot-content { font-size: 1.5rem; font-weight: 500; z-index: 2; text-align: center; }
+.slot.filled .slot-label { display: none; }
 
-    .step-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+.arrow-container { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; margin: 0 2rem; }
+.mini-slot { position: absolute; bottom: 100%; margin-bottom: -10px; width: 36px; min-height: 24px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1); z-index: 10; }
+.mini-slot .slot-label { font-size: 0.65rem; }
+.mini-slot .slot-content { font-size: 0.9rem; }
 
-    .step-btn {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      cursor: pointer;
-      transition: all var(--transition-speed) ease;
-      text-align: left;
-      color: var(--text-main);
-    }
+.slot.ox.filled { border-color: var(--accent-ox); border-style: solid; box-shadow: 0 0 10px rgba(255, 77, 109, 0.1); }
+.slot.red.filled { border-color: var(--accent-blue); border-style: solid; box-shadow: 0 0 10px rgba(0, 180, 216, 0.1); }
+.slot-cond.filled { border-color: var(--accent-success); border-style: solid; }
 
-    .step-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .step-btn:not(:disabled):hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateX(5px);
-      border-color: rgba(255, 255, 255, 0.3);
-    }
+.slot-balancer { min-width: 120px; width: auto; opacity: 0; pointer-events: none; }
+.slot-balancer.show { border-style: dotted; opacity: 0.6; }
+.slot-balancer.filled { opacity: 1; border-style: solid; min-width: 120px; padding: 0 1.5rem; }
 
-    .step-btn.active {
-      background: rgba(52, 211, 153, 0.1);
-      border-color: var(--accent-success);
-      box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
-    }
+.operator { font-size: 2rem; font-weight: 300; color: var(--text-muted); padding: 0 0.5rem; }
+.operator.arrow { font-size: 2.5rem; color: var(--text-main); margin: 0; }
 
-    .step-num {
-      width: 32px;
-      height: 32px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-family: 'Roboto Mono', monospace;
-    }
+.popover {
+  position: fixed; background: #1e293b; border: 1px solid var(--glass-border); border-radius: 10px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 100000; padding: 8px; min-width: 200px; backdrop-filter: blur(8px);
+}
+.popover-arrow { position: absolute; width: 10px; height: 10px; background: #1e293b; border-left: 1px solid var(--glass-border); border-top: 1px solid var(--glass-border); transform: rotate(45deg); }
+.popover-content { display: flex; flex-direction: column; gap: 4px; }
+.pop-item { padding: 10px 14px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
+.pop-item:hover { background: rgba(255, 255, 255, 0.1); }
+.pop-item .formula { font-family: 'Fira Math', serif; font-size: 1.1rem; }
+.pop-item .name { font-size: 0.8rem; color: var(--text-muted); }
 
-    .step-btn.active .step-num { background: var(--accent-success); color: #000; }
+.eq-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
 
-    .reset-btn {
-      margin-top: auto;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
-      padding: 0.75rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      width: 100%;
-    }
-    .reset-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
+.key-atom { display: inline-block; position: relative; border-radius: 4px; }
+.ox-hi { color: var(--accent-ox); background: rgba(255, 77, 109, 0.1); }
+.red-hi { color: var(--accent-blue); background: rgba(0, 180, 216, 0.1); }
+.ox-label { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--accent-success); opacity: 0; transition: opacity 0.3s; padding-bottom: 2px; pointer-events: none; white-space: nowrap; }
+.ox-label.vis { opacity: 1; text-shadow: 0 0 5px rgba(0,0,0,0.8); }
+.coeff { display: inline-block; font-weight: 700; color: var(--accent-success); margin-right: 0.4em; opacity: 0; transition: opacity 0.3s; }
+.coeff.vis { opacity: 1; }
+.coeff.step2 { color: var(--accent-step2); }
+.coeff.step34 { color: var(--accent-step34); }
 
-    /* 方法切換分頁 */
-    .method-tabs {
-      display: flex;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--glass-border);
-    }
-    .method-tab {
-      flex: 1;
-      padding: 0.6rem;
-      text-align: center;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-      color: var(--text-muted);
-    }
-    .method-tab.active {
-      background: var(--glass-bg);
-      color: var(--text-main);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
+.feedback-area { margin-top: 2rem; width: 100%; max-width: 800px; padding-bottom: 2rem; }
+.step-explanation { background: var(--glass-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--accent-success); border-right: 4px solid var(--accent-success); line-height: 1.6; }
+.step-explanation h3 { margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--accent-success); }
+.step-explanation b { color: #fff; }
+.hi-red { color: #fb7185; }
+.hi-ox { color: #38bdf8; }
+.hi-coeff { background: rgba(52, 211, 153, 0.2); color: var(--accent-success); padding: 0 4px; border-radius: 4px; }
 
-    .main-header { margin-bottom: 2rem; text-align: center; width: 100%; }
-    .main-header h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
-    .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+/* 半反應法專屬樣式 */
+.half-rxn-workspace {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  padding: 2rem; background: rgba(30, 41, 59, 0.5); border-radius: 20px; border: 1px solid var(--glass-border);
+}
+.hr-table {
+  display: grid; grid-template-columns: auto 1fr auto auto auto auto auto 1fr; gap: 0.75rem;
+  align-items: center; width: 100%; max-width: 1100px; position: relative;
+}
+.hr-label-cell { grid-column: 1; font-weight: 700; font-size: 1.1rem; color: var(--text-muted); white-space: nowrap; text-align: right; }
+.hr-red .hr-label-cell { color: var(--accent-ox); }
+.hr-ox .hr-label-cell { color: var(--accent-blue); }
 
-    .topic-display {
-      background: var(--glass-bg);
-      border: 1px solid var(--accent-success);
-      border-radius: 12px;
-      padding: 1rem 2rem;
-      margin-bottom: 2rem;
-      font-size: 1.2rem;
-      text-align: center;
-      display: none;
-      animation: fadeIn 0.5s ease;
-    }
-    .topic-display.show { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.hr-slot {
+  min-width: 140px; min-height: 50px; border: 1px solid var(--glass-border); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05);
+  font-size: 1.2rem; padding: 0 10px; transition: all 0.3s ease;
+}
+.hr-slot:empty::before { content: ' '; }
+.hr-slot.main { border: 2px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.1); font-weight: 700; }
+.hr-arrow-cell { font-size: 2rem; color: var(--text-main); padding: 0 1rem; }
+.hr-math-line { grid-column: 1 / span 8; height: 2px; background: var(--text-main); width: 100%; margin: 1rem 0; opacity: 1; display: none; }
+.hr-sum-row { grid-column: 1 / span 8; text-align: center; font-size: 1.5rem; opacity: 0; transition: opacity 0.5s; padding: 1.5rem; border-radius: 12px; background: rgba(255, 255, 255, 0.03); }
+.hr-operator { font-size: 1.5rem; color: var(--text-muted); font-weight: 300; }
+.hr-bracket-container { position: absolute; right: -60px; height: 100%; display: flex; align-items: center; opacity: 0; transition: opacity 0.3s; }
+.hr-bracket-svg { height: 100%; width: 30px; stroke: var(--accent-step34); stroke-width: 2; fill: none; }
+.hr-mult-text { color: var(--accent-step34); font-weight: 700; font-size: 1.3rem; margin-left: 10px; }
+.hr-section-wrapper { display: contents; }
+.sum-reactant { color: var(--accent-success); }
+.sum-product { color: var(--accent-blue); }
+.hr-e { color: #facc15; font-weight: 700; }
 
-    .equation-workspace {
-      position: relative;
-      min-height: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 80px;
-      width: 100%;
-      overflow-x: auto;
-    }
+.reset-btn {
+  background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5;
+  padding: 0.75rem 1.5rem; border-radius: 50px; cursor: pointer; transition: all 0.2s; font-size: 1rem;
+}
+.reset-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
 
-    .equation-workspace.balancing .slot.filled { border-color: var(--glass-border) !important; box-shadow: none !important; }
-    .equation-workspace.step5 .coeff { color: var(--accent-step5) !important; }
-    .equation-workspace.step5 .slot.filled {
-      border-color: var(--glass-border) !important;
-      box-shadow: none !important;
-      background: rgba(255, 255, 255, 0.02) !important;
-    }
-
-    .equation-layout {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3rem;
-      width: max-content;
-      min-width: 100%;
-      padding: 0 2rem;
-    }
-
-    .row { display: flex; align-items: center; justify-content: center; gap: 0.5rem; position: relative; }
-    .slot-group { display: flex; align-items: center; gap: 0.5rem; }
-
-    .slot {
-      min-width: 160px;
-      padding: 0 10px;
-      min-height: 90px;
-      border: 2px dashed var(--glass-border);
-      border-radius: 12px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all var(--transition-speed);
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    .slot:hover:not(.locked) { border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.05); }
-    .slot.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
-    .slot-label {
-      position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      color: var(--text-muted); font-size: 0.85rem; pointer-events: none; width: 100%; text-align: center;
-    }
-    .slot-content { font-size: 1.5rem; font-weight: 500; z-index: 2; text-align: center; }
-    .slot.filled .slot-label { display: none; }
-
-    .arrow-container { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; margin: 0 2rem; }
-    .mini-slot {
-      position: absolute; bottom: 100%; margin-bottom: -10px;
-      width: 36px; min-height: 24px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
-    }
-    .mini-slot .slot-label { font-size: 0.65rem; }
-    .mini-slot .slot-content { font-size: 0.9rem; }
-
-    .slot.ox.filled { border-color: var(--accent-ox); border-style: solid; box-shadow: 0 0 10px rgba(255, 77, 109, 0.1); }
-    .slot.red.filled { border-color: var(--accent-red); border-style: solid; box-shadow: 0 0 10px rgba(0, 180, 216, 0.1); }
-    .slot-cond.filled { border-color: var(--accent-success); border-style: solid; }
-
-    .slot-balancer { min-width: 120px; width: auto; opacity: 0; pointer-events: none; }
-    .slot-balancer.show { border-style: dotted; opacity: 0.6; }
-    .slot-balancer.filled { opacity: 1; border-style: solid; min-width: 120px; padding: 0 1.5rem; }
-
-    .operator { font-size: 2rem; font-weight: 300; color: var(--text-muted); padding: 0 0.5rem; }
-    .operator.arrow { font-size: 2.5rem; color: var(--text-main); margin: 0; }
-
-    .popover {
-      position: fixed; background: #1e293b; border: 1px solid var(--glass-border); border-radius: 10px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 100000; padding: 8px; min-width: 200px; backdrop-filter: blur(8px);
-    }
-    .popover-arrow { position: absolute; width: 10px; height: 10px; background: #1e293b; border-left: 1px solid var(--glass-border); border-top: 1px solid var(--glass-border); transform: rotate(45deg); }
-    .popover-content { display: flex; flex-direction: column; gap: 4px; }
-    .pop-item { padding: 10px 14px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; justify-content: space-between; align-items: center; }
-    .pop-item:hover { background: rgba(255, 255, 255, 0.1); }
-    .pop-item .formula { font-family: 'Fira Math', serif; font-size: 1.1rem; }
-    .pop-item .name { font-size: 0.8rem; color: var(--text-muted); }
-
-    .eq-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-
-    .key-atom { display: inline-block; position: relative; border-radius: 4px; }
-    .ox-hi { color: var(--accent-ox); background: rgba(255, 77, 109, 0.1); }
-    .red-hi { color: var(--accent-red); background: rgba(0, 180, 216, 0.1); }
-    .ox-label { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--accent-success); opacity: 0; transition: opacity 0.3s; padding-bottom: 2px; pointer-events: none; white-space: nowrap; }
-    .ox-label.vis { opacity: 1; text-shadow: 0 0 5px rgba(0,0,0,0.8); }
-    .coeff { display: inline-block; font-weight: 700; color: var(--accent-success); margin-right: 0.4em; opacity: 0; transition: opacity 0.3s; }
-    .coeff.vis { opacity: 1; }
-    .coeff.step2 { color: var(--accent-step2); }
-    .coeff.step34 { color: var(--accent-step34); }
-
-    .feedback-area { margin-top: 3rem; width: 100%; max-width: 800px; padding-bottom: 4rem; }
-    .step-explanation { background: var(--glass-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--accent-success); border-right: 4px solid var(--accent-success); line-height: 1.6; }
-    .step-explanation h3 { margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--accent-success); }
-    .step-explanation b { color: #fff; }
-    .charge-info { display: flex; gap: 1rem; margin-top: 1rem; }
-    .charge-box { flex: 1; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; }
-    .charge-box-label { font-size: 0.75rem; color: var(--text-muted); display: block; }
-    .charge-box-val { font-family: 'Roboto Mono', monospace; font-weight: 700; }
-    .hi-red { color: #fb7185; }
-    .hi-ox { color: #38bdf8; }
-    .hi-coeff { background: rgba(52, 211, 153, 0.2); color: var(--accent-success); padding: 0 4px; border-radius: 4px; }
-
-    /* 返回部落格按鈕 */
-    .back-to-blog {
-      position: fixed;
-      top: 1.5rem;
-      left: 1.5rem;
-      z-index: 100001;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--glass-border);
-      color: var(--text-main);
-      padding: 0.6rem 1.2rem;
-      border-radius: 50px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-    .back-to-blog:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-    .back-to-blog i { font-style: normal; font-size: 1.1rem; }
-
-    /* 控制按鈕群組 */
-    .top-controls {
-      position: fixed;
-      top: 1.5rem;
-      left: 1.5rem;
-      z-index: 100001;
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .control-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--glass-border);
-      color: var(--text-main);
-      padding: 0.6rem 1rem;
-      border-radius: 50px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .control-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .control-btn.active {
-      background: var(--accent-success);
-      color: #000;
-      border-color: var(--accent-success);
-    }
-
-    /* === 行動裝置響應式優化 === */
-    @media (max-width: 850px) {
-      .back-to-blog {
-        top: 0.75rem;
-        left: 0.75rem;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-      }
-      .app-container { flex-direction: column; }
-      .sidebar {
-        width: 100%; height: auto; padding: 0.5rem; flex-direction: row; align-items: center; border-right: none; border-top: 1px solid var(--glass-border); order: 2;
-      }
-      .sidebar-header, .sidebar-footer { display: none; }
-      .step-nav { flex-direction: row; gap: 0.5rem; width: 100%; justify-content: space-around; }
-      .step-btn { padding: 0.5rem; flex: 1; flex-direction: column; align-items: center; gap: 4px; border-radius: 8px; box-shadow: none; border: none; background: transparent; }
-      .step-text { display: none; }
-      .step-num { width: 26px; height: 26px; font-size: 0.8rem; }
-      .main-content { padding: 1rem 0.5rem; height: calc(100vh - 60px); }
-      .method-tabs { margin-bottom: 1rem; }
-      .main-header { margin-bottom: 1.5rem; text-align: center; }
-      .main-header h1 { font-size: 1.3rem; }
-      .main-header .subtitle { font-size: 0.8rem; }
-      .equation-workspace { padding-top: 40px; }
-      .equation-layout { transform: scale(0.8); transform-origin: top center; gap: 1.5rem; }
-      .slot { min-width: 120px; min-height: 70px; }
-      .slot-content { font-size: 1.1rem; }
-      .operator { font-size: 1.4rem; }
-      .arrow-container { margin: 0 0.5rem; }
-      .feedback-area { margin-top: 1.5rem; padding-bottom: 2rem; }
-      .step-explanation { font-size: 0.9rem; padding: 1rem; }
-
-      /* 半反應法行動版優化 */
-      .half-rxn-container { transform: scale(0.7); transform-origin: top center; }
-      .hr-label { font-size: 0.9rem; }
-    }
-
-    /* 半反應法專屬樣式 - 強化對齊與格狀化 */
-    .half-rxn-workspace {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 1rem;
-      padding: 2rem;
-      background: var(--panel-bg);
-      border-radius: 20px;
-      border: 1px solid var(--glass-border);
-    }
-    
-    .hr-table {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto auto auto auto 1fr;
-      gap: 0.75rem;
-      align-items: center;
-      width: 100%;
-      max-width: 1100px;
-      position: relative;
-    }
-
-    .hr-label-cell {
-      grid-column: 1;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      text-align: right;
-    }
-    .hr-red .hr-label-cell { color: var(--accent-ox); }
-    .hr-ox .hr-label-cell { color: var(--accent-red); }
-
-    .hr-slot {
-      min-width: 140px;
-      min-height: 50px;
-      border: 1px solid var(--glass-border);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      font-size: 1.2rem;
-      padding: 0 10px;
-      transition: all 0.3s ease;
-    }
-    .hr-slot:empty::before {
-      content: ' ';
-    }
-    .hr-slot.main {
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      background: rgba(255, 255, 255, 0.1);
-      font-weight: 700;
-    }
-    
-    .hr-arrow-cell {
-      font-size: 2rem;
-      color: var(--text-main);
-      padding: 0 1rem;
-    }
-
-    .hr-math-line {
-      grid-column: 1 / span 8;
-      height: 2px;
-      background: var(--text-main);
-      width: 100%;
-      margin: 1rem 0;
-      opacity: 1;
-      display: none;
-    }
-
-    .hr-sum-row {
-      grid-column: 1 / span 8;
-      text-align: center;
-      font-size: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.5s;
-      padding: 1.5rem;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .hr-operator {
-      font-size: 1.5rem;
-      color: var(--text-muted);
-      font-weight: 300;
-    }
-
-    .hr-bracket-container {
-      position: absolute;
-      right: -60px;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .hr-bracket-svg { height: 100%; width: 30px; stroke: var(--accent-step34); stroke-width: 2; fill: none; }
-    .hr-mult-text { color: var(--accent-step34); font-weight: 700; font-size: 1.3rem; margin-left: 10px; }
-
-    .hr-section-wrapper {
-      display: contents; /* 讓內容直接參與 grid 佈局 */
-    }
-
-    .sum-reactant { color: var(--accent-success); }
-    .sum-product { color: var(--accent-red); }
-    .hr-e { color: #facc15; font-weight: 700; }
-  </style>
+@media (max-width: 850px) {
+  .equation-layout, .half-rxn-workspace { transform: scale(0.75); transform-origin: top center; gap: 1rem; }
+  .slot { min-width: 120px; min-height: 70px; }
+}
+/* ---- Random Draw Modal ---- */
+#random-draw-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw; }
+#random-draw-balls { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center; margin: 0 auto 20px auto; width: 100%; max-width: 500px; }
+.draw-ball { width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+.draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+.draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+.draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+#random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+#btn-do-draw { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+#btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+#btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+.draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+#btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+#btn-close-draw:hover { opacity: 1; }
+</style>
 </head>
 <body>
+<div id="app">
+  
+  <div id="start-overlay">
+    <div class="start-badge" style="font-size: clamp(1.5rem, 4vw, 2.5rem); background: transparent; border: none; padding: 0; margin-bottom: 1rem;">化學方程式平衡互動教學</div>
+    <h1 class="start-title">氧化還原方程式平衡</h1>
+    <button class="btn-start" id="btn-start" style="margin-top: 2rem;" type="button">開始練習 ✦</button>
+  </div>
 
-<div class="top-controls">
-  <button class="control-btn" onclick="exitToBlog()" title="返回目錄">
-    <i>←</i> <span class="btn-text">目錄</span>
-  </button>
-  <button class="control-btn" id="fs-btn" onclick="toggleFullscreen()" title="切換全螢幕">
-    <i id="fs-icon">⛶</i> <span class="btn-text">全螢幕</span>
-  </button>
-  <button class="control-btn" id="sidebar-btn" onclick="toggleSidebar()" title="切換側邊欄">
-    <i>📂</i> <span class="btn-text">側邊欄</span>
-  </button>
-</div>
+  <div id="presentation-area">
+    <nav id="top-nav">
+      <a class="nav-link active" id="tab-ox" onclick="switchMode('oxNum')">氧化數法平衡</a>
+      <a class="nav-link" id="tab-hr" onclick="switchMode('halfRxn')">半反應法平衡</a>
+    </nav>
+    
+    <div id="slides-container">
+      <div class="slide active">
+        <h1 id="main-title">氧化還原方程式——氧化數法平衡</h1>
+        <p class="subtitle" id="main-subtitle" style="margin-bottom: 1rem;">依序點擊框格選取化學種，開始平衡練習</p>
+        
+        <!-- 步驟按鈕區塊 -->
+        <div class="step-nav-horizontal" id="nav-ox">
+          <button class="step-btn" id="step1-btn" onclick="runStep(1)" disabled>
+            <div class="step-num">1</div><div class="step-text">計算氧化數及變化</div>
+          </button>
+          <button class="step-btn" id="step2-btn" onclick="runStep(2)" disabled>
+            <div class="step-num">2</div><div class="step-text">平衡氧化數變化量</div>
+          </button>
+          <button class="step-btn" id="step3-btn" onclick="runStep(3)" disabled>
+            <div class="step-num">3</div><div class="step-text">平衡電荷數</div>
+          </button>
+          <button class="step-btn" id="step4-btn" onclick="runStep(4)" disabled>
+            <div class="step-num">4</div><div class="step-text">原子不滅 (H₂O)</div>
+          </button>
+          <button class="step-btn" id="step5-btn" onclick="runStep(5)" disabled>
+            <div class="step-num">5</div><div class="step-text">最終平衡結果</div>
+          </button>
+        </div>
 
-<div class="app-container">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <span class="logo-icon">⚗️</span>
-      <h2>平衡步驟</h2>
+        <div class="step-nav-horizontal hidden" id="nav-hr">
+          <button class="step-btn" id="hr-step1-btn" onclick="runHRStep(1)" disabled><div class="step-num">1</div><div class="step-text">氧化與還原劑</div></button>
+          <button class="step-btn" id="hr-step2-btn" onclick="runHRStep(2)" disabled><div class="step-num">2</div><div class="step-text">計算電子變化</div></button>
+          <button class="step-btn" id="hr-step3-btn" onclick="runHRStep(3)" disabled><div class="step-num">3</div><div class="step-text">平衡電荷數</div></button>
+          <button class="step-btn" id="hr-step4-btn" onclick="runHRStep(4)" disabled><div class="step-num">4</div><div class="step-text">平衡原子數</div></button>
+          <button class="step-btn" id="hr-step5-btn" onclick="runHRStep(5)" disabled><div class="step-num">5</div><div class="step-text">平衡電子數</div></button>
+          <button class="step-btn" id="hr-step6-btn" onclick="runHRStep(6)" disabled><div class="step-num">6</div><div class="step-text">完成反應</div></button>
+          <button class="step-btn" id="hr-step7-btn" onclick="runHRStep(7)" disabled><div class="step-num">7</div><div class="step-text">完成平衡</div></button>
+        </div>
+
+        <div class="topic-display" id="topic-display"></div>
+
+        <!-- 互動工作區 -->
+        <div class="equation-workspace" id="equation-workspace">
+          <svg id="eq-svg" class="eq-svg">
+            <defs>
+              <marker id="arr-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#ff4d6d" stroke-width="1.5" />
+              </marker>
+              <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#00b4d8" stroke-width="1.5" />
+              </marker>
+            </defs>
+          </svg>
+
+          <!-- 氧化數法佈局 -->
+          <div class="equation-layout">
+            <div class="row row-main">
+              <div class="slot-group group-reactants">
+                <div class="slot slot-balancer" id="slot-1">
+                  <span class="slot-label">反應物</span><div class="slot-content" id="content-1"></div>
+                </div>
+                <div class="operator plus" id="plus-1-2" style="display:none">+</div>
+                <div class="slot slot-agent ox" id="slot-2" onclick="openPopover(2, event)">
+                  <span class="slot-label">氧化劑</span><div class="slot-content" id="content-2"></div>
+                </div>
+                <div class="operator plus" id="plus-2-3">+</div>
+                <div class="slot slot-agent red" id="slot-3" onclick="openPopover(3, event)">
+                  <span class="slot-label">還原劑</span><div class="slot-content" id="content-3"></div>
+                </div>
+              </div>
+              <div class="arrow-container">
+                <div class="slot slot-cond mini-slot" id="slot-7" onclick="openPopover(7, event)">
+                  <span class="slot-label">酸/鹼</span><div class="slot-content" id="content-7"></div>
+                </div>
+                <div class="operator arrow">⟶</div>
+              </div>
+              <div class="slot-group group-products">
+                <div class="slot slot-agent ox-prod locked" id="slot-4" onclick="openPopover(4, event)">
+                  <span class="slot-label">共軛還原劑</span><div class="slot-content" id="content-4"></div>
+                </div>
+                <div class="operator plus" id="plus-4-5">+</div>
+                <div class="slot slot-agent red-prod locked" id="slot-5" onclick="openPopover(5, event)">
+                  <span class="slot-label">共軛氧化劑</span><div class="slot-content" id="content-5"></div>
+                </div>
+                <div class="operator plus" id="plus-5-6" style="display:none">+</div>
+                <div class="slot slot-balancer" id="slot-6">
+                  <span class="slot-label">產物</span><div class="slot-content" id="content-6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 半反應法佈局 -->
+          <div class="half-rxn-workspace hidden" id="hr-workspace">
+            <div class="hr-table">
+              <div class="hr-section-wrapper hr-red">
+                <div class="hr-label-cell">還原半反應：</div>
+                <div class="hr-slot" id="hr-red-L"></div><div class="hr-operator">+</div>
+                <div class="hr-slot main" id="hr-red-main-L"></div><div class="hr-arrow-cell">⟶</div>
+                <div class="hr-slot main" id="hr-red-main-R"></div><div class="hr-operator">+</div>
+                <div class="hr-slot" id="hr-red-R">
+                  <span id="hr-red-R-content"></span>
+                  <div class="hr-bracket-container" id="hr-bracket-red">
+                    <svg class="hr-bracket-svg" viewBox="0 0 30 100"><path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" /></svg>
+                    <span class="hr-mult-text" id="hr-mult-red"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hr-section-wrapper hr-ox">
+                <div class="hr-label-cell">氧化半反應：</div>
+                <div class="hr-slot" id="hr-ox-L"></div><div class="hr-operator">+</div>
+                <div class="hr-slot main" id="hr-ox-main-L"></div><div class="hr-arrow-cell">⟶</div>
+                <div class="hr-slot main" id="hr-ox-main-R"></div><div class="hr-operator">+</div>
+                <div class="hr-slot" id="hr-ox-R">
+                  <span id="hr-ox-R-content"></span>
+                  <div class="hr-bracket-container" id="hr-bracket-ox">
+                    <svg class="hr-bracket-svg" viewBox="0 0 30 100"><path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" /></svg>
+                    <span class="hr-mult-text" id="hr-mult-ox"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hr-math-line" id="hr-sum-line"></div>
+              <div class="hr-sum-row" id="hr-sum-result"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback-area">
+          <div id="step-explanation" class="step-explanation"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 10px; position: relative; z-index: 100;">
+          <button class="reset-btn" onclick="resetAll()">🔄 重置反應式</button>
+        </div>
+      </div>
     </div>
     
-    <div class="method-tabs">
-      <div class="method-tab active" id="tab-ox" onclick="switchMode('oxNum')">氧化數法</div>
-      <div class="method-tab" id="tab-hr" onclick="switchMode('halfRxn')">半反應法</div>
+    <canvas aria-label="手寫繪圖層" id="drawing-layer" role="application" tabindex="0"></canvas>
+  </div>
+
+  <div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button class="btn-tool" id="btn-draw" title="手寫功能" type="button">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+      <div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+      <div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
     </div>
-
-    <div class="step-nav" id="nav-ox">
-      <button class="step-btn" id="step1-btn" onclick="runStep(1)" disabled>
-        <div class="step-num">1</div>
-        <div class="step-text">計算氧化數及變化</div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+      <button class="btn-tool" id="btn-eraser" title="橡皮擦" type="button">
+        <svg fill="currentColor" height="16" viewBox="0 0 24 24" width="16"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"></path></svg>
       </button>
-      <button class="step-btn" id="step2-btn" onclick="runStep(2)" disabled>
-        <div class="step-num">2</div>
-        <div class="step-text">平衡氧化數變化量</div>
-      </button>
-      <button class="step-btn" id="step3-btn" onclick="runStep(3)" disabled>
-        <div class="step-num">3</div>
-        <div class="step-text">平衡電荷數</div>
-      </button>
-      <button class="step-btn" id="step4-btn" onclick="runStep(4)" disabled>
-        <div class="step-num">4</div>
-        <div class="step-text">原子不滅 (H₂O)</div>
-      </button>
-      <button class="step-btn" id="step5-btn" onclick="runStep(5)" disabled>
-        <div class="step-num">5</div>
-        <div class="step-text">最終平衡結果</div>
-      </button>
+      <button class="btn-tool" id="btn-clear" title="清除手寫" type="button">🗑</button>
     </div>
+    <button class="btn-tool" id="btn-random-draw" title="隨機抽號" type="button">🎲</button>
+    <button class="btn-tool" id="btn-home" title="回到目錄" type="button" onclick="window.location.href='../../index.html'">🏠</button>
+  </div>
+  
+  <div id="popover" class="popover" style="display:none">
+    <div class="popover-arrow"></div>
+    <div class="popover-content" id="popover-items"></div>
+  </div>
 
-    <div class="step-nav hidden" id="nav-hr">
-      <button class="step-btn" id="hr-step1-btn" onclick="runHRStep(1)" disabled>
-        <div class="step-num">1</div>
-        <div class="step-text">1.氧化劑與還原劑</div>
-      </button>
-      <button class="step-btn" id="hr-step2-btn" onclick="runHRStep(2)" disabled>
-        <div class="step-num">2</div>
-        <div class="step-text">2.計算電子變化量</div>
-      </button>
-      <button class="step-btn" id="hr-step3-btn" onclick="runHRStep(3)" disabled>
-        <div class="step-num">3</div>
-        <div class="step-text">3.平衡電荷數</div>
-      </button>
-      <button class="step-btn" id="hr-step4-btn" onclick="runHRStep(4)" disabled>
-        <div class="step-num">4</div>
-        <div class="step-text">4.平衡原子數 (H₂O)</div>
-      </button>
-      <button class="step-btn" id="hr-step5-btn" onclick="runHRStep(5)" disabled>
-        <div class="step-num">5</div>
-        <div class="step-text">5.平衡得失電子數</div>
-      </button>
-      <button class="step-btn" id="hr-step6-btn" onclick="runHRStep(6)" disabled>
-        <div class="step-num">6</div>
-        <div class="step-text">6.完成反應</div>
-      </button>
-      <button class="step-btn" id="hr-step7-btn" onclick="runHRStep(7)" disabled>
-        <div class="step-num">7</div>
-        <div class="step-text">7.完成平衡</div>
-      </button>
-    </div>
-
-    <div class="sidebar-footer">
-      <button class="reset-btn" onclick="resetAll()">🔄 重置反應式</button>
-    </div>
-  </aside>
-
-  <main class="main-content">
-    <header class="main-header">
-      <h1 id="main-title">氧化還原方程式——氧化數法平衡</h1>
-      <p class="subtitle" id="main-subtitle">依序點擊框格選取化學種，開始平衡練習</p>
-    </header>
-
-    <div class="topic-display" id="topic-display"></div>
-
-    <div class="equation-workspace" id="equation-workspace">
-      <svg id="eq-svg" class="eq-svg">
-        <defs>
-          <marker id="arr-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-            <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#ff4d6d" stroke-width="1.5" />
-          </marker>
-          <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-            <polyline points="0 0, 7 4, 0 8" fill="none" stroke="#00b4d8" stroke-width="1.5" />
-          </marker>
-        </defs>
-      </svg>
-
-      <div class="equation-layout">
-        <div class="row row-main">
-          <div class="slot-group group-reactants">
-            <div class="slot slot-balancer" id="slot-1">
-              <span class="slot-label">反應物</span>
-              <div class="slot-content" id="content-1"></div>
-            </div>
-            <div class="operator plus" id="plus-1-2" style="display:none">+</div>
-            <div class="slot slot-agent ox" id="slot-2" onclick="openPopover(2, event)">
-              <span class="slot-label">氧化劑</span>
-              <div class="slot-content" id="content-2"></div>
-            </div>
-            <div class="operator plus" id="plus-2-3">+</div>
-            <div class="slot slot-agent red" id="slot-3" onclick="openPopover(3, event)">
-              <span class="slot-label">還原劑</span>
-              <div class="slot-content" id="content-3"></div>
-            </div>
-          </div>
-          <div class="arrow-container">
-            <div class="slot slot-cond mini-slot" id="slot-7" onclick="openPopover(7, event)">
-              <span class="slot-label">酸/鹼</span>
-              <div class="slot-content" id="content-7"></div>
-            </div>
-            <div class="operator arrow">⟶</div>
-          </div>
-          <div class="slot-group group-products">
-            <div class="slot slot-agent ox-prod locked" id="slot-4" onclick="openPopover(4, event)">
-              <span class="slot-label">共軛還原劑</span>
-              <div class="slot-content" id="content-4"></div>
-            </div>
-            <div class="operator plus" id="plus-4-5">+</div>
-            <div class="slot slot-agent red-prod locked" id="slot-5" onclick="openPopover(5, event)">
-              <span class="slot-label">共軛氧化劑</span>
-              <div class="slot-content" id="content-5"></div>
-            </div>
-            <div class="operator plus" id="plus-5-6" style="display:none">+</div>
-            <div class="slot slot-balancer" id="slot-6">
-              <span class="slot-label">產物</span>
-              <div class="slot-content" id="content-6"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="half-rxn-workspace hidden" id="hr-workspace">
-        <div class="hr-table">
-          <!-- 還原半反應 -->
-          <div class="hr-section-wrapper hr-red">
-            <div class="hr-label-cell">還原半反應：</div>
-            <div class="hr-slot" id="hr-red-L"></div>
-            <div class="hr-operator">+</div>
-            <div class="hr-slot main" id="hr-red-main-L"></div>
-            <div class="hr-arrow-cell">⟶</div>
-            <div class="hr-slot main" id="hr-red-main-R"></div>
-            <div class="hr-operator">+</div>
-            <div class="hr-slot" id="hr-red-R">
-              <span id="hr-red-R-content"></span>
-              <div class="hr-bracket-container" id="hr-bracket-red">
-                <svg class="hr-bracket-svg" viewBox="0 0 30 100">
-                  <path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" />
-                </svg>
-                <span class="hr-mult-text" id="hr-mult-red"></span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 氧化半反應 -->
-          <div class="hr-section-wrapper hr-ox">
-            <div class="hr-label-cell">氧化半反應：</div>
-            <div class="hr-slot" id="hr-ox-L"></div>
-            <div class="hr-operator">+</div>
-            <div class="hr-slot main" id="hr-ox-main-L"></div>
-            <div class="hr-arrow-cell">⟶</div>
-            <div class="hr-slot main" id="hr-ox-main-R"></div>
-            <div class="hr-operator">+</div>
-            <div class="hr-slot" id="hr-ox-R">
-              <span id="hr-ox-R-content"></span>
-              <div class="hr-bracket-container" id="hr-bracket-ox">
-                <svg class="hr-bracket-svg" viewBox="0 0 30 100">
-                  <path d="M 0 0 C 20 0 30 20 30 50 C 30 80 20 100 0 100" />
-                </svg>
-                <span class="hr-mult-text" id="hr-mult-ox"></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="hr-math-line" id="hr-sum-line"></div>
-          <div class="hr-sum-row" id="hr-sum-result"></div>
-        </div>
-      </div>
-
-      <div class="feedback-area">
-        <div id="step-explanation" class="step-explanation"></div>
-        <div id="charge-info" class="charge-info" style="display:none"></div>
+  <div id="random-draw-modal">
+    <button id="btn-close-draw" title="關閉" type="button">×</button>
+    <div id="random-draw-balls"></div>
+    <div id="random-draw-controls">
+      <button id="btn-do-draw" type="button">抽號</button>
+      <div class="draw-input-group">
+        <label for="draw-total-input">籤號總數：</label>
+        <input id="draw-total-input" max="100" min="1" type="number" value="40"/>
       </div>
     </div>
-  </main>
+  </div>
 </div>
 
-<div id="popover" class="popover" style="display:none">
-  <div class="popover-arrow"></div>
-  <div class="popover-content" id="popover-items"></div>
-</div>
+<script>
+// =============== Toolbar & Drawing Layer Logic ===============
+let isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let lastX = 0, lastY = 0, isDrawing = false;
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = document.documentElement.scrollWidth; 
+    canvas.height = document.documentElement.scrollHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = 38;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = 3.5;
+    }
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() { if (isDrawing && canvas) isDrawing = false; }
+
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color; drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+// Toolbar drag
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+// Start Overlay
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return; starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        setTimeout(() => resizeCanvas(), 100);
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+
+// Random Draw Tool Logic
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+
+    let drawBalls = [];
+    let totalBalls = 40;
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = '';
+        drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball';
+            ball.textContent = i;
+            ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball);
+            drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw.addEventListener('click', () => {
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block';
+            btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) {
+                totalBalls = parseInt(drawTotalInput.value) || 40;
+                renderBalls();
+            }
+        }
+    });
+
+    btnCloseDraw.addEventListener('click', () => {
+        drawModal.style.display = 'none';
+        btnRandomDraw.classList.remove('active-tool');
+    });
+
+    drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value);
+        if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val;
+        totalBalls = val;
+        renderBalls();
+    });
+
+    let drawInterval;
+    let drawTimeout;
+
+    btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+
+        // Find all available (undrawn) balls
+        const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+        
+        if (availableBalls.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        // Remove winner state from previous winner and mark as drawn
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) {
+            prevWinner.classList.remove('winner');
+            prevWinner.classList.add('drawn');
+        }
+
+        // Update available balls again in case we just marked the previous winner
+        const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (currentAvailable.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        btnDoDraw.disabled = true;
+        drawTotalInput.disabled = true;
+
+        let flickerCount = 0;
+        const flickerDuration = 3000; // 3 seconds
+        const flickerSpeed = 50; // Every 50ms
+
+        // Start flickering
+        drawInterval = setInterval(() => {
+            // Clear all flickers
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            // Pick a random ball to flicker
+            const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+            currentAvailable[randomIdx].classList.add('flicker');
+        }, flickerSpeed);
+
+        // Stop flickering and pick winner
+        drawTimeout = setTimeout(() => {
+            clearInterval(drawInterval);
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+            const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+            const winnerBall = currentAvailable[winnerIdx];
+            winnerBall.classList.add('winner');
+
+            btnDoDraw.disabled = false;
+            drawTotalInput.disabled = false;
+        }, flickerDuration);
+    });
+})();
+</script>
 
 <script>
 const SPECIES = {

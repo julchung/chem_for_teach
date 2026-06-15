@@ -37,23 +37,20 @@
 
         body, html {
             width: 100%;
-            height: 100%;
+            min-height: 100vh;
             background-color: var(--bg-dark);
             color: var(--text-main);
             font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
             background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
             background-size: 30px 30px;
         }
 
         #app {
             position: relative;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            width: 100%;
+            min-height: 100vh;
         }
 
         #start-overlay {
@@ -61,7 +58,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg-dark);
             z-index: 100;
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -71,42 +68,72 @@
 
         #presentation-area {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            min-height: auto;
             background: transparent;
-            overflow: hidden;
         }
 
+        #top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 8000;
+            background: rgba(15,23,42,0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            display: flex;
+            gap: 12px;
+            padding: 10px 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .nav-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .nav-link:hover {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
         #slides-container {
-            position: absolute;
-            top: 2vh; left: 5vw; right: 5vw; bottom: 5vh;
+            position: relative;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 68px 40px 2.5vw;
+            margin-top: 50px;
         }
 
         .slide {
-            position: absolute;
-            top: 0; left: 0;
+            position: relative;
             width: 100%;
-            height: 100%;
-            padding: 0.5rem 6rem 1rem 2rem;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+            padding: 2rem 0 3rem 0;
+            border-bottom: 2px dashed rgba(255,255,255,0.1);
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
             overflow-x: hidden;
+            min-height: auto;
         }
         
         @media (max-width: 768px) {
             .slide {
-                padding: 0.5rem 4.5rem 1rem 1.5rem;
+                padding: 1.5rem 0 2rem 0;
+            }
+            #slides-container {
+                padding: 60px 20px 30px 20px;
             }
         }
 
         .slide.active {
             opacity: 1;
             pointer-events: auto;
-            z-index: 10;
         }
 
         .slide h1 {
@@ -190,21 +217,23 @@
 
         #toolbar {
             position: fixed;
-            right: 20px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 24px;
-            padding: 12px;
+            padding: 12px 8px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            z-index: 2000;
+            z-index: 9000;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            width: auto;
+        }
+        
+        #btn-prev, #btn-next {
+            display: none !important;
         }
 
         .btn-tool {
@@ -372,6 +401,127 @@
             0%, 100% { opacity: 1; stroke: var(--accent-red); }
             50% { opacity: 0.3; stroke: transparent; }
         }
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            width: 600px;
+            max-width: 90vw;
+        }
+        #random-draw-balls {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            width: 100%;
+            max-width: 500px;
+        }
+        .draw-ball {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: clamp(0.75rem, 2.5vw, 1.1rem);
+            color: #fff;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        .draw-ball.flicker {
+            background: #fff;
+            color: #000;
+            transform: scale(1.35);
+            box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan);
+            border-color: #fff;
+            z-index: 10;
+        }
+        .draw-ball.drawn {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .draw-ball.winner {
+            background: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+            color: #000;
+            transform: scale(1.25);
+            box-shadow: 0 0 25px var(--accent-yellow);
+            z-index: 10;
+        }
+        #random-draw-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        #btn-do-draw {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+        #btn-do-draw:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+        }
+        #btn-do-draw:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .draw-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+        .draw-input-group input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--accent-cyan);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            width: 60px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        #btn-close-draw {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+        #btn-close-draw:hover {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -384,10 +534,18 @@
         </div>
 
         <div id="presentation-area">
+            <nav id="top-nav">
+                <a href="#slide-cover" class="nav-link">封面</a>
+                <a href="#slide-arrhenius" class="nav-link">Arrhenius</a>
+                <a href="#slide-bronsted" class="nav-link">Brønsted-Lowry</a>
+                <a href="#slide-lewis" class="nav-link">Lewis</a>
+                <a href="#slide-comparison" class="nav-link">比較</a>
+                <a href="#slide-game" class="nav-link">練習</a>
+            </nav>
             <div id="slides-container">
                 
                 <!-- Slide 1: Cover -->
-                <div class="slide active">
+                <div class="slide active" id="slide-cover">
                     <div style="margin: auto; text-align: center;">
                         <h1 style="border:none; font-size: clamp(3rem, 6vw, 4.5rem);">酸鹼學說</h1>
                         <p style="font-size: clamp(1.8rem, 4vw, 2.5rem); color: var(--accent-green); margin-top: 2rem;">Arrhenius / Brønsted-Lowry / Lewis</p>
@@ -399,7 +557,7 @@
                 </div>
 
                 <!-- Slide 2: Arrhenius Theory -->
-                <div class="slide">
+                <div class="slide" id="slide-arrhenius">
                     <h1>阿瑞尼斯解離說 (Arrhenius Theory)</h1>
                     <div class="flex-row">
                         <div class="flex-col">
@@ -425,7 +583,7 @@
                 </div>
 
                 <!-- Slide 3: Brønsted-Lowry Theory -->
-                <div class="slide">
+                <div class="slide" id="slide-bronsted">
                     <h1>布忍斯特-羅瑞質子說 (Brønsted-Lowry)</h1>
                     <div class="flex-row">
                         <div class="flex-col">
@@ -457,7 +615,7 @@
                 </div>
 
                 <!-- Slide 4: Lewis Theory -->
-                <div class="slide">
+                <div class="slide" id="slide-lewis">
                     <h1>路易斯電子說 (Lewis Theory)</h1>
                     <div class="flex-row">
                         <div class="flex-col" style="flex: 1;">
@@ -487,7 +645,7 @@
                 </div>
 
                 <!-- Slide 5: Comparison -->
-                <div class="slide">
+                <div class="slide" id="slide-comparison">
                     <h1>酸鹼學說大比拼</h1>
                     <div class="flex-row">
                         <table class="table-chem" style="margin: auto; width: 90%;">
@@ -574,8 +732,6 @@
         <!-- Controls Toolbar -->
         <div id="toolbar">
             <div id="drag-handle" title="拖曳移動工具列">≡</div>
-            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
-            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
             <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
             
             <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
@@ -600,7 +756,20 @@
                 <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
             </div>
             <div style="height: 1px; width: 100%; background: rgba(255,255,255,0.1); margin: 4px 0;"></div>
+            <button class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
             <button class="btn-tool" id="btn-exit-fs" title="回目錄">🏠</button>
+        </div>
+
+        <div id="random-draw-modal">
+            <button type="button" id="btn-close-draw" title="關閉">×</button>
+            <div id="random-draw-balls"></div>
+            <div id="random-draw-controls">
+                <button type="button" id="btn-do-draw">抽號</button>
+                <div class="draw-input-group">
+                    <label for="draw-total-input">籤號總數：</label>
+                    <input type="number" id="draw-total-input" min="1" max="100" value="40">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -651,8 +820,15 @@
             ctx.beginPath();
             ctx.moveTo(lastX, lastY);
             ctx.lineTo(x, y);
-            ctx.strokeStyle = drawMode === 'eraser' ? '#0b1120' : penColor;
-            ctx.lineWidth = drawMode === 'eraser' ? penSize * 10 : penSize;
+            if (drawMode === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 38;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = penColor;
+                ctx.lineWidth = penSize;
+            }
             ctx.lineCap = 'round';
             ctx.stroke();
             [lastX, lastY] = [x, y];
@@ -682,64 +858,129 @@
         canvas.addEventListener('touchend', stopDrawing);
 
         // --- Functions ---
+        // Display all slides by default (no pagination)
+        slides.forEach(slide => slide.classList.add('active'));
+        
         function updateSlides() {
-            slides.forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide);
-            });
-            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
             restoreDrawing();
-
-            if (slides[currentSlide].id === 'slide-game') {
-                if (document.getElementById('formulas-column').children.length === 0) {
-                    initGame();
-                }
+            const gameSlide = document.getElementById('slide-game');
+            if (gameSlide && document.getElementById('formulas-column').children.length === 0) {
+                initGame();
             }
         }
-
-        function enterFullscreen() {
-            const elem = document.documentElement;
-            try {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(() => {});
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
-                }
-            } catch (e) {}
-        }
-
-        btnStart.addEventListener('click', () => {
-            enterFullscreen();
-            startOverlay.style.display = 'none';
-            resizeCanvas();
-            updateSlides();
-        });
 
         btnExitFs.addEventListener('click', () => {
             window.location.href = '../../index.html';
         });
 
-        document.getElementById('btn-prev').addEventListener('click', () => {
-            currentSlide = Math.max(0, currentSlide - 1);
+        // Initialize on page load
+        window.addEventListener('load', () => {
             updateSlides();
         });
 
-        document.getElementById('btn-next').addEventListener('click', () => {
-            currentSlide = Math.min(slides.length - 1, currentSlide + 1);
-            updateSlides();
-        });
+        // --- Random Draw Logic ---
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const drawTotalInput = document.getElementById('draw-total-input');
+            const btnDoDraw = document.getElementById('btn-do-draw');
 
-        window.addEventListener('keydown', (e) => {
-            if (startOverlay.style.display !== 'none') return;
-            if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-                currentSlide = Math.min(slides.length - 1, currentSlide + 1);
-                updateSlides();
-            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-                currentSlide = Math.max(0, currentSlide - 1);
-                updateSlides();
+            let drawBalls = [];
+            let totalBalls = 40;
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = '';
+                drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball';
+                    ball.textContent = i;
+                    ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball);
+                    drawBalls.push(ball);
+                }
             }
-        });
+
+            btnRandomDraw.addEventListener('click', () => {
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none';
+                    btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block';
+                    btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) {
+                        totalBalls = parseInt(drawTotalInput.value) || 40;
+                        renderBalls();
+                    }
+                }
+            });
+
+            btnCloseDraw.addEventListener('click', () => {
+                drawModal.style.display = 'none';
+                btnRandomDraw.classList.remove('active-tool');
+            });
+
+            drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value);
+                if (isNaN(val) || val < 1) val = 1;
+                drawTotalInput.value = val;
+                totalBalls = val;
+                renderBalls();
+            });
+
+            let drawInterval;
+            let drawTimeout;
+
+            btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+
+                const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+                
+                if (availableBalls.length === 0) {
+                    alert('所有號碼都已抽出！');
+                    return;
+                }
+
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) {
+                    prevWinner.classList.remove('winner');
+                    prevWinner.classList.add('drawn');
+                }
+
+                const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (currentAvailable.length === 0) {
+                    alert('所有號碼都已抽出！');
+                    return;
+                }
+
+                btnDoDraw.disabled = true;
+                drawTotalInput.disabled = true;
+
+                let flickerCount = 0;
+                const flickerDuration = 3000;
+                const flickerSpeed = 50;
+
+                drawInterval = setInterval(() => {
+                    currentAvailable.forEach(b => b.classList.remove('flicker'));
+                    const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+                    currentAvailable[randomIdx].classList.add('flicker');
+                }, flickerSpeed);
+
+                drawTimeout = setTimeout(() => {
+                    clearInterval(drawInterval);
+                    currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+                    const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+                    const winnerBall = currentAvailable[winnerIdx];
+                    winnerBall.classList.add('winner');
+
+                    btnDoDraw.disabled = false;
+                    drawTotalInput.disabled = false;
+                }, flickerDuration);
+            });
+        })();
 
         // --- Toolbar Logic ---
         const toolbar = document.getElementById('toolbar');

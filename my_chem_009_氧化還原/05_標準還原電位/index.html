@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>標準電位測量 - 互動式學習</title>
+<meta name="description" content="互動式標準電化學電位測量過程展演，學習還原半反應與標準電位的原理">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Standard Electrode Potential — Interactive Learning
+   style.css  (complete rewrite)
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-dark:      #0d1117;
+  --bg-panel:     #161b22;
+  --bg-card:      #1c2330;
+  --border:       rgba(99,179,237,0.18);
+  --accent-blue:  #63b3ed;
+  --accent-teal:  #38b2ac;
+  --accent-gold:  #f6ad55;
+  --accent-red:   #fc8181;
+  --accent-green: #68d391;
+  --text-primary: #e2e8f0;
+  --text-secondary:#94a3b8;
+  --text-muted:   #4a5568;
+  --anode-color:  #fc8181;
+  --cathode-color:#63b3ed;
+  --font-main:    'Noto Sans TC', 'Inter', sans-serif;
+  --radius:       10px;
+  --radius-sm:    6px;
+  --shadow:       0 4px 24px rgba(0,0,0,0.55);
+  --glow-blue:    0 0 10px rgba(99,179,237,0.45);
+  --glow-green:   0 0 10px rgba(104,211,145,0.5);
+  --glow-red:     0 0 10px rgba(252,129,129,0.45);
+  --glow-gold:    0 0 10px rgba(246,173,85,0.45);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ─────────── LAYOUT ─────────── */
+#app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─────────── LEFT PANEL ─────────── */
+#left-panel {
+  width: 32%;
+  min-width: 220px;
+  max-width: 380px;
+  height: 100%;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 8px 8px;
+  gap: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#left-header {
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#left-header h2 {
+  font-size: clamp(13px, 1.8vw, 17px);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#left-header .subtitle {
+  font-size: clamp(9px, 1vw, 11px);
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+/* ─── Potential Scale Container ─── */
+#potential-scale-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 2px;
+}
+
+#potential-axis-label-top,
+#potential-axis-label-bottom {
+  font-size: clamp(8px, 0.9vw, 10px);
+  color: var(--accent-gold);
+  text-align: center;
+  padding: 2px 4px;
+  background: rgba(246,173,85,0.08);
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+/* ─── Potential Scale Wrapper (scrollable if needed) ─── */
+#potential-scale-wrapper {
+  flex: 1;
+  position: relative;          /* CRITICAL: needed for absolutely-positioned children */
+  overflow: hidden;
+}
+
+/* The vertical axis bar */
+#potential-axis-line {
+  position: absolute;
+  left: 54px;
+  top: 25px;
+  bottom: 25px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--accent-gold) 0%,
+    var(--accent-blue) 50%,
+    var(--accent-teal) 100%
+  );
+  box-shadow: 0 0 8px rgba(99,179,237,0.3);
+}
+
+/* Container that holds all reaction entries */
+#potential-reactions {
+  position: absolute;
+  left: 0; top: 0; right: 0; bottom: 0;
+  pointer-events: none;
+}
+
+/* Individual reaction row — hidden by default */
+.reaction-entry {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 28px; /* Increased height for better spacing */
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+/* Visible when recorded or when 'Show All' is active */
+.reaction-entry.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Tick mark on the axis */
+.reaction-tick {
+  position: absolute;
+  left: 5px;
+  width: 45px; /* Lengthened tick mark */
+  height: 1.5px;
+  background: var(--accent-teal);
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* SHE zero reference tick */
+.reaction-tick.she-tick {
+  background: var(--accent-blue);
+  width: 52px;
+  left: 2px;
+  height: 2px;
+  box-shadow: 0 0 6px rgba(99,179,237,0.7);
+}
+
+/* Reaction text label (Grid layout for alignment) */
+.reaction-text {
+  position: absolute;
+  left: 60px; /* Shifted right to make room for diff bars */
+  right: 2px;
+  display: grid;
+  /* Reduced gaps between components */
+  grid-template-columns: minmax(30px, 4fr) 8px minmax(20px, 2fr) 10px minmax(30px, 3fr) 12px minmax(40px, 4fr);
+  align-items: center;
+  gap: 2px;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(10.5px, 1.3vw, 14.5px);
+  color: var(--text-primary);
+  line-height: 1;
+  transition: color 0.35s, text-shadow 0.35s, font-weight 0.2s;
+}
+
+.reaction-text > span {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.eq-ox { text-align: right; }
+.eq-plus { text-align: center; }
+.eq-e { text-align: center; }
+.eq-arrow { text-align: center; }
+.eq-red { text-align: left; }
+.eq-eo-label { text-align: right; color: var(--accent-gold); }
+
+.reaction-text.is-anode   { color: var(--anode-color)  !important; text-shadow: var(--glow-red);  font-weight: 700; }
+.reaction-text.is-cathode { color: var(--cathode-color) !important; text-shadow: var(--glow-blue); font-weight: 700; }
+
+/* E° value — ONLY shown when .show-all-eo is active on a parent */
+.reaction-eo {
+  text-align: left;
+  color: var(--accent-gold);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.show-all-eo .reaction-eo { opacity: 1; }
+.reaction-eo.is-anode   { color: var(--anode-color);   }
+.reaction-eo.is-cathode { color: var(--cathode-color);  }
+
+/* Dynamic Highlight markers */
+.potential-highlight {
+  position: absolute;
+  width: 10px;
+  border-radius: 2px;
+  z-index: 5;
+  transition: opacity 0.3s;
+}
+
+/* Dynamic Difference bars */
+.potential-diff-bar {
+  position: absolute;
+  width: 4px;
+  opacity: 0.6;
+  border-radius: 2px;
+  z-index: 4;
+}
+
+/* Dynamic ΔE° labels */
+.potential-diff-label {
+  position: absolute;
+  background: rgba(13,17,23,0.92);
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: clamp(8.5px, 1vw, 10.5px);
+  font-weight: 700;
+  z-index: 6;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Show all button */
+#show-all-btn-container {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 4px 0 2px;
+}
+
+/* ─────────── RIGHT PANEL ─────────── */
+#right-panel {
+  flex: 1;
+  height: 100%;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;      /* for absolutely-positioned children */
+  min-width: 0;
+}
+
+#right-header {
+  text-align: center;
+  padding: 8px 16px 5px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#right-header h1 {
+  font-size: clamp(13px, 1.9vw, 18px);
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#right-header .subtitle {
+  font-size: clamp(9px, 1vw, 11px);
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+/* ─── Battery Area ─── */
+#battery-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#battery-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ─── Reaction Overlay (between beakers) ─── */
+#reaction-overlay {
+  position: absolute;      /* relative to #right-panel */
+  pointer-events: none;
+  z-index: 20;
+  transition: opacity 0.4s;
+}
+#reaction-overlay.hidden { display: none; }
+
+#reaction-box {
+  background: rgba(10,14,20,0.90);
+  border: 1px solid var(--accent-teal);
+  border-radius: var(--radius);
+  padding: 12px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 0 18px rgba(56,178,172,0.28);
+  backdrop-filter: blur(6px);
+}
+.reaction-line {
+  font-size: clamp(14px, 1.6vw, 20px);
+  font-weight: 600;
+  line-height: 1.6;
+}
+.reaction-line.anode   { color: var(--anode-color);   }
+.reaction-line.cathode { color: var(--cathode-color);  }
+.reaction-line.overall {
+  color: var(--accent-green);
+  border-top: 1px solid rgba(104,211,145,0.25);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+/* ─── Record Button ─── */
+#record-btn-container {
+  position: absolute;
+  z-index: 25;
+  /* position set dynamically by JS near voltmeter */
+}
+
+/* ─── Materials Section ─── */
+#materials-section {
+  flex-shrink: 0;
+  padding: 6px 10px 6px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+  max-height: 27%;
+  overflow-y: auto;
+}
+#materials-label {
+  font-size: clamp(9px, 1vw, 11px);
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  text-align: center;
+}
+#materials-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+}
+
+/* ─── Material Pack Cards ─── */
+.material-pack {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  cursor: grab;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  touch-action: none;
+  min-width: 75px;
+}
+.material-pack:hover {
+  border-color: var(--accent-blue);
+  box-shadow: var(--glow-blue);
+  transform: translateY(-2px);
+}
+.material-pack:active { cursor: grabbing; }
+.material-pack.dragging { opacity: 0.5; transform: scale(1.04); }
+
+.pack-icon  { font-size: clamp(14px, 1.6vw, 18px); line-height: 1; }
+.pack-label { font-size: clamp(7.5px, 0.9vw, 10px); color: var(--text-primary); text-align: center; }
+.pack-sub   { font-size: clamp(7px, 0.8vw, 9px);  color: var(--text-secondary); }
+.pack-eo    { font-size: clamp(7px, 0.8vw, 9px);  color: var(--accent-gold); }
+
+/* ─── Drag Ghost ─── */
+#drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-blue);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  font-size: 11px;
+  color: var(--text-primary);
+  box-shadow: var(--glow-blue), var(--shadow);
+  display: none;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+/* ─────────── BUTTONS ─────────── */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: clamp(9px, 1.05vw, 11px);
+  font-weight: 500;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+.btn-outline:hover { background: rgba(99,179,237,0.12); box-shadow: var(--glow-blue); }
+.btn-outline.active { background: var(--accent-blue); color: var(--bg-dark); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-blue));
+  border: none;
+  color: var(--bg-dark);
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: clamp(10px, 1.15vw, 13px);
+  font-weight: 700;
+  transition: transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 2px 10px rgba(56,178,172,0.4);
+}
+.btn-primary:hover  { transform: translateY(-1px); box-shadow: 0 4px 18px rgba(56,178,172,0.6); }
+.btn-primary:active { transform: translateY(0); }
+
+/* ─────────── SVG ANIMATIONS ─────────── */
+@keyframes blink-switch {
+  0%,100% { opacity: 1;   filter: drop-shadow(0 0 5px #68d391); }
+  50%     { opacity: 0.3; filter: none; }
+}
+.switch-blinking { animation: blink-switch 0.75s ease-in-out infinite; }
+
+/* ─────────── UTILITY ─────────── */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.45s ease forwards; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #left-panel { width: 36%; min-width: 130px; padding: 6px 4px; }
+  #materials-section { max-height: 30%; }
+  .material-pack { min-width: 60px; padding: 4px 7px; }
+}
+
+</style>
+<style>
+  :root {
+      --accent-cyan: #22d3ee;
+      --accent-purple: #a78bfa;
+      --accent-yellow: #fbbf24;
+  }
+
+  body, html {
+      background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px) !important;
+      background-size: 30px 30px !important;
+  }
+
+  /* ---- Toolbar ---- */
+  #toolbar {
+      position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+      background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+      display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+      border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+      backdrop-filter: blur(20px); width: 50px;
+  }
+  .btn-tool {
+      background: transparent; color: rgba(255,255,255,0.65);
+      border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+      border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: 0.25s; font-size: 1rem;
+  }
+  .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+  .btn-tool:focus { outline: none; }
+  #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+  
+  #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+  #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+  /* ---- Random Draw Modal ---- */
+  #random-draw-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent-cyan);
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+      border-radius: 20px;
+      padding: 20px;
+      z-index: 10000;
+      backdrop-filter: blur(10px);
+      width: 600px;
+      max-width: 90vw;
+  }
+  #random-draw-balls {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      width: 100%;
+      max-width: 500px;
+  }
+  .draw-ball {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: clamp(0.75rem, 2.5vw, 1.1rem);
+      color: #fff;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
+  }
+  .draw-ball.flicker {
+      background: #fff;
+      color: #000;
+      transform: scale(1.35);
+      box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan);
+      border-color: #fff;
+      z-index: 10;
+  }
+  .draw-ball.drawn {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.3);
+  }
+  .draw-ball.winner {
+      background: var(--accent-yellow);
+      border-color: var(--accent-yellow);
+      color: #000;
+      transform: scale(1.25);
+      box-shadow: 0 0 25px var(--accent-yellow);
+      z-index: 10;
+  }
+  #random-draw-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+  }
+  #btn-do-draw {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      color: #0f172a;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+  }
+  #btn-do-draw:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+  }
+  #btn-do-draw:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+  }
+  .draw-input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+  }
+  .draw-input-group input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--accent-cyan);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      width: 60px;
+      text-align: center;
+      font-size: 1rem;
+  }
+  #btn-close-draw {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.7;
+  }
+  #btn-close-draw:hover {
+      opacity: 1;
+  }
+
+  /* ---- Start Overlay ---- */
+  #start-overlay {
+      position: fixed; inset: 0; background: #0d1117; z-index: 10000;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background-image: radial-gradient(rgba(167,139,250,0.12) 2px, transparent 2px);
+      background-size: 60px 60px;
+      cursor: pointer;
+  }
+  .start-badge {
+      font-size: 0.92rem; color: var(--accent-purple);
+      background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.35);
+      padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+  }
+  .start-title {
+      font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+      color: var(--accent-cyan); text-shadow: 0 0 40px rgba(34,211,238,0.35);
+      margin-bottom: 0.5rem;
+  }
+  .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+  .btn-start {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+      padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+      box-shadow: 0 0 35px rgba(34,211,238,0.5); cursor: pointer; touch-action: manipulation;
+      transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  .btn-start:hover { transform: scale(1.06); }
+</style>
+</head>
+<body>
+<!-- Start Overlay -->
+<div id="start-overlay">
+  <div class="start-badge" style="font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; background: transparent; border: none; padding: 0; margin-top: -10vh; margin-bottom: 1.5rem;">選修化學　氧化還原</div>
+  <h1 class="start-title">標準還原電位</h1>
+  <p class="start-sub">點擊畫面任意區塊進入互動教學</p>
+  <button class="btn-start" id="btn-start" style="margin-top: 1rem;" type="button">開始探索教學 ✦</button>
+</div>
+
+<!-- The drawing layer -->
+<canvas aria-label="手寫繪圖層" id="drawing-layer" role="application" tabindex="0"></canvas>
+
+<!-- The Toolbar -->
+<div id="toolbar">
+  <div id="drag-handle">≡</div>
+  <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+  <button class="btn-tool" id="btn-draw" title="手寫功能" type="button">✎</button>
+  <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+    <div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+    <div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    <div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    <div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    <div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    <div class="color-dot" data-color="#a78bfa" style="width:22px;height:22px;background:#a78bfa;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+  </div>
+  <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+    <button class="btn-tool" id="btn-eraser" title="橡皮擦" type="button">
+      <svg fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"></path></svg>
+    </button>
+    <button class="btn-tool" id="btn-clear" title="清除手寫" type="button">🗑</button>
+  </div>
+  <button class="btn-tool" id="btn-random-draw" title="隨機抽號" type="button">🎲</button>
+  <button class="btn-tool" id="btn-home" title="返回目錄" type="button">🏠</button>
+</div>
+
+<!-- Main App Content -->
+<div id="app">
+
+  <!-- LEFT PANEL: Standard Reduction Potential Scale -->
+  <div id="left-panel">
+    <div id="left-header">
+      <h2>標準還原電位</h2>
+      <p class="subtitle">還原半反應 E° (V vs SHE)</p>
+    </div>
+    <div id="potential-scale-container">
+      <div id="potential-axis-label-top">E° 高 → 強氧化劑（易還原）</div>
+      <div id="potential-scale-wrapper">
+        <!-- Axis line -->
+        <div id="potential-axis-line"></div>
+        <!-- Tick marks and reaction labels rendered by JS -->
+        <div id="potential-reactions"></div>
+        <!-- Dynamic highlights and diff bars will be appended here -->
+      </div>
+      <div id="potential-axis-label-bottom">E° 低 → 強還原劑（易氧化）</div>
+    </div>
+    <div id="show-all-btn-container">
+      <button id="show-all-btn" class="btn-outline">顯示所有標準電位值</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: Interactive Battery Setup -->
+  <div id="right-panel">
+    <div id="right-header">
+      <h1>標準電位測量實驗</h1>
+      <p class="subtitle">拖曳半電池材料包至左右兩個電解槽，兩槽備齊後按「測量」開關</p>
+    </div>
+
+    <!-- Battery SVG Canvas -->
+    <div id="battery-area">
+      <svg id="battery-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- Reaction equations overlay — appears between the two beakers when circuit closed -->
+    <div id="reaction-overlay" class="hidden">
+      <div id="reaction-box">
+        <div id="anode-eq"   class="reaction-line anode"></div>
+        <div id="cathode-eq" class="reaction-line cathode"></div>
+        <div id="overall-eq" class="reaction-line overall"></div>
+      </div>
+    </div>
+
+    <!-- Record button (near voltmeter, shown after circuit is closed) -->
+    <div id="record-btn-container" class="hidden">
+      <button id="record-btn" class="btn-primary">📊 記錄至電位條</button>
+    </div>
+
+    <!-- Half-cell material packs tray -->
+    <div id="materials-section">
+      <div id="materials-label">半電池材料包（拖曳至上方電解槽）</div>
+      <div id="materials-grid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Drag ghost element -->
+<div id="drag-ghost"></div>
+
+<!-- ======= RANDOM DRAW MODAL ======= -->
+<div id="random-draw-modal">
+  <button id="btn-close-draw" title="關閉" type="button">×</button>
+  <div id="random-draw-balls"></div>
+  <div id="random-draw-controls">
+    <button id="btn-do-draw" type="button">抽號</button>
+    <div class="draw-input-group">
+      <label for="draw-total-input">籤號總數：</label>
+      <input id="draw-total-input" max="100" min="1" type="number" value="40"/>
+    </div>
+  </div>
+</div>
+
+<script>
+/**
+ * 標準電位測量 — 互動式學習
+ * app.js  (complete rewrite with all bug-fixes)
+ */
+'use strict';
+
+/* ═══════════════ DATA ═══════════════ */
+// All half-reactions (sorted high E° → low E° in SORTED_REACTIONS)
+// Exclusions per teacher: Ca, Sr, Ba (cannot measure in aqueous solution)
+const HALF_REACTIONS = [
+  { id:'au',  symbol:'Au',  eo:+1.500, e:3, ionSym:'Au³⁺', ionCharge:3,
+    label:'Au³⁺/Au',           half:'Au³⁺(aq) + 3e⁻ → Au(s)',
+    halfH:'Au³⁺<sub>(aq)</sub> + 3e⁻ → Au<sub>(s)</sub>',
+    color:'#ffd700', ionColor:'#ffe066' },
+  { id:'cl2', symbol:'Pt',  eo:+1.360, e:2, ionSym:'Cl₂',  ionCharge:0,
+    label:'Cl₂/2Cl⁻',          half:'Cl₂(g) + 2e⁻ → 2Cl⁻(aq)',
+    halfH:'Cl₂<sub>(g)</sub> + 2e⁻ → 2Cl⁻<sub>(aq)</sub>',
+    color:'#b0e0b0', ionColor:'#c8f0c8', isInert:true },
+  { id:'br2', symbol:'Pt',  eo:+1.080, e:2, ionSym:'Br₂',  ionCharge:0,
+    label:'Br₂/2Br⁻',          half:'Br₂(l) + 2e⁻ → 2Br⁻(aq)',
+    halfH:'Br₂<sub>(l)</sub> + 2e⁻ → 2Br⁻<sub>(aq)</sub>',
+    color:'#c05040', ionColor:'#d86060', isInert:true },
+  { id:'ag',  symbol:'Ag',  eo:+0.799, e:1, ionSym:'Ag⁺',  ionCharge:1,
+    label:'Ag⁺/Ag',            half:'Ag⁺(aq) + e⁻ → Ag(s)',
+    halfH:'Ag⁺<sub>(aq)</sub> + e⁻ → Ag<sub>(s)</sub>',
+    color:'#d0d0d0', ionColor:'#e8e8e8' },
+  { id:'hg',  symbol:'Hg',  eo:+0.789, e:2, ionSym:'Hg²⁺', ionCharge:2,
+    label:'Hg²⁺/Hg',           half:'Hg²⁺(aq) + 2e⁻ → Hg(l)',
+    halfH:'Hg²⁺<sub>(aq)</sub> + 2e⁻ → Hg<sub>(l)</sub>',
+    color:'#d8d8c0', ionColor:'#e8e8d0' },
+  { id:'i2',  symbol:'Pt',  eo:+0.535, e:2, ionSym:'I₂',   ionCharge:0,
+    label:'I₂/2I⁻',            half:'I₂(s) + 2e⁻ → 2I⁻(aq)',
+    halfH:'I₂<sub>(s)</sub> + 2e⁻ → 2I⁻<sub>(aq)</sub>',
+    color:'#8050a0', ionColor:'#9060c0', isInert:true },
+  { id:'cu',  symbol:'Cu',  eo:+0.337, e:2, ionSym:'Cu²⁺', ionCharge:2,
+    label:'Cu²⁺/Cu',           half:'Cu²⁺(aq) + 2e⁻ → Cu(s)',
+    halfH:'Cu²⁺<sub>(aq)</sub> + 2e⁻ → Cu<sub>(s)</sub>',
+    color:'#d4884a', ionColor:'#e8a060' },
+  { id:'h2',  symbol:'Pt',  eo:+0.000, e:2, ionSym:'H⁺',   ionCharge:1,
+    label:'2H⁺/H₂ (SHE)',      half:'2H⁺(aq) + 2e⁻ → H₂(g)',
+    halfH:'2H⁺<sub>(aq)</sub> + 2e⁻ → H₂<sub>(g)</sub>',
+    color:'#c0c8ff', ionColor:'#d0d8ff', isHydrogen:true },
+  { id:'pb',  symbol:'Pb',  eo:-0.126, e:2, ionSym:'Pb²⁺', ionCharge:2,
+    label:'Pb²⁺/Pb',           half:'Pb²⁺(aq) + 2e⁻ → Pb(s)',
+    halfH:'Pb²⁺<sub>(aq)</sub> + 2e⁻ → Pb<sub>(s)</sub>',
+    color:'#a0a0b8', ionColor:'#b4b4cc' },
+  { id:'sn',  symbol:'Sn',  eo:-0.140, e:2, ionSym:'Sn²⁺', ionCharge:2,
+    label:'Sn²⁺/Sn',           half:'Sn²⁺(aq) + 2e⁻ → Sn(s)',
+    halfH:'Sn²⁺<sub>(aq)</sub> + 2e⁻ → Sn<sub>(s)</sub>',
+    color:'#c8c8b8', ionColor:'#d8d8c8' },
+  { id:'ni',  symbol:'Ni',  eo:-0.250, e:2, ionSym:'Ni²⁺', ionCharge:2,
+    label:'Ni²⁺/Ni',           half:'Ni²⁺(aq) + 2e⁻ → Ni(s)',
+    halfH:'Ni²⁺<sub>(aq)</sub> + 2e⁻ → Ni<sub>(s)</sub>',
+    color:'#60a870', ionColor:'#78c088' },
+  { id:'cd',  symbol:'Cd',  eo:-0.403, e:2, ionSym:'Cd²⁺', ionCharge:2,
+    label:'Cd²⁺/Cd',           half:'Cd²⁺(aq) + 2e⁻ → Cd(s)',
+    halfH:'Cd²⁺<sub>(aq)</sub> + 2e⁻ → Cd<sub>(s)</sub>',
+    color:'#b8c8b8', ionColor:'#c8d8c8' },
+  { id:'fe',  symbol:'Fe',  eo:-0.440, e:2, ionSym:'Fe²⁺', ionCharge:2,
+    label:'Fe²⁺/Fe',           half:'Fe²⁺(aq) + 2e⁻ → Fe(s)',
+    halfH:'Fe²⁺<sub>(aq)</sub> + 2e⁻ → Fe<sub>(s)</sub>',
+    color:'#b08060', ionColor:'#c89070' },
+  { id:'cr',  symbol:'Cr',  eo:-0.740, e:3, ionSym:'Cr³⁺', ionCharge:3,
+    label:'Cr³⁺/Cr',           half:'Cr³⁺(aq) + 3e⁻ → Cr(s)',
+    halfH:'Cr³⁺<sub>(aq)</sub> + 3e⁻ → Cr<sub>(s)</sub>',
+    color:'#88c088', ionColor:'#a0d0a0' },
+  { id:'zn',  symbol:'Zn',  eo:-0.763, e:2, ionSym:'Zn²⁺', ionCharge:2,
+    label:'Zn²⁺/Zn',           half:'Zn²⁺(aq) + 2e⁻ → Zn(s)',
+    halfH:'Zn²⁺<sub>(aq)</sub> + 2e⁻ → Zn<sub>(s)</sub>',
+    color:'#9db8d4', ionColor:'#b0c8e4' },
+  { id:'al',  symbol:'Al',  eo:-1.660, e:3, ionSym:'Al³⁺', ionCharge:3,
+    label:'Al³⁺/Al',           half:'Al³⁺(aq) + 3e⁻ → Al(s)',
+    halfH:'Al³⁺<sub>(aq)</sub> + 3e⁻ → Al<sub>(s)</sub>',
+    color:'#a8c8e0', ionColor:'#bcd8f0' },
+  { id:'mg',  symbol:'Mg',  eo:-2.370, e:2, ionSym:'Mg²⁺', ionCharge:2,
+    label:'Mg²⁺/Mg',           half:'Mg²⁺(aq) + 2e⁻ → Mg(s)',
+    halfH:'Mg²⁺<sub>(aq)</sub> + 2e⁻ → Mg<sub>(s)</sub>',
+    color:'#d4e8d4', ionColor:'#e4f4e4' },
+  { id:'li',  symbol:'Li',  eo:-3.045, e:1, ionSym:'Li⁺',  ionCharge:1,
+    label:'Li⁺/Li',            half:'Li⁺(aq) + e⁻ → Li(s)',
+    halfH:'Li⁺<sub>(aq)</sub> + e⁻ → Li<sub>(s)</sub>',
+    color:'#f0d0d0', ionColor:'#f8e0e0' },
+];
+
+// Material packs shown in bottom tray
+const PACKS = [
+  { id:'h2',  icon:'⚗️', label:'H⁺/H₂ (SHE)',    sub:'1M HCl' },
+  { id:'zn',  icon:'🔷', label:'Zn/ZnSO₄',        sub:'1M' },
+  { id:'cu',  icon:'🟤', label:'Cu/CuSO₄',         sub:'1M' },
+  { id:'ag',  icon:'⬜', label:'Ag/AgNO₃',         sub:'1M' },
+  { id:'fe',  icon:'🔩', label:'Fe/FeSO₄',         sub:'1M' },
+  { id:'ni',  icon:'🟢', label:'Ni/NiSO₄',         sub:'1M' },
+  { id:'sn',  icon:'🔲', label:'Sn/SnCl₂',         sub:'1M' },
+  { id:'al',  icon:'🔹', label:'Al/AlCl₃',         sub:'1M' },
+  { id:'mg',  icon:'⚪', label:'Mg/MgSO₄',         sub:'1M' },
+];
+
+// sorted high→low E° (top of scale = strongest oxidizing agent)
+// Filtered to only show materials available in PACKS
+const PACK_IDS = new Set(PACKS.map(p => p.id));
+const SORTED = [...HALF_REACTIONS]
+  .filter(hr => PACK_IDS.has(hr.id))
+  .sort((a,b) => b.eo - a.eo);
+
+const MAX_EO = SORTED[0].eo;
+const MIN_EO = SORTED[SORTED.length-1].eo;
+const EO_RANGE = MAX_EO - MIN_EO;
+
+/* ═══════════════ STATE ═══════════════ */
+const S = {
+  leftCell:  null,
+  rightCell: null,
+  circuitClosed: false,
+  measuring: false,
+  showAll:   false,
+  animRunning: false,
+  recordedIds: new Set(),
+};
+
+/* ═══════════════════════════════════════════
+   POTENTIAL SCALE (Left Panel)
+   Built once; entries shown/highlighted dynamically
+   ═══════════════════════════════════════════ */
+const scaleEntries = {}; // id → {entry, textEl, eoEl}
+let scaleBuilt = false;
+const SCALE_MARGIN = 25; // Vertical margin at top/bottom to prevent clipping
+const DIFF_COLORS = ['#68d391', '#63b3ed', '#f6ad55', '#fc8181', '#38b2ac', '#b794f4', '#f6e05e'];
+
+function buildPotentialScale() {
+  if (scaleBuilt) return;
+  scaleBuilt = true;
+
+  const container = document.getElementById('potential-reactions');
+  const wrapper   = document.getElementById('potential-scale-wrapper');
+
+  SORTED.forEach(hr => {
+    const frac = (MAX_EO - hr.eo) / EO_RANGE; // 0=top, 1=bottom
+
+    // Row container
+    const entry = document.createElement('div');
+    entry.className = 'reaction-entry';
+    entry.style.top = `calc(${SCALE_MARGIN}px + (100% - ${SCALE_MARGIN*2}px) * ${frac})`;
+    entry.dataset.id = hr.id;
+
+    // Tick mark
+    const tick = document.createElement('div');
+    tick.className = hr.isHydrogen ? 'reaction-tick she-tick' : 'reaction-tick';
+    entry.appendChild(tick);
+
+    // Reaction text components for grid alignment
+    // halfH format: "Au³⁺<sub>(aq)</sub> + 3e⁻ → Au<sub>(s)</sub>"
+    const p1 = hr.halfH.split(' + ');
+    const ox = p1[0];
+    const p2 = p1[1].split(' → ');
+    const eC = p2[0];
+    const rd = p2[1];
+
+    const textEl = document.createElement('div');
+    textEl.className = 'reaction-text';
+    textEl.innerHTML = `
+      <span class="eq-ox">${ox}</span>
+      <span class="eq-plus">+</span>
+      <span class="eq-e">${eC}</span>
+      <span class="eq-arrow">→</span>
+      <span class="eq-red">${rd}</span>
+      <span class="eq-eo-label">E°</span>
+    `;
+
+    // E° value (placed inside textEl to participate in grid alignment)
+    const eoEl = document.createElement('span');
+    eoEl.className = 'reaction-eo';
+    eoEl.textContent = hr.eo >= 0 ? `+${hr.eo.toFixed(3)} V` : `${hr.eo.toFixed(3)} V`;
+    textEl.appendChild(eoEl);
+
+    entry.appendChild(textEl);
+    container.appendChild(entry);
+    scaleEntries[hr.id] = { entry, textEl, eoEl, frac };
+  });
+
+  // SHE reference horizontal line
+  const sheFrac = (MAX_EO - 0) / EO_RANGE;
+  const sheLine = document.createElement('div');
+  sheLine.id = 'she-reference-line';
+  sheLine.className = 'she-ref-element hidden';
+  sheLine.style.cssText = `
+    position:absolute; left:14px; right:0;
+    top: calc(${SCALE_MARGIN}px + (100% - ${SCALE_MARGIN * 2}px) * ${sheFrac}); height:1px;
+    background:rgba(99,179,237,0.35);
+    pointer-events:none; z-index:2;
+  `;
+  const sheLabel = document.createElement('div');
+  sheLabel.id = 'she-reference-label';
+  sheLabel.className = 'she-ref-element hidden';
+  sheLabel.style.cssText = `
+    position:absolute; left:65px; top: calc(${SCALE_MARGIN}px + (100% - ${SCALE_MARGIN * 2}px) * ${sheFrac});
+    transform:translateY(-50%); margin-top:-10px;
+    font-size:8px; color:#63b3ed;
+    background:rgba(13,17,23,0.75); padding:1px 4px; border-radius:3px;
+    white-space:nowrap; pointer-events:none; z-index:3;
+  `;
+  sheLabel.textContent = '0.000 V (SHE)';
+  wrapper.appendChild(sheLine);
+  wrapper.appendChild(sheLabel);
+}
+
+function highlightScale(anodeId, cathodeId) {
+  if (!anodeId || !cathodeId) return;
+
+  // Add to recorded set
+  S.recordedIds.add(anodeId);
+  S.recordedIds.add(cathodeId);
+
+  // Update visibility for recorded entries
+  Object.keys(scaleEntries).forEach(id => {
+    const {entry} = scaleEntries[id];
+    if (S.recordedIds.has(id) || S.showAll) {
+      entry.classList.add('visible');
+    }
+  });
+
+  // Show SHE reference if H2 is recorded or showAll is on
+  if (S.recordedIds.has('h2') || S.showAll) {
+    document.querySelectorAll('.she-ref-element').forEach(el => el.classList.remove('hidden'));
+  }
+
+  // Create NEW dynamic highlight for this measurement
+  const wrapper = document.getElementById('potential-scale-wrapper');
+  const wH = wrapper.clientHeight;
+  const ea = scaleEntries[anodeId];
+  const ec = scaleEntries[cathodeId];
+  if (!ea || !ec) return;
+
+  const range = wH - SCALE_MARGIN * 2;
+  const yaTop = SCALE_MARGIN + ea.frac * range;
+  const ybTop = SCALE_MARGIN + ec.frac * range;
+  
+  // Calculate horizontal offset based on number of records (each 10px apart)
+  const recordCount = wrapper.querySelectorAll('.potential-diff-bar').length;
+  const xOffset = 5 + (recordCount * 10);
+  const color = DIFF_COLORS[recordCount % DIFF_COLORS.length];
+
+  // Dots
+  [yaTop, ybTop].forEach(y => {
+    const dot = document.createElement('div');
+    dot.className = 'potential-highlight';
+    dot.style.top = `${y - 5}px`;
+    dot.style.left = `${xOffset - 3}px`;
+    dot.style.height = '10px';
+    dot.style.backgroundColor = color;
+    wrapper.appendChild(dot);
+  });
+
+  // Bar
+  const barTop = Math.min(yaTop, ybTop);
+  const barBot = Math.max(yaTop, ybTop);
+  const bar = document.createElement('div');
+  bar.className = 'potential-diff-bar';
+  bar.style.top = `${barTop}px`;
+  bar.style.left = `${xOffset}px`;
+  bar.style.height = `${barBot - barTop}px`;
+  bar.style.backgroundColor = color;
+  wrapper.appendChild(bar);
+
+  // Label (ΔE°)
+  const hrA = findHR(anodeId);
+  const hrC = findHR(cathodeId);
+  const emf = (hrC.eo - hrA.eo).toFixed(3);
+  const label = document.createElement('div');
+  label.className = 'potential-diff-label';
+  label.style.top = `${(barTop + barBot) / 2 - 10}px`;
+  label.style.left = `${xOffset + 8}px`;
+  label.style.color = color;
+  label.textContent = `ΔE°=${emf}V`;
+  wrapper.appendChild(label);
+}
+
+function setShowAll(on) {
+  S.showAll = on;
+  const container = document.getElementById('potential-reactions');
+  
+  Object.keys(scaleEntries).forEach(id => {
+    const {entry} = scaleEntries[id];
+    if (on || S.recordedIds.has(id)) {
+      entry.classList.add('visible');
+    } else {
+      entry.classList.remove('visible');
+    }
+  });
+
+  // Toggle potential values visibility
+  if (on) {
+    container.classList.add('show-all-eo');
+  } else {
+    container.classList.remove('show-all-eo');
+  }
+
+  // Update SHE reference visibility
+  if (on || S.recordedIds.has('h2')) {
+    document.querySelectorAll('.she-ref-element').forEach(el => el.classList.remove('hidden'));
+  } else {
+    document.querySelectorAll('.she-ref-element').forEach(el => el.classList.add('hidden'));
+  }
+
+  const btn = $('show-all-btn');
+  btn.textContent = on ? '隱藏未記錄數據' : '顯示所有標準電位值';
+  on ? btn.classList.add('active') : btn.classList.remove('active');
+}
+
+/* ═══════════════════════════════════════════
+   MATERIAL PACKS (Bottom Tray)
+   ═══════════════════════════════════════════ */
+function buildPacks() {
+  const grid = $('materials-grid');
+  grid.innerHTML = '';
+  PACKS.forEach(p => {
+    const hr = findHR(p.id);
+    if (!hr) return;
+    const eoStr = hr.eo >= 0 ? `E°=+${hr.eo.toFixed(3)}V` : `E°=${hr.eo.toFixed(3)}V`;
+    const div = document.createElement('div');
+    div.className = 'material-pack';
+    div.dataset.id = p.id;
+    div.innerHTML = `
+      <span class="pack-icon">${p.icon}</span>
+      <span class="pack-label">${p.label}</span>
+      <span class="pack-sub">${p.sub}</span>
+      <span class="pack-eo">${eoStr}</span>
+    `;
+    div.addEventListener('mousedown',  onPackMouseDown);
+    div.addEventListener('touchstart', onPackTouchStart, {passive:false});
+    grid.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   SVG BATTERY DRAWING
+   The SVG fills #battery-area.
+   Layout is computed from SVG pixel dimensions each draw.
+   ═══════════════════════════════════════════ */
+const NS = 'http://www.w3.org/2000/svg';
+let L = {};   // layout object, recomputed on each draw
+
+function el(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v));
+  return e;
+}
+function txt(x, y, str, attrs) {
+  const t = el('text', {x, y, ...attrs});
+  t.textContent = str;
+  return t;
+}
+
+function computeLayout(W, H) {
+  const bW  = W * 0.22;          // beaker width
+  const bH  = H * 0.40;          // beaker height
+  const bY  = H * 0.40;          // beaker top Y (moved down slightly for more head room)
+  const lX  = W * 0.07;          // left beaker left edge
+  const rX  = W * 0.71;          // right beaker left edge
+  const mX  = (lX + bW + rX) / 2; // midpoint ≈ W*0.50
+
+  // voltmeter
+  const vmR = Math.min(bW * 0.50, H * 0.085); // radius
+  const wireY = Math.max(10, H * 0.07);        // horizontal wire Y (near top)
+  const vmY   = wireY + vmR + 10;              // voltmeter centre (below wire)
+
+  const elTopY = bY - H * 0.10;   // electrode top (above beaker)
+  const elBotY = bY + bH * 0.78;  // electrode bottom (in solution)
+
+  // switch: right of right-voltmeter-terminal, on the horizontal wire
+  const vmRightX = mX + vmR;                   // right terminal X of voltmeter
+  const elRX_val = rX + bW * 0.60;             // right electrode X
+  const swX = vmRightX + (elRX_val - vmRightX) * 0.40; // 40% along right wire
+  const swY = wireY;
+
+  L = {
+    W, H, bW, bH, bY, lX, rX, mX,
+    lMX: lX + bW / 2,
+    rMX: rX + bW / 2,
+    vmR, vmX: mX, vmY,
+    wireY,         // horizontal run of the wire
+    elLX: lX + bW * 0.40,
+    elRX: elRX_val,
+    elTopY, elBotY,
+    swX, swY,
+    // voltmeter terminal connection points (wire enters voltmeter at sides)
+    vmTermL: mX - vmR,   // left terminal x
+    vmTermR: mX + vmR,   // right terminal x
+    bridgeX1: lX + bW * 0.72,
+    bridgeX2: rX + bW * 0.28,
+    bridgeY:  bY + bH * 0.08,
+  };
+}
+
+function drawBattery() {
+  const svg = $('battery-svg');
+  const rect = svg.getBoundingClientRect();
+  if (rect.width < 10) return;
+  svg.innerHTML = '';
+  computeLayout(rect.width, rect.height);
+
+  buildDefs(svg);
+  drawWires(svg);
+  drawSaltBridge(svg);
+  drawBeaker(svg, 'left');
+  drawBeaker(svg, 'right');
+  drawElectrode(svg, 'left');
+  drawElectrode(svg, 'right');
+  drawVoltmeter(svg);
+  drawSwitch(svg);
+
+  // Particle layers — always on top of everything
+  svg.appendChild(el('g', {id:'ion-layer'}));
+  svg.appendChild(el('g', {id:'bridge-ion-layer'}));  // K⁺ / NO₃⁻ in salt bridge
+  svg.appendChild(el('g', {id:'electron-layer'}));
+
+  // Redraw static ions if cells already selected
+  if (S.leftCell)  drawStaticIons('left');
+  if (S.rightCell) drawStaticIons('right');
+
+  positionRecordBtn();
+  positionReactionOverlay();
+
+  if (S.measuring) {
+    updateVoltmeterDisplay(emf());
+    showElectrodeRoles();
+  }
+}
+
+function buildDefs(svg) {
+  const defs = el('defs');
+
+  // Helper: vertical linear gradient
+  const vGrad = (id,stops) => {
+    const g = el('linearGradient',{id,x1:'0%',y1:'0%',x2:'0%',y2:'100%'});
+    stops.forEach(([off,col,op]) => {
+      const s = el('stop',{offset:off,'stop-color':col});
+      if(op !== undefined) s.setAttribute('stop-opacity', op);
+      g.appendChild(s);
+    });
+    defs.appendChild(g);
+  };
+  // Helper: horizontal linear gradient
+  const hGrad = (id,stops) => {
+    const g = el('linearGradient',{id,x1:'0%',y1:'0%',x2:'100%',y2:'0%'});
+    stops.forEach(([off,col,op]) => {
+      const s = el('stop',{offset:off,'stop-color':col});
+      if(op !== undefined) s.setAttribute('stop-opacity', op);
+      g.appendChild(s);
+    });
+    defs.appendChild(g);
+  };
+
+  vGrad('grad-vm',   [['0%','#1c2330',1],['100%','#0d1117',1]]);
+  vGrad('grad-sol-empty',[['0%','#141a24',0.8],['100%','#0d1219',0.9]]);
+
+  // Metallic rod sheen (horizontal, transparent overlay)
+  hGrad('rod-sheen', [
+    ['0%',  'rgba(0,0,0,0.30)', undefined],
+    ['20%', 'rgba(255,255,255,0.22)', undefined],
+    ['60%', 'rgba(255,255,255,0.05)', undefined],
+    ['100%','rgba(0,0,0,0.25)', undefined],
+  ]);
+
+  // Beaker glass wall sheen (horizontal)
+  hGrad('glass-sheen',[
+    ['0%',  'rgba(255,255,255,0.10)', undefined],
+    ['18%', 'rgba(255,255,255,0.04)', undefined],
+    ['100%','rgba(0,0,0,0)', undefined],
+  ]);
+
+  svg.appendChild(defs);
+}
+
+function drawWires(svg) {
+  const g = el('g', {id:'wire-group'});
+  const wireCol = '#63b3ed';
+  const wy = L.wireY;
+  const vL = L.vmTermL;  // left terminal x  (vmX - vmR)
+  const vR = L.vmTermR;  // right terminal x (vmX + vmR)
+
+  // ── Left side wire ──
+  // electrode top → up to wire height → across to left terminal → DROP into voltmeter left side
+  const pathL = [
+    `M ${L.elLX},${L.elTopY}`,
+    `L ${L.elLX},${wy}`,
+    `L ${vL},${wy}`,
+    `L ${vL},${L.vmY}`,  // drop into voltmeter left terminal
+  ].join(' ');
+  g.appendChild(el('path',{d:pathL, stroke:wireCol,'stroke-width':'2.5',fill:'none','stroke-linecap':'round','stroke-linejoin':'round'}));
+
+  // ── Right side wire ──
+  // Rise from voltmeter right terminal → across → switch gap → right electrode top
+  const pathR = [
+    `M ${vR},${L.vmY}`,  // rise from voltmeter right terminal
+    `L ${vR},${wy}`,
+    `L ${L.swX-13},${wy}`,   // to switch left contact
+    // gap for switch
+    `M ${L.swX+13},${wy}`,   // from switch right contact
+    `L ${L.elRX},${wy}`,
+    `L ${L.elRX},${L.elTopY}`,
+  ].join(' ');
+  g.appendChild(el('path',{d:pathR, stroke:wireCol,'stroke-width':'2.5',fill:'none','stroke-linecap':'round','stroke-linejoin':'round'}));
+
+  // Electron-direction arrows on wire (decorative)
+  const midLX = (L.elLX + vL) / 2;
+  const midRX = (vR + L.elRX) / 2;
+  g.appendChild(txt(midLX, wy-6, '→ e⁻', {fill:'rgba(99,179,237,0.40)','font-size':'8','text-anchor':'middle'}));
+  g.appendChild(txt(midRX, wy-6, 'e⁻ →', {fill:'rgba(99,179,237,0.40)','font-size':'8','text-anchor':'middle'}));
+
+  // − / + terminal labels at voltmeter body sides
+  g.appendChild(txt(vL-8, L.vmY+4, '−', {fill:'#fc8181','font-size':'14','font-weight':'900','text-anchor':'middle'}));
+  g.appendChild(txt(vR+8, L.vmY+4, '+', {fill:'#68d391','font-size':'14','font-weight':'900','text-anchor':'middle'}));
+  svg.appendChild(g);
+}
+
+function drawSaltBridge(svg) {
+  const g = el('g', {id:'salt-bridge'});
+  const Math_max = Math.max;
+  const cx1 = L.bridgeX1;
+  const cx2 = L.bridgeX2;
+  const bottom = L.bY + L.bH * 0.25;
+  const topY = L.bY - 25;
+  const r = 15;
+  
+  const pathData = `M ${cx1},${bottom} V ${topY} Q ${cx1},${topY-r} ${cx1+r},${topY-r} H ${cx2-r} Q ${cx2},${topY-r} ${cx2},${topY} V ${bottom}`;
+  
+  // Outer glass
+  g.appendChild(el('path', {
+    d: pathData, fill: 'none', stroke: 'rgba(200,220,255,0.15)', 'stroke-width': '26', 'stroke-linecap': 'round'
+  }));
+  // Gel inside
+  g.appendChild(el('path', {
+    d: pathData, fill: 'none', stroke: 'rgba(99,179,237,0.25)', 'stroke-width': '22', 'stroke-linecap': 'round'
+  }));
+  // Inner glass reflection
+  g.appendChild(el('path', {
+    d: pathData, fill: 'none', stroke: 'rgba(255,255,255,0.4)', 'stroke-width': '2'
+  }));
+  
+  // Static placeholder ions in the horizontal part (symmetric pairs)
+  const yMid = topY - r;
+  const xs = [
+    cx1 + r + 5, cx1 + r + 25,   // left pair
+    cx2 - r - 25, cx2 - r - 5    // right pair
+  ];
+  const types = ['K⁺', 'NO₃⁻', 'K⁺', 'NO₃⁻'];
+  
+  xs.forEach((x, i) => {
+    g.appendChild(el('circle', {cx: x, cy: yMid, r: '10', fill: 'rgba(20,30,45,0.8)', stroke: 'rgba(255,255,255,0.2)'}));
+    g.appendChild(txt(x, yMid+3, types[i], {fill:'#f8fafc', 'font-size': types[i]==='K⁺'?'9':'7.5', 'text-anchor':'middle', 'font-weight':'bold'}));
+  });
+  
+  const midBridge = (cx1+cx2)/2;
+  g.appendChild(txt(midBridge, topY-r-16, '鹽橋 (含 K⁺, NO₃⁻)', {fill:'#94a3b8','font-size':'10','text-anchor':'middle','font-style':'italic'}));
+  
+  svg.appendChild(g);
+}
+
+function drawBeaker(svg, side) {
+  const isL = side==='left';
+  const bx  = isL ? L.lX : L.rX;
+  const g   = el('g',{id:`beaker-${side}`});
+  const cell = isL ? S.leftCell : S.rightCell;
+
+  // Solution liquid fill logic based on beaker shape
+  const solH = L.bH * 0.80;
+  const solY = L.bY + L.bH - solH;
+  const solFill = cell ? hexWithAlpha(cell.color, 0.35) : 'url(#grad-sol-empty)';
+  
+  // The beaker's walls slope inward slightly at the top.
+  // Top width: bW - 10. Bottom width: bW. Slope dx = 5 over height bH.
+  // At solY, the inset dx is 5 * (solH / bH).
+  const insetSolPos = 5 * (solH / L.bH);
+  const solPath = `M ${bx+insetSolPos},${solY} L ${bx},${L.bY+L.bH} L ${bx+L.bW},${L.bY+L.bH} L ${bx+L.bW-insetSolPos},${solY} Z`;
+  g.appendChild(el('path',{d:solPath, fill:solFill, id:`solution-${side}`}));
+
+  // Liquid surface (meniscus)
+  if (cell) {
+    g.appendChild(el('ellipse', {
+      cx: bx + L.bW/2, cy: solY, rx: L.bW/2 - insetSolPos, ry: 5,
+      fill: hexWithAlpha(cell.color, 0.5)
+    }));
+  }
+
+  // Beaker glass shape (trapezoid path)
+  const path = `M ${bx+5},${L.bY} L ${bx},${L.bY+L.bH} L ${bx+L.bW},${L.bY+L.bH} L ${bx+L.bW-5},${L.bY} Z`;
+  g.appendChild(el('path',{
+    d:path, fill:'rgba(99,179,237,0.02)',
+    stroke: cell ? 'rgba(99,179,237,0.7)' : 'rgba(99,179,237,0.3)',
+    'stroke-width':'3', id:`beaker-outline-${side}`, 'stroke-linejoin':'round'
+  }));
+
+  // Beaker glass wall sheen overlay
+  g.appendChild(el('path',{
+    d:path, fill:'url(#glass-sheen)', 'pointer-events':'none'
+  }));
+
+  // Rim (flat lip)
+  g.appendChild(el('rect',{x:bx-1,y:L.bY-3,width:L.bW+2,height:5,rx:'2',fill:'rgba(255,255,255,0.15)',stroke:'rgba(99,179,237,0.6)','stroke-width':'1.5'}));
+
+  // Concentration label under beaker
+  const concStr = cell ? concLabel(cell) : '';
+  g.appendChild(txt(bx+L.bW/2, L.bY+L.bH+18, concStr, {
+    fill:'#cbd5e1','font-size':'10','text-anchor':'middle',id:`conc-${side}`
+  }));
+
+  // Drop hint if empty
+  if (!cell) {
+    g.appendChild(txt(bx+L.bW/2, L.bY+L.bH*0.48, '← 拖放材料包', {
+      fill:'rgba(99,179,237,0.28)','font-size':'10','text-anchor':'middle',id:`hint-${side}`
+    }));
+  }
+
+  svg.appendChild(g);
+
+  // Invisible drop-zone rect
+  const dz = el('rect',{
+    x:bx, y:L.bY, width:L.bW, height:L.bH,
+    fill:'transparent', id:`dropzone-${side}`,'data-side':side
+  });
+  svg.appendChild(dz);
+}
+
+function drawElectrode(svg, side) {
+  const isL = side==='left';
+  const ex  = isL ? L.elLX : L.elRX;
+  const cell = isL ? S.leftCell : S.rightCell;
+  const g   = el('g',{id:`electrode-${side}`});
+
+  // Metallic Rod Background
+  const rodCol = cell ? cell.color : '#2a3545';
+  g.appendChild(el('rect',{
+    x:ex-8, y:L.elTopY, width:16, height:L.elBotY-L.elTopY, rx:'4',
+    fill:rodCol, stroke:cell?'rgba(255,255,255,0.4)':'#1a2535','stroke-width':'1',
+    id:`rod-${side}`
+  }));
+
+  // Sheen overlay
+  if (cell && !cell.isHydrogen) {
+    g.appendChild(el('rect',{
+      x:ex-8, y:L.elTopY, width:16, height:L.elBotY-L.elTopY, rx:'4',
+      fill:'url(#rod-sheen)', 'pointer-events':'none'
+    }));
+  }
+
+  // Hydrogen electrode details (glass sheath over platinum)
+  if (cell && cell.isHydrogen) {
+    g.appendChild(el('rect',{
+      x:ex-12, y:L.elTopY-5, width:24, height:(L.elBotY-L.elTopY)*0.6,
+      rx:'6', fill:'rgba(180,200,255,0.1)', stroke:'rgba(255,255,255,0.5)', 'stroke-width':'1.5'
+    }));
+    g.appendChild(txt(ex+15, L.elTopY+8,'Pt wire',{fill:'#94a3b8','font-size':'8','text-anchor':'start'}));
+    g.appendChild(txt(ex, L.elTopY+(L.elBotY-L.elTopY)*0.32,'H₂↑',{fill:'rgba(255,255,255,0.8)','font-size':'10','text-anchor':'middle','font-weight':'bold'}));
+  }
+
+  // Electrode symbol on top
+  const sym = cell ? (cell.isHydrogen ? 'Pt' : cell.symbol) : '?';
+  g.appendChild(el('rect', {
+    x:ex-12, y:L.elTopY-16, width:24, height:14, rx:'3', fill:'rgba(20,30,45,0.8)'
+  }));
+  g.appendChild(txt(ex, L.elTopY-5, sym, {
+    fill: cell ? (cell.color||'#ccc') : '#888',
+    'font-size':'11','font-weight':'bold','text-anchor':'middle',id:`elec-sym-${side}`
+  }));
+
+  // Anode/Cathode role label (below beaker, hidden until measuring)
+  const roleEl = txt(ex, L.elBotY+32,'',{
+    'font-size':'11','font-weight':'bold','text-anchor':'middle',opacity:'0',id:`role-${side}`
+  });
+  g.appendChild(roleEl);
+
+  svg.appendChild(g);
+}
+
+function drawVoltmeter(svg) {
+  const g = el('g',{id:'voltmeter'});
+  const cx=L.vmX, cy=L.vmY, r=L.vmR;
+
+  // Outer glow ring
+  g.appendChild(el('circle',{cx,cy,r:r+6,fill:'none',stroke:'rgba(99,179,237,0.12)','stroke-width':'4'}));
+  // Body
+  g.appendChild(el('circle',{cx,cy,r:r+3,fill:'#0a0e16',stroke:'rgba(99,179,237,0.45)','stroke-width':'2'}));
+  g.appendChild(el('circle',{cx,cy,r,fill:'url(#grad-vm)',stroke:'rgba(99,179,237,0.25)','stroke-width':'1'}));
+
+  // "V" symbol
+  g.appendChild(txt(cx, cy-r*0.14, 'V', {
+    fill:'rgba(99,179,237,0.40)','font-size':r*0.60,'font-weight':'900','text-anchor':'middle','dominant-baseline':'middle'
+  }));
+
+  // Digital display box
+  const dW = r*1.5, dH = r*0.48;
+  g.appendChild(el('rect',{
+    x:cx-dW/2, y:cy+r*0.08, width:dW, height:dH, rx:'4',
+    fill:'#061206', stroke:'rgba(104,211,145,0.45)','stroke-width':'1'
+  }));
+  const dispText = el('text');
+  dispText.setAttribute('x', cx);
+  dispText.setAttribute('y', cy+r*0.08+dH*0.73);
+  dispText.setAttribute('text-anchor','middle');
+  dispText.setAttribute('fill','#68d391');
+  dispText.setAttribute('font-size', dH*0.72);
+  dispText.setAttribute('font-family','Courier New, monospace');
+  dispText.setAttribute('font-weight','900');
+  dispText.setAttribute('id','vm-display');
+  dispText.textContent = '- - -';
+  g.appendChild(dispText);
+
+  g.appendChild(txt(cx, cy+r+15,'伏特計',{fill:'#94a3b8','font-size':'9','text-anchor':'middle'}));
+  svg.appendChild(g);
+}
+
+function drawSwitch(svg) {
+  const g = el('g',{id:'switch-group',cursor:'pointer'});
+  const sx=L.swX, sy=L.swY;
+  const closed = S.circuitClosed;
+
+  g.appendChild(el('circle',{cx:sx,cy:sy,r:11,fill:'#1c2330',
+    stroke:closed?'#68d391':'#718096','stroke-width':'2',id:'sw-bg'}));
+
+  // handle line
+  const hx2 = closed ? sx+8 : sx+6;
+  const hy2 = closed ? sy   : sy-7;
+  const swLine = el('line',{x1:sx-8,y1:sy,x2:hx2,y2:hy2,
+    stroke:closed?'#68d391':'#fc8181','stroke-width':'2.5','stroke-linecap':'round',id:'sw-handle'});
+  g.appendChild(swLine);
+
+  g.appendChild(txt(sx, sy+24,'測量',{fill:'#94a3b8','font-size':'9','text-anchor':'middle'}));
+
+  // Invisible hit area
+  g.appendChild(el('circle',{cx:sx,cy:sy,r:18,fill:'transparent'}));
+  g.addEventListener('click', onSwitchClick);
+  g.addEventListener('touchend', e => { e.preventDefault(); onSwitchClick(); });
+  svg.appendChild(g);
+}
+
+/* ═══════════════════════════════════════════
+   STATIC IONS IN BEAKER (after pack dropped)
+   ═══════════════════════════════════════════ */
+function drawStaticIons(side) {
+  const cell = side==='left' ? S.leftCell : S.rightCell;
+  if (!cell) return;
+  const existing = document.getElementById(`static-ions-${side}`);
+  if (existing) existing.remove();
+
+  const layer  = document.getElementById('ion-layer');
+  if (!layer) return;
+  const isL = side==='left';
+  const bx  = isL ? L.lX : L.rX;
+  const g   = el('g',{id:`static-ions-${side}`});
+  const cnt = cell.isHydrogen ? 10 : 7;
+  const rng = seededRng(side==='left'?42:99); // deterministic layout
+
+  for (let i=0; i<cnt; i++) {
+    const ix = bx + L.bW*0.12 + rng()*L.bW*0.76;
+    const iy = L.bY + L.bH*0.18 + rng()*L.bH*0.62;
+    const r2 = cell.isHydrogen ? 4 : 11;
+
+    // Ion circle
+    g.appendChild(el('circle',{cx:ix,cy:iy,r:r2,fill:cell.ionColor||cell.color,stroke:'rgba(255,255,255,0.4)','stroke-width':'1',opacity:'0.75'}));
+
+    // Ion label
+    const lt = el('text');
+    lt.setAttribute('x',ix);
+    if (!cell.isHydrogen) {
+      lt.setAttribute('y',iy+3.5);
+      lt.setAttribute('fill','#1a202c');
+      lt.setAttribute('font-size','8.5');
+    } else {
+      lt.setAttribute('y',iy+3);
+      lt.setAttribute('fill','#fff');
+      lt.setAttribute('font-size','5.5');
+    }
+    lt.setAttribute('text-anchor','middle');
+    lt.setAttribute('font-weight','bold');
+    lt.textContent = cell.ionSym;
+    g.appendChild(lt);
+  }
+  layer.appendChild(g);
+}
+
+// Simple seeded pseudo-random
+function seededRng(seed) {
+  let s = seed;
+  return () => {
+    s = (s*9301 + 49297) % 233280;
+    return s/233280;
+  };
+}
+
+/* ═══════════════════════════════════════════
+   SWITCH & MEASUREMENT
+   ═══════════════════════════════════════════ */
+function onSwitchClick() {
+  if (!S.leftCell || !S.rightCell) return;
+  S.circuitClosed = !S.circuitClosed;
+  updateSwitchVisual();
+  if (S.circuitClosed) {
+    startMeasurement();
+  } else {
+    stopMeasurement();
+  }
+}
+
+function updateSwitchVisual() {
+  const bg = document.getElementById('sw-bg');
+  const hd = document.getElementById('sw-handle');
+  if (!bg||!hd) return;
+  const closed = S.circuitClosed;
+  bg.setAttribute('stroke',  closed ? '#68d391' : '#718096');
+  hd.setAttribute('x2',      closed ? L.swX+8  : L.swX+6);
+  hd.setAttribute('y2',      closed ? L.swY    : L.swY-7);
+  hd.setAttribute('stroke',  closed ? '#68d391' : '#fc8181');
+  const sg = document.getElementById('switch-group');
+  if (sg) sg.classList.remove('switch-blinking');
+}
+
+function setSwitchBlinking(on) {
+  const sg = document.getElementById('switch-group');
+  if (!sg) return;
+  on ? sg.classList.add('switch-blinking') : sg.classList.remove('switch-blinking');
+}
+
+function startMeasurement() {
+  S.measuring = true;
+  setSwitchBlinking(false);
+  const eInfo = electrodeInfo();
+  if (!eInfo) return;
+  updateVoltmeterDisplay(eInfo.emf, true);
+  showElectrodeRoles();
+  showReactionBox();
+  show('record-btn-container');
+  startParticles(eInfo);
+}
+
+function stopMeasurement() {
+  S.measuring = false;
+  S.animRunning = false;
+  updateVoltmeterDisplay(null);
+  hideElectrodeRoles();
+  hide('reaction-overlay');
+  hide('record-btn-container');
+  clearParticles();
+}
+
+/* ═══════════════════════════════════════════
+   ELECTROCHEMISTRY HELPERS
+   ═══════════════════════════════════════════ */
+function electrodeInfo() {
+  const lc = S.leftCell, rc = S.rightCell;
+  if (!lc || !rc) return null;
+  // Cathode: higher E°; Anode: lower E°
+  const [cathode, catSide, anode, anoSide] =
+    lc.eo >= rc.eo
+      ? [lc,'left', rc,'right']
+      : [rc,'right',lc,'left'];
+  const emfVal = (cathode.eo - anode.eo).toFixed(3);
+  return { cathode, catSide, anode, anoSide, emf: emfVal };
+}
+
+function emf() {
+  const i = electrodeInfo();
+  return i ? i.emf : '0.000';
+}
+
+function lcm(a,b) {
+  const gcd = (x,y) => y===0?x:gcd(y,x%y);
+  return (a*b)/gcd(a,b);
+}
+
+function buildEquations(info) {
+  const {cathode, anode} = info;
+  const lc = lcm(cathode.e, anode.e);
+  const catN = lc/cathode.e;
+  const anoN = lc/anode.e;
+
+  const c2s = n => n===1?'':''+n;
+  // Cathode equation (reduction, multiply by catN)
+  let catEq, anoEq, overEq;
+
+  if (cathode.isHydrogen) {
+    catEq = `${c2s(catN*2)}H⁺(aq) + ${lc}e⁻ → ${c2s(catN)}H₂(g)`;
+  } else {
+    catEq = `${c2s(catN)}${cathode.ionSym}(aq) + ${lc}e⁻ → ${c2s(catN)}${cathode.symbol}(s)`;
+  }
+
+  if (anode.isHydrogen) {
+    anoEq = `${c2s(anoN)}H₂(g) → ${c2s(anoN*2)}H⁺(aq) + ${lc}e⁻`;
+  } else {
+    anoEq = `${c2s(anoN)}${anode.symbol}(s) → ${c2s(anoN)}${anode.ionSym}(aq) + ${lc}e⁻`;
+  }
+
+  // Overall
+  const lLeft=[], lRight=[];
+  if (anode.isHydrogen) {
+    lLeft.push(`${c2s(anoN)}H₂`);
+    lRight.push(`${c2s(anoN*2)}H⁺`);
+  } else {
+    lLeft.push(`${c2s(anoN)}${anode.symbol}`);
+    lRight.push(`${c2s(anoN)}${anode.ionSym}(aq)`);
+  }
+  if (cathode.isHydrogen) {
+    lLeft.push(`${c2s(catN*2)}H⁺(aq)`);
+    lRight.push(`${c2s(catN)}H₂(g)`);
+  } else {
+    lLeft.push(`${c2s(catN)}${cathode.ionSym}(aq)`);
+    lRight.push(`${c2s(catN)}${cathode.symbol}(s)`);
+  }
+  overEq = lLeft.join(' + ') + ' → ' + lRight.join(' + ');
+
+  return {
+    cathodeEq: `陰極(還原): ${catEq}`,
+    anodeEq:   `陽極(氧化): ${anoEq}`,
+    overEq:    `全反應: ${overEq}`
+  };
+}
+
+/* ═══════════════════════════════════════════
+   UI UPDATE HELPERS
+   ═══════════════════════════════════════════ */
+function updateVoltmeterDisplay(val, animate=false) {
+  const d = document.getElementById('vm-display');
+  if (!d) return;
+  if (val===null) { d.textContent = '- - -'; return; }
+  if (!animate) { d.textContent = `${parseFloat(val).toFixed(3)} V`; return; }
+  const target = parseFloat(val);
+  const t0 = performance.now();
+  const dur = 1100;
+  const tick = now => {
+    const p = Math.min((now-t0)/dur,1);
+    d.textContent = `${(target*easeOut(p)).toFixed(3)} V`;
+    if (p<1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function showElectrodeRoles() {
+  const info = electrodeInfo();
+  if (!info) return;
+  ['left','right'].forEach(side => {
+    const el2 = document.getElementById(`role-${side}`);
+    if (!el2) return;
+    const isAnode = side===info.anoSide;
+    el2.textContent = isAnode ? '陽極 (−)' : '陰極 (+)';
+    el2.setAttribute('fill', isAnode ? '#fc8181' : '#63b3ed');
+    el2.setAttribute('opacity','1');
+  });
+}
+
+function hideElectrodeRoles() {
+  ['left','right'].forEach(side => {
+    const e = document.getElementById(`role-${side}`);
+    if (e) e.setAttribute('opacity','0');
+  });
+}
+
+function showReactionBox() {
+  const info = electrodeInfo();
+  if (!info) return;
+  const eqs = buildEquations(info);
+  $('anode-eq').textContent   = eqs.anodeEq;
+  $('cathode-eq').textContent = eqs.cathodeEq;
+  $('overall-eq').textContent = eqs.overEq;
+  const ov = $('reaction-overlay');
+  ov.classList.remove('hidden');
+  ov.classList.add('fade-in');
+  positionReactionOverlay();
+}
+
+function positionReactionOverlay() {
+  // Position the reaction box in the space between the two beakers (below salt bridge)
+  const svgEl2 = $('battery-svg');
+  const panEl  = $('right-panel');
+  if (!svgEl2 || !panEl || !L.W) return;
+  const svgRect = svgEl2.getBoundingClientRect();
+  const panRect = panEl.getBoundingClientRect();
+
+  // Centre horizontally between beakers; vertical: align bottom with beakers
+  const centreX = (L.lX + L.bW + L.rX) / 2;
+  const boxW    = (L.rX - L.lX - L.bW) * 0.92;
+
+  const ov = $('reaction-overlay');
+  ov.style.width  = `${boxW}px`;
+  // calculate height to align its bottom with the beaker's bottom
+  const boxH = ov.offsetHeight || 85; 
+  ov.style.left   = `${svgRect.left - panRect.left + centreX - boxW/2}px`;
+  ov.style.top    = `${svgRect.top  - panRect.top  + L.bY + L.bH - boxH + 10}px`;
+}
+
+function positionRecordBtn() {
+  if (!L.W) return;
+  const svgEl2 = $('battery-svg');
+  const panEl  = $('right-panel');
+  if (!svgEl2||!panEl) return;
+  const svgRect = svgEl2.getBoundingClientRect();
+  const panRect = panEl.getBoundingClientRect();
+  const btn = $('record-btn-container');
+  // Place under voltmeter
+  btn.style.left = `${svgRect.left - panRect.left + L.vmX - 55}px`;
+  btn.style.top  = `${svgRect.top  - panRect.top  + L.vmY + L.vmR + 18}px`;
+}
+
+/* ═══════════════════════════════════════════
+   PARTICLE ANIMATIONS
+   ═══════════════════════════════════════════ */
+function easeOut(t){ return 1-Math.pow(1-t,3); }
+
+let particleTimer = null;
+
+function startParticles(info) {
+  S.animRunning = true;
+  clearParticles();
+  const interval = 280; // ms (even slower interval for slower electrons)
+  let last = 0;
+  const frame = (ts) => {
+    if (!S.animRunning) return;
+    if (ts-last > interval) {
+      last = ts;
+      spawnAnodeIon(info);
+      spawnCathodeIon(info);
+      spawnElectron(info);
+      
+      // Spawn salt bridge ions occasionally
+      if (Math.random() < 0.4) spawnBridgeIon(info, 'K⁺');
+      if (Math.random() < 0.4) spawnBridgeIon(info, 'NO₃⁻');
+
+      if (info.anode.isHydrogen)   spawnBubble(info.anoSide);
+      if (info.cathode.isHydrogen) spawnBubble(info.catSide);
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+function clearParticles() {
+  const layer = document.getElementById('ion-layer');
+  const eLayer = document.getElementById('electron-layer');
+  const bLayer = document.getElementById('bridge-ion-layer');
+  if (layer)  Array.from(layer.querySelectorAll('.anim-p')).forEach(e=>e.remove());
+  if (eLayer) eLayer.innerHTML='';
+  if (bLayer) Array.from(bLayer.querySelectorAll('.anim-p')).forEach(e=>e.remove());
+}
+
+function spawnAnodeIon(info) {
+  // Anode: molecule leaves metal surface, drifts into solution
+  const side = info.anoSide;
+  const isL  = side==='left';
+  const ex   = isL ? L.elLX : L.elRX;
+  const layer = document.getElementById('ion-layer');
+  if (!layer) return;
+  const cx = ex + (Math.random()-0.5)*6;
+  const cy = L.bY + L.bH*0.3 + Math.random()*L.bH*0.45;
+  const hr = info.anode;
+
+  const r = 11;
+  const c = el('circle',{cx,cy,r,fill:hr.ionColor||hr.color,stroke:'rgba(255,255,255,0.4)','stroke-width':'1',opacity:'0.9',class:'anim-p'});
+  const t2= el('text');
+  t2.setAttribute('x',cx); t2.setAttribute('y',cy+3.5);
+  t2.setAttribute('text-anchor','middle');
+  t2.setAttribute('fill','#1a202c');
+  t2.setAttribute('font-size','8.5');
+  t2.setAttribute('font-weight','bold');
+  t2.setAttribute('class','anim-p'); t2.textContent=hr.ionSym;
+  layer.appendChild(c); layer.appendChild(t2);
+
+  const driftX = (isL?-1:1)*(12+Math.random()*20);
+  const driftY = (Math.random()-0.5)*15;
+  const dur = 1500+Math.random()*1000;
+  const t0 = performance.now();
+  const tick = now => {
+    const p = Math.min((now-t0)/dur,1);
+    const ep = easeOut(p);
+    c.setAttribute('cx', cx+driftX*ep);
+    c.setAttribute('cy', cy+driftY*ep);
+    c.setAttribute('opacity', 0.9*(1-p*0.85));
+    t2.setAttribute('x', cx+driftX*ep);
+    t2.setAttribute('y', cy+driftY*ep+3);
+    t2.setAttribute('opacity', 0.9*(1-p));
+    if(p<1) requestAnimationFrame(tick); else { c.remove(); t2.remove(); }
+  };
+  requestAnimationFrame(tick);
+}
+
+function spawnCathodeIon(info) {
+  if (info.cathode.isHydrogen) return;
+  const side = info.catSide;
+  const isL  = side==='left';
+  const ex   = isL ? L.elLX : L.elRX;
+  const bx   = isL ? L.lX  : L.rX;
+  const layer = document.getElementById('ion-layer');
+  if (!layer) return;
+  const startX = bx + L.bW*(0.1+Math.random()*0.8);
+  const startY = L.bY + L.bH*(0.15+Math.random()*0.5);
+  const hr = info.cathode;
+
+  const r = 11;
+  const c = el('circle',{cx:startX,cy:startY,r,fill:hr.ionColor||hr.color,stroke:'rgba(255,255,255,0.4)','stroke-width':'1',opacity:'0.85',class:'anim-p'});
+  const t2= el('text');
+  t2.setAttribute('x',startX); t2.setAttribute('y',startY+3.5);
+  t2.setAttribute('text-anchor','middle');
+  t2.setAttribute('fill','#1a202c');
+  t2.setAttribute('font-size','8.5');
+  t2.setAttribute('font-weight','bold');
+  t2.setAttribute('class','anim-p'); t2.textContent=hr.ionSym;
+  layer.appendChild(c); layer.appendChild(t2);
+
+  const targetX=ex, targetY=L.bY+L.bH*0.74;
+  const dur = 1300+Math.random()*800;
+  const t0 = performance.now();
+  const tick = now => {
+    const p=Math.min((now-t0)/dur,1), ep=easeOut(p);
+    c.setAttribute('cx', startX+(targetX-startX)*ep);
+    c.setAttribute('cy', startY+(targetY-startY)*ep);
+    c.setAttribute('r', r*(1-p*0.65));
+    c.setAttribute('opacity', (0.85-p*0.55));
+    t2.setAttribute('x', startX+(targetX-startX)*ep);
+    t2.setAttribute('y', startY+(targetY-startY)*ep+3);
+    t2.setAttribute('opacity', 0.85-p*0.7);
+    if(p<1) requestAnimationFrame(tick); else { c.remove(); t2.remove(); }
+  };
+  requestAnimationFrame(tick);
+}
+
+function spawnElectron(info) {
+  // Electrons travel through the circuit: anode top → wire → into voltmeter side → out → switch → cathode top
+  const anodeLeft = info.anoSide==='left';
+  const fromX = anodeLeft ? L.elLX : L.elRX;
+  const toX   = anodeLeft ? L.elRX : L.elLX;
+  const wy = L.wireY;
+  const vL = L.vmTermL;  // vmX - vmR
+  const vR = L.vmTermR;  // vmX + vmR
+
+  // Anode-on-left: left electrode top → wire → voltmeter left-in → voltmeter right-out → switch → cathode top
+  // Anode-on-right: mirror path
+  const pts = anodeLeft
+    ? [
+        [fromX, L.elTopY],
+        [fromX, wy],
+        [vL,    wy],
+        [vL,    L.vmY],
+        [vR,    L.vmY],
+        [vR,    wy],
+        [L.swX+13, wy],
+        [toX,   wy],
+        [toX,   L.elTopY],
+      ]
+    : [
+        [fromX, L.elTopY],
+        [fromX, wy],
+        [L.swX+13, wy],
+        [vR,    wy],
+        [vR,    L.vmY],
+        [vL,    L.vmY],
+        [vL,    wy],
+        [toX,   wy],
+        [toX,   L.elTopY],
+      ];
+
+  // Compute cumulative lengths
+  const lens = [0];
+  for(let i=1;i<pts.length;i++){
+    const dx=pts[i][0]-pts[i-1][0], dy=pts[i][1]-pts[i-1][1];
+    lens.push(lens[i-1]+Math.sqrt(dx*dx+dy*dy));
+  }
+  const totalLen = lens[lens.length-1];
+
+  const layer = document.getElementById('electron-layer');
+  if (!layer) return;
+  const c = el('circle',{cx:pts[0][0],cy:pts[0][1],r:'5',fill:'#ffd700',opacity:'0',class:'anim-p'});
+  const t2= el('text');
+  t2.setAttribute('x',pts[0][0]); t2.setAttribute('y',pts[0][1]-7);
+  t2.setAttribute('text-anchor','middle'); t2.setAttribute('fill','#ffd700');
+  t2.setAttribute('font-size','8.5'); t2.setAttribute('font-weight','bold');
+  t2.setAttribute('opacity','0'); t2.setAttribute('class','anim-p');
+  t2.textContent='e⁻';
+  layer.appendChild(c); layer.appendChild(t2);
+
+  const dur = 5000+Math.random()*1500; // Even slower electron movement
+  const t0 = performance.now();
+
+  function ptAtFrac(frac){
+    const d = frac*totalLen;
+    for(let i=1;i<pts.length;i++){
+      if(lens[i]>=d){
+        const seg=lens[i]-lens[i-1], t3=(d-lens[i-1])/seg;
+        return [pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t3,
+                pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t3];
+      }
+    }
+    return pts[pts.length-1];
+  }
+
+  const tick = now => {
+    const p=Math.min((now-t0)/dur,1);
+    const [px,py]=ptAtFrac(p);
+    c.setAttribute('cx',px); c.setAttribute('cy',py);
+    t2.setAttribute('x',px); t2.setAttribute('y',py-7);
+    const a=p<0.08?p/0.08:p>0.92?(1-p)/0.08:1;
+    c.setAttribute('opacity',a*0.95);
+    t2.setAttribute('opacity',a*0.85);
+    if(p<1) requestAnimationFrame(tick); else { c.remove(); t2.remove(); }
+  };
+  requestAnimationFrame(tick);
+}
+
+function spawnBubble(side) {
+  const isL = side==='left';
+  const ex  = isL ? L.elLX : L.elRX;
+  const layer = document.getElementById('ion-layer');
+  if (!layer) return;
+  const cx = ex+(Math.random()-0.5)*12;
+  const startY = L.bY+L.bH*0.68;
+  const c = el('circle',{cx,cy:startY,r:2+Math.random()*2,
+    fill:'rgba(200,220,255,0.35)',stroke:'rgba(200,220,255,0.55)','stroke-width':'0.5',class:'anim-p'});
+  layer.appendChild(c);
+  const dur=1000+Math.random()*700;
+  const t0=performance.now();
+  const tick=now=>{
+    const p=Math.min((now-t0)/dur,1);
+    c.setAttribute('cy',startY-L.bH*0.63*p);
+    c.setAttribute('opacity',0.8*(1-p));
+    if(p<1) requestAnimationFrame(tick); else c.remove();
+  };
+  requestAnimationFrame(tick);
+}
+
+function spawnBridgeIon(info, type) {
+  // K+ goes to Cathode, NO3- goes to Anode
+  const targetSide = type === 'K⁺' ? info.catSide : info.anoSide;
+  const isL = targetSide === 'left';
+  const cx = isL ? L.bridgeX1 - 2 : L.bridgeX2 + 2;
+  const startY = L.bY - 15;
+  const targetY = L.bY + L.bH * 0.25 + 5;
+  
+  const layer = document.getElementById('bridge-ion-layer');
+  if (!layer) return;
+  
+  const r = 10;
+  const fill = 'rgba(20,30,45,0.8)';
+  const fontSz = type==='K⁺' ? '9' : '7.5';
+  
+  const c = el('circle',{cx,cy:startY,r,fill,stroke:'rgba(255,255,255,0.3)','stroke-width':'1',class:'anim-p'});
+  const t2= el('text');
+  t2.setAttribute('x',cx); t2.setAttribute('y',startY+3.5);
+  t2.setAttribute('text-anchor','middle');
+  t2.setAttribute('fill','#f8fafc');
+  t2.setAttribute('font-size',fontSz);
+  t2.setAttribute('font-weight','bold');
+  t2.setAttribute('class','anim-p'); t2.textContent=type;
+  layer.appendChild(c); layer.appendChild(t2);
+  
+  const dur = 2000+Math.random()*500;
+  const t0 = performance.now();
+  const tick = now => {
+    const p=Math.min((now-t0)/dur,1);
+    const currY = startY + (targetY-startY)*p;
+    c.setAttribute('cy', currY);
+    t2.setAttribute('y', currY+3);
+    c.setAttribute('opacity', 1-p*0.9);
+    t2.setAttribute('opacity', 1-p*0.9);
+    if(p<1) requestAnimationFrame(tick); else { c.remove(); t2.remove(); }
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ═══════════════════════════════════════════
+   DRAG & DROP
+   ═══════════════════════════════════════════ */
+let drag = null;
+
+function onPackMouseDown(e){
+  if(e.button!==0) return;
+  e.preventDefault();
+  const packEl=e.currentTarget;
+  drag={id:packEl.dataset.id,packEl};
+  showGhost(e.clientX,e.clientY,packLabel(drag.id));
+  packEl.classList.add('dragging');
+  document.addEventListener('mousemove',onMouseMove);
+  document.addEventListener('mouseup',  onMouseUp);
+}
+function onMouseMove(e){ if(!drag)return; moveGhost(e.clientX,e.clientY); hiliteDropZone(e.clientX,e.clientY); }
+function onMouseUp(e){
+  if(!drag)return;
+  const side=dropSide(e.clientX,e.clientY);
+  if(side) dropPack(drag.id,side);
+  endDrag();
+}
+
+function onPackTouchStart(e){
+  e.preventDefault();
+  const t=e.touches[0], packEl=e.currentTarget;
+  drag={id:packEl.dataset.id,packEl};
+  showGhost(t.clientX,t.clientY,packLabel(drag.id));
+  packEl.classList.add('dragging');
+  packEl.addEventListener('touchmove',  onTouchMove,  {passive:false});
+  packEl.addEventListener('touchend',   onTouchEnd);
+  packEl.addEventListener('touchcancel',onTouchEnd);
+}
+function onTouchMove(e){
+  e.preventDefault();
+  const t=e.touches[0]; moveGhost(t.clientX,t.clientY); hiliteDropZone(t.clientX,t.clientY);
+}
+function onTouchEnd(e){
+  const t=e.changedTouches[0];
+  const side=dropSide(t.clientX,t.clientY);
+  if(side&&drag) dropPack(drag.id,side);
+  drag?.packEl.removeEventListener('touchmove',  onTouchMove);
+  drag?.packEl.removeEventListener('touchend',   onTouchEnd);
+  drag?.packEl.removeEventListener('touchcancel',onTouchEnd);
+  endDrag();
+}
+function endDrag(){
+  if(drag?.packEl) drag.packEl.classList.remove('dragging');
+  hideGhost();
+  clearHilite();
+  document.removeEventListener('mousemove',onMouseMove);
+  document.removeEventListener('mouseup',  onMouseUp);
+  drag=null;
+}
+
+function dropSide(cx,cy){
+  const svg=$('battery-svg');
+  if(!svg||!L.W) return null;
+  const r=svg.getBoundingClientRect();
+  const rx=cx-r.left, ry=cy-r.top;
+  if(ry<L.bY||ry>L.bY+L.bH) return null;
+  if(rx>=L.lX&&rx<=L.lX+L.bW) return 'left';
+  if(rx>=L.rX&&rx<=L.rX+L.bW) return 'right';
+  return null;
+}
+function hiliteDropZone(cx,cy){
+  const side=dropSide(cx,cy);
+  ['left','right'].forEach(s=>{
+    const dz=document.getElementById(`dropzone-${s}`);
+    if(dz) dz.setAttribute('fill', s===side?'rgba(99,179,237,0.13)':'transparent');
+  });
+}
+function clearHilite(){
+  ['left','right'].forEach(s=>{
+    const dz=document.getElementById(`dropzone-${s}`);
+    if(dz) dz.setAttribute('fill','transparent');
+  });
+}
+
+function showGhost(x,y,text){
+  const g=$('drag-ghost');
+  g.textContent=text; g.style.display='block';
+  moveGhost(x,y);
+}
+function moveGhost(x,y){
+  const g=$('drag-ghost');
+  g.style.left=`${x+16}px`; g.style.top=`${y-22}px`;
+}
+function hideGhost(){
+  $('drag-ghost').style.display='none';
+}
+
+function packLabel(id){
+  const p=PACKS.find(p=>p.id===id);
+  return p?`${p.icon} ${p.label}`:``;
+}
+
+function dropPack(id,side){
+  const hr=findHR(id);
+  if(!hr)return;
+
+  // Reset circuit if measuring
+  if(S.circuitClosed){ S.circuitClosed=false; stopMeasurement(); }
+
+  if(side==='left')  S.leftCell =hr;
+  if(side==='right') S.rightCell=hr;
+
+  drawBattery();   // full redraw (updates beaker colour, electrode, labels)
+  drawStaticIons(side);
+
+  if(S.leftCell&&S.rightCell) setSwitchBlinking(true);
+}
+
+/* ═══════════════════════════════════════════
+   RECORD BUTTON
+   ═══════════════════════════════════════════ */
+$('record-btn').addEventListener('click',()=>{
+  if(!S.measuring) return;
+  const info=electrodeInfo();
+  if(!info) return;
+  // Highlight the two half-reactions on the left-panel potential scale
+  highlightScale(info.anode.id, info.cathode.id);
+});
+
+/* ═══════════════════════════════════════════
+   SHOW ALL E° BUTTON
+   ═══════════════════════════════════════════ */
+$('show-all-btn').addEventListener('click',()=>{ setShowAll(!S.showAll); });
+
+/* ═══════════════════════════════════════════
+   RESIZE HANDLER
+   ═══════════════════════════════════════════ */
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    drawBattery();
+    if(S.measuring){ showReactionBox(); }
+  },120);
+});
+
+/* ═══════════════════════════════════════════
+   UTILITY
+   ═══════════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function findHR(id){ return HALF_REACTIONS.find(h=>h.id===id); }
+function concLabel(hr){
+  return hr.isHydrogen ? '1M HCl (H⁺, aq)' : `1M ${hr.ionSym}(aq)`;
+}
+function hexWithAlpha(hex,alpha){
+  // hex = '#rrggbb', return rgba(...)
+  if(!hex||hex.length<7)return`rgba(100,150,200,${alpha})`;
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return`rgba(${r},${g},${b},${alpha})`;
+}
+function hide(id){ $(`${id}`) && $(`${id}`).classList.add('hidden'); }
+function show(id){ $(`${id}`) && $(`${id}`).classList.remove('hidden'); }
+
+/* ═══════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  buildPotentialScale();
+  buildPacks();
+  // Wait a tick so SVG gets its layout dimensions
+  requestAnimationFrame(()=>{ drawBattery(); });
+});
+
+</script>
+
+<!-- Drawing & Toolbar & Random Draw Scripts -->
+<script>
+  // ── Start overlay & Fullscreen ──
+  (function () {
+      let starting = false;
+      function startTeaching(ev) {
+          if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+          if (starting) return; starting = true;
+          document.getElementById('start-overlay').style.display = 'none';
+          
+          const el = document.documentElement;
+          try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+          try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+      }
+      const overlay = document.getElementById('start-overlay');
+      if (overlay) { 
+          overlay.addEventListener('click', startTeaching); 
+          overlay.addEventListener('touchend', startTeaching, { passive: false }); 
+      }
+  })();
+
+  // ── Drawing layer ──
+  let isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+  let lastX = 0, lastY = 0, isDrawing = false;
+  const canvas = document.getElementById('drawing-layer');
+  const ctx = canvas ? canvas.getContext('2d') : null;
+
+  function resizeCanvas() {
+      if (!canvas || !ctx) return;
+      canvas.width = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth); 
+      canvas.height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  if (canvas && ctx) resizeCanvas();
+
+  function getCoords(e) {
+      if (!canvas) return [0, 0];
+      const rect = canvas.getBoundingClientRect();
+      const cx = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+      return [cx - rect.left, cy - rect.top];
+  }
+  function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+  function draw(e) {
+      if (!isDrawing || !ctx) return;
+      const [x, y] = getCoords(e);
+      ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+      if (drawMode === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.strokeStyle = 'rgba(0,0,0,1)';
+          ctx.lineWidth = 38;
+      } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = penColor;
+          ctx.lineWidth = 3.5;
+      }
+      ctx.lineCap = 'round'; ctx.stroke();
+      [lastX, lastY] = [x, y];
+  }
+  function stopDrawing() {
+      if (isDrawing && canvas) { isDrawing = false; }
+  }
+  if (canvas) {
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('touchstart', e => { if (isDrawingMode) { e.preventDefault(); startDrawing(e); } }, { passive: false });
+      canvas.addEventListener('touchmove', e => { if (isDrawingMode) { e.preventDefault(); draw(e); } }, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing);
+  }
+
+  // ── Toolbar functionality ──
+  document.getElementById('btn-draw').addEventListener('click', e => {
+      isDrawingMode = !isDrawingMode;
+      if (isDrawingMode) drawMode = 'pen';
+      e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+      canvas.classList.toggle('drawing-active', isDrawingMode);
+      document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+      document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+  });
+  document.getElementById('btn-eraser').addEventListener('click', e => {
+      drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+      e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+  });
+  document.querySelectorAll('.color-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+          document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+          dot.style.borderColor = 'white';
+          penColor = dot.dataset.color; drawMode = 'pen';
+          document.getElementById('btn-eraser').classList.remove('active-tool');
+      });
+  });
+  document.getElementById('btn-clear').addEventListener('click', () => {
+      if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  });
+  document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+  // ── Toolbar drag ──
+  (function () {
+      const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+      let isDT = false, tOY = 0;
+      const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+      const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+      dh.addEventListener('mousedown', e => sDT(e.clientY));
+      window.addEventListener('mousemove', e => mDT(e.clientY));
+      window.addEventListener('mouseup', () => { isDT = false; });
+      dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+      window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+      window.addEventListener('touchend', () => { isDT = false; });
+  })();
+
+  // ── Random Draw functionality ──
+  (function() {
+      const btnRandomDraw = document.getElementById('btn-random-draw');
+      const drawModal = document.getElementById('random-draw-modal');
+      const btnCloseDraw = document.getElementById('btn-close-draw');
+      const drawBallsContainer = document.getElementById('random-draw-balls');
+      const drawTotalInput = document.getElementById('draw-total-input');
+      const btnDoDraw = document.getElementById('btn-do-draw');
+
+      let drawBalls = [];
+      let totalBalls = 40;
+
+      function renderBalls() {
+          drawBallsContainer.innerHTML = '';
+          drawBalls = [];
+          for (let i = 1; i <= totalBalls; i++) {
+              const ball = document.createElement('div');
+              ball.className = 'draw-ball';
+              ball.textContent = i;
+              ball.dataset.num = i;
+              drawBallsContainer.appendChild(ball);
+              drawBalls.push(ball);
+          }
+      }
+
+      btnRandomDraw.addEventListener('click', () => {
+          if (drawModal.style.display === 'block') {
+              drawModal.style.display = 'none';
+              btnRandomDraw.classList.remove('active-tool');
+          } else {
+              drawModal.style.display = 'block';
+              btnRandomDraw.classList.add('active-tool');
+              if (drawBalls.length === 0) {
+                  totalBalls = parseInt(drawTotalInput.value) || 40;
+                  renderBalls();
+              }
+          }
+      });
+
+      btnCloseDraw.addEventListener('click', () => {
+          drawModal.style.display = 'none';
+          btnRandomDraw.classList.remove('active-tool');
+      });
+
+      drawTotalInput.addEventListener('change', () => {
+          let val = parseInt(drawTotalInput.value);
+          if (isNaN(val) || val < 1) val = 1;
+          drawTotalInput.value = val;
+          totalBalls = val;
+          renderBalls();
+      });
+
+      let drawInterval;
+      let drawTimeout;
+
+      btnDoDraw.addEventListener('click', () => {
+          if (btnDoDraw.disabled) return;
+
+          const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+          if (availableBalls.length === 0) {
+              alert('所有號碼都已抽出！');
+              return;
+          }
+
+          const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+          if (prevWinner) {
+              prevWinner.classList.remove('winner');
+              prevWinner.classList.add('drawn');
+          }
+
+          const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+          if (currentAvailable.length === 0) {
+              alert('所有號碼都已抽出！');
+              return;
+          }
+
+          btnDoDraw.disabled = true;
+          drawTotalInput.disabled = true;
+
+          let flickerCount = 0;
+          const flickerDuration = 3000;
+          const flickerSpeed = 50;
+
+          drawInterval = setInterval(() => {
+              currentAvailable.forEach(b => b.classList.remove('flicker'));
+              const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+              currentAvailable[randomIdx].classList.add('flicker');
+          }, flickerSpeed);
+
+          drawTimeout = setTimeout(() => {
+              clearInterval(drawInterval);
+              currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+              const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+              const winnerBall = currentAvailable[winnerIdx];
+              winnerBall.classList.add('winner');
+
+              btnDoDraw.disabled = false;
+              drawTotalInput.disabled = false;
+          }, flickerDuration);
+      });
+  })();
+</script>
+</body>
+</html>

@@ -26,15 +26,15 @@
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; scroll-behavior: smooth; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
         #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
-        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; }
+        #slides-container { position: relative; padding: 60px 68px 20px 2.5vw; }
         
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0.5rem 6rem 1rem 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        .slide { position: relative; padding: 2rem 0.5rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; min-height: 100vh; border-bottom: 2px dashed rgba(255,255,255,0.1); }
         @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
-        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
+        /* .slide.active removed */
         
         .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
         .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
@@ -46,11 +46,11 @@
         .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
         .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
         
-        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
-        #drawing-layer.drawing-active { pointer-events: auto; }
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; cursor: crosshair; }
         
-        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 15px 10px; border-radius: 30px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 50; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
-        .btn { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
         .btn:hover { background: rgba(255,255,255,0.1); }
         .btn.active-tool, .btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
         
@@ -102,7 +102,24 @@
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         .pulse { animation: pulse 2s infinite; }
+    
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw; }
+        #random-draw-balls { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center; margin: 0 auto 20px auto; width: 100%; max-width: 500px; }
+        .draw-ball { width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        #btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #btn-close-draw:hover { opacity: 1; }
     </style>
+    
 </head>
 <body>
     <div id="app">
@@ -302,9 +319,9 @@
                 <div class="slide" id="slide-redox-quiz">
                     <h1>互動練習：判斷氧化還原角色</h1>
                     <div class="flex-row">
-                        <div class="flex-col" style="flex: 1.5;">
+                        <div class="flex-col" style="flex: 2.5;">
                             <div class="rule-card" style="padding: 1.5rem;">
-                                <h2 id="quiz-reaction" style="text-align: center; color: var(--accent-yellow); margin-bottom: 1.5rem;">$MnO_4^- + 5Fe^{2+} + 8H^+ \rightarrow Mn^{2+} + 5Fe^{3+} + 4H_2O$</h2>
+                                <h2 id="quiz-reaction" style="text-align: center; color: var(--accent-yellow); margin-bottom: 1.5rem; overflow-x: auto; white-space: nowrap; padding-bottom: 5px;">$MnO_4^- + 5Fe^{2+} + 8H^+ \rightarrow Mn^{2+} + 5Fe^{3+} + 4H_2O$</h2>
                                 <p style="font-size: 1.2rem; text-align: center;">在這反應中，請拖曳正確角色到對應的方框：</p>
                                 <div id="quiz-questions-container" style="display: flex; flex-direction: column; gap: 20px; margin-top: 2rem; align-items: center;">
                                     <!-- Populated by JS -->
@@ -312,11 +329,11 @@
                             </div>
                             <div id="quiz-feedback" style="display: none; text-align: center; margin-top: 1rem; padding: 1rem; border-radius: 10px;"></div>
                         </div>
-                        <div class="flex-col" style="flex: 1;">
+                        <div class="flex-col" style="flex: 1; min-width: 250px;">
                             <h2 class="text-cyan">可選角色</h2>
-                            <div id="quiz-options" style="display: flex; flex-direction: column; gap: 10px;">
-                                <div class="drag-item" draggable="true" data-type="oxidizer">氧化劑 (Oxidizer)</div>
-                                <div class="drag-item" draggable="true" data-type="reducer">還原劑 (Reducer)</div>
+                            <div id="quiz-options" style="display: flex; flex-direction: column; gap: 15px;">
+                                <div class="drag-item" draggable="true" data-type="oxidizer" style="font-size: 1.3rem; padding: 12px 20px;">氧化劑 (Oxidizer)</div>
+                                <div class="drag-item" draggable="true" data-type="reducer" style="font-size: 1.3rem; padding: 12px 20px;">還原劑 (Reducer)</div>
                             </div>
                             <button onclick="nextQuiz()" class="btn primary" style="margin-top: 2rem; width: auto; align-self: center; padding: 10px 30px;">下一題</button>
                         </div>
@@ -327,64 +344,66 @@
             <canvas id="drawing-layer"></canvas>
         </div>
 
-        <!-- Slide Indicator -->
-        <div id="slide-info">1 / 4</div>
+        
 
-        <!-- Controls Toolbar -->
-        <div id="toolbar" style="padding: 10px 5px; border-radius: 20px; width: 45px;">
-            <div id="drag-handle" title="拖曳移動工具列">
-                <div style="pointer-events: none;">≡</div>
-            </div>
-            <button class="btn" id="btn-prev" title="上一頁">▲</button>
-            <button class="btn" id="btn-next" title="下一頁">▼</button>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
+        
+        <button class="btn" id="btn-top" style="position: fixed; bottom: 20px; right: 20px; z-index: 9000; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-cyan); color: #0f172a; cursor: pointer;" title="回到頂部" type="button">▲</button>
+        <div id="toolbar">
+            <div id="drag-handle" title="拖曳移動工具列">≡</div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
             
-            <button class="btn" id="btn-draw" title="手寫模式">✎</button>
+            <button class="btn" id="btn-draw" title="手寫模式" type="button">✎</button>
             
-            <div class="color-picker" id="color-picker" style="display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px;">
-                <div class="color-swatch selected" style="background: #f8fafc; width: 20px; height: 20px;" data-color="#f8fafc"></div>
-                <div class="color-swatch" style="background: #f87171; width: 20px; height: 20px;" data-color="#f87171"></div>
-                <div class="color-swatch" style="background: #38bdf8; width: 20px; height: 20px;" data-color="#38bdf8"></div>
-                <div class="color-swatch" style="background: #fbbf24; width: 20px; height: 20px;" data-color="#fbbf24"></div>
-                <div class="color-swatch" style="background: #34d399; width: 20px; height: 20px;" data-color="#34d399"></div>
+            <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+                <div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+                <div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+                <div class="color-dot" data-color="#a78bfa" style="width:22px;height:22px;background:#a78bfa;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
             </div>
 
-            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
-                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 100%; height: 4px; cursor: pointer;">
-            </div>
-
-            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
-                <button class="btn" id="btn-eraser" title="擦布">
-                    <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:currentColor;"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+                <button class="btn" id="btn-eraser" title="擦布" type="button">
+                    <svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:currentColor;"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
                 </button>
-                <button class="btn" id="btn-clear" title="清除">🗑</button>
+                <button class="btn" id="btn-clear" title="清除" type="button">🗑</button>
             </div>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            <button class="btn" id="btn-exit-fs" title="目錄">🏠</button>
+            
+            <button class="btn" id="btn-random-draw" title="隨機抽號" type="button">🎰</button>
+            <button class="btn" id="btn-exit-fs" title="返回" type="button">🏠</button>
+        </div>
+        
+        <!-- ======= RANDOM DRAW MODAL ======= -->
+        <div id="random-draw-modal">
+            <button id="btn-close-draw" title="關閉" type="button">×</button>
+            <div id="random-draw-balls"></div>
+            <div id="random-draw-controls">
+                <button id="btn-do-draw" type="button">抽號</button>
+                <div class="draw-input-group">
+                    <label for="draw-total-input">籤號總數：</label>
+                    <input id="draw-total-input" max="100" min="1" type="number" value="40"/>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // --- State Management ---
-        let currentSlide = 0;
+        
         let connections = [];
         let activeDot = null;
         let tempLine = null;
-        const slides = document.querySelectorAll('.slide');
-        const slideInfo = document.getElementById('slide-info');
+        
+        
         const startOverlay = document.getElementById('start-overlay');
         const btnStart = document.getElementById('btn-start');
         const btnExitFs = document.getElementById('btn-exit-fs');
         
-        // --- Canvas State ---
-        let isDrawing = false;
-        let drawMode = 'pen';
-        let penColor = '#f8fafc';
-        let penSize = 3;
-        let slideDrawings = {}; // Store drawings per slide
 
         const canvas = document.getElementById('drawing-layer');
         const ctx = canvas.getContext('2d');
+
 
         // --- Data ---
         const gameDataPool = [
@@ -419,128 +438,202 @@
         ];
         let currentQuizIdx = 0;
 
-        // --- Core Functions ---
-        function updateSlides() {
-            slides.forEach((slide, index) => {
-                slide.classList.toggle('active', index === currentSlide);
-            });
-            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
-            clearCanvas();
-            restoreDrawing();
-        }
+        // --- Drawing State ---
+        let isDrawingMode = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let lastX = 0, lastY = 0, isDrawing = false;
 
         function resizeCanvas() {
-            if (!canvas) return;
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            restoreDrawing();
+            if (!canvas || !ctx) return;
+            canvas.width = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            canvas.height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        if (canvas && ctx) resizeCanvas();
+
+        function getCoords(e) {
+            if (!canvas) return [0, 0];
+            const rect = canvas.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            return [cx - rect.left, cy - rect.top];
+        }
+
+        function startDrawing(e) {
+            if (!isDrawingMode || !ctx) return;
+            isDrawing = true;
+            [lastX, lastY] = getCoords(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing || !ctx) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+                ctx.lineWidth = 38;
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = penColor;
+                ctx.lineWidth = 3.5;
+            }
+            ctx.lineCap = 'round'; ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
         }
 
         function clearCanvas() {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        function saveDrawing() {
-            if (!canvas) return;
-            slideDrawings[currentSlide] = canvas.toDataURL();
+        if (canvas) {
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+            canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
         }
 
-        function restoreDrawing() {
-            if (!ctx || !slideDrawings[currentSlide]) return;
-            const img = new Image();
-            img.onload = () => ctx.drawImage(img, 0, 0);
-            img.src = slideDrawings[currentSlide];
-        }
-
-        // --- Event Listeners ---
-        window.addEventListener('resize', () => {
-            resizeCanvas();
+        // --- Drawing Toolbar Events ---
+        document.getElementById('btn-draw').addEventListener('click', e => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
         });
 
-        document.getElementById('btn-prev').addEventListener('click', () => {
-            saveDrawing();
-            currentSlide = Math.max(0, currentSlide - 1);
-            updateSlides();
+        document.getElementById('btn-eraser').addEventListener('click', e => {
+            drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
         });
 
-        document.getElementById('btn-next').addEventListener('click', () => {
-            saveDrawing();
-            currentSlide = Math.min(slides.length - 1, currentSlide + 1);
-            updateSlides();
-        });
-
-        // --- Drawing Logic ---
-        document.getElementById('btn-draw').addEventListener('click', (e) => {
-            const btn = e.currentTarget;
-            const isDrawingActive = canvas.classList.toggle('drawing-active');
-            btn.classList.toggle('active-tool', isDrawingActive);
-            document.getElementById('color-picker').style.display = isDrawingActive ? 'grid' : 'none';
-            document.getElementById('size-picker').style.display = isDrawingActive ? 'flex' : 'none';
-            document.getElementById('eraser-tools').style.display = isDrawingActive ? 'flex' : 'none';
-        });
-
-        document.querySelectorAll('.color-swatch').forEach(swatch => {
-            swatch.addEventListener('click', (e) => {
-                document.querySelector('.color-swatch.selected').classList.remove('selected');
-                e.target.classList.add('selected');
-                penColor = e.target.dataset.color;
-                drawMode = 'pen';
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color; drawMode = 'pen';
                 document.getElementById('btn-eraser').classList.remove('active-tool');
             });
         });
 
-        document.getElementById('pen-size').addEventListener('input', (e) => {
-            penSize = e.target.value;
-        });
-
-        document.getElementById('btn-eraser').addEventListener('click', (e) => {
-            drawMode = (drawMode === 'eraser') ? 'pen' : 'eraser';
-            e.target.classList.toggle('active-tool', drawMode === 'eraser');
-        });
-
         document.getElementById('btn-clear').addEventListener('click', () => {
             clearCanvas();
-            slideDrawings[currentSlide] = null;
         });
 
-        function getPointerPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return { x: clientX - rect.left, y: clientY - rect.top };
+        
+        document.getElementById('btn-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // --- Random Draw Logic ---
+        const btnRandomDraw = document.getElementById('btn-random-draw');
+        const drawModal = document.getElementById('random-draw-modal');
+        const btnCloseDraw = document.getElementById('btn-close-draw');
+        const drawBallsContainer = document.getElementById('random-draw-balls');
+        const drawTotalInput = document.getElementById('draw-total-input');
+        const btnDoDraw = document.getElementById('btn-do-draw');
+
+        let drawBalls = [];
+        let totalBalls = 40;
+
+        function renderBalls() {
+            drawBallsContainer.innerHTML = '';
+            drawBalls = [];
+            for (let i = 1; i <= totalBalls; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'draw-ball';
+                ball.textContent = i;
+                ball.dataset.num = i;
+                drawBallsContainer.appendChild(ball);
+                drawBalls.push(ball);
+            }
         }
 
-        function startDraw(e) {
-            if (!canvas.classList.contains('drawing-active')) return;
-            isDrawing = true;
-            const pos = getPointerPos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+        btnRandomDraw.addEventListener('click', () => {
+            if (drawModal.style.display === 'block') {
+                drawModal.style.display = 'none';
+                btnRandomDraw.classList.remove('active-tool');
+            } else {
+                drawModal.style.display = 'block';
+                btnRandomDraw.classList.add('active-tool');
+                if (drawBalls.length === 0) {
+                    totalBalls = parseInt(drawTotalInput.value) || 40;
+                    renderBalls();
+                }
+            }
+        });
 
-        function moveDraw(e) {
-            if (!isDrawing) return;
-            const pos = getPointerPos(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
-            ctx.lineWidth = penSize * (drawMode === 'eraser' ? 2 : 1);
-            ctx.lineCap = 'round';
-            ctx.stroke();
-        }
+        btnCloseDraw.addEventListener('click', () => {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        });
 
-        function endDraw() {
-            isDrawing = false;
-            saveDrawing();
-        }
+        drawTotalInput.addEventListener('change', () => {
+            let val = parseInt(drawTotalInput.value);
+            if (isNaN(val) || val < 1) val = 1;
+            drawTotalInput.value = val;
+            totalBalls = val;
+            renderBalls();
+        });
 
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', moveDraw);
-        canvas.addEventListener('mouseup', endDraw);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveDraw(e); });
-        canvas.addEventListener('touchend', endDraw);
+        let drawInterval;
+        let drawTimeout;
 
+        btnDoDraw.addEventListener('click', () => {
+            if (btnDoDraw.disabled) return;
+
+            const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+            
+            if (availableBalls.length === 0) {
+                alert('所有號碼都已抽出！');
+                return;
+            }
+
+            const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+            if (prevWinner) {
+                prevWinner.classList.remove('winner');
+                prevWinner.classList.add('drawn');
+            }
+
+            const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+            if (currentAvailable.length === 0) {
+                alert('所有號碼都已抽出！');
+                return;
+            }
+
+            btnDoDraw.disabled = true;
+            drawTotalInput.disabled = true;
+
+            let flickerCount = 0;
+            const flickerDuration = 3000;
+            const flickerSpeed = 50;
+
+            drawInterval = setInterval(() => {
+                currentAvailable.forEach(b => b.classList.remove('flicker'));
+                const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+                currentAvailable[randomIdx].classList.add('flicker');
+            }, flickerSpeed);
+
+            drawTimeout = setTimeout(() => {
+                clearInterval(drawInterval);
+                currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+                const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+                const winnerBall = currentAvailable[winnerIdx];
+                winnerBall.classList.add('winner');
+
+                btnDoDraw.disabled = false;
+                drawTotalInput.disabled = false;
+            }, flickerDuration);
+        });
         // --- Fullscreen Logic ---
         function enterFullscreen() {
             const elem = document.documentElement;
@@ -557,7 +650,7 @@
             enterFullscreen();
             startOverlay.style.display = 'none';
             resizeCanvas();
-            updateSlides();
+            
         });
 
         btnExitFs.addEventListener('click', () => {

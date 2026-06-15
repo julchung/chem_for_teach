@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>化學反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：反應速率定義、速率定律式、級數關係互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Slide 3 全畫面表格 */
+        table.orders-table { height: 100%; table-layout: fixed; }
+        table.orders-table th, table.orders-table td {
+            padding: 1.1rem 0.9rem; line-height: 1.6; vertical-align: middle;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        table.orders-table th { background: rgba(56,189,248,0.15); color: var(--accent-blue); font-size: 1em; }
+        table.orders-table tr { height: calc(100% / 7); }
+        
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 58px; }
+            .game-columns { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="intro-screen">
+    <h1>化學反應速率</h1>
+    <h2 style="color: var(--accent-blue); margin-bottom: 2.5rem; font-weight: normal;">選修化學 II 第三章</h2>
+    <button class="btn-start" onclick="startApp()">進入教學</button>
+</div>
+
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- Slide 1: 反應速率定義 -->
+            <div class="slide slide-intro active" id="slide-def">
+                <h1>化學反應速率 (Reaction Rate)</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    
+                    <!-- 左欄：文字描述與關係式 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.6rem; padding: 1rem;">
+                        <h2 style="margin-bottom: 0; color:var(--accent-yellow);">反應速率的定義與觀念</h2>
+                        <div style="display:grid; grid-template-columns:auto 1fr; gap:0.3rem; font-size:clamp(1rem, 1.3vw, 1.15rem); line-height:1.5;">
+                            <strong style="white-space:nowrap;">定義：</strong>
+                            <span>單位時間內反應物濃度之消耗量，或生成物濃度之增加量。</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:auto 1fr; gap:0.3rem; font-size:clamp(1rem, 1.3vw, 1.15rem); line-height:1.5;">
+                            <strong style="white-space:nowrap;">單位：</strong>
+                            <span>濃度除以時間。一般以 <strong style="color:var(--accent-yellow);">$M/s$ (體積莫耳濃度/秒)</strong> 表示。氣相反應可用壓力單位替代。</span>
+                        </div>
+                        
+                        <div class="info-card" style="margin: 0.3rem 0; padding: 0.8rem; display:flex; flex-direction:column; gap:0.4rem;">
+                            <p style="margin:0; font-size:1.05rem;"><strong style="color:var(--accent-blue);">平均速率：</strong> 一段時間間隔 $\Delta t$ 內的濃度變化 (<strong>割線斜率</strong>)。</p>
+                            <p style="margin:0; font-size:1.05rem;"><strong style="color:var(--accent-green);">瞬時速率：</strong> 極短時間內的變化率 $\Delta t \to 0$ (<strong>切線斜率</strong>)。</p>
+                        </div>
+                        
+                        <h2 style="margin-top:0.4rem; margin-bottom:0; color:var(--accent-cyan);">消耗速率與生成速率的關係</h2>
+                        <div class="highlight-box" style="margin:0; padding:0.8rem; display:flex; flex-direction:column; gap:0.5rem; flex:1;">
+                            <p style="margin:0; font-size:1.05rem;">若反應為 <strong style="color:var(--accent-yellow); font-size:1.15rem;">$aA + bB \rightarrow cC + dD$</strong></p>
+                            <p style="margin:0; font-size:0.95rem;">各物質的反應速率比等於化學計量係數比：</p>
+                            <div class="formula-box" style="font-size:1.15rem; margin:0; padding:0.4rem;">
+                                $$R_A : R_B : R_C : R_D = a : b : c : d$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">以等式表示（同除以係數即可相等）：</p>
+                            <div class="formula-box" style="font-size:1.15rem; margin:0; padding:0.4rem;">
+                                $$\frac{R_A}{a} = \frac{R_B}{b} = \frac{R_C}{c} = \frac{R_D}{d}$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">用濃度變化量表示 ($A,B$ 為反應物，$C,D$ 為生成物)：</p>
+                            <div class="formula-box" style="font-size:1rem; margin:0; padding:0.4rem;">
+                                $$-\frac{1}{a}\frac{\Delta[A]}{\Delta t} = -\frac{1}{b}\frac{\Delta[B]}{\Delta t} = \frac{1}{c}\frac{\Delta[C]}{\Delta t} = \frac{1}{d}\frac{\Delta[D]}{\Delta t}$$
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：圖表 -->
+                    <div style="display:flex; flex-direction:column; gap:1rem; height: 100%;">
+                        
+                        <!-- 右上：瞬時速率 -->
+                        <div class="panel" style="flex:1; display:flex; flex-direction:row; align-items:center; justify-content: space-between; padding:0.5rem 1rem; gap:1rem; overflow:hidden;">
+                            <!-- 圖 -->
+                            <div style="flex:1.2; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:center;">
+                                <p style="color:var(--accent-green);font-weight:700;margin-bottom:0.2rem;font-size:1.05rem;">瞬時反應速率</p>
+                                <svg id="svg-inst" viewBox="0 0 320 180" style="width:100%; max-height:180px; background:var(--glass); border-radius:12px; border:1.5px solid var(--glass-border); margin-top:0.3rem; display:block; touch-action:none; cursor:crosshair;">
+                                    <line x1="40" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="40" y1="20" x2="40" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,150 292,146 292,154" fill="#cbd5e1"/>
+                                    <polygon points="40,20 36,28 44,28" fill="#cbd5e1"/>
+                                    <text x="290" y="140" fill="#cbd5e1" font-size="12" text-anchor="end">時間 (t)</text>
+                                    <text x="48" y="32" fill="#cbd5e1" font-size="12">濃度 [A]</text>
+                                    
+                                    <path id="path-inst" fill="none" stroke="var(--accent-blue)" stroke-width="3"/>
+                                    
+                                    <g id="inst-interactive">
+                                        <line id="inst-dash-x" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <line id="inst-dash-y" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <line id="inst-tan" stroke="var(--accent-green)" stroke-width="2"/>
+                                        <text id="inst-text-t" fill="var(--accent-yellow)" font-size="13" text-anchor="middle" y="168" font-weight="bold"></text>
+                                        <text id="inst-text-a" fill="var(--accent-yellow)" font-size="13" text-anchor="end" x="35" font-weight="bold"></text>
+                                        <circle id="inst-dot" r="7" fill="var(--accent-green)" style="cursor:grab; box-shadow:0 0 10px rgba(52,211,153,0.8);"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <!-- 公式 -->
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                                <span id="inst-formula" style="font-size:1.1rem;">$$R = \frac{-d[A]}{dt} = \text{切線斜率}$$</span>
+                                <div style="color:var(--accent-green); font-weight:bold; margin-top:0.8rem; font-size:1.25rem; background:rgba(52,211,153,0.1); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(52,211,153,0.3);">R ≈ <span id="inst-val">0.00</span> M/s</div>
+                            </div>
+                        </div>
+
+                        <!-- 右下：平均速率 -->
+                        <div class="panel" style="flex:1; display:flex; flex-direction:row; align-items:center; justify-content: space-between; padding:0.5rem 1rem; gap:1rem; overflow:hidden;">
+                            <!-- 圖 -->
+                            <div style="flex:1.2; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:center;">
+                                <p style="color:var(--accent-blue);font-weight:700;margin-bottom:0.2rem;font-size:1.05rem;">平均反應速率</p>
+                                <svg id="svg-avg" viewBox="0 0 320 180" style="width:100%; max-height:180px; background:var(--glass); border-radius:12px; border:1.5px solid var(--glass-border); margin-top:0.3rem; display:block; touch-action:none; cursor:crosshair;">
+                                    <line x1="40" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="40" y1="20" x2="40" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,150 292,146 292,154" fill="#cbd5e1"/>
+                                    <polygon points="40,20 36,28 44,28" fill="#cbd5e1"/>
+                                    <text x="290" y="140" fill="#cbd5e1" font-size="12" text-anchor="end">時間 (t)</text>
+                                    <text x="48" y="32" fill="#cbd5e1" font-size="12">濃度 [A]</text>
+                                    
+                                    <path id="path-avg" fill="none" stroke="var(--accent-blue)" stroke-width="3"/>
+                                    
+                                    <g id="avg-interactive">
+                                        <line id="avg-dash-x1" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <line id="avg-dash-y1" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <line id="avg-dash-x2" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <line id="avg-dash-y2" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                        <text id="avg-text-t1" fill="#cbd5e1" font-size="12" text-anchor="middle" y="168"></text>
+                                        <text id="avg-text-t2" fill="#cbd5e1" font-size="12" text-anchor="middle" y="168"></text>
+                                        <text id="avg-text-a1" fill="#cbd5e1" font-size="12" text-anchor="end" x="35"></text>
+                                        <text id="avg-text-a2" fill="#cbd5e1" font-size="12" text-anchor="end" x="35"></text>
+                                        <polygon id="avg-triangle" fill="rgba(167,139,250,0.1)" stroke="var(--accent-purple)" stroke-dasharray="3,3" stroke-width="1.5"/>
+                                        <line id="avg-secant" stroke="var(--accent-purple)" stroke-width="2"/>
+                                        <text id="avg-text-dt" fill="var(--accent-purple)" font-size="14" text-anchor="middle" font-weight="bold">Δt</text>
+                                        <text id="avg-text-da" fill="var(--accent-purple)" font-size="14" text-anchor="start" font-weight="bold">Δ[A]</text>
+                                        <circle id="avg-dot1" r="7" fill="var(--accent-purple)" style="cursor:grab;"/>
+                                        <circle id="avg-dot2" r="7" fill="var(--accent-purple)" style="cursor:grab;"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <!-- 公式 -->
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                                <span id="avg-formula" style="font-size:1.1rem;">$$R = \frac{-\Delta[A]}{\Delta t} = \text{割線斜率}$$</span>
+                                <div style="color:var(--accent-purple); font-weight:bold; margin-top:0.8rem; font-size:1.25rem; background:rgba(167,139,250,0.1); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(167,139,250,0.3);">R ≈ <span id="avg-val">0.00</span> M/s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 1.5: 實戰演練 (94指考) -->
+            <div class="slide slide-intro" id="slide-example-94">
+                <h1>實戰演練：反應速率與化學計量 (94指考)</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    
+                    <!-- 左欄：題目與圖片 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0;">題目</h2>
+                        <p style="font-size:1.05rem; margin-bottom:0.2rem;">鋁粉與過氯酸銨的混合物可用為太空梭火箭推進器的燃料，其反應式如下：<br>
+                        <strong style="color:var(--accent-cyan);">$3Al_{(s)} + 3NH_4ClO_{4(s)} \rightarrow Al_2O_{3(s)} + AlCl_{3(s)} + 3NO_{(g)} + 6H_2O_{(g)} + 2677 \text{ kJ}$</strong>
+                        </p>
+                        <p style="font-size:1.05rem;">將鋁粉與過氯酸銨各 1.0 莫耳，放入一個體積為 1.0 L、溫度為 400 K 的定體積恆溫反應槽內反應，並測量槽內氣體總壓力隨時間的變化，得二者的關係如附圖。（假設其氣體為理想氣體，理想氣體常數 $R=0.082 \text{ atm}\cdot\text{L/(mol}\cdot\text{K)}$）</p>
+                        <div style="background:var(--glass); border-radius:10px; padding:0.5rem; text-align:center;">
+                            <svg viewBox="0 0 320 180" style="width:100%; max-width:280px; background:#fff; border-radius:8px;">
+                                <!-- Grid -->
+                                <line x1="40" y1="150" x2="300" y2="150" stroke="#ccc" stroke-width="1"/>
+                                <line x1="40" y1="120" x2="300" y2="120" stroke="#eee" stroke-width="1"/>
+                                <line x1="40" y1="90" x2="300" y2="90" stroke="#eee" stroke-width="1"/>
+                                <line x1="40" y1="60" x2="300" y2="60" stroke="#eee" stroke-width="1"/>
+                                <line x1="40" y1="30" x2="300" y2="30" stroke="#eee" stroke-width="1"/>
+                                <line x1="40" y1="20" x2="40" y2="150" stroke="#ccc" stroke-width="1"/>
+                                <line x1="92" y1="20" x2="92" y2="150" stroke="#eee" stroke-width="1"/>
+                                <line x1="144" y1="20" x2="144" y2="150" stroke="#eee" stroke-width="1"/>
+                                <line x1="196" y1="20" x2="196" y2="150" stroke="#eee" stroke-width="1"/>
+                                <line x1="248" y1="20" x2="248" y2="150" stroke="#eee" stroke-width="1"/>
+                                <line x1="300" y1="20" x2="300" y2="150" stroke="#eee" stroke-width="1"/>
+                                
+                                <text x="35" y="154" fill="#333" font-size="10" text-anchor="end">0</text>
+                                <text x="35" y="124" fill="#333" font-size="10" text-anchor="end">0.2</text>
+                                <text x="35" y="94" fill="#333" font-size="10" text-anchor="end">0.4</text>
+                                <text x="35" y="64" fill="#333" font-size="10" text-anchor="end">0.6</text>
+                                <text x="35" y="34" fill="#333" font-size="10" text-anchor="end">0.8</text>
+                                
+                                <text x="92" y="165" fill="#333" font-size="10" text-anchor="middle">2</text>
+                                <text x="144" y="165" fill="#333" font-size="10" text-anchor="middle">4</text>
+                                <text x="196" y="165" fill="#333" font-size="10" text-anchor="middle">6</text>
+                                <text x="248" y="165" fill="#333" font-size="10" text-anchor="middle">8</text>
+                                <text x="300" y="165" fill="#333" font-size="10" text-anchor="middle">10</text>
+                                
+                                <text x="170" y="178" fill="#333" font-size="11" text-anchor="middle">時間(min)</text>
+                                <text x="15" y="90" fill="#333" font-size="11" text-anchor="middle" transform="rotate(-90 15,90)">壓力(atm)</text>
+                                
+                                <!-- Line -->
+                                <line x1="40" y1="150" x2="300" y2="37.5" stroke="#000" stroke-width="1.5"/>
+                                <!-- Points -->
+                                <circle cx="92" cy="127.5" r="2.5" fill="#000"/>
+                                <circle cx="144" cy="105" r="2.5" fill="#000"/>
+                                <circle cx="196" cy="82.5" r="2.5" fill="#000"/>
+                                <circle cx="248" cy="60" r="2.5" fill="#000"/>
+                            </svg>
+                        </div>
+                        <ul style="font-size:1.05rem; margin-top:0.2rem; color:var(--text-main); margin-left: 1.5rem;">
+                            <li>(1) 求出鋁粉之消耗速率 (mol/min)。</li>
+                            <li>(2) 計算鋁粉在 5 分鐘內的消耗量 (mol)。</li>
+                            <li>(3) 此反應在 5 分鐘內放出多少熱量 (kJ)。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding: 1rem; position: relative;">
+                        <div id="solution-1" style="display: none; flex-direction: column; gap: 0.4rem; padding-bottom: 3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <div class="info-card" style="margin:0; padding:0.6rem;">
+                                <p style="margin:0; font-weight:bold; color:var(--accent-blue);">前置分析：</p>
+                                <p style="margin:0; font-size:0.95rem;">由圖形斜率可知氣體總壓力的增加速率：<br>
+                                $\frac{\Delta P}{\Delta t} = \frac{0.6 - 0}{8 - 0} = 0.075 \text{ atm/min}$<br>
+                                由反應式知，氣體產物為 NO 和 H₂O。<br>
+                                每消耗 $3$ 莫耳 Al，會產生 $3 + 6 = 9$ 莫耳氣體。
+                                </p>
+                            </div>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem; margin-bottom:0;">(1) 鋁粉消耗速率</p>
+                            <p style="margin:0; font-size:0.95rem;">利用 $PV = nRT$，對時間取變化率：</p>
+                            <div class="formula-box" style="font-size:1rem; margin:0.2rem 0; padding:0.4rem;">
+                                $$\frac{\Delta P}{\Delta t} \cdot V = \frac{\Delta n_{gas}}{\Delta t} \cdot RT$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">代入數值 ($V=1.0, R=0.082, T=400$)：</p>
+                            <div class="formula-box" style="font-size:1rem; margin:0.2rem 0; padding:0.4rem;">
+                                $$0.075 \times 1.0 = \frac{\Delta n_{gas}}{\Delta t} \times (0.082 \times 400)$$
+                                $$\Rightarrow \frac{\Delta n_{gas}}{\Delta t} = \frac{0.075}{32.8} \approx 2.29 \times 10^{-3} \text{ mol/min}$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">鋁粉速率為氣體生成速率的 $1/3$ ($3\text{Al} \to 9\text{gas}$)：</p>
+                            <div class="formula-box" style="font-size:1.1rem; margin:0.2rem 0; padding:0.4rem; border-left-color:var(--accent-cyan);">
+                                $$R_{Al} = \frac{1}{3} \times \frac{0.075}{32.8} \approx 7.62 \times 10^{-4} \text{ mol/min}$$
+                            </div>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem; margin-bottom:0;">(2) 5 分鐘內鋁粉消耗量</p>
+                            <div class="formula-box" style="font-size:1.1rem; margin:0.2rem 0; padding:0.4rem; border-left-color:var(--accent-cyan);">
+                                $$\Delta n_{Al} = R_{Al} \times 5 = 7.62 \times 10^{-4} \times 5 = 3.81 \times 10^{-3} \text{ mol}$$
+                            </div>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem; margin-bottom:0;">(3) 5 分鐘內放出熱量</p>
+                            <p style="margin:0; font-size:0.95rem;">由化學式：每消耗 3 莫耳 Al 放出 2677 kJ 熱量。</p>
+                            <div class="formula-box" style="font-size:1.1rem; margin:0.2rem 0; padding:0.4rem; border-left-color:var(--accent-red);">
+                                $$Q = \frac{3.81 \times 10^{-3} \text{ mol}}{3 \text{ mol}} \times 2677 \text{ kJ} \approx 3.40 \text{ kJ}$$
+                            </div>
+                        </div>
+                        <button onclick="toggleSolution('solution-1')" style="position: absolute; bottom: 15px; right: 15px; padding: 10px 20px; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: 速率定律式 -->
+            <div class="slide slide-intro" id="slide-law">
+                <h1>速率定律式 (Rate Law)</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>速率定律式與反應級數</h2>
+                        <p>反應速率與反應物濃度的定量關係，<strong>必須由實驗求得</strong>，不能直接看化學反應式的係數。</p>
+                        <div class="formula-box" style="margin-top:1rem;">
+                            $$aA + bB \rightarrow cC$$
+                            $$R = k[A]^m[B]^n$$
+                        </div>
+                        <ul style="margin-top:1rem;">
+                            <li>$R$：反應速率</li>
+                            <li>$k$：速率常數</li>
+                            <li>$m$：對 $A$ 而言的反應級數</li>
+                            <li>$n$：對 $B$ 而言的反應級數</li>
+                            <li><strong>總反應級數</strong> = $m + n$</li>
+                        </ul>
+                        <p style="margin-top:1rem; font-size:0.9rem; color:var(--accent-red);">* 級數 $m, n$ 可以是整數、零或分數。</p>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>速率常數 $k$ (Rate Constant)</h2>
+                        <div class="info-card" style="border-color:var(--accent-purple);background:rgba(167,139,250,0.1);">
+                            <p style="margin-bottom:0;"><strong>速率常數 $k$ 的影響因素：</strong></p>
+                            <ul style="margin-top:0.3rem;font-size:0.95rem;">
+                                <li>受 <strong>溫度、催化劑、反應物本性</strong> 影響而改變。</li>
+                                <li>與反應物的 <strong>濃度及壓力無關</strong>。</li>
+                            </ul>
+                        </div>
+                        <h3 style="color:var(--accent-yellow); margin-top:1rem; font-size:clamp(1.1rem, 1.5vw, 1.3rem);">$k$ 的單位與反應級數的關係</h3>
+                        <p style="font-size:clamp(1.05rem, 1.4vw, 1.2rem); margin-bottom: 0.5rem;">單位推導通式為 $M^{1-(m+n)} \cdot s^{-1}$</p>
+                        <table class="data-table" style="margin-top:0.5rem; font-size:clamp(1.05rem, 1.4vw, 1.25rem);">
+                            <tr><th style="padding: 0.8rem;">總反應級數</th><th style="padding: 0.8rem;">$k$ 的單位</th></tr>
+                            <tr><td style="padding: 0.8rem;">零級 (0)</td><td style="padding: 0.8rem;">$M \cdot s^{-1}$ 或 $M/s$</td></tr>
+                            <tr><td style="padding: 0.8rem;">一級 (1)</td><td style="padding: 0.8rem;">$s^{-1}$ 或 $1/s$</td></tr>
+                            <tr><td style="padding: 0.8rem;">二級 (2)</td><td style="padding: 0.8rem;">$M^{-1} \cdot s^{-1}$ 或 $1/(M \cdot s)$</td></tr>
+                            <tr><td style="padding: 0.8rem;">三級 (3)</td><td style="padding: 0.8rem;">$M^{-2} \cdot s^{-1}$ 或 $1/(M^2 \cdot s)$</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 實驗方法一：平均速率法 -->
+            <div class="slide slide-intro" id="slide-exp-method-1">
+                <h1>速率定律實驗方法一：平均速率法</h1>
+                <div class="grid-2">
+                    
+                    <!-- 左側：文字描述與實驗數據 -->
+                    <div class="panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1.2rem;">
+                        <h2 style="color:var(--accent-green); margin-bottom:0.2rem;">原理與實驗描述</h2>
+                        <div class="info-card" style="margin:0; padding:0.6rem;">
+                            <p style="margin:0; font-size:1.15rem;"><strong>平均速率法：</strong>做一次實驗，每隔一段時間測定一次反應物的濃度；藉由實驗數據，找出反應物濃度與反應速率的關係。只有一種反應物的反應常用此法。</p>
+                        </div>
+                        <p style="font-weight:bold; color:var(--accent-yellow); margin:0.3rem 0 0 0; font-size:1.25rem;">實驗範例：氨的分解反應 &nbsp;&nbsp;$2\text{NH}_{3(g)} \rightarrow \text{N}_{2(g)} + 3\text{H}_{2(g)}$</p>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" style="font-size:1.05rem; width:100%; text-align:center; white-space:nowrap;">
+                                <tr>
+                                    <th style="padding:0.6rem;">時間 $t$ (s)</th>
+                                    <td style="padding:0.6rem;">0</td>
+                                    <td style="padding:0.6rem;">100</td>
+                                    <td style="padding:0.6rem;">200</td>
+                                    <td style="padding:0.6rem;">300</td>
+                                    <td style="padding:0.6rem;">400</td>
+                                </tr>
+                                <tr>
+                                    <th style="padding:0.6rem;">氨氣濃度(M)</th>
+                                    <td style="padding:0.6rem;">$4.00{\times}10^{-2}$</td>
+                                    <td style="padding:0.6rem;">$3.20{\times}10^{-2}$</td>
+                                    <td style="padding:0.6rem;">$2.42{\times}10^{-2}$</td>
+                                    <td style="padding:0.6rem;">$1.61{\times}10^{-2}$</td>
+                                    <td style="padding:0.6rem;">$0.80{\times}10^{-2}$</td>
+                                </tr>
+                                <tr>
+                                    <th style="padding:0.6rem;">平均反應速率<br>($\text{M}\cdot \text{s}^{-1}$)</th>
+                                    <td colspan="5" style="padding:0;">
+                                        <div style="display:flex; width:100%; justify-content:center; color:var(--accent-red); font-weight:bold; padding:0.6rem 0;">
+                                            <div style="width:20%;">&nbsp;</div>
+                                            <div style="width:20%; transform:translateX(-50%);">$8.0{\times}10^{-5}$</div>
+                                            <div style="width:20%; transform:translateX(-50%);">$7.8{\times}10^{-5}$</div>
+                                            <div style="width:20%; transform:translateX(-50%);">$8.1{\times}10^{-5}$</div>
+                                            <div style="width:20%; transform:translateX(-50%);">$8.1{\times}10^{-5}$</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <p style="font-size:1.15rem; margin-top:0.4rem; line-height:1.6;">各段時距的平均反應速率，均接近 $R = 8.0 \times 10^{-5} \text{ M}\cdot\text{s}^{-1}$。可見該反應的反應速率與反應物之濃度無關（因為反應物氨的濃度必定隨著時間而逐漸減少），即 $R=k$，故知此反應為<strong style="color:var(--accent-red); font-size:1.35rem;">零級反應</strong>。</p>
+                    </div>
+
+                    <!-- 右側：作圖與關係推導 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; padding: 1.2rem; gap: 0.6rem;">
+                        <h2 style="color:var(--accent-blue); margin-bottom:0.2rem;">實驗數據作圖</h2>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem; align-items:center;">
+                            <!-- Graph 1 -->
+                            <div style="width:90%; background:var(--glass); border:1px solid var(--glass-border); border-radius:10px; padding:0.4rem; position:relative;">
+                                <p style="text-align:center; margin:0 0 0.2rem 0; font-size:0.9rem;">$[\text{NH}_3]$ 對時間關係圖</p>
+                                <svg viewBox="0 0 320 130" style="width:100%; height:auto;">
+                                    <line x1="45" y1="110" x2="300" y2="110" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="45" y1="10" x2="45" y2="110" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,110 292,106 292,114" fill="#cbd5e1"/>
+                                    <polygon points="45,10 41,18 49,18" fill="#cbd5e1"/>
+                                    
+                                    <text x="45" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">0</text>
+                                    <text x="105" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">100</text>
+                                    <text x="165" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">200</text>
+                                    <text x="225" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">300</text>
+                                    <text x="285" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">400</text>
+                                    <text x="310" y="125" fill="#cbd5e1" font-size="10" text-anchor="end">時間/s</text>
+                                    
+                                    <text x="40" y="113" fill="#cbd5e1" font-size="10" text-anchor="end">0</text>
+                                    <text x="40" y="81" fill="#cbd5e1" font-size="10" text-anchor="end">2</text>
+                                    <text x="40" y="49" fill="#cbd5e1" font-size="10" text-anchor="end">4</text>
+                                    <text x="40" y="17" fill="#cbd5e1" font-size="10" text-anchor="end">6</text>
+                                    <text x="15" y="60" fill="#cbd5e1" font-size="10" text-anchor="middle" transform="rotate(-90 15 60)">[NH₃] / 10⁻² M</text>
+                                    
+                                    <line x1="45" y1="78" x2="285" y2="78" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="45" y1="46" x2="285" y2="46" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="105" y1="10" x2="105" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="165" y1="10" x2="165" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="225" y1="10" x2="225" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+                                    <line x1="45" y1="46" x2="285" y2="97.2" stroke="var(--accent-cyan)" stroke-width="2"/>
+                                    
+                                    <circle cx="45" cy="46" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="105" cy="58.8" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="165" cy="71.3" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="225" cy="84.2" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="285" cy="97.2" r="3" fill="var(--accent-red)"/>
+                                </svg>
+                            </div>
+
+                            <!-- Graph 2 -->
+                            <div style="width:90%; background:var(--glass); border:1px solid var(--glass-border); border-radius:10px; padding:0.4rem; position:relative;">
+                                <p style="text-align:center; margin:0 0 0.2rem 0; font-size:0.9rem;">$R_{\text{NH}_3}$ 對時間關係圖</p>
+                                <svg viewBox="0 0 320 130" style="width:100%; height:auto;">
+                                    <line x1="45" y1="110" x2="300" y2="110" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="45" y1="10" x2="45" y2="110" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,110 292,106 292,114" fill="#cbd5e1"/>
+                                    <polygon points="45,10 41,18 49,18" fill="#cbd5e1"/>
+                                    
+                                    <text x="45" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">0</text>
+                                    <text x="105" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">100</text>
+                                    <text x="165" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">200</text>
+                                    <text x="225" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">300</text>
+                                    <text x="285" y="125" fill="#cbd5e1" font-size="10" text-anchor="middle">400</text>
+                                    <text x="310" y="125" fill="#cbd5e1" font-size="10" text-anchor="end">時間/s</text>
+                                    
+                                    <text x="40" y="113" fill="#cbd5e1" font-size="10" text-anchor="end">0</text>
+                                    <text x="40" y="81" fill="#cbd5e1" font-size="10" text-anchor="end">4</text>
+                                    <text x="40" y="49" fill="#cbd5e1" font-size="10" text-anchor="end">8</text>
+                                    <text x="40" y="17" fill="#cbd5e1" font-size="10" text-anchor="end">12</text>
+                                    <text x="15" y="60" fill="#cbd5e1" font-size="10" text-anchor="middle" transform="rotate(-90 15 60)">R / 10⁻⁵ M s⁻¹</text>
+                                    
+                                    <line x1="45" y1="78" x2="285" y2="78" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="45" y1="46" x2="285" y2="46" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="105" y1="10" x2="105" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="165" y1="10" x2="165" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                                    <line x1="225" y1="10" x2="225" y2="110" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+
+                                    <line x1="45" y1="46" x2="285" y2="46" stroke="var(--accent-yellow)" stroke-width="2"/>
+                                    
+                                    <circle cx="75" cy="46" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="135" cy="47.6" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="195" cy="45.2" r="3" fill="var(--accent-red)"/>
+                                    <circle cx="255" cy="45.2" r="3" fill="var(--accent-red)"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 實驗方法二：初始速率法 -->
+            <div class="slide slide-intro" id="slide-exp-method-2">
+                <h1>速率定律實驗方法二：初始速率法</h1>
+                <div class="grid-2">
+                    
+                    <!-- 左側：文字描述與實驗數據 -->
+                    <div class="panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1.2rem;">
+                        <h2 style="color:var(--accent-green); margin-bottom:0.2rem;">原理與實驗範例</h2>
+                        <div class="info-card" style="margin:0; padding:0.6rem;">
+                            <p style="margin:0; font-size:1.15rem; line-height:1.5;"><strong>初始速率法：</strong>為找出控制變因的方法而做多次實驗，每次只改變其中一種反應物的濃度，求得每次之瞬時初速率，藉此探討該反應的濃度與反應速率之關係。<strong>包含兩種或兩種以上反應物的反應，通常採用此法。</strong></p>
+                        </div>
+                        <p style="font-weight:bold; color:var(--accent-yellow); margin:0.3rem 0 0 0; font-size:1.25rem;">實驗範例：銨根與亞硝酸根的反應</p>
+                        <div class="formula-box" style="font-size:1.2rem; padding:0.4rem; margin-bottom:0.5rem;">
+                            $$\text{NH}_{4(aq)}^+ + \text{NO}_{2(aq)}^- \rightarrow \text{N}_{2(g)} + 2\text{H}_2\text{O}_{(l)}$$
+                        </div>
+                        <div style="overflow-x:auto;">
+                            <table class="data-table" style="font-size:1.1rem; width:100%; text-align:center; white-space:nowrap;">
+                                <tr>
+                                    <th style="padding:0.6rem;">實驗次別</th>
+                                    <th style="padding:0.6rem; color:var(--accent-cyan);">$[\text{NH}_4^+]_0$ (M)</th>
+                                    <th style="padding:0.6rem; color:var(--accent-blue);">$[\text{NO}_2^-]_0$ (M)</th>
+                                    <th style="padding:0.6rem; color:var(--accent-red);">初速率 $R_0$ (M$\cdot$s$^{-1}$)</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.6rem;">1</td>
+                                    <td style="padding:0.6rem; font-weight:bold;">0.24</td>
+                                    <td style="padding:0.6rem;">0.20</td>
+                                    <td style="padding:0.6rem;">$3.6 \times 10^{-5}$</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.6rem;">2</td>
+                                    <td style="padding:0.6rem; font-weight:bold;">0.12</td>
+                                    <td style="padding:0.6rem; font-weight:bold;">0.20</td>
+                                    <td style="padding:0.6rem;">$1.8 \times 10^{-5}$</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:0.6rem;">3</td>
+                                    <td style="padding:0.6rem;">0.12</td>
+                                    <td style="padding:0.6rem; font-weight:bold;">0.30</td>
+                                    <td style="padding:0.6rem;">$2.7 \times 10^{-5}$</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 右側：教學說明推導 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; padding: 1.2rem; gap: 0.6rem;">
+                        <h2 style="color:var(--accent-blue); margin-bottom:0.2rem;">級數推導與教學說明</h2>
+                        
+                        <p style="font-size:1.1rem; margin:0; padding:0.5rem; background:rgba(255,255,255,0.05); border-radius:5px;">假設速率定律式為： <strong style="color:var(--accent-yellow); font-size:1.2rem;">$R = k[\text{NH}_4^+]^m[\text{NO}_2^-]^n$</strong></p>
+
+                        <!-- Step 1 -->
+                        <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-cyan); border-radius:5px; padding:0.8rem; margin-top:0.5rem;">
+                            <h3 style="color:var(--accent-cyan); margin:0 0 0.4rem 0; font-size:1.15rem;">步驟一：求 NH₄⁺ 的反應級數 ($m$)</h3>
+                            <p style="margin:0 0 0.4rem 0; font-size:1.05rem;">尋找 $[\text{NO}_2^-]$ 相同，而 $[\text{NH}_4^+]$ 不同的實驗：<strong>比較實驗 1 和實驗 2</strong>。</p>
+                            <ul style="font-size:1.05rem; margin:0; padding-left:1.5rem; line-height:1.5;">
+                                <li>$[\text{NO}_2^-]$ 保持 0.20 M 不變。</li>
+                                <li>$[\text{NH}_4^+]$ 由 0.12 M 變為 0.24 M (變為 <strong style="color:var(--accent-yellow);">2</strong> 倍)。</li>
+                                <li>初速率 $R_0$ 由 $1.8{\times}10^{-5}$ 變為 $3.6{\times}10^{-5}$ (變為 <strong style="color:var(--accent-yellow);">2</strong> 倍)。</li>
+                            </ul>
+                            <div class="formula-box" style="margin-top:0.5rem; padding:0.4rem; font-size:1.1rem; border-left-color:var(--accent-cyan);">
+                                $\Rightarrow 2^m = 2 \Rightarrow m = 1$ (與 $[\text{NH}_4^+]$ <strong>成正比</strong>)
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-blue); border-radius:5px; padding:0.8rem; margin-top:0.5rem;">
+                            <h3 style="color:var(--accent-blue); margin:0 0 0.4rem 0; font-size:1.15rem;">步驟二：求 NO₂⁻ 的反應級數 ($n$)</h3>
+                            <p style="margin:0 0 0.4rem 0; font-size:1.05rem;">尋找 $[\text{NH}_4^+]$ 相同，而 $[\text{NO}_2^-]$ 不同的實驗：<strong>比較實驗 2 和實驗 3</strong>。</p>
+                            <ul style="font-size:1.05rem; margin:0; padding-left:1.5rem; line-height:1.5;">
+                                <li>$[\text{NH}_4^+]$ 保持 0.12 M 不變。</li>
+                                <li>$[\text{NO}_2^-]$ 由 0.20 M 變為 0.30 M (變為 <strong style="color:var(--accent-yellow);">1.5</strong> 倍)。</li>
+                                <li>初速率 $R_0$ 由 $1.8{\times}10^{-5}$ 變為 $2.7{\times}10^{-5}$ (變為 <strong style="color:var(--accent-yellow);">1.5</strong> 倍)。</li>
+                            </ul>
+                            <div class="formula-box" style="margin-top:0.5rem; padding:0.4rem; font-size:1.1rem; border-left-color:var(--accent-blue);">
+                                $\Rightarrow (1.5)^n = 1.5 \Rightarrow n = 1$ (與 $[\text{NO}_2^-]$ <strong>成正比</strong>)
+                            </div>
+                        </div>
+
+                        <!-- Conclusion -->
+                        <div class="highlight-box" style="padding:0.8rem; text-align:center; margin-top:auto; border-color:var(--accent-red);">
+                            <p style="margin:0; font-size:1.15rem;">結論：速率定律式為 <strong style="color:var(--accent-red); font-size:1.35rem;">$R = k[\text{NH}_4^+][\text{NO}_2^-]$</strong></p>
+                            <p style="margin:0.3rem 0 0 0; font-size:1.05rem;">總反應級數 = $1 + 1 = 2$，此反應為<strong style="color:var(--accent-yellow);">二級反應</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 0~2級反應數學關係 -->
+            <div class="slide" id="slide-orders">
+                <h1>0 ~ 2 級反應之數學函數關係</h1>
+                <div class="panel" style="flex: 1; display:flex; flex-direction:column; overflow:hidden;">
+                    <h2 style="font-size:clamp(1.1rem, 1.7vw, 1.4rem); margin-bottom:0.5rem;">不同級數反應之特性比較</h2>
+                    <table class="data-table orders-table" style="flex:1; font-size:clamp(1.05rem, 1.55vw, 1.4rem);">
+                        <tr>
+                            <th style="width:13%;">特性</th>
+                            <th style="width:29%;">零級反應 (Zero-order)</th>
+                            <th style="width:29%;">一級反應 (First-order)</th>
+                            <th style="width:29%;">二級反應 (Second-order)</th>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">速率定律</td>
+                            <td>$R = k[A]^0 = k$ <br><span style="font-size:0.82em;color:#9ca3af;">(與濃度無關，恆為定值)</span></td>
+                            <td>$R = k[A]^1$ <br><span style="font-size:0.82em;color:#9ca3af;">(與濃度成正比)</span></td>
+                            <td>$R = k[A]^2$ <br><span style="font-size:0.82em;color:#9ca3af;">(與濃度的平方成正比)</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">濃度 vs 時間<br>關係式</td>
+                            <td>$[A]_t = [A]_0 - kt$</td>
+                            <td>$\log[A]_t = \log[A]_0 - \frac{kt}{2.303}$</td>
+                            <td>$\frac{1}{[A]_t} = \frac{1}{[A]_0} + kt$</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">濃度變化特徵</td>
+                            <td style="color:var(--accent-blue);">相同時間變化，<br>濃度間呈現等差</td>
+                            <td style="color:var(--accent-cyan);">相同時間變化，<br>濃度間呈現等比</td>
+                            <td style="color:var(--accent-purple);">-</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">作圖呈直線</td>
+                            <td style="color:var(--accent-blue);">$[A]$ 對 $t$ 繪圖呈直線</td>
+                            <td style="color:var(--accent-cyan);">$\log[A]$ 對 $t$ 繪圖呈直線</td>
+                            <td style="color:var(--accent-purple);">$\frac{1}{[A]}$ 對 $t$ 繪圖呈直線</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">半生期公式<br>($t_{1/2}$)</td>
+                            <td>$t_{1/2} = \frac{[A]_0}{2k}$</td>
+                            <td>$t_{1/2} = \frac{0.693}{k}$</td>
+                            <td>$t_{1/2} = \frac{1}{k[A]_0}$</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight:bold; color:var(--accent-yellow);">半生期與<br>初濃度關係</td>
+                            <td style="color:var(--accent-green);">與初濃度 <strong>成正比</strong></td>
+                            <td style="color:var(--accent-green);">為定值，<strong>與初濃度無關</strong></td>
+                            <td style="color:var(--accent-green);">與初濃度 <strong>成反比</strong></td>
+                        </tr>
+                    </table>
+                    <div class="highlight-box" style="margin-top:0.7rem; flex-shrink:0;">
+                        <p style="margin:0; font-size:clamp(1rem, 1.4vw, 1.25rem);"><strong>※ 半生期 ($t_{1/2}$) 定義：</strong> 反應物濃度消耗一半（變成初濃度一半）所需要的時間。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 零級反應 (Zero-order) -->
+            <div class="slide slide-intro" id="slide-zero-order">
+                <h1>零級反應：公式導證與函數圖形</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2 style="margin-bottom:0.4rem;">速率定律積分導證</h2>
+                        <div class="info-card" style="margin-bottom:0.4rem; padding:0.4rem; border-color:var(--accent-blue);">
+                            <p style="margin:0; font-weight:bold; font-size:0.95rem;">微分速率定律式：</p>
+                            <div class="formula-box" style="margin:0.2rem 0; padding:0.2rem;">$$-\frac{d[A]}{dt} = k \quad \Rightarrow \quad d[A] = -k dt$$</div>
+                        </div>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">進行積分：</p>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$\int_{[A]_0}^{[A]_t} d[A] = -k \int_0^t dt$$</div>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">解出積分後可得關係式：</p>
+                        <div class="highlight-box" style="text-align:center; margin:0.3rem 0; padding:0.4rem;">
+                            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-yellow);">$$[A]_t = -kt + [A]_0$$</div>
+                        </div>
+                        <h2 style="margin-top:0.6rem; margin-bottom:0.3rem;">半生期 ($t_{1/2}$)</h2>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">當 $t = t_{1/2}$ 時，$[A]_t = \frac{1}{2}[A]_0$，代入上式：</p>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$t_{1/2} = \frac{[A]_0}{2k}$$</div>
+                        <p style="color:var(--accent-green); font-weight:bold; margin-top:0.3rem; font-size:0.95rem;">※ 結論：零級反應的半生期與初濃度成正比。</p>
+                    </div>
+                    <div class="panel" style="display:flex; flex-direction:column; align-items:center; padding:0.4rem 1rem; gap:0.35rem;">
+                        <h2 style="margin-bottom:0.2rem; font-size:1.05rem;">函數圖形特徵</h2>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">① R vs [A] &nbsp;&mdash;&nbsp; 水平線 (R = k，與濃度無關)</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="70" x2="300" y2="70" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="70" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,70 292,66 292,74" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="62" fill="#cbd5e1" font-size="13" text-anchor="end">[A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">R</text>
+                            <line x1="40" y1="40" x2="285" y2="40" stroke="var(--accent-red)" stroke-width="2.5"/>
+                            <text x="285" y="36" fill="var(--accent-red)" font-size="13" text-anchor="end">R = k</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">② log R vs log [A] &nbsp;&mdash;&nbsp; 水平線 (斜率 = 0)</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="70" x2="300" y2="70" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="70" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,70 292,66 292,74" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="62" fill="#cbd5e1" font-size="13" text-anchor="end">log [A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">log R</text>
+                            <line x1="40" y1="40" x2="285" y2="40" stroke="var(--accent-purple)" stroke-width="2.5"/>
+                            <text x="285" y="36" fill="var(--accent-purple)" font-size="13" text-anchor="end">log k &nbsp;(斜率=0)</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">③ [A] vs t &nbsp;&mdash;&nbsp; 下降直線 (鬯率 = -k，半生期逐渐縮短)</p>
+                        <svg viewBox="0 0 320 145" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="45" y1="128" x2="300" y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="45" y1="5"   x2="45"  y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,128 292,124 292,132" fill="#cbd5e1"/>
+                            <polygon points="45,5 41,13 49,13" fill="#cbd5e1"/>
+                            <text x="295" y="120" fill="#cbd5e1" font-size="12" text-anchor="end">時間 t</text>
+                            <text x="52"  y="17"  fill="#cbd5e1" font-size="12">[A]</text>
+                            <!-- main line: (45,12) to (255,128) -->
+                            <line x1="45" y1="12" x2="255" y2="128" stroke="var(--accent-blue)" stroke-width="2.5"/>
+                            <text x="188" y="62" fill="var(--accent-yellow)" font-size="12">斜率 = -k</text>
+                            <!-- [A]₀ at (45,12) -->
+                            <circle cx="45" cy="12" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="45" cy="12" r="4" fill="var(--accent-green)"/>
+                            <text x="52" y="17" fill="var(--accent-green)" font-size="11">[A]₀</text>
+                            <!-- ½[A]₀ at (150,70): y=12+58=70, x=45+(70-12)*210/116=150 -->
+                            <line x1="45" y1="70" x2="150" y2="70" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="150" y1="70" x2="150" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="150" cy="70" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="150" cy="70" r="4" fill="var(--accent-green)"/>
+                            <text x="40" y="74" fill="#cbd5e1" font-size="11" text-anchor="end">½[A]₀</text>
+                            <!-- ¼[A]₀ at (203,99): y=12+87=99, x=45+(99-12)*210/116=203 -->
+                            <line x1="45" y1="99" x2="203" y2="99" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="203" y1="99" x2="203" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="203" cy="99" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="203" cy="99" r="4" fill="var(--accent-purple)"/>
+                            <text x="40" y="103" fill="#cbd5e1" font-size="11" text-anchor="end">¼[A]₀</text>
+                            <!-- brace 1: t₁/₂ (full width) -->
+                            <path d="M 47 132 Q 97 142 148 132" fill="none" stroke="var(--accent-green)"/>
+                            <text x="97" y="143" fill="var(--accent-green)" font-size="11" text-anchor="middle">t₁/₂</text>
+                            <!-- brace 2: ½t₁/₂ (half width, 2nd order drops faster) -->
+                            <path d="M 152 132 Q 177 142 201 132" fill="none" stroke="var(--accent-purple)"/>
+                            <text x="177" y="143" fill="var(--accent-purple)" font-size="11" text-anchor="middle">½t₁/₂</text>
+                        </svg>
+                        
+                        <div class="highlight-box" style="margin-top:0.5rem; text-align:center; padding:0.4rem; border-color:var(--accent-blue);">
+                            <p style="margin:0; font-weight:bold; font-size:1.05rem; color:var(--accent-yellow);">相同時間變化，濃度間呈現等差</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 一級反應 (First-order) -->
+            <div class="slide slide-intro" id="slide-first-order">
+                <h1>一級反應：公式導證與函數圖形</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2 style="margin-bottom:0.4rem;">速率定律積分導證</h2>
+                        <div class="info-card" style="margin-bottom:0.4rem; padding:0.4rem; border-color:var(--accent-cyan);">
+                            <p style="margin:0; font-weight:bold; font-size:0.95rem;">微分速率定律式：</p>
+                            <div class="formula-box" style="margin:0.2rem 0; padding:0.2rem;">$$-\frac{d[A]}{dt} = k[A] \quad \Rightarrow \quad \frac{d[A]}{[A]} = -k\,dt$$</div>
+                        </div>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">進行積分：</p>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$\int_{[A]_0}^{[A]_t} \frac{d[A]}{[A]} = -k \int_0^t dt$$</div>
+                        <div class="highlight-box" style="text-align:center; margin:0.3rem 0; padding:0.4rem;">
+                            <div style="font-size:1.1rem; font-weight:bold; color:var(--accent-yellow);">$$\ln[A]_t = -kt + \ln[A]_0$$</div>
+                        </div>
+                        <p style="margin:0.3rem 0; font-size:0.9rem;">換算為常用對數 ($\ln x = 2.303\log x$)：</p>
+                        <div class="highlight-box" style="text-align:center; margin:0.3rem 0; padding:0.4rem;">
+                            <div style="font-size:1.1rem; font-weight:bold; color:var(--accent-yellow);">$$\log[A]_t = -\frac{k}{2.303}t + \log[A]_0$$</div>
+                        </div>
+                        <h2 style="margin-top:0.6rem; margin-bottom:0.3rem;">半生期 ($t_{1/2}$)</h2>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$t_{1/2} = \frac{\ln 2}{k} \approx \frac{0.693}{k}$$</div>
+                        <p style="color:var(--accent-green); font-weight:bold; margin-top:0.3rem; font-size:0.95rem;">※ 結論：一級反應的半生期為常數，與初濃度無關。</p>
+                    </div>
+                    <div class="panel" style="display:flex; flex-direction:column; align-items:center; padding:0.4rem 1rem; gap:0.35rem;">
+                        <h2 style="margin-bottom:0.2rem; font-size:1.05rem;">函數圖形特徵</h2>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">① R vs [A] &nbsp;&mdash;&nbsp; 一次函數直線 (斜率 = k)</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="75" x2="300" y2="75" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="75" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,75 292,71 292,79" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="67" fill="#cbd5e1" font-size="13" text-anchor="end">[A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">R</text>
+                            <line x1="40" y1="72" x2="270" y2="18" stroke="var(--accent-red)" stroke-width="2.5"/>
+                            <text x="200" y="28" fill="var(--accent-red)" font-size="12">R = k[A]</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">② log R vs log [A] &nbsp;&mdash;&nbsp; 斜率 = 1 的直線</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="75" x2="300" y2="75" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="75" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,75 292,71 292,79" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="67" fill="#cbd5e1" font-size="13" text-anchor="end">log [A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">log R</text>
+                            <line x1="40" y1="72" x2="270" y2="18" stroke="var(--accent-purple)" stroke-width="2.5"/>
+                            <text x="185" y="42" fill="var(--accent-purple)" font-size="12">斜率 = 1</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">③ [A] vs t &nbsp;&mdash;&nbsp; 指數衰減曲線 (半生期為常數，兩段相等)</p>
+                        <svg viewBox="0 0 320 145" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="45" y1="128" x2="300" y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="45" y1="5"   x2="45"  y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,128 292,124 292,132" fill="#cbd5e1"/>
+                            <polygon points="45,5 41,13 49,13" fill="#cbd5e1"/>
+                            <text x="295" y="120" fill="#cbd5e1" font-size="12" text-anchor="end">時間 t</text>
+                            <text x="52"  y="17"  fill="#cbd5e1" font-size="12">[A]</text>
+                            <!-- exponential curve polyline, t1/2 interval = 120px -->
+                            <!-- y = 12 + 116*(1 - 0.5^((x-45)/120)) -->
+                            <polyline points="45,12 75,30 105,46 135,59 165,70 195,79 225,87 255,94 285,99" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5" stroke-linejoin="round"/>
+                            <text x="215" y="60" fill="var(--accent-yellow)" font-size="11">[A]=k₂e^(-kt)</text>
+                            <!-- [A]₀ at (45,12) -->
+                            <circle cx="45" cy="12" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="45" cy="12" r="4" fill="var(--accent-green)"/>
+                            <text x="52" y="17" fill="var(--accent-green)" font-size="11">[A]₀</text>
+                            <!-- ½[A]₀ at (165,70): exactly on curve -->
+                            <line x1="45" y1="70" x2="165" y2="70" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="165" y1="70" x2="165" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="165" cy="70" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="165" cy="70" r="4" fill="var(--accent-green)"/>
+                            <text x="40" y="74" fill="#cbd5e1" font-size="11" text-anchor="end">½[A]₀</text>
+                            <!-- ¼[A]₀ at (285,99): exactly on curve -->
+                            <line x1="45" y1="99" x2="285" y2="99" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="285" y1="99" x2="285" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="285" cy="99" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="285" cy="99" r="4" fill="var(--accent-green)"/>
+                            <text x="40" y="103" fill="#cbd5e1" font-size="11" text-anchor="end">¼[A]₀</text>
+                            <!-- braces: both equal width (constant t₁/₂) -->
+                            <path d="M 47 132 Q 106 142 163 132" fill="none" stroke="var(--accent-green)"/>
+                            <text x="106" y="143" fill="var(--accent-green)" font-size="11" text-anchor="middle">t₁/₂</text>
+                            <path d="M 167 132 Q 226 142 283 132" fill="none" stroke="var(--accent-green)"/>
+                            <text x="226" y="143" fill="var(--accent-green)" font-size="11" text-anchor="middle">t₁/₂</text>
+                        </svg>
+                        
+                        <div class="highlight-box" style="margin-top:0.5rem; text-align:center; padding:0.4rem; border-color:var(--accent-cyan);">
+                            <p style="margin:0; font-weight:bold; font-size:1.05rem; color:var(--accent-yellow);">相同時間變化，濃度間呈現等比</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 二級反應 (Second-order) -->
+            <div class="slide slide-intro" id="slide-second-order">
+                <h1>二級反應：公式導證與函數圖形</h1>
+                <div class="grid-2">
+                    <div class="panel">
+                        <h2 style="margin-bottom:0.4rem;">速率定律積分導證</h2>
+                        <div class="info-card" style="margin-bottom:0.4rem; padding:0.4rem; border-color:var(--accent-purple);">
+                            <p style="margin:0; font-weight:bold; font-size:0.95rem;">微分速率定律式：</p>
+                            <div class="formula-box" style="margin:0.2rem 0; padding:0.2rem;">$$-\frac{d[A]}{dt} = k[A]^2 \quad \Rightarrow \quad \frac{d[A]}{[A]^2} = -k\,dt$$</div>
+                        </div>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">進行積分：</p>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$\int_{[A]_0}^{[A]_t} \frac{d[A]}{[A]^2} = -k \int_0^t dt$$</div>
+                        <p style="margin:0.3rem 0; font-size:0.9rem;">解出積分後 $\left( \int x^{-2}dx = -x^{-1} \right)$ 可得：</p>
+                        <div class="highlight-box" style="text-align:center; margin:0.3rem 0; padding:0.4rem;">
+                            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-yellow);">$$\frac{1}{[A]_t} = kt + \frac{1}{[A]_0}$$</div>
+                        </div>
+                        <h2 style="margin-top:0.6rem; margin-bottom:0.3rem;">半生期 ($t_{1/2}$)</h2>
+                        <p style="margin:0.3rem 0; font-size:0.95rem;">當 $t = t_{1/2}$ 時，$[A]_t = \frac{1}{2}[A]_0$，代入上式：</p>
+                        <div class="formula-box" style="margin:0.3rem 0; padding:0.2rem;">$$t_{1/2} = \frac{1}{k[A]_0}$$</div>
+                        <p style="color:var(--accent-green); font-weight:bold; margin-top:0.3rem; font-size:0.95rem;">※ 結論：二級反應的半生期與初濃度成反比。</p>
+                    </div>
+                    <div class="panel" style="display:flex; flex-direction:column; align-items:center; padding:0.4rem 1rem; gap:0.35rem;">
+                        <h2 style="margin-bottom:0.2rem; font-size:1.05rem;">函數圖形特徵</h2>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">① R vs [A] &nbsp;&mdash;&nbsp; 二次曲線 (拋物線形)</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="78" x2="300" y2="78" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="78" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,78 292,74 292,82" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="70" fill="#cbd5e1" font-size="13" text-anchor="end">[A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">R</text>
+                            <path d="M 40 78 Q 150 78 285 12" fill="none" stroke="var(--accent-red)" stroke-width="2.5"/>
+                            <text x="190" y="32" fill="var(--accent-red)" font-size="12">R = k[A]²</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">② log R vs log [A] &nbsp;&mdash;&nbsp; 斜率 = 2 的直線</p>
+                        <svg viewBox="0 0 320 90" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="40" y1="78" x2="300" y2="78" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"  x2="40"  y2="78" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,78 292,74 292,82" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="70" fill="#cbd5e1" font-size="13" text-anchor="end">log [A]</text>
+                            <text x="46"  y="20" fill="#cbd5e1" font-size="13">log R</text>
+                            <line x1="40" y1="75" x2="230" y2="12" stroke="var(--accent-purple)" stroke-width="2.5"/>
+                            <text x="160" y="40" fill="var(--accent-purple)" font-size="12">斜率 = 2</text>
+                        </svg>
+
+                        <p style="margin:0; font-weight:bold; font-size:0.85rem; align-self:flex-start;">③ [A] vs t &nbsp;&mdash;&nbsp; 雙曲線衰減 (半生期逐渐加長，與 [A]₀ 成反比)</p>
+                        <svg viewBox="0 0 320 145" style="width:67%; background:var(--glass); border-radius:10px; border:1.5px solid var(--glass-border); padding:4px;">
+                            <line x1="45" y1="128" x2="300" y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="45" y1="5"   x2="45"  y2="128" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,128 292,124 292,132" fill="#cbd5e1"/>
+                            <polygon points="45,5 41,13 49,13" fill="#cbd5e1"/>
+                            <text x="295" y="120" fill="#cbd5e1" font-size="12" text-anchor="end">時間 t</text>
+                            <text x="52"  y="17"  fill="#cbd5e1" font-size="12">[A]</text>
+                            <!-- hyperbolic curve: [A]=[A]₀/(1+k[A]₀t), t₁/₂=80px, 3t₁/₂=total -->
+                            <!-- y = 12 + 116*(1 - 1/(1+(x-45)/80)) -->
+                            <polyline points="45,12 65,35 85,51 105,62 125,70 165,82 205,89 245,95 285,99" fill="none" stroke="var(--accent-purple)" stroke-width="2.5" stroke-linejoin="round"/>
+                            <text x="200" y="55" fill="var(--accent-yellow)" font-size="11">[A]=[A]₀/(1+k[A]₀t)</text>
+                            <!-- [A]₀ at (45,12) -->
+                            <circle cx="45" cy="12" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="45" cy="12" r="4" fill="var(--accent-green)"/>
+                            <text x="52" y="17" fill="var(--accent-green)" font-size="11">[A]₀</text>
+                            <!-- ½[A]₀ at (125,70): exactly on curve -->
+                            <line x1="45" y1="70" x2="125" y2="70" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="125" y1="70" x2="125" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="125" cy="70" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="125" cy="70" r="4" fill="var(--accent-green)"/>
+                            <text x="40" y="74" fill="#cbd5e1" font-size="11" text-anchor="end">½[A]₀</text>
+                            <!-- ¼[A]₀ at (285,99): exactly on curve (3t₁/₂ total) -->
+                            <line x1="45" y1="99" x2="285" y2="99" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="285" y1="99" x2="285" y2="128" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="285" cy="99" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="285" cy="99" r="4" fill="var(--accent-purple)"/>
+                            <text x="40" y="103" fill="#cbd5e1" font-size="11" text-anchor="end">¼[A]₀</text>
+                            <!-- brace 1: t₁/₂ (narrow, 80px) -->
+                            <path d="M 47 132 Q 86 142 123 132" fill="none" stroke="var(--accent-green)"/>
+                            <text x="86" y="143" fill="var(--accent-green)" font-size="11" text-anchor="middle">t₁/₂</text>
+                            <!-- brace 2: 2t₁/₂ (twice as wide, 160px) -->
+                            <path d="M 127 132 Q 207 142 283 132" fill="none" stroke="var(--accent-purple)"/>
+                            <text x="207" y="143" fill="var(--accent-purple)" font-size="11" text-anchor="middle">2t₁/₂</text>
+                        </svg>
+                            <line x1="40" y1="125" x2="300" y2="125" stroke="#cbd5e1" stroke-width="2"/>
+                            <line x1="40" y1="8"   x2="40"  y2="125" stroke="#cbd5e1" stroke-width="2"/>
+                            <polygon points="300,125 292,121 292,129" fill="#cbd5e1"/>
+                            <polygon points="40,8 36,16 44,16" fill="#cbd5e1"/>
+                            <text x="295" y="118" fill="#cbd5e1" font-size="12" text-anchor="end">時間 t</text>
+                            <text x="46"  y="20"  fill="#cbd5e1" font-size="12">1/[A]</text>
+                            <line x1="40" y1="115" x2="275" y2="22" stroke="var(--accent-purple)" stroke-width="2.5"/>
+                            <text x="180" y="55" fill="var(--accent-yellow)" font-size="12">斜率 = k</text>
+                            <!-- 1/[A]0 point -->
+                            <circle cx="40"  cy="115" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="40"  cy="115" r="4" fill="var(--accent-green)"/>
+                            <text x="48"  y="120" fill="var(--accent-green)" font-size="11">1/[A]₀</text>
+                            <!-- 2/[A]0 -->
+                            <line x1="40" y1="76" x2="120" y2="76"  stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="120" y1="76" x2="120" y2="125" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="120" cy="76" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="120" cy="76" r="4" fill="var(--accent-green)"/>
+                            <text x="35"  y="80" fill="#cbd5e1" font-size="11" text-anchor="end">2/[A]₀</text>
+                            <!-- 4/[A]0 -->
+                            <line x1="40" y1="37" x2="200" y2="37"  stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <line x1="200" y1="37" x2="200" y2="125" stroke="#94a3b8" stroke-dasharray="3,3"/>
+                            <circle cx="200" cy="37" r="6" fill="white" opacity="0.9"/>
+                            <circle cx="200" cy="37" r="4" fill="var(--accent-purple)"/>
+                            <text x="35"  y="41" fill="#cbd5e1" font-size="11" text-anchor="end">4/[A]₀</text>
+                            <path d="M 42 129 Q 80 139 118 129" fill="none" stroke="var(--accent-green)"/>
+                            <text x="80"  y="143" fill="var(--accent-green)" font-size="11" text-anchor="middle">t₁/₂</text>
+                            <path d="M 122 129 Q 160 139 198 129" fill="none" stroke="var(--accent-purple)"/>
+                            <text x="160" y="143" fill="var(--accent-purple)" font-size="11" text-anchor="middle">2t₁/₂</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 互動連連看 -->
+
+            <!-- Slide 8: 實戰演練 (例2) -->
+            <div class="slide slide-intro" id="slide-example-2">
+                <h1>實戰演練：反應速率與濃度關係 (例2)</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0;">題目</h2>
+                        <p style="font-size:1.25rem;">欲研究反應 $A + 2B \rightleftharpoons C$ 中反應物的濃度與反應速率的關係，分別記錄反應物濃度隨時間變化的情形：試根據上述資料，回答下列各問題：</p>
+                        
+                        <p style="font-weight:bold; margin-top:0.5rem; color:var(--accent-blue); font-size:1.2rem;">(1) 當 B 的濃度固定時</p>
+                        <table class="data-table" style="font-size:1.1rem;">
+                            <tr><th>時間 (s)</th><td>0</td><td>20</td><td>40</td><td>60</td></tr>
+                            <tr><th>[A] (M)</th><td>0.1</td><td>0.08</td><td>0.06</td><td>0.04</td></tr>
+                        </table>
+
+                        <p style="font-weight:bold; margin-top:0.5rem; color:var(--accent-blue); font-size:1.2rem;">(2) 當 A 的濃度固定時</p>
+                        <table class="data-table" style="font-size:1.1rem;">
+                            <tr><th>時間 (s)</th><td>0</td><td>20</td><td>40</td><td>60</td></tr>
+                            <tr><th>[B] (M)</th><td>0.1</td><td>0.08</td><td>0.064</td><td>0.0512</td></tr>
+                        </table>
+
+                        <ul style="font-size:1.25rem; margin-top:0.5rem; color:var(--text-main); margin-left: 1.5rem; line-height:1.5;">
+                            <li>(a) 反應的速率定律式為何？</li>
+                            <li>(b) 反應速率常數 $k$ 為多少？</li>
+                            <li>(c) 在 A 濃度固定情況下，80 秒時 B 的濃度為多少 M？</li>
+                        </ul>
+                    </div>
+
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding: 1rem; position: relative;">
+                        <div id="solution-2" style="display: none; flex-direction: column; gap: 0.4rem; padding-bottom: 3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem;">(a) 速率定律式</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">由(1)可知，每 20 秒 [A] 減少 0.02 M，呈等差數列，故對 A 為 <strong>零級反應</strong>。<br>
+                            由(2)可知，每 20 秒 [B] 變為原來的 0.8 倍，呈等比數列，故對 B 為 <strong>一級反應</strong>。</p>
+                            <div class="formula-box" style="font-size:1.1rem; padding:0.4rem; border-left-color:var(--accent-cyan);">
+                                $$R = k[A]^0[B]^1 = k[B]$$
+                            </div>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem;">(b) 反應速率常數 $k$</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">若定義 $R = -\frac{\Delta[A]}{\Delta t}$，由(1)得 $R = \frac{0.1 - 0.08}{20} = 0.001 \text{ M/s}$。<br>
+                            假設此時 $[B] = 0.1 \text{ M}$，則 $0.001 = k \times 0.1 \implies k = 0.01 \text{ s}^{-1}$。</p>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.5rem;">(c) 80 秒時 B 的濃度</p>
+                            <p style="font-size:0.95rem; line-height:1.5;">[B] 隨時間呈等比遞減，每 20 秒乘 0.8。<br>
+                            $80 \text{ s} = 4 \times 20 \text{ s}$，故 $[B]_{80} = 0.1 \times (0.8)^4 = 0.1 \times 0.4096 = 0.04096 \text{ M}$。</p>
+                        </div>
+                        <button onclick="toggleSolution('solution-2')" style="position: absolute; bottom: 15px; right: 15px; padding: 10px 20px; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: 實戰演練 (例3) -->
+            <div class="slide slide-intro" id="slide-example-3">
+                <h1>實戰演練：反應級數圖形判斷 (例3)</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0;">題目</h2>
+                        <p style="font-size:1.25rem;">某生為了解反應 $2A + B \rightarrow C + D$ 的反應速率，在 25°C 下做了兩個實驗，[B]₀ 遠大於 [A]₀，圖為所測得之 A 濃度隨時間變化。回答下列問題：</p>
+                        
+                        <div style="background:var(--glass); border-radius:10px; padding:0.5rem; text-align:center; position: relative;">
+                            <!-- Recreated graph from image 2 using SVG -->
+                            <svg viewBox="0 0 320 180" style="width:100%; max-width:280px; background:#fff; border-radius:8px;">
+                                <!-- Grid -->
+                                <g stroke="#eee" stroke-width="1">
+                                    <line x1="40" y1="150" x2="300" y2="150" stroke="#ccc"/>
+                                    <line x1="40" y1="125" x2="300" y2="125"/>
+                                    <line x1="40" y1="100" x2="300" y2="100"/>
+                                    <line x1="40" y1="75" x2="300" y2="75"/>
+                                    <line x1="40" y1="50" x2="300" y2="50"/>
+                                    <line x1="40" y1="25" x2="300" y2="25"/>
+                                    
+                                    <line x1="40" y1="20" x2="40" y2="150" stroke="#ccc"/>
+                                    <line x1="92" y1="20" x2="92" y2="150"/>
+                                    <line x1="144" y1="20" x2="144" y2="150"/>
+                                    <line x1="196" y1="20" x2="196" y2="150"/>
+                                    <line x1="248" y1="20" x2="248" y2="150"/>
+                                    <line x1="300" y1="20" x2="300" y2="150"/>
+                                </g>
+                                
+                                <text x="35" y="154" fill="#333" font-size="10" text-anchor="end">0.00</text>
+                                <text x="35" y="129" fill="#333" font-size="10" text-anchor="end">0.02</text>
+                                <text x="35" y="104" fill="#333" font-size="10" text-anchor="end">0.04</text>
+                                <text x="35" y="79" fill="#333" font-size="10" text-anchor="end">0.06</text>
+                                <text x="35" y="54" fill="#333" font-size="10" text-anchor="end">0.08</text>
+                                <text x="35" y="29" fill="#333" font-size="10" text-anchor="end">0.10</text>
+                                
+                                <text x="92" y="165" fill="#333" font-size="10" text-anchor="middle">0.01</text>
+                                <text x="144" y="165" fill="#333" font-size="10" text-anchor="middle">0.02</text>
+                                <text x="196" y="165" fill="#333" font-size="10" text-anchor="middle">0.03</text>
+                                <text x="248" y="165" fill="#333" font-size="10" text-anchor="middle">0.04</text>
+                                <text x="300" y="165" fill="#333" font-size="10" text-anchor="middle">0.05</text>
+                                
+                                <text x="270" y="178" fill="#333" font-size="11" text-anchor="middle">時間(秒)</text>
+                                <text x="15" y="40" fill="#333" font-size="11" text-anchor="middle">[A](M)</text>
+                                
+                                <!-- Lines -->
+                                <!-- Line 1: [B]0=1.00M, (0, 0.10) to (0.05, 0.05). X:40->300, Y:25->87.5 -->
+                                <line x1="40" y1="25" x2="300" y2="87.5" stroke="#000" stroke-width="1.5"/>
+                                <text x="230" y="65" fill="#000" font-size="10">[B]₀ = 1.00 M</text>
+                                
+                                <!-- Line 2: [B]0=2.00M, (0, 0.05) to (0.025, 0). X:40->170, Y:87.5->150 -->
+                                <line x1="40" y1="87.5" x2="170" y2="150" stroke="#000" stroke-width="1.5"/>
+                                <text x="200" y="125" fill="#000" font-size="10">[B]₀ = 2.00 M</text>
+                            </svg>
+                        </div>
+
+                        <ul style="font-size:1.25rem; margin-top:0.5rem; color:var(--text-main); margin-left: 1.5rem; line-height:1.5;">
+                            <li>(1) 當 [B]₀ = 1.00 M 及 2.00 M 時，A 的初始消失速率分別為 _____ 和 _____。</li>
+                            <li>(2) 此反應的速率表示法為 _____。反應級數為 _____。</li>
+                            <li>(3) 由 A 消失速率計算反應速率常數為 _____。</li>
+                            <li>(4) 當 [A]=0.08 M, [B]=0.10 M 時，A 的消失速率為 _____。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding: 1rem; position: relative;">
+                        <div id="solution-3" style="display: none; flex-direction: column; gap: 0.4rem; padding-bottom: 3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <p style="font-size:0.95rem; line-height:1.5;">(1) 初始消失速率即為圖形直線斜率的絕對值：<br>
+                            當 $[B]_0 = 1.00 \text{ M}$，斜率 $= \frac{0.05 - 0.10}{0.05 - 0} = -1.0 \implies \mathbf{1.0 \text{ M/s}}$<br>
+                            當 $[B]_0 = 2.00 \text{ M}$，斜率 $= \frac{0 - 0.05}{0.025 - 0} = -2.0 \implies \mathbf{2.0 \text{ M/s}}$</p>
+                            
+                            <p style="font-size:0.95rem; line-height:1.5;">(2) 因為 [A] 對時間的圖形為 <strong>直線</strong>，表示速率與 [A] 無關，故對 A 為 <strong>0 級</strong>。<br>
+                            當 [B] 濃度變為 2 倍 (1.00 &rightarrow; 2.00 M) 時，速率也變為 2 倍 (1.0 &rightarrow; 2.0 M/s)，故對 B 為 <strong>1 級</strong>。<br>
+                            速率表示法：$\mathbf{R = k[B]}$。反應級數為 $\mathbf{1}$。</p>
+                            
+                            <p style="font-size:0.95rem; line-height:1.5;">(3) 若以 A 的消失速率定義 $R_A = k'[B]$：<br>
+                            代入數據：$1.0 \text{ M/s} = k' \times 1.00 \text{ M} \implies \mathbf{k' = 1.0 \text{ s}^{-1}}$</p>
+                            
+                            <p style="font-size:0.95rem; line-height:1.5;">(4) $R_A = k'[B]$ (因為對 A 為 0 級，與 [A] 無關)<br>
+                            $R_A = 1.0 \times 0.10 = \mathbf{0.10 \text{ M/s}}$</p>
+                        </div>
+                        <button onclick="toggleSolution('solution-3')" style="position: absolute; bottom: 15px; right: 15px; padding: 10px 20px; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 10: 實戰演練 (氣體總壓力變化) -->
+            <div class="slide slide-intro" id="slide-example-4">
+                <h1>實戰演練：氣體總壓力與反應級數</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0;">題目</h2>
+                        <p style="font-size:1.25rem; line-height:1.6;">例2：某定溫 $T^\circ\text{C}$，乙醛氣體發生分解反應 $CH_3CHO_{(g)} \rightarrow CH_{4(g)} + CO_{(g)}$，經測得反應系統的總壓力 (P) 與時間之變化如表，則求此分解反應之速率定律式及反應速率常數：</p>
+                        
+                        <table class="data-table" style="margin-top:1rem; margin-bottom:1rem; font-size:1.15rem;">
+                            <tr><th>時間 t (分)</th><td>0</td><td>10</td><td>30</td><td>$\infty$</td></tr>
+                            <tr><th>P (mmHg)</th><td>100</td><td>150</td><td>175</td><td>200</td></tr>
+                        </table>
+                    </div>
+
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding: 1rem; position: relative;">
+                        <div id="solution-4" style="display: none; flex-direction: column; gap: 0.4rem; padding-bottom: 3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">1. 換算反應物 (乙醛) 的分壓</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            設初始乙醛壓力為 $100$，消耗量為 $x$：<br>
+                            $CH_3CHO_{(g)} \rightarrow CH_{4(g)} + CO_{(g)}$<br>
+                            初：$\quad 100 \qquad\qquad 0 \qquad\quad 0$<br>
+                            末：$100-x \qquad\quad x \qquad\quad x$<br>
+                            總壓 $P = (100-x) + x + x = 100+x \implies x = P - 100$<br>
+                            乙醛分壓 $P_A = 100 - x = 100 - (P-100) = \mathbf{200 - P}$
+                            </p>
+                            
+                            <table class="data-table" style="font-size: 0.9rem; margin: 0.3rem 0;">
+                                <tr><th>時間 t (分)</th><td>0</td><td>10</td><td>30</td></tr>
+                                <tr><th>$P_A$ (mmHg)</th><td>100</td><td>50</td><td>25</td></tr>
+                            </table>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">2. 判斷反應級數</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            由表可知，第一個半生期 $t_{1/2(1)}$ (100&rightarrow;50) 為 <strong>10 分鐘</strong>。<br>
+                            第二個半生期 $t_{1/2(2)}$ (50&rightarrow;25) 為 $30-10 = \mathbf{20 分鐘}$。<br>
+                            半生期隨著濃度減半而<strong>加倍</strong> ($t_{1/2} \propto \frac{1}{P_A}$)，故為 <strong>二級反應</strong>。<br>
+                            速率定律式：$\mathbf{R = k(P_{CH_3CHO})^2}$
+                            </p>
+                            
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">3. 計算反應速率常數 $k$</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            代入二級反應積分式：$\frac{1}{P_A} - \frac{1}{P_{A0}} = kt$<br>
+                            使用 t=10 的數據：$\frac{1}{50} - \frac{1}{100} = k \times 10$<br>
+                            $\frac{1}{100} = 10k \implies \mathbf{k = 1.0 \times 10^{-3} \text{ mmHg}^{-1}\text{min}^{-1}}$
+                            </p>
+                        </div>
+                        <button onclick="toggleSolution('solution-4')" style="position: absolute; bottom: 15px; right: 15px; padding: 10px 20px; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 13: 例題 初始速率法 H2O2 + I- -->
+            <div class="slide slide-intro" id="slide-example-5" style="position:relative;">
+                <h1 style="font-size:clamp(1.2rem,2.5vw,1.8rem);">例題：初始速率法綜合應用</h1>
+                <div class="grid-2" style="flex:1; overflow:hidden;">
+
+                    <!-- 左側：題目 + 表格 -->
+                    <div class="panel" style="display:flex; flex-direction:column; gap:0.6rem; padding:1.2rem; overflow-y:auto;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0.2rem; font-size:1.2rem;">例 1　題目</h2>
+                        <div class="info-card" style="margin:0; padding:0.8rem; font-size:1.12rem; line-height:1.7;">
+                            <p style="margin:0 0 0.4rem 0;">酸性溶液中，雙氧水能將碘離子氧化成 $\text{I}_3^-$ 離子，其反應方程式可以表示如下：</p>
+                            <div class="formula-box" style="font-size:1.1rem; padding:0.4rem 0.6rem; margin:0.3rem 0;">
+                                $$\text{H}_2\text{O}_{2(aq)} + 3\text{I}_{(aq)}^- + 2\text{H}_{(aq)}^+ \rightarrow \text{I}_{3(aq)}^- + 2\text{H}_2\text{O}_{(l)}$$
+                            </div>
+                            <p style="margin:0.4rem 0 0 0;">15°C 下使用不同的初濃度，進行四次實驗，所得 $\text{I}_3^-$ 的生成速率如附表，試求出：</p>
+                            <ol style="margin:0.4rem 0 0 1.2rem; padding:0; line-height:1.8; font-size:1.12rem;">
+                                <li>反應速率定律式</li>
+                                <li>速率常數 $k$</li>
+                                <li>當 $[\text{H}_2\text{O}_2]=0.400\text{ M}$、$[\text{I}^-]=0.300\text{ M}$ 時，$\text{I}^-$ 離子的消失速率為多少？</li>
+                            </ol>
+                        </div>
+                        <div style="overflow-x:auto; margin-top:0.2rem;">
+                            <table class="data-table" style="font-size:1.08rem; width:100%; text-align:center; white-space:nowrap;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding:0.55rem;">實驗編號</th>
+                                        <th style="padding:0.55rem; color:var(--accent-cyan);">$[\text{H}_2\text{O}_2]$ (M)</th>
+                                        <th style="padding:0.55rem; color:var(--accent-blue);">$[\text{I}^-]$ (M)</th>
+                                        <th style="padding:0.55rem; color:var(--accent-red);">$\text{I}_3^-$ 生成速率 (M/s)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding:0.55rem;">1</td>
+                                        <td style="padding:0.55rem;">0.100</td>
+                                        <td style="padding:0.55rem;">0.100</td>
+                                        <td style="padding:0.55rem;">$1.00\times10^{-4}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:0.55rem;">2</td>
+                                        <td style="padding:0.55rem;">0.100</td>
+                                        <td style="padding:0.55rem; background:rgba(56,189,248,0.12); font-weight:bold;">0.200</td>
+                                        <td style="padding:0.55rem;">$2.00\times10^{-4}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:0.55rem;">3</td>
+                                        <td style="padding:0.55rem;">0.200</td>
+                                        <td style="padding:0.55rem;">0.300</td>
+                                        <td style="padding:0.55rem;">$6.00\times10^{-4}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:0.55rem;">4</td>
+                                        <td style="padding:0.55rem; background:rgba(56,189,248,0.12); font-weight:bold;">0.300</td>
+                                        <td style="padding:0.55rem;">0.200</td>
+                                        <td style="padding:0.55rem;">$6.00\times10^{-4}$</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 右側：詳解 (預設隱藏) -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; padding:1.2rem; gap:0.55rem; overflow-y:auto;">
+                        <h2 style="color:var(--accent-green); margin-bottom:0.2rem; font-size:1.2rem;">詳解</h2>
+                        <div id="solution-5" style="display:none; flex-direction:column; gap:0.55rem;">
+
+                            <!-- Step 0: 假設 -->
+                            <div style="background:rgba(255,255,255,0.05); border-radius:6px; padding:0.6rem; font-size:1.08rem;">
+                                設速率定律式為：<strong style="color:var(--accent-yellow); font-size:1.15rem;">$R = k[\text{H}_2\text{O}_2]^m[\text{I}^-]^n$</strong>
+                            </div>
+
+                            <!-- Step 1: 求 n -->
+                            <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-blue); border-radius:6px; padding:0.75rem;">
+                                <h3 style="color:var(--accent-blue); margin:0 0 0.35rem 0; font-size:1.1rem;">① 求 $[\text{I}^-]$ 的級數 $n$：比較實驗 1、2</h3>
+                                <p style="margin:0 0 0.3rem 0; font-size:1.05rem;">$[\text{H}_2\text{O}_2]$ 保持 0.100 M 不變；$[\text{I}^-]$ 由 0.100 → 0.200 M（<strong style="color:var(--accent-yellow);">×2</strong>）</p>
+                                <p style="margin:0 0 0.3rem 0; font-size:1.05rem;">$R$ 由 $1.00\times10^{-4}$ → $2.00\times10^{-4}$ M/s（<strong style="color:var(--accent-yellow);">×2</strong>）</p>
+                                <div class="formula-box" style="padding:0.35rem 0.6rem; font-size:1.08rem; border-left-color:var(--accent-blue); margin:0.3rem 0 0 0;">
+                                    $2^n = 2 \Rightarrow$ <strong>$n = 1$</strong>（對 $[\text{I}^-]$ 為一級）
+                                </div>
+                            </div>
+
+                            <!-- Step 2: 求 m -->
+                            <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-cyan); border-radius:6px; padding:0.75rem;">
+                                <h3 style="color:var(--accent-cyan); margin:0 0 0.35rem 0; font-size:1.1rem;">② 求 $[\text{H}_2\text{O}_2]$ 的級數 $m$：比較實驗 2、4</h3>
+                                <p style="margin:0 0 0.3rem 0; font-size:1.05rem;">$[\text{I}^-]$ 保持 0.200 M 不變；$[\text{H}_2\text{O}_2]$ 由 0.100 → 0.300 M（<strong style="color:var(--accent-yellow);">×3</strong>）</p>
+                                <p style="margin:0 0 0.3rem 0; font-size:1.05rem;">$R$ 由 $2.00\times10^{-4}$ → $6.00\times10^{-4}$ M/s（<strong style="color:var(--accent-yellow);">×3</strong>）</p>
+                                <div class="formula-box" style="padding:0.35rem 0.6rem; font-size:1.08rem; border-left-color:var(--accent-cyan); margin:0.3rem 0 0 0;">
+                                    $3^m = 3 \Rightarrow$ <strong>$m = 1$</strong>（對 $[\text{H}_2\text{O}_2]$ 為一級）
+                                </div>
+                            </div>
+
+                            <!-- Answer 1 -->
+                            <div class="highlight-box" style="padding:0.6rem 0.9rem; border-color:var(--accent-green);">
+                                <p style="margin:0; font-size:1.1rem;">**(1) 速率定律式：<strong style="color:var(--accent-green); font-size:1.25rem;">$R = k[\text{H}_2\text{O}_2][\text{I}^-]$</strong>**（總反應為二級反應）</p>
+                            </div>
+
+                            <!-- Answer 2 -->
+                            <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-yellow); border-radius:6px; padding:0.75rem;">
+                                <h3 style="color:var(--accent-yellow); margin:0 0 0.35rem 0; font-size:1.1rem;">③ 求速率常數 $k$（代入實驗 1 數據）</h3>
+                                <div class="formula-box" style="padding:0.4rem 0.6rem; font-size:1.08rem; border-left-color:var(--accent-yellow);">
+                                    $$k = \frac{R}{[\text{H}_2\text{O}_2][\text{I}^-]} = \frac{1.00\times10^{-4}}{0.100 \times 0.100} = \mathbf{1.00\times10^{-2}\ \text{M}^{-1}\text{s}^{-1}}$$
+                                </div>
+                                <p style="margin:0.35rem 0 0 0; font-size:1.0rem; color:#94a3b8;">（可驗算：其他實驗組之 $k$ 值均一致，確認結果正確。）</p>
+                            </div>
+
+                            <!-- Answer 3 -->
+                            <div style="background:var(--glass); border:1px solid var(--glass-border); border-left:4px solid var(--accent-red); border-radius:6px; padding:0.75rem;">
+                                <h3 style="color:var(--accent-red); margin:0 0 0.35rem 0; font-size:1.1rem;">④ 求 I⁻ 的消失速率</h3>
+                                <p style="margin:0 0 0.3rem 0; font-size:1.05rem;">先求 $\text{I}_3^-$ 的生成速率：</p>
+                                <div class="formula-box" style="padding:0.35rem 0.6rem; font-size:1.08rem; border-left-color:var(--accent-red);">
+                                    $$R(\text{I}_3^-) = 1.00\times10^{-2} \times 0.400 \times 0.300 = 1.20\times10^{-3}\ \text{M/s}$$
+                                </div>
+                                <p style="margin:0.4rem 0 0.3rem 0; font-size:1.05rem;">由化學計量係數可知，每生成 1 mol $\text{I}_3^-$ 會消耗 <strong style="color:var(--accent-yellow);">3 mol</strong> $\text{I}^-$，故：</p>
+                                <div class="formula-box" style="padding:0.35rem 0.6rem; font-size:1.1rem; border-left-color:var(--accent-red);">
+                                    $$R(\text{I}^-\text{ 消失}) = 3 \times 1.20\times10^{-3} = \mathbf{3.60\times10^{-3}\ \text{M/s}}$$
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 詳解尚未顯示時的提示 -->
+                        <div id="solution-5-hint" style="display:flex; flex:1; align-items:center; justify-content:center; color:#94a3b8; font-size:1.1rem;">
+                            按右下角「詳解 / 隱藏」按鈕查看完整解題步驟
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleSolution5()" style="position:absolute; bottom:15px; right:15px; padding:10px 20px; background:var(--accent-blue); color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem; z-index:100; box-shadow:0 4px 10px rgba(0,0,0,0.3); transition:transform 0.2s;">詳解 / 隱藏</button>
+            </div>
+
+            <!-- Slide: 互動連連看 (移至最後一頁) -->
+            <div class="slide" id="slide-game">
+                <h1>互動學習：連連看 (化學反應速率)</h1>
+                <div class="game-area">
+                    <div class="game-columns">
+                        <div id="left-column"></div>
+                        <div id="right-column"></div>
+                    </div>
+                    <svg id="game-svg"></svg>
+                    <div id="game-feedback">答對了！</div>
+                </div>
+                <div style="text-align:center; margin-top:0.5rem; flex-shrink:0;">
+                    <button class="btn-action" style="padding:0.6rem 1.5rem;font-size:1.05rem;background:rgba(255,255,255,0.08);color:#fff;border:1px solid var(--accent-blue);" onclick="resetGame()">隨機換題 (重新開始)</button>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+        <canvas id="drawing-layer" role="application" aria-label="手寫塗鴉層" tabindex="0"></canvas>
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<div id="slide-info">1 / 4</div>
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="畫筆模式">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清空畫布">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="返回">⌂</button>
+</div>
+
+<script>
+/* ---- Toggle Solution ---- */
+function toggleSolution(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none') {
+        el.style.display = 'flex';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+function toggleSolution5() {
+    const sol = document.getElementById('solution-5');
+    const hint = document.getElementById('solution-5-hint');
+    const isHidden = sol.style.display === 'none' || sol.style.display === '';
+    sol.style.display = isHidden ? 'flex' : 'none';
+    sol.style.flexDirection = 'column';
+    hint.style.display = isHidden ? 'none' : 'flex';
+}
+
+/* ---- Intro Screen ---- */
+function startApp() {
+    const el = document.documentElement;
+    try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(() => {}); } catch(e) {}
+    try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch(e) {}
+
+    const intro = document.getElementById('intro-screen');
+    intro.style.opacity = '0';
+    setTimeout(() => { intro.style.display = 'none'; }, 500);
+}
+
+/* ---- Drawing layer ---- */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+    ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ---- Game ---- */
+const GAME_POOL = [
+    { left: '反應速率定律式', right: 'R = k[A]ᵐ[B]ⁿ' },
+    { left: '零級反應濃度時間關係', right: '[A]t = [A]0 - kt' },
+    { left: '一級反應半生期', right: 't_1/2 = 0.693 / k' },
+    { left: '二級反應圖形關係', right: '1/[A] 對 t 成直線' },
+    { left: '零級反應速率常數單位', right: 'M·s⁻¹' },
+    { left: '一級反應圖形關係', right: 'log[A] 對 t 成直線' },
+    { left: '二級反應半生期', right: '與初濃度成反比' },
+    { left: '零級反應圖形關係', right: '[A] 對 t 成直線' },
+    { left: '反應速率常數 k 改變因素', right: '溫度、催化劑' },
+    { left: '一級反應速率常數單位', right: 's⁻¹' },
+    { left: '二級反應濃度時間關係', right: '1/[A]t = 1/[A]0 + kt' },
+    { left: '反應速率單位', right: 'M / s' },
+    { left: '一級反應半生期特性', right: '為定值，與初濃度無關' },
+    { left: '零級反應半生期', right: '與初濃度成正比' }
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left, y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-blue)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left); currentLine.setAttribute('y2', cy - rect.top);
+}
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(dot => {
+        const r = dot.getBoundingClientRect();
+        if (cx >= r.left - 14 && cx <= r.right + 14 && cy >= r.top - 14 && cy <= r.bottom + 14) targetDot = dot;
+    });
+    if (targetDot && targetDot !== startDot && startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') && !targetDot.classList.contains('active')) {
+        const svg = document.getElementById('game-svg');
+        const rect = svg.getBoundingClientRect(), r2 = targetDot.getBoundingClientRect();
+        const x2 = r2.left + r2.width / 2 - rect.left;
+        const y2 = r2.top + r2.height / 2 - rect.top;
+        if (startDot.dataset.index === targetDot.dataset.index) {
+            startDot.classList.add('active'); targetDot.classList.add('active');
+            connections.push({ from: startDot, to: targetDot });
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            currentLine.setAttribute('stroke', 'var(--accent-green)');
+            currentLine = null;
+            if (connections.length === GAME_COUNT) {
+                const fb = document.getElementById('game-feedback');
+                fb.style.display = 'block';
+                setTimeout(() => { fb.style.display = 'none'; }, 2800);
+            }
+        } else {
+            currentLine.setAttribute('stroke', 'var(--accent-red)');
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            const bad = currentLine; currentLine = null;
+            setTimeout(() => { if (bad && bad.parentNode) bad.remove(); }, 450);
+        }
+    } else {
+        if (currentLine) currentLine.remove();
+        currentLine = null;
+    }
+    startDot = null;
+}
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(c => {
+        const r1 = c.from.getBoundingClientRect(), r2 = c.to.getBoundingClientRect();
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+        l.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+        l.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+        l.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+        l.setAttribute('stroke', 'var(--accent-green)');
+        l.setAttribute('stroke-width', '4');
+        l.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(l);
+    });
+}
+function resetGame() { initGame(); }
+
+document.addEventListener('mousemove', gameDragMove);
+document.addEventListener('mouseup', gameDragEnd);
+document.addEventListener('touchmove', gameDragMove, { passive: false });
+document.addEventListener('touchend', gameDragEnd);
+
+/* ---- Slide navigation ---- */
+window.updateSlides = function () {
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    const sid = slides[currentSlide] ? slides[currentSlide].id : '';
+    if (sid === 'slide-game') { initGame(); setTimeout(drawConnections, 80); }
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([slides[currentSlide]]).catch(() => {});
+    }
+};
+
+document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+/* ---- Toolbar drag ---- */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+/* ---- Interactive Graphs ---- */
+(function() {
+    const A0 = 120;
+    const k = 0.015;
+    const x0 = 40;
+    const y0 = 150;
+    const maxX = 250;
+    
+    function getCurveY(xPlot) { return A0 * Math.exp(-k * xPlot); }
+    function getCurveSlope(xPlot) { return -A0 * k * Math.exp(-k * xPlot); }
+    
+    function generatePathD() {
+        let d = `M ${x0} ${y0 - getCurveY(0)}`;
+        for(let x = 5; x <= maxX; x+=5) d += ` L ${x0 + x} ${y0 - getCurveY(x)}`;
+        return d;
+    }
+    
+    const pathInst = document.getElementById('path-inst');
+    const pathAvg = document.getElementById('path-avg');
+    if(pathInst) pathInst.setAttribute('d', generatePathD());
+    if(pathAvg) pathAvg.setAttribute('d', generatePathD());
+    
+    function getSVGCoords(svg, e) {
+        let pt = svg.createSVGPoint();
+        if (e.touches && e.touches.length > 0) {
+            pt.x = e.touches[0].clientX; pt.y = e.touches[0].clientY;
+        } else {
+            pt.x = e.clientX; pt.y = e.clientY;
+        }
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    const svgInst = document.getElementById('svg-inst');
+    let instX = 60, isDraggingInst = false;
+    
+    function updateInst() {
+        if(!svgInst) return;
+        if(instX < 0) instX = 0; if(instX > maxX) instX = maxX;
+        let yPlot = getCurveY(instX), slope = getCurveSlope(instX);
+        let cx = x0 + instX, cy = y0 - yPlot;
+        
+        document.getElementById('inst-dot').setAttribute('cx', cx);
+        document.getElementById('inst-dot').setAttribute('cy', cy);
+        document.getElementById('inst-dash-x').setAttribute('x1', cx);
+        document.getElementById('inst-dash-x').setAttribute('y1', cy);
+        document.getElementById('inst-dash-x').setAttribute('x2', cx);
+        document.getElementById('inst-dash-x').setAttribute('y2', y0);
+        document.getElementById('inst-dash-y').setAttribute('x1', cx);
+        document.getElementById('inst-dash-y').setAttribute('y1', cy);
+        document.getElementById('inst-dash-y').setAttribute('x2', x0);
+        document.getElementById('inst-dash-y').setAttribute('y2', cy);
+        
+        document.getElementById('inst-text-t').textContent = `t=${(instX/10).toFixed(1)}`;
+        document.getElementById('inst-text-t').setAttribute('x', cx);
+        document.getElementById('inst-text-a').textContent = `[A]t=${yPlot.toFixed(1)}`;
+        document.getElementById('inst-text-a').setAttribute('y', cy + 4);
+        
+        let L = 50, dx = L / Math.sqrt(1 + slope*slope), dy = slope * dx;
+        document.getElementById('inst-tan').setAttribute('x1', cx - dx);
+        document.getElementById('inst-tan').setAttribute('y1', cy - (-dy));
+        document.getElementById('inst-tan').setAttribute('x2', cx + dx);
+        document.getElementById('inst-tan').setAttribute('y2', cy + (-dy));
+        
+        document.getElementById('inst-val').textContent = (-slope).toFixed(3);
+    }
+    
+    if(svgInst) {
+        function startInstDrag(e) {
+            e.preventDefault(); isDraggingInst = true;
+            document.getElementById('inst-dot').style.cursor = 'grabbing';
+            let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst();
+        }
+        svgInst.addEventListener('mousedown', startInstDrag);
+        svgInst.addEventListener('touchstart', startInstDrag, {passive: false});
+        window.addEventListener('mousemove', (e) => {
+            if(isDraggingInst) { let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst(); }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if(isDraggingInst) { e.preventDefault(); let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst(); }
+        }, {passive: false});
+        window.addEventListener('mouseup', () => { isDraggingInst = false; if(document.getElementById('inst-dot')) document.getElementById('inst-dot').style.cursor = 'grab'; });
+        window.addEventListener('touchend', () => { isDraggingInst = false; if(document.getElementById('inst-dot')) document.getElementById('inst-dot').style.cursor = 'grab'; });
+        updateInst();
+    }
+
+    const svgAvg = document.getElementById('svg-avg');
+    let avgX1 = 30, avgX2 = 120, draggingAvg = 0;
+    
+    function updateAvg() {
+        if(!svgAvg) return;
+        if(avgX1 < 0) avgX1 = 0; if(avgX1 > maxX) avgX1 = maxX;
+        if(avgX2 < 0) avgX2 = 0; if(avgX2 > maxX) avgX2 = maxX;
+        if(Math.abs(avgX1 - avgX2) < 10) {
+            if(draggingAvg === 1) avgX1 = avgX2 - 10; else if(draggingAvg === 2) avgX2 = avgX1 + 10;
+        }
+        
+        let xL = Math.min(avgX1, avgX2), xR = Math.max(avgX1, avgX2);
+        let yL = getCurveY(xL), yR = getCurveY(xR);
+        let cx1 = x0 + xL, cy1 = y0 - yL, cx2 = x0 + xR, cy2 = y0 - yR;
+        
+        document.getElementById('avg-dot1').setAttribute('cx', cx1);
+        document.getElementById('avg-dot1').setAttribute('cy', cy1);
+        document.getElementById('avg-dot2').setAttribute('cx', cx2);
+        document.getElementById('avg-dot2').setAttribute('cy', cy2);
+        
+        document.getElementById('avg-dash-x1').setAttribute('x1', cx1);
+        document.getElementById('avg-dash-x1').setAttribute('y1', cy1);
+        document.getElementById('avg-dash-x1').setAttribute('x2', cx1);
+        document.getElementById('avg-dash-x1').setAttribute('y2', y0);
+        document.getElementById('avg-dash-y1').setAttribute('x1', cx1);
+        document.getElementById('avg-dash-y1').setAttribute('y1', cy1);
+        document.getElementById('avg-dash-y1').setAttribute('x2', x0);
+        document.getElementById('avg-dash-y1').setAttribute('y2', cy1);
+        
+        document.getElementById('avg-dash-x2').setAttribute('x1', cx2);
+        document.getElementById('avg-dash-x2').setAttribute('y1', cy2);
+        document.getElementById('avg-dash-x2').setAttribute('x2', cx2);
+        document.getElementById('avg-dash-x2').setAttribute('y2', y0);
+        document.getElementById('avg-dash-y2').setAttribute('x1', cx2);
+        document.getElementById('avg-dash-y2').setAttribute('y1', cy2);
+        document.getElementById('avg-dash-y2').setAttribute('x2', x0);
+        document.getElementById('avg-dash-y2').setAttribute('y2', cy2);
+        
+        document.getElementById('avg-text-t1').textContent = `t1`;
+        document.getElementById('avg-text-t1').setAttribute('x', cx1);
+        document.getElementById('avg-text-t2').textContent = `t2`;
+        document.getElementById('avg-text-t2').setAttribute('x', cx2);
+        
+        document.getElementById('avg-text-a1').textContent = `[A]1`;
+        document.getElementById('avg-text-a1').setAttribute('y', cy1 + 4);
+        document.getElementById('avg-text-a2').textContent = `[A]2`;
+        document.getElementById('avg-text-a2').setAttribute('y', cy2 + 4);
+        
+        document.getElementById('avg-triangle').setAttribute('points', `${cx1},${cy1} ${cx2},${cy1} ${cx2},${cy2}`);
+        
+        let slope = (yR - yL) / (xR - xL);
+        let L = 30, dx = L / Math.sqrt(1 + slope*slope), dy = slope * dx;
+        document.getElementById('avg-secant').setAttribute('x1', cx1 - dx);
+        document.getElementById('avg-secant').setAttribute('y1', cy1 - (-dy));
+        document.getElementById('avg-secant').setAttribute('x2', cx2 + dx);
+        document.getElementById('avg-secant').setAttribute('y2', cy2 + (-dy));
+        
+        document.getElementById('avg-text-dt').setAttribute('x', cx1 + (cx2 - cx1)/2);
+        document.getElementById('avg-text-dt').setAttribute('y', cy1 - 8);
+        document.getElementById('avg-text-da').setAttribute('x', cx2 + 8);
+        document.getElementById('avg-text-da').setAttribute('y', cy2 - (cy2 - cy1)/2 + 4);
+        
+        document.getElementById('avg-val').textContent = (-slope).toFixed(3);
+    }
+    
+    if(svgAvg) {
+        function startAvgDrag(e) {
+            e.preventDefault();
+            let pt = getSVGCoords(svgAvg, e), px = pt.x - x0;
+            if(Math.abs(px - avgX1) < Math.abs(px - avgX2)) { draggingAvg = 1; avgX1 = px; }
+            else { draggingAvg = 2; avgX2 = px; }
+            document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grabbing';
+            updateAvg();
+        }
+        svgAvg.addEventListener('mousedown', startAvgDrag);
+        svgAvg.addEventListener('touchstart', startAvgDrag, {passive: false});
+        window.addEventListener('mousemove', (e) => {
+            if(draggingAvg) { let pt = getSVGCoords(svgAvg, e); if(draggingAvg===1) avgX1 = pt.x - x0; else avgX2 = pt.x - x0; updateAvg(); }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if(draggingAvg) { e.preventDefault(); let pt = getSVGCoords(svgAvg, e); if(draggingAvg===1) avgX1 = pt.x - x0; else avgX2 = pt.x - x0; updateAvg(); }
+        }, {passive: false});
+        window.addEventListener('mouseup', () => { if(draggingAvg) document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grab'; draggingAvg = 0; });
+        window.addEventListener('touchend', () => { if(draggingAvg) document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grab'; draggingAvg = 0; });
+        updateAvg();
+    }
+})();
+</script>
+</body>
+</html>

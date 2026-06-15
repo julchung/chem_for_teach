@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原子混成軌域互動式展示 (Atomic Orbital Hybridization)</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- External assets from GitHub -->
+    <link rel="stylesheet" href="https://julchung.github.io/chemplay/antigravity_atom/style.css">
+    
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        /* Blogger Layout Override - To hide blog elements and show app in full screen */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            background-color: #0b0f19 !important; /* Match app background */
+        }
+
+        /* Target Blogger theme containers to hide them */
+        .header-outer, .footer-outer, .sidebar-wrapper, .post-title, .post-footer, 
+        .blog-pager, .comments, #header, #footer, .tabs-outer, .column-right-outer,
+        .column-left-outer, .post-share-buttons {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            visibility: hidden !important;
+        }
+
+        /* Ensure the app container covers everything */
+        #app-container {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            background-color: #0b0f19;
+            margin: 0 !important;
+        }
+
+        /* Visual styling for pseudo-disabled buttons to match the original disabled state */
+        .atomic-btn.pseudo-disabled {
+            opacity: 0.5;
+            cursor: pointer !important;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+
+        <!-- 3D Canvas Area -->
+        <div id="canvas-container">
+            <div id="loading" class="active">正在載入 3D 引擎...</div>
+            <div class="instructions">左鍵拖曳旋轉 | 滾輪縮放</div>
+            <canvas id="orbital-canvas"></canvas>
+            
+            <!-- Float Reset Button -->
+            <button id="btn-reset" style="display:none;">重置 (Reset)</button>
+        </div>
+
+        <!-- UI Sidebar / Bottom Sheet -->
+        <aside id="controls-panel">
+            <header>
+                <h1>混成軌域展示</h1>
+                <p>挑選欲重疊的軌域，若選取數量符合化學定則，即可解鎖「總表」並執行 3 秒的形變融合混成。</p>
+            </header>
+
+            <div class="orbital-selector-container">
+                <h2>1. 選擇原子軌域</h2>
+                <div class="orbital-grid">
+                    <button class="atomic-btn" data-orb="s">s</button>
+                    <button class="atomic-btn" data-orb="px">p<sub>x</sub></button>
+                    <button class="atomic-btn" data-orb="py">p<sub>y</sub></button>
+                    <button class="atomic-btn" data-orb="pz">p<sub>z</sub></button>
+                    <button class="atomic-btn" data-orb="dz2">d<sub>z²</sub></button>
+                    <button class="atomic-btn" data-orb="dx2y2">d<sub>x²-y²</sub></button>
+                </div>
+            </div>
+
+            <div class="summary-table-container">
+                <h2>2. 觸發對應的混成</h2>
+                <div class="hybrid-options">
+                    <!-- sp -->
+                    <button class="hybrid-btn locked" data-type="sp" disabled>
+                        <div class="btn-content">
+                            <span class="type-badge">sp</span>
+                            <span class="shape-name">直線型 (Linear)</span>
+                            <span class="angle-info">180°</span>
+                        </div>
+                    </button>
+                    <!-- sp2 -->
+                    <button class="hybrid-btn locked" data-type="sp2" disabled>
+                        <div class="btn-content">
+                            <span class="type-badge">sp²</span>
+                            <span class="shape-name">平面三角形 (Trigonal Planar)</span>
+                            <span class="angle-info">120°</span>
+                        </div>
+                    </button>
+                    <!-- sp3 -->
+                    <button class="hybrid-btn locked" data-type="sp3" disabled>
+                        <div class="btn-content">
+                            <span class="type-badge">sp³</span>
+                            <span class="shape-name">四面體 (Tetrahedral)</span>
+                            <span class="angle-info">109.5°</span>
+                        </div>
+                    </button>
+                    <!-- sp3d -->
+                    <button class="hybrid-btn locked" data-type="sp3d" disabled>
+                        <div class="btn-content">
+                            <span class="type-badge">sp³d</span>
+                            <span class="shape-name">雙三角錐 (Trigonal Bipyramidal)</span>
+                            <span class="angle-info">90° / 120°</span>
+                        </div>
+                    </button>
+                    <!-- sp3d2 -->
+                    <button class="hybrid-btn locked" data-type="sp3d2" disabled>
+                        <div class="btn-content">
+                            <span class="type-badge">sp³d²</span>
+                            <span class="shape-name">八面體 (Octahedral)</span>
+                            <span class="angle-info">90°</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+        </aside>
+    </div>
+
+    <!-- Inline module: autoRotate off, pan enabled, screenSpacePanning on -->
+    <script type="module">
+import * as THREE from 'https://esm.sh/three@0.158.0';
+import { OrbitControls } from 'https://esm.sh/three@0.158.0/examples/jsm/controls/OrbitControls.js';
+
+let scene, camera, renderer, controls;
+let atomicGroup = new THREE.Group();
+let hybridGroup = new THREE.Group();
+let nucleus;
+let activeOrbitals = new Set();
+let currentHybridState = null;
+let isHybridized = false;
+
+const COLORS = { s: 0x4dabf7, p: 0xff6b6b, d: 0x51cf66, hybrid: 0xcc5de8 };
+
+function init() {
+    const container = document.getElementById('canvas-container');
+    const loadMsg   = document.getElementById('loading');
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 5, 20);
+
+    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('orbital-canvas'), antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(10, 20, 10); scene.add(dl);
+    const bl = new THREE.DirectionalLight(0xffffff, 0.6); bl.position.set(-10, -20, -10); scene.add(bl);
+
+    // ★ Controls：停止自轉、關閉平移
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping    = true;
+    controls.dampingFactor    = 0.05;
+    controls.autoRotate       = false;   // ★ 不自動旋轉
+    controls.enablePan        = false;   // ★ 關閉平移，使旋轉始終以原子為中心
+    controls.enableRotate     = true;
+
+    scene.add(new THREE.AxesHelper(2));
+
+    const nucGeo = new THREE.SphereGeometry(0.3, 16, 16);
+    nucleus = new THREE.Mesh(nucGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    scene.add(nucleus);
+    scene.add(atomicGroup);
+    scene.add(hybridGroup);
+
+    loadMsg.classList.remove('active');
+    setupUI();
+    updateCameraOffset();
+    window.addEventListener('resize', onWindowResize);
+    animate();
+}
+
+function createLobe(color, length = 3, width = 1) {
+    const geo = new THREE.SphereGeometry(1, 32, 32);
+    const mat = new THREE.MeshPhongMaterial({ color, transparent: true, opacity: 0.85, shininess: 100, specular: 0x333333 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.scale.set(width, length / 2, width);
+    mesh.position.y = length / 2;
+    const w = new THREE.Group(); w.add(mesh); return w;
+}
+
+function createSOrbital() {
+    return new THREE.Mesh(
+        new THREE.SphereGeometry(1.5, 32, 32),
+        new THREE.MeshPhongMaterial({ color: COLORS.s, transparent: true, opacity: 0.8 })
+    );
+}
+
+function renderAtomicSelection() {
+    while (atomicGroup.children.length > 0) atomicGroup.remove(atomicGroup.children[0]);
+
+    if (activeOrbitals.has('s'))  atomicGroup.add(createSOrbital());
+    if (activeOrbitals.has('px')) {
+        const a = createLobe(COLORS.p, 3, 1); a.rotation.z = -Math.PI/2;
+        const b = createLobe(COLORS.p, 3, 1); b.rotation.z =  Math.PI/2;
+        atomicGroup.add(a, b);
+    }
+    if (activeOrbitals.has('py')) {
+        const a = createLobe(COLORS.p, 3, 1); a.rotation.x =  Math.PI/2;
+        const b = createLobe(COLORS.p, 3, 1); b.rotation.x = -Math.PI/2;
+        atomicGroup.add(a, b);
+    }
+    if (activeOrbitals.has('pz')) {
+        const a = createLobe(COLORS.p, 3, 1);
+        const b = createLobe(COLORS.p, 3, 1); b.rotation.x = Math.PI;
+        atomicGroup.add(a, b);
+    }
+    if (activeOrbitals.has('dz2')) {
+        const a = createLobe(COLORS.d, 4.5, 0.9);
+        const b = createLobe(COLORS.d, 4.5, 0.9); b.rotation.x = Math.PI;
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(2.2, 0.5, 16, 50),
+            new THREE.MeshPhongMaterial({ color: COLORS.d, transparent: true, opacity: 0.8 })
+        );
+        ring.rotation.x = Math.PI / 2;
+        atomicGroup.add(a, b, ring);
+    }
+    if (activeOrbitals.has('dx2y2')) {
+        const a = createLobe(COLORS.d, 4.5, 0.9); a.rotation.z = -Math.PI/2;
+        const b = createLobe(COLORS.d, 4.5, 0.9); b.rotation.z =  Math.PI/2;
+        const c = createLobe(COLORS.d, 4.5, 0.9); c.rotation.x =  Math.PI/2;
+        const d = createLobe(COLORS.d, 4.5, 0.9); d.rotation.x = -Math.PI/2;
+        atomicGroup.add(a, b, c, d);
+    }
+    atomicGroup.scale.set(0.9, 0.9, 0.9);
+    gsap.to(atomicGroup.scale, { duration: 0.5, x: 1, y: 1, z: 1, ease: 'back.out(2)' });
+}
+
+function buildHybridGeometry(type) {
+    while (hybridGroup.children.length > 0) hybridGroup.remove(hybridGroup.children[0]);
+    const len = 4, wid = 1.3;
+    if (type === 'sp') {
+        const a = createLobe(COLORS.hybrid, len, wid); a.rotation.z =  Math.PI/2;
+        const b = createLobe(COLORS.hybrid, len, wid); b.rotation.z = -Math.PI/2;
+        hybridGroup.add(a, b);
+    } else if (type === 'sp2') {
+        for (let i = 0; i < 3; i++) {
+            const l = createLobe(COLORS.hybrid, len, wid);
+            l.rotation.z = i * (2 * Math.PI / 3); hybridGroup.add(l);
+        }
+    } else if (type === 'sp3') {
+        [new THREE.Vector3(1,1,1), new THREE.Vector3(-1,-1,1), new THREE.Vector3(-1,1,-1), new THREE.Vector3(1,-1,-1)].forEach(v => {
+            const l = createLobe(COLORS.hybrid, len, wid);
+            const dummy = new THREE.Object3D(); dummy.lookAt(v);
+            l.quaternion.copy(dummy.quaternion); l.rotateX(Math.PI/2);
+            hybridGroup.add(l);
+        });
+    } else if (type === 'sp3d') {
+        hybridGroup.add(createLobe(COLORS.hybrid, len, wid));
+        const b = createLobe(COLORS.hybrid, len, wid); b.rotation.x = Math.PI; hybridGroup.add(b);
+        for (let i = 0; i < 3; i++) {
+            const l = createLobe(COLORS.hybrid, len, wid);
+            l.rotation.z = Math.PI/2; l.rotation.y = i * (2*Math.PI/3); hybridGroup.add(l);
+        }
+    } else if (type === 'sp3d2') {
+        [[0,0,0],[Math.PI,0,0],[Math.PI/2,0,0],[-Math.PI/2,0,0],[0,0,Math.PI/2],[0,0,-Math.PI/2]].forEach(r => {
+            const l = createLobe(COLORS.hybrid, len, wid); l.rotation.set(r[0],r[1],r[2]); hybridGroup.add(l);
+        });
+    }
+    hybridGroup.scale.set(0, 0, 0);
+}
+
+function checkHybridizationRule() {
+    const hasS   = activeOrbitals.has('s');
+    let pCount = ['px','py','pz'].filter(o => activeOrbitals.has(o)).length;
+    let dCount = ['dz2','dx2y2'].filter(o => activeOrbitals.has(o)).length;
+    let matched = null;
+    if      (hasS && pCount===1 && dCount===0)                          matched = 'sp';
+    else if (hasS && pCount===2 && dCount===0)                          matched = 'sp2';
+    else if (hasS && pCount===3 && dCount===0)                          matched = 'sp3';
+    else if (hasS && pCount===3 && dCount===1 && activeOrbitals.has('dz2')) matched = 'sp3d';
+    else if (hasS && pCount===3 && dCount===2)                          matched = 'sp3d2';
+    document.querySelectorAll('.hybrid-btn').forEach(btn => {
+        btn.classList.add('locked'); btn.classList.remove('ready'); btn.disabled = true;
+        if (btn.dataset.type === matched) { btn.classList.remove('locked'); btn.classList.add('ready'); btn.disabled = false; }
+    });
+    currentHybridState = matched;
+}
+
+function triggerHybridizeAnim() {
+    if (!currentHybridState) return;
+    isHybridized = true;
+    buildHybridGeometry(currentHybridState);
+    hybridGroup.rotation.set(0, 0, 0);
+    if (currentHybridState === 'sp') {
+        if (activeOrbitals.has('py')) hybridGroup.rotation.y = Math.PI/2;
+        else if (activeOrbitals.has('pz')) hybridGroup.rotation.z = Math.PI/2;
+    } else if (currentHybridState === 'sp2') {
+        if (activeOrbitals.has('px') && activeOrbitals.has('py')) hybridGroup.rotation.x = Math.PI/2;
+        else if (activeOrbitals.has('py') && activeOrbitals.has('pz')) hybridGroup.rotation.y = Math.PI/2;
+    }
+    gsap.to(atomicGroup.scale, { duration: 3, x: 0.1, y: 0.1, z: 0.1, ease: 'power3.inOut' });
+    gsap.to(hybridGroup.scale, { duration: 3, x: 1, y: 1, z: 1, ease: 'elastic.out(1, 0.7)', delay: 0.5 });
+    document.querySelectorAll('.atomic-btn').forEach(btn => btn.disabled = true);
+    document.querySelectorAll('.hybrid-btn').forEach(btn => { btn.classList.add('locked'); btn.classList.remove('ready'); btn.disabled = true; });
+    const resetBtn = document.getElementById('btn-reset');
+    resetBtn.style.display = 'block';
+    gsap.fromTo(resetBtn, { opacity: 0 }, { opacity: 1, delay: 2 });
+}
+
+function resetToAtomic() {
+    isHybridized = false;
+    gsap.to(hybridGroup.scale, { duration: 0.5, x: 0, y: 0, z: 0, ease: 'power2.in' });
+    gsap.to(atomicGroup.scale, { duration: 1, x: 1, y: 1, z: 1, ease: 'back.out(1)', delay: 0.5 });
+    document.querySelectorAll('.atomic-btn').forEach(btn => btn.disabled = false);
+    checkHybridizationRule();
+    document.getElementById('btn-reset').style.display = 'none';
+}
+
+function setupUI() {
+    document.querySelectorAll('.atomic-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isHybridized) return;
+            const orb = btn.dataset.orb;
+            if (activeOrbitals.has(orb)) { activeOrbitals.delete(orb); btn.classList.remove('active'); }
+            else { activeOrbitals.add(orb); btn.classList.add('active'); }
+            checkHybridizationRule();
+            renderAtomicSelection();
+        });
+    });
+    document.querySelectorAll('.hybrid-btn').forEach(btn => {
+        btn.addEventListener('click', () => { if (!btn.disabled && !isHybridized) triggerHybridizeAnim(); });
+    });
+    document.getElementById('btn-reset').addEventListener('click', resetToAtomic);
+}
+
+function updateCameraOffset() {
+    const container = document.getElementById('canvas-container');
+    const panel = document.getElementById('controls-panel');
+    if (container && panel) {
+        const fullWidth = container.clientWidth;
+        const fullHeight = container.clientHeight;
+        const rect = panel.getBoundingClientRect();
+        
+        // 如果 panel 在左側 (left < 10) 且有寬度，則調整視角中心至剩餘空間的中心
+        if (rect.left < 10 && rect.width > 0 && rect.width < fullWidth * 0.8) {
+            const offsetX = rect.width / 2;
+            camera.setViewOffset(fullWidth, fullHeight, -offsetX, 0, fullWidth, fullHeight);
+        } else {
+            if (camera.clearViewOffset) camera.clearViewOffset();
+        }
+    }
+}
+
+function onWindowResize() {
+    const container = document.getElementById('canvas-container');
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    updateCameraOffset();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+window.onload = init;
+    </script>
+    <script>
+        // 攔截按鈕的 disabled 屬性，避免瀏覽器原生阻擋點擊事件
+        const originalSet = Object.getOwnPropertyDescriptor(HTMLButtonElement.prototype, 'disabled').set;
+        const originalGet = Object.getOwnPropertyDescriptor(HTMLButtonElement.prototype, 'disabled').get;
+
+        Object.defineProperty(HTMLButtonElement.prototype, 'disabled', {
+            set: function(val) {
+                if (this.classList.contains('atomic-btn')) {
+                    // 使用 CSS class 取代原生的 disabled
+                    if (val) {
+                        this.classList.add('pseudo-disabled');
+                    } else {
+                        this.classList.remove('pseudo-disabled');
+                    }
+                    return; // 終止，不真正 disable 按鈕
+                }
+                originalSet.call(this, val);
+            },
+            get: function() {
+                if (this.classList.contains('atomic-btn')) {
+                    return this.classList.contains('pseudo-disabled');
+                }
+                return originalGet.call(this);
+            }
+        });
+
+        // 當混成完成後（重置按鈕出現），點擊任一原子軌域時即時重置
+        document.addEventListener('DOMContentLoaded', () => {
+            const atomicBtns = document.querySelectorAll('.atomic-btn');
+            
+            atomicBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const resetBtn = document.getElementById('btn-reset');
+                    if (resetBtn && window.getComputedStyle(resetBtn).display !== 'none') {
+                        // 模擬點擊重置按鈕，即時恢復初始狀態
+                        resetBtn.click();
+                        // 由於此事件處於 capture 階段，且我們沒有 e.stopPropagation()
+                        // 接下來事件會繼續傳遞，app.js 將收到點擊並成功選取該軌域！
+                    }
+                }, true); // 使用 capture phase 確保在 app.js 的 listener 之前執行
+            });
+        });
+    </script>
+</body>
+</html>

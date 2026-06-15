@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>氧化還原滴定 | 互動教學</title>
+    <meta name="description" content="選修化學四：氧化還原反應——氧化還原滴定原理與計算互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden; scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+
+        /* ---- Global slim scrollbar ---- */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent; }
+
+        /* ---- Start Overlay ---- */
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(167,139,250,0.12) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900;
+            background: transparent; border: none; padding: 0; margin-top: -10vh; margin-bottom: 1.5rem;
+            color: var(--accent-purple);
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-cyan); text-shadow: 0 0 40px rgba(34,211,238,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(34,211,238,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275); margin-top: 1rem;
+        }
+        .btn-start:hover { transform: scale(1.06); }
+
+        /* ---- Navbar ---- */
+        #top-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9500;
+            background: rgba(15,23,42,0.85); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; gap: 15px; padding: 10px 20px; overflow-x: auto; white-space: nowrap;
+        }
+        .nav-link {
+            color: var(--accent-cyan); text-decoration: none; font-weight: 700; font-size: 0.82rem;
+            padding: 4px 8px; border-radius: 20px; border: 1px solid transparent; transition: 0.3s;
+        }
+        .nav-link:hover { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.4); }
+
+        /* ---- Slides ---- */
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; }
+        #slides-container { position: relative; padding: 60px 68px 20px 2.5vw; }
+        .slide {
+            position: relative; padding: 2rem 0.5rem 2rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; min-height: 100vh;
+            border-bottom: 2px dashed rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.55rem, 2.6vw, 2.3rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 30px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.1rem, 1.7vw, 1.45rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-yellow); font-size: clamp(1rem, 1.4vw, 1.2rem); margin: 0.2rem 0 0.3rem; }
+        p, li { font-size: clamp(1.0rem, 1.35vw, 1.22rem); line-height: 1.6; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card { background: rgba(56,189,248,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-yellow { background: rgba(251,191,36,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-green { background: rgba(52,211,153,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-red { background: rgba(248,113,113,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-purple { background: rgba(167,139,250,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-cyan { background: rgba(34,211,238,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .info-card-orange { background: rgba(251,146,60,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        .tag { display: inline-block; padding: 0.12rem 0.65rem; border-radius: 18px; font-size: 0.88rem; font-weight: 700; margin-right: 0.3rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        .k-card { background: rgba(0,0,0,0.3); border-radius: 14px; padding: 1rem 1.1rem; border: 1.5px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.45rem; transition: all 0.3s; }
+        .k-card:hover { border-color: var(--accent-cyan); box-shadow: 0 0 18px rgba(34,211,238,0.25); }
+        .k-card-title { font-size: 1.2rem; font-weight: 700; color: var(--accent-cyan); }
+        .k-card-text { font-size: 1.05rem; color: rgba(255,255,255,0.85); line-height: 1.65; }
+        .slide-intro h1 { font-size: clamp(2.0rem, 3.5vw, 2.9rem); }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed { color: var(--accent-green); border-bottom-color: transparent; }
+
+        /* ---- Toolbar ---- */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+
+        /* ---- Drawing layer ---- */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+
+        /* Back-to-top button */
+        #btn-top {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px;
+            z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;
+        }
+        #random-draw-balls {
+            display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center;
+            margin: 0 auto 20px auto; width: 100%; max-width: 500px;
+        }
+        .draw-ball {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff;
+            position: relative; z-index: 1; transition: all 0.3s;
+        }
+        .draw-ball.flicker {
+            background: #fff; color: #000; transform: scale(1.35);
+            box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan);
+            border-color: #fff; z-index: 10;
+        }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner {
+            background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000;
+            transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10;
+        }
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a;
+            border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
+        }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        #btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #btn-close-draw:hover { opacity: 1; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { padding-right: 60px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+<div id="presentation-area">
+
+<!-- Top Navigation -->
+<nav id="top-nav">
+    <a href="#slide-intro" class="nav-link">⚖️ 氧化還原滴定原理</a>
+    <a href="#slide-normality" class="nav-link">🧪 當量與當量濃度</a>
+    <a href="#slide-endpoint" class="nav-link">📉 滴定終點與指示劑</a>
+    <a href="#slide-examples" class="nav-link">📝 綜合範例演練</a>
+</nav>
+
+<div id="slides-container">
+
+<!-- ===== Slide 1: 氧化還原滴定原理 ===== -->
+<div class="slide slide-intro" id="slide-intro">
+    <h1>氧化還原滴定原理</h1>
+    <div class="grid-2">
+        <div class="panel scroll-panel">
+            <h2>⚖️ 核心定義</h2>
+            <div class="info-card">
+                <p><strong>氧化還原滴定：</strong>利用已知濃度的氧化劑（或還原劑）去滴定未知濃度的還原劑（或氧化劑）。</p>
+            </div>
+            <div class="info-card-green" style="margin-top:0.5rem;">
+                <p><strong>當量點 (Equivalence Point)：</strong></p>
+                <p style="text-align: center; font-weight: bold; font-size: 1.2rem; color: var(--accent-green); margin-top: 0.5rem;">
+                    氧化劑得到電子莫耳數 = 還原劑失去電子莫耳數
+                </p>
+            </div>
+            <div class="formula-box-purple" style="font-size:1.15rem; margin-top:0.8rem;">
+                <p>💡 <strong>公式：</strong> $n_{\text{氧化劑}} \times e_{\text{氧化劑}} = n_{\text{還原劑}} \times e_{\text{還原劑}}$</p>
+                <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); margin-top: 0.3rem;">($n$ 代表莫耳數，$e$ 代表氧化數改變數或轉移電子數)</p>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>📌 當量 (Equivalent)</h2>
+            <div class="info-card-cyan">
+                <p><strong>當量：</strong>用來表示反應時，物質之間數量的關係。</p>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.3rem;">
+                <div class="k-card">
+                    <div class="k-card-title">① 氧化劑的當量</div>
+                    <div class="k-card-text">相當於<strong>得到</strong>一莫耳電子所需的質量。<br><span class="tag tag-blue">當量數 = 得到電子莫耳數</span></div>
+                </div>
+                <div class="k-card">
+                    <div class="k-card-title">② 還原劑的當量</div>
+                    <div class="k-card-text">相當於<strong>失去</strong>一莫耳電子所需的質量。<br><span class="tag tag-red">當量數 = 失去電子莫耳數</span></div>
+                </div>
+                <div class="k-card">
+                    <div class="k-card-title">💡 補充：酸鹼反應</div>
+                    <div class="k-card-text">酸鹼反應的當量則是對應到 $H^+$ 或 $OH^-$ 的量。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Slide 2: 當量與當量濃度 ===== -->
+<div class="slide" id="slide-normality">
+    <h1>當量濃度 (Normality, N)</h1>
+    <div class="grid-2">
+        <div class="panel scroll-panel">
+            <h2>🧪 定義與公式</h2>
+            <div class="info-card">
+                <p><strong>當量濃度 (N)：</strong>每公升溶液中所含溶質的<span class="step-target blank-box" onclick="this.classList.add('revealed')">克當量數</span>。</p>
+            </div>
+            <div class="formula-box" style="font-size: 1.1rem;">
+                $N = \frac{\text{克當量數}}{\text{體積 (升)}} = \frac{\frac{\text{質量}}{\text{克當量}}}{\text{體積 (升)}} = \frac{\frac{\text{質量}}{\frac{\text{分子量}}{e}}}{\text{體積 (升)}}$
+            </div>
+            <div class="info-card-yellow" style="margin-top:0.5rem; font-size: 1.15rem; text-align: center;">
+                <strong>當量濃度 ($N$) = 體積莫耳濃度 ($M$) $\times$ <span class="step-target blank-box" onclick="this.classList.add('revealed')">$e$</span></strong>
+            </div>
+            <div class="info-card-purple" style="margin-top:0.5rem;">
+                <p><strong>💡 常用計算關係式：</strong></p>
+                <p style="text-align: center; margin-top: 0.5rem; color: var(--accent-cyan); font-weight: bold;">
+                    克當量數 = $N \times V_{(L)} = M \times V_{(L)} \times e = mol \times e = \frac{W}{M_w/e}$
+                </p>
+            </div>
+        </div>
+        
+        <div class="panel scroll-panel">
+            <h2>💡 常見氧化劑的 $e$ 值 (酸性環境)</h2>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.3rem;">
+                <div class="k-card">
+                    <div class="k-card-title">過錳酸鉀 ($KMnO_4$)</div>
+                    <div class="k-card-text">
+                        $MnO_4^- \rightarrow Mn^{2+}$ (氧化數 $+7 \rightarrow +2$)<br>
+                        $e = $ <span class="step-target blank-box" onclick="this.classList.add('revealed')">5</span><br>
+                        <span class="tag tag-purple">$N = 5M$</span>
+                    </div>
+                </div>
+                <div class="k-card">
+                    <div class="k-card-title">二鉻酸鉀 ($K_2Cr_2O_7$)</div>
+                    <div class="k-card-text">
+                        $Cr_2O_7^{2-} \rightarrow 2Cr^{3+}$ (氧化數 $+6 \rightarrow +3$，有2個Cr)<br>
+                        $e = $ <span class="step-target blank-box" onclick="this.classList.add('revealed')">6</span><br>
+                        <span class="tag tag-orange">$N = 6M$</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Slide 3: 滴定終點與指示劑 ===== -->
+<div class="slide" id="slide-endpoint">
+    <h1>滴定終點與指示劑</h1>
+    <div class="panel scroll-panel" style="margin-top: 1rem;">
+        <div class="grid-2">
+            <div>
+                <h2>📉 滴定終點的判斷</h2>
+                <div class="info-card">
+                    <p><strong>當量點：</strong>氧化劑當量數與還原劑當量數<strong>相等</strong>時的點。在實際操作時很難找到。</p>
+                </div>
+                <div class="info-card-red">
+                    <p><strong>滴定終點：</strong>滴定至某程度接近當量點時，溶液的某些性質會發生巨幅變化（如<span class="step-target blank-box" onclick="this.classList.add('revealed')">顏色的變化</span>、電位差等），作為滴定停止的信號。</p>
+                    <p>💡 計算時，常以<strong>滴定終點來代替當量點</strong>。</p>
+                </div>
+            </div>
+            
+            <div>
+                <h2>🧪 氧化還原指示劑</h2>
+                <div class="k-card">
+                    <div class="k-card-title">1. 自身指示劑</div>
+                    <div class="k-card-text">
+                        氧化劑或還原劑本身變化過程有明顯的顏色變化。<br>
+                        例如：$KMnO_4$（紫紅色）滴定至終點時，微量過量的 $MnO_4^-$ 使溶液呈 <span style="color: pink; font-weight: bold; text-shadow: 0 0 5px rgba(255,192,203,0.5);">微粉紅色</span>。
+                    </div>
+                </div>
+                <div class="k-card" style="margin-top: 0.5rem;">
+                    <div class="k-card-title">2. 外加指示劑</div>
+                    <div class="k-card-text">
+                        <strong>碘滴定：</strong>利用碘 ($I_2$) 遇澱粉產生 <span style="color: var(--accent-blue); font-weight: bold;">藍色</span> 為指示劑。<br>
+                        <strong>苯胺磺酸鈉鹽：</strong>還原態無色，氧化態紫紅色。常作 $K_2Cr_2O_7$ 滴定的指示劑。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h2 style="color:var(--accent-yellow);">📝 範例：過錳酸鉀滴定計算</h2>
+            <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <div>
+                    <p>含鐵試樣 $1.0$ 克完全溶於硫酸使成酸性 $FeSO_4$ 溶液後，用 $0.2\ M$ 的 $KMnO_{4(aq)}$ 滴定，若要使其完全氧化成 $Fe^{3+}$ 需用去 $KMnO_{4(aq)}\ 15.0\ mL$，求此試樣中含鐵的重量百分率？ ($Fe=56$)</p>
+                    <div style="display: flex; flex-direction: row; gap: 2rem; margin-top: 0.8rem;">
+                        <span>(A) 16.8%</span>
+                        <span>(B) 84.0%</span>
+                        <span>(C) 34.2%</span>
+                        <span>(D) 65.4%</span>
+                    </div>
+                </div>
+                
+                <!-- 預留教學空白與滴定圖示 -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; min-height: 180px; margin-top: 1rem;">
+                    <div style="flex: 1;">
+                        <br><br><br><br><br>
+                    </div>
+                    <div style="width: 120px; display: flex; justify-content: flex-end; opacity: 0.9;">
+                        <svg viewBox="0 0 120 220" width="120" height="220" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Stand Base -->
+                            <path d="M 10 205 L 50 205 A 3 3 0 0 1 53 208 L 53 212 A 3 3 0 0 1 50 215 L 10 215 A 3 3 0 0 1 7 212 L 7 208 A 3 3 0 0 1 10 205 Z" fill="#475569" />
+                            <!-- Stand Rod -->
+                            <rect x="26" y="20" width="8" height="185" fill="#64748b" rx="2" />
+                            
+                            <!-- Burette Clamp -->
+                            <path d="M 34 70 L 62 70 L 62 76 L 34 76 Z" fill="#94a3b8" />
+                            <path d="M 60 65 A 10 10 0 1 1 60 81 A 10 10 0 1 1 60 65 Z" fill="none" stroke="#94a3b8" stroke-width="4" />
+
+                            <!-- Burette Body -->
+                            <rect x="63" y="10" width="14" height="120" rx="6" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <!-- Liquid Level marks -->
+                            <line x1="63" y1="20" x2="68" y2="20" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="40" x2="70" y2="40" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="60" x2="68" y2="60" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="80" x2="70" y2="80" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="100" x2="68" y2="100" stroke="#38bdf8" stroke-width="1" />
+                            <!-- Liquid inside Burette (KMnO4 purple) -->
+                            <rect x="64.5" y="35" width="11" height="94" fill="rgba(167, 139, 250, 0.75)" />
+                            
+                            <!-- Stopcock and Tip -->
+                            <polygon points="63,130 77,130 73,150 67,150" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <rect x="60" y="135" width="20" height="5" fill="#f59e0b" rx="2" />
+                            <!-- Drip -->
+                            <circle cx="70" cy="158" r="2.5" fill="rgba(167, 139, 250, 0.85)" />
+                            <circle cx="70" cy="168" r="1.5" fill="rgba(167, 139, 250, 0.6)" />
+
+                            <!-- Erlenmeyer Flask -->
+                            <!-- Neck -->
+                            <path d="M 60 175 L 80 175 L 80 185 L 105 210 Q 108 215 102 215 L 38 215 Q 32 215 35 210 L 60 185 Z" fill="rgba(255,255,255,0.03)" stroke="#34d399" stroke-width="2" stroke-linejoin="round" />
+                            <!-- Liquid inside Flask -->
+                            <path d="M 48 198 L 92 198 L 103 213 L 37 213 Z" fill="rgba(167, 139, 250, 0.3)" />
+                            <!-- Swirl lines -->
+                            <path d="M 50 205 Q 70 200 90 205" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:0.5rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('endpoint-ex')">觀看解答</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h2>🧪 碘滴定法 (Iodometry)</h2>
+            <div class="info-card-cyan">
+                <p>利用碘的氧化還原反應，並以<strong>澱粉為指示劑</strong>的滴定法。</p>
+            </div>
+            <div class="grid-2" style="margin-top: 0.5rem;">
+                <div class="k-card">
+                    <div class="k-card-title">1. 直接碘滴定法</div>
+                    <div class="k-card-text" style="font-size:1.05rem; line-height: 2.2;">
+                        以<strong>碘標準溶液當氧化劑</strong>，滴定還原劑（如 $H_2S$、$SO_3^{2-}$）。<br>
+                        <span style="color:var(--accent-yellow);">反應實例：</span>$I_{2(aq)} + HSO_{3(aq)}^- + H_2O_{(l)} \rightarrow 2I_{(aq)}^- + SO_{4(aq)}^{2-} + 3H^+_{(aq)}$<br>
+                        <span style="color:var(--accent-red);">注意：</span>碘為弱氧化劑，應用範圍有限。<br>
+                        必須在<strong>酸性或中性</strong>溶液中進行，在鹼性中碘會自身氧化還原失去作用：<br>
+                        $3I_{2(s)} + 6OH^- \rightarrow 5I^- + IO_3^- + 3H_2O$
+                    </div>
+                </div>
+                <div class="k-card">
+                    <div class="k-card-title">2. 間接碘滴定法</div>
+                    <div class="k-card-text" style="font-size:1.05rem; line-height: 2.2;">
+                        將待測氧化劑先與<strong>過量 $I^-$</strong> 反應產生 $I_2$，再用 <strong>$Na_2S_2O_3$ 標準溶液滴定</strong>生成的 $I_2$。<br>
+                        $I_{2(s)} + 2S_2O_3^{2-} \rightarrow 2I^- + S_4O_6^{2-}$<br>
+                        💡 <strong>當量關係：</strong> 待測氧化劑當量數 = 產生 $I_2$ 當量數 = 消耗 $S_2O_3^{2-}$ 當量數。<br>
+                        <span style="color:var(--accent-yellow);">指示劑加入時機：</span> 必須在滴定至<strong>溶液呈淡黃色（大部分碘已還原）</strong>時，才加入澱粉指示劑，否則很難辨識深藍色變無色的終點。
+                    </div>
+                </div>
+            </div>
+
+        <div style="margin-top: 2rem;">
+            <h2 style="color:var(--accent-yellow);">📝 範例：過氧化氫與碘滴定</h2>
+            <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <div>
+                    <p>有一過氧化氫水溶液 $3$ 克，加入過量 $KI$ 酸性溶液及少許澱粉液，生成之碘以 $0.4\ M$ 的硫代硫酸鈉 ($Na_2S_2O_3$) 溶液滴定至藍色消失，共用去 $30\ mL$ 滴定液，求原過氧化氫水溶液中含 $H_2O_2$ 之重量百分率為若干%？</p>
+                    <div style="display: flex; flex-direction: row; gap: 2rem; margin-top: 0.8rem;">
+                        <span>(A) 68</span>
+                        <span>(B) 34</span>
+                        <span>(C) 6.8</span>
+                        <span>(D) 3.4</span>
+                    </div>
+                </div>
+                
+                <!-- 預留教學空白與碘滴定圖示 -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; min-height: 180px; margin-top: 1rem;">
+                    <div style="flex: 1;">
+                        <br><br><br><br><br>
+                    </div>
+                    <div style="width: 120px; display: flex; justify-content: flex-end; opacity: 0.9;">
+                        <svg viewBox="0 0 120 220" width="120" height="220" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Stand Base -->
+                            <path d="M 10 205 L 50 205 A 3 3 0 0 1 53 208 L 53 212 A 3 3 0 0 1 50 215 L 10 215 A 3 3 0 0 1 7 212 L 7 208 A 3 3 0 0 1 10 205 Z" fill="#475569" />
+                            <!-- Stand Rod -->
+                            <rect x="26" y="20" width="8" height="185" fill="#64748b" rx="2" />
+                            <!-- Burette Clamp -->
+                            <path d="M 34 70 L 62 70 L 62 76 L 34 76 Z" fill="#94a3b8" />
+                            <path d="M 60 65 A 10 10 0 1 1 60 81 A 10 10 0 1 1 60 65 Z" fill="none" stroke="#94a3b8" stroke-width="4" />
+                            <!-- Burette Body -->
+                            <rect x="63" y="10" width="14" height="120" rx="6" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <!-- Liquid Level marks -->
+                            <line x1="63" y1="20" x2="68" y2="20" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="40" x2="70" y2="40" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="60" x2="68" y2="60" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="80" x2="70" y2="80" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="100" x2="68" y2="100" stroke="#38bdf8" stroke-width="1" />
+                            <!-- Liquid inside Burette (Na2S2O3 colorless/water-like) -->
+                            <rect x="64.5" y="35" width="11" height="94" fill="rgba(255, 255, 255, 0.4)" />
+                            <!-- Stopcock and Tip -->
+                            <polygon points="63,130 77,130 73,150 67,150" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <rect x="60" y="135" width="20" height="5" fill="#f59e0b" rx="2" />
+                            <!-- Drip -->
+                            <circle cx="70" cy="158" r="2.5" fill="rgba(255, 255, 255, 0.6)" />
+                            <circle cx="70" cy="168" r="1.5" fill="rgba(255, 255, 255, 0.4)" />
+                            <!-- Erlenmeyer Flask -->
+                            <!-- Neck -->
+                            <path d="M 60 175 L 80 175 L 80 185 L 105 210 Q 108 215 102 215 L 38 215 Q 32 215 35 210 L 60 185 Z" fill="rgba(255,255,255,0.03)" stroke="#34d399" stroke-width="2" stroke-linejoin="round" />
+                            <!-- Liquid inside Flask (Iodine+starch complex -> Blue) -->
+                            <path d="M 48 198 L 92 198 L 103 213 L 37 213 Z" fill="rgba(59, 130, 246, 0.6)" />
+                            <!-- Swirl lines -->
+                            <path d="M 50 205 Q 70 200 90 205" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+                <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:0.5rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('iodometry-ex1')">觀看解答</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h2 style="color:var(--accent-yellow);">📝 範例：碘酸鉀濃度計算</h2>
+            <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <div>
+                    <p>未知濃度的 $KIO_3$ 溶液 $15.0\ mL$ 加入足量 $KI$ 與少量硫酸，溶液呈棕褐色；加入澱粉液為指示劑，以 $0.10\ M\ Na_2S_2O_3$ 溶液滴定，加入 $45.0\ mL$ 藍色消失。求原 $KIO_3$ 溶液的體積莫耳濃度為多少 $M$？</p>
+                    <div style="display: flex; flex-direction: row; gap: 2rem; margin-top: 0.8rem;">
+                        <span>(A) 0.30</span>
+                        <span>(B) 0.20</span>
+                        <span>(C) 0.10</span>
+                        <span>(D) 0.050</span>
+                    </div>
+                </div>
+                
+                <!-- 預留教學空白與碘滴定圖示 -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; min-height: 180px; margin-top: 1rem;">
+                    <div style="flex: 1;">
+                        <br><br><br><br><br>
+                    </div>
+                    <div style="width: 120px; display: flex; justify-content: flex-end; opacity: 0.9;">
+                        <svg viewBox="0 0 120 220" width="120" height="220" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Stand Base -->
+                            <path d="M 10 205 L 50 205 A 3 3 0 0 1 53 208 L 53 212 A 3 3 0 0 1 50 215 L 10 215 A 3 3 0 0 1 7 212 L 7 208 A 3 3 0 0 1 10 205 Z" fill="#475569" />
+                            <!-- Stand Rod -->
+                            <rect x="26" y="20" width="8" height="185" fill="#64748b" rx="2" />
+                            <!-- Burette Clamp -->
+                            <path d="M 34 70 L 62 70 L 62 76 L 34 76 Z" fill="#94a3b8" />
+                            <path d="M 60 65 A 10 10 0 1 1 60 81 A 10 10 0 1 1 60 65 Z" fill="none" stroke="#94a3b8" stroke-width="4" />
+                            <!-- Burette Body -->
+                            <rect x="63" y="10" width="14" height="120" rx="6" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <!-- Liquid Level marks -->
+                            <line x1="63" y1="20" x2="68" y2="20" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="40" x2="70" y2="40" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="60" x2="68" y2="60" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="80" x2="70" y2="80" stroke="#38bdf8" stroke-width="1" />
+                            <line x1="63" y1="100" x2="68" y2="100" stroke="#38bdf8" stroke-width="1" />
+                            <!-- Liquid inside Burette (Na2S2O3 colorless/water-like) -->
+                            <rect x="64.5" y="35" width="11" height="94" fill="rgba(255, 255, 255, 0.4)" />
+                            <!-- Stopcock and Tip -->
+                            <polygon points="63,130 77,130 73,150 67,150" fill="rgba(255,255,255,0.05)" stroke="#38bdf8" stroke-width="2" />
+                            <rect x="60" y="135" width="20" height="5" fill="#f59e0b" rx="2" />
+                            <!-- Drip -->
+                            <circle cx="70" cy="158" r="2.5" fill="rgba(255, 255, 255, 0.6)" />
+                            <circle cx="70" cy="168" r="1.5" fill="rgba(255, 255, 255, 0.4)" />
+                            <!-- Erlenmeyer Flask -->
+                            <!-- Neck -->
+                            <path d="M 60 175 L 80 175 L 80 185 L 105 210 Q 108 215 102 215 L 38 215 Q 32 215 35 210 L 60 185 Z" fill="rgba(255,255,255,0.03)" stroke="#34d399" stroke-width="2" stroke-linejoin="round" />
+                            <!-- Liquid inside Flask (Iodine+starch complex -> Blue) -->
+                            <path d="M 48 198 L 92 198 L 103 213 L 37 213 Z" fill="rgba(59, 130, 246, 0.6)" />
+                            <!-- Swirl lines -->
+                            <path d="M 50 205 Q 70 200 90 205" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+                <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:0.5rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('iodometry-ex2')">觀看解答</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Slide 4: 綜合範例演練 ===== -->
+<div class="slide" id="slide-examples">
+    <h1>綜合範例演練</h1>
+    
+    <div style="display:flex; flex-direction:column; gap:1.2rem; flex:1; overflow-y:auto; padding-right: 10px;">
+        
+        <!-- 新增：碘酒/秒錶反應綜合實驗題 -->
+        <h2 style="color:var(--accent-yellow);">📝 綜合實驗：碘酒與秒錶反應</h2>
+        <div class="info-card" style="font-size: 1.05rem; padding: 1rem; margin-bottom: 1rem;">
+            <p>這個實驗與你在「反應速率」或「秒錶反應」所做的實驗有關。實驗過程如下：</p>
+            <ol style="margin-top: 0.5rem; margin-bottom: 1rem; padding-left: 1.5rem; line-height: 1.8;">
+                <li>(甲) 用一透明杯子取蒸餾水 80 毫升，並滴入碘酒至溶液呈黃褐色後，分成約兩等量的兩杯</li>
+                <li>(乙) 在其中的一杯溶液中滴入 0.1 M 的亞硫酸氫鈉 x 滴，攪拌後黃褐色消失，溶液變成無色，稱此溶液為甲液。</li>
+                <li>(丙) 在另一杯的溶液中，加 1 M 的氫氧化鈉溶液 y 滴，攪拌後黃褐色同樣消失，而稱此溶液為乙液。</li>
+                <li>(丁) 將無色的甲液再分成約等量的兩杯。在其中的一杯加入 3% 的雙氧水 x 滴，攪拌後靜置數分鐘，無色溶液逐漸呈色，稱此溶液為丙液。另一杯則加入 1 M 的鹽酸 2y 滴，攪拌後得丁液。</li>
+                <li>(戊) 同樣將乙液分成約等量的兩杯。在其中的一杯加入 3% 的雙氧水 x 滴，攪拌後得戊液，而另一杯則加入 1 M 的鹽酸 2y 滴，攪拌後得己液。</li>
+            </ol>
+            <p>上面敘述的實驗流程，用簡略的示意圖表示如下：</p>
+            
+            <style>
+                .flow-box {
+                    border: 2.5px solid; border-radius: 12px; padding: 12px 16px; text-align: center;
+                    min-width: 110px; transition: all 0.4s ease; font-weight: bold; z-index: 2;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 1.25rem;
+                }
+                .flow-action-btn {
+                    background: #1e293b; border: 1.5px solid var(--accent-cyan); color: var(--accent-cyan);
+                    padding: 8px 16px; border-radius: 12px; font-size: 1.05rem; cursor: pointer;
+                    z-index: 3; transition: 0.2s; white-space: nowrap; margin: 0 -4px; font-weight: bold;
+                }
+                .flow-action-btn:hover, .flow-action-btn.active {
+                    background: var(--accent-cyan); color: #0f172a; box-shadow: 0 0 10px var(--accent-cyan);
+                }
+                .arrow-right {
+                    width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent;
+                    border-left: 6px solid #475569; position: absolute; right: -4px; top: -2px;
+                }
+                .h-line { width: 60px; height: 2px; background: #475569; position: relative; }
+                
+                .branch-main { display: flex; flex-direction: column; gap: 170px; }
+                .branch-sub { display: flex; flex-direction: column; gap: 30px; }
+                
+                .v-line-main-down { position: absolute; left: 0; top: 50%; bottom: -85px; width: 2px; background: #475569; }
+                .v-line-main-up { position: absolute; left: 0; top: -85px; bottom: 50%; width: 2px; background: #475569; }
+                
+                .v-line-sub-down { position: absolute; left: 0; top: 50%; bottom: -15px; width: 2px; background: #475569; }
+                .v-line-sub-up { position: absolute; left: 0; top: -15px; bottom: 50%; width: 2px; background: #475569; }
+                
+                .eq-label {
+                    position: absolute; left: 50%; transform: translateX(-50%); width: max-content;
+                    opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+                    text-align: center; font-size: 1.05rem; background: rgba(15,23,42,0.95);
+                    padding: 12px 20px; border-radius: 10px; border: 1.5px dashed rgba(255,255,255,0.3);
+                    z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5); white-space: nowrap;
+                }
+                .eq-label.visible { opacity: 1; pointer-events: auto; }
+            </style>
+
+            <!-- 互動式橫向流程圖 -->
+            <div id="iodine-flowchart" style="margin: 2.5rem 0; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; font-family: sans-serif; position: relative; overflow-x: auto; padding: 120px 40px;">
+                
+                <!-- 1. Root -->
+                <div class="flow-box" style="background: rgba(234, 179, 8, 0.2); border-color: var(--accent-yellow); color: #fff; flex-shrink: 0; min-width: 140px; padding: 15px;">
+                    <span style="font-size: 1.15em;">碘酒水溶液</span><br><span style="font-size: 0.85em; color: var(--accent-yellow);">黃褐色 (I₂, I₃⁻)</span>
+                </div>
+                
+                <div class="h-line" style="flex-shrink: 0;"></div>
+                
+                <!-- 2. Main branches -->
+                <div class="branch-main" style="flex-shrink: 0;">
+                    
+                    <!-- ================= TOP BRANCH (甲) ================= -->
+                    <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                        <div class="v-line-main-down"></div>
+                        <div class="h-line"></div>
+                        <button class="flow-action-btn" onclick="triggerFlow('jia', this)">加 NaHSO₃</button>
+                        <div class="h-line"><div class="arrow-right"></div></div>
+                        
+                        <div style="position: relative;">
+                            <div id="eq-jia" class="eq-label" style="bottom: 100%; left: auto; right: -20px; transform: none; margin-bottom: 15px; border-color: var(--accent-green);">
+                                <div style="font-weight:bold; color:var(--accent-green); margin-bottom:0.4rem;">[甲] 碘被還原（無色）</div>
+                                $I_{2(aq)} + HSO_{3(aq)}^- + H_2O_{(l)} \rightarrow 2I_{(aq)}^- + SO_{4(aq)}^{2-} + 3H^+_{(aq)}$
+                            </div>
+                            <div id="box-jia" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                甲<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="h-line"></div>
+                        
+                        <!-- Sub-branches for 甲 -->
+                        <div class="branch-sub">
+                            <!-- 丙 -->
+                            <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                                <div class="v-line-sub-down"></div>
+                                <div class="h-line"></div>
+                                <button class="flow-action-btn" onclick="triggerFlow('bing', this)">加 H₂O₂</button>
+                                <div class="h-line"><div class="arrow-right"></div></div>
+                                
+                                <div style="position: relative;">
+                                    <div id="eq-bing" class="eq-label" style="bottom: 100%; margin-bottom: 15px; border-color: var(--accent-yellow);">
+                                        <div style="font-weight:bold; color:var(--accent-yellow); margin-bottom:0.4rem;">[丙] 碘離子被氧化（呈黃褐色）</div>
+                                        $2I^- + H_2O_2 + 2H^+ \rightarrow I_2 + 2H_2O$
+                                    </div>
+                                    <div id="box-bing" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                        丙<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 丁 -->
+                            <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                                <div class="v-line-sub-up"></div>
+                                <div class="h-line"></div>
+                                <button class="flow-action-btn" onclick="triggerFlow('ding', this)">加 HCl</button>
+                                <div class="h-line"><div class="arrow-right"></div></div>
+                                
+                                <div style="position: relative;">
+                                    <div id="eq-ding" class="eq-label" style="top: 100%; margin-top: 15px; border-color: #cbd5e1;">
+                                        <span style="font-weight:bold; color:#cbd5e1; margin-right:0.5rem;">[丁] 無氧化劑，不反應（維持無色）</span>加入酸 ($HCl$) 不會使 $I^-$ 氧化成 $I_2$
+                                    </div>
+                                    <div id="box-ding" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                        丁<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ================= BOTTOM BRANCH (乙) ================= -->
+                    <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                        <div class="v-line-main-up"></div>
+                        <div class="h-line"></div>
+                        <button class="flow-action-btn" onclick="triggerFlow('yi', this)">加 NaOH</button>
+                        <div class="h-line"><div class="arrow-right"></div></div>
+                        
+                        <div style="position: relative;">
+                            <div id="eq-yi" class="eq-label" style="top: 100%; left: auto; right: -20px; transform: none; margin-top: 15px; border-color: var(--accent-green);">
+                                <div style="font-weight:bold; color:var(--accent-green); margin-bottom:0.4rem;">[乙] 碘的自身氧化還原（無色）</div>
+                                $3I_{2(s)} + 6OH^- \rightarrow 5I^- + IO_3^- + 3H_2O$
+                            </div>
+                            <div id="box-yi" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                乙<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="h-line"></div>
+                        
+                        <!-- Sub-branches for 乙 -->
+                        <div class="branch-sub">
+                            <!-- 戊 -->
+                            <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                                <div class="v-line-sub-down"></div>
+                                <div class="h-line"></div>
+                                <button class="flow-action-btn" onclick="triggerFlow('wu', this)">加 H₂O₂</button>
+                                <div class="h-line"><div class="arrow-right"></div></div>
+                                
+                                <div style="position: relative;">
+                                    <div id="eq-wu" class="eq-label" style="bottom: 100%; margin-bottom: 15px; border-color: #cbd5e1;">
+                                        <span style="font-weight:bold; color:#cbd5e1; margin-right:0.5rem;">[戊] 鹼性環境，難氧化（維持無色）</span>在鹼性溶液中，$H_2O_2$ 不易將 $I^-$ 氧化成 $I_2$，無明顯反應。
+                                    </div>
+                                    <div id="box-wu" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                        戊<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 己 -->
+                            <div style="display: flex; flex-direction: row; align-items: center; position: relative;">
+                                <div class="v-line-sub-up"></div>
+                                <div class="h-line"></div>
+                                <button class="flow-action-btn" onclick="triggerFlow('ji', this)">加 HCl</button>
+                                <div class="h-line"><div class="arrow-right"></div></div>
+                                
+                                <div style="position: relative;">
+                                    <div id="eq-ji" class="eq-label" style="top: 100%; margin-top: 15px; border-color: var(--accent-yellow);">
+                                        <div style="font-weight:bold; color:var(--accent-yellow); margin-bottom:0.4rem;">[己] 歸中反應生成碘（呈黃褐色）</div>
+                                        $IO_3^- + 5I^- + 6H^+ \rightarrow 3I_2 + 3H_2O$
+                                    </div>
+                                    <div id="box-ji" class="flow-box" style="border-color: #94a3b8; background: rgba(15,23,42,0.8);">
+                                        己<br><span class="box-content" style="font-size: 0.85em; color: #cbd5e1; min-height: 1.2em; display: inline-block;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 子題 -->
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <p>(1) 試問下列哪些溶液呈現黃褐色？<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;(A) 乙 &nbsp;&nbsp;(B) 丙 &nbsp;&nbsp;(C) 丁 &nbsp;&nbsp;(D) 戊 &nbsp;&nbsp;(E) 己</p>
+                <p>(2) 在碘酒的水溶液，加入亞硫酸氫鈉溶液後，反應所得的生成物中含有下列哪些粒子？(只選兩項)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;(A) $I_2$ &nbsp;&nbsp;(B) $I^-$ &nbsp;&nbsp;(C) $IO_3^-$ &nbsp;&nbsp;(D) $SO_3^{2-}$ &nbsp;&nbsp;(E) $SO_4^{2-}$</p>
+                <p>(3) 試問乙液中含有下列哪些粒子？（只選兩項）<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;(A) $I_2$ &nbsp;&nbsp;(B) $I^-$ &nbsp;&nbsp;(C) $IO_3^-$ &nbsp;&nbsp;(D) $SO_3^{2-}$ &nbsp;&nbsp;(E) $SO_4^{2-}$</p>
+            </div>
+
+            <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:1.5rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('iodine-clock-ex')">觀看解答</button>
+        </div>
+
+        <script>
+            const flowData = {
+                'jia': { color: 'rgba(255, 255, 255, 0.1)', borderColor: '#cbd5e1', content: 'I⁻, SO₄²⁻, H⁺', nameColor: '#ffffff' },
+                'yi': { color: 'rgba(255, 255, 255, 0.1)', borderColor: '#cbd5e1', content: 'I⁻, IO₃⁻', nameColor: '#ffffff' },
+                'bing': { color: 'rgba(234, 179, 8, 0.25)', borderColor: 'var(--accent-yellow)', content: 'I₂ (I₃⁻)', nameColor: 'var(--accent-yellow)' },
+                'ding': { color: 'rgba(255, 255, 255, 0.1)', borderColor: '#cbd5e1', content: 'I⁻, SO₄²⁻, H⁺, Cl⁻', nameColor: '#ffffff' },
+                'wu': { color: 'rgba(255, 255, 255, 0.1)', borderColor: '#cbd5e1', content: 'I⁻, IO₃⁻', nameColor: '#ffffff' },
+                'ji': { color: 'rgba(234, 179, 8, 0.25)', borderColor: 'var(--accent-yellow)', content: 'I₂ (I₃⁻)', nameColor: 'var(--accent-yellow)' }
+            };
+
+            function triggerFlow(boxId, btnElement) {
+                if (btnElement) btnElement.classList.add('active');
+
+                const data = flowData[boxId];
+                if (!data) return;
+
+                const box = document.getElementById('box-' + boxId);
+                box.style.background = data.color;
+                box.style.borderColor = data.borderColor;
+                box.querySelector('.box-content').innerHTML = data.content;
+                box.querySelector('.box-content').style.color = data.nameColor;
+
+                const eqLabel = document.getElementById('eq-' + boxId);
+                if (eqLabel) {
+                    eqLabel.classList.add('visible');
+                }
+            }
+        </script>
+        
+        <!-- 範例 1 -->
+        <h2 style="color:var(--accent-yellow);">📝 範例 1：碘滴定與過錳酸鉀</h2>
+        <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+            <div>
+                <p>在未知濃度的 $KMnO_4$ 溶液 $20\ mL$ 中加入足量 $KI$ 與少量硫酸，溶液呈棕褐色，加入數滴澱粉液為指示劑，以 $0.1\ M\ Na_2S_2O_3$ 溶液滴定，加入 $Na_2S_2O_3$ $50\ mL$ 藍色消失，下列哪些正確？</p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem;">
+                    <span>(A) 過量的 $KI$ 與澱粉呈藍色</span>
+                    <span>(B) 反應時 $KI$ 為氧化劑</span>
+                    <span>(C) 滴定後溶液中 $KI$ 的莫耳數與原加入的量相等</span>
+                    <span>(D) 原 $KMnO_4$ 溶液的濃度為 $0.05\ M$</span>
+                    <span>(E) 原 $KMnO_4$ 溶液的濃度為 $0.1\ M$</span>
+                </div>
+            </div>
+            <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:2rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('1')">觀看解答</button>
+        </div>
+
+        <!-- 範例 2 -->
+        <h2 style="margin-top:1rem; color:var(--accent-yellow);">📝 範例 2：間接碘滴定與二鉻酸鉀</h2>
+        <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+            <div>
+                <p>將過量的 $KI$ 溶液加入 $20$ 毫升酸性的 $K_2Cr_2O_7$ 溶液中，再以 $0.10\ M$ 的 $Na_2S_2O_3$ 溶液滴定反應生成的碘，達當量點時共耗掉 $48$ 毫升的 $Na_2S_2O_3$ 溶液，則下列敘述中，哪些正確？</p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem;">
+                    <span>(A) 此方法屬於直接碘滴定法</span>
+                    <span>(B) 此方法屬於間接碘滴定法</span>
+                    <span>(C) $K_2Cr_2O_7$ 溶液的濃度為 $0.08\ M$</span>
+                    <span>(D) 以硫代硫酸鈉溶液滴定碘時，需加入澱粉作為指示劑</span>
+                    <span>(E) 以硫代硫酸鈉溶液滴定碘時，當藍色消失的瞬間表滴定終點</span>
+                </div>
+            </div>
+            <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:2rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('2')">觀看解答</button>
+        </div>
+
+        <!-- 範例 3 -->
+        <h2 style="margin-top:1rem; color:var(--accent-yellow);">📝 範例 3：碘酸鉀滴定計算</h2>
+        <div class="info-card" style="font-size: 1.1rem; padding: 0.8rem 1rem; display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+            <div>
+                <p>取 $1.07\ g$ 碘酸鉀 ($KIO_3$) 溶於水，配成 $100.0\ mL$ 水溶液，取出 $25.0\ mL$ 與過量的碘化鉀酸性溶液反應，生成棕色溶液，再加入適量澱粉液呈藍色後，由滴定管滴入硫代硫酸鈉 ($Na_2S_2O_3$) 水溶液，當滴入 $25.0\ mL$ 時，恰可使藍色消失，下列敘述哪些正確？ (式量：$KIO_3=214$)</p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem;">
+                    <span>(A) 硫代硫酸鈉被碘氧化成硫酸鈉</span>
+                    <span>(B) 碘酸鉀可以在中性或鹼性溶液中，將碘化鉀氧化成 $I_2$</span>
+                    <span>(C) 碘酸根在酸性溶液中，可與碘離子反應：$IO_3^- + 5I^- + 6H^+ \rightarrow 3I_2 + 3H_2O$</span>
+                    <span>(D) 硫代硫酸根與碘反應時，每 $1$ 莫耳硫代硫酸根會釋出 $1$ 莫耳電子</span>
+                    <span>(E) 硫代硫酸鈉的莫耳濃度為 $0.3\ M$</span>
+                </div>
+            </div>
+            <button class="btn-tool" style="width:100%; justify-content:center; padding:0.5rem; margin-top:2rem; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.3); color:var(--accent-cyan); font-weight:bold; cursor:pointer;" onclick="showAnswerModal('3')">觀看解答</button>
+        </div>
+
+    </div>
+</div>
+
+</div>
+</div>
+
+<!-- Drawing canvas -->
+<canvas id="drawing-layer" role="application" aria-label="手寫繪圖層" tabindex="0"></canvas>
+
+<!-- ======= TOOLBAR ======= -->
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <!-- Draw toggle -->
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+    <!-- Color picker (hidden until draw mode) -->
+    <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:2px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
+    </div>
+    <!-- Eraser tools (hidden until draw mode) -->
+    <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <!-- Random Draw button -->
+    <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+    <!-- Home button -->
+    <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../index.html'">🏠</button>
+    <!-- Top button -->
+    <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+</div>
+
+<!-- ======= START OVERLAY ======= -->
+<div id="start-overlay">
+    <div class="start-badge">選修化學&nbsp;&nbsp;&nbsp;氧化還原</div>
+    <h1 class="start-title">氧化還原滴定</h1>
+    <p class="start-sub">當量原理・滴定終點・碘滴定綜合應用</p>
+    <button type="button" class="btn-start" id="btn-start">開始探索教學 ✦</button>
+</div>
+
+<!-- ======= RANDOM DRAW MODAL ======= -->
+<div id="random-draw-modal">
+    <button id="btn-close-draw" title="關閉">✕</button>
+    <div id="random-draw-balls"></div>
+    <div id="random-draw-controls">
+        <button id="btn-do-draw">抽取號碼</button>
+        <div class="draw-input-group">
+            <label for="draw-total-input">總人數：</label>
+            <input type="number" id="draw-total-input" value="40" min="1" max="100">
+        </div>
+    </div>
+</div>
+
+<!-- ======= 詳解浮動視窗 ======= -->
+<div id="answer-overlay" onclick="closeAnswerModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10999;"></div>
+<div id="answer-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,23,42,0.97); border:1.5px solid var(--accent-cyan); box-shadow:0 0 40px rgba(34,211,238,0.35), 0 20px 60px rgba(0,0,0,0.7); border-radius:18px; padding:28px 32px; z-index:11000; min-width:360px; max-width:min(92vw,700px); max-height:90vh; overflow-y:auto; backdrop-filter:blur(20px);">
+    <button onclick="closeAnswerModal()" style="position:absolute; top:12px; right:16px; background:transparent; border:none; color:rgba(255,255,255,0.6); font-size:1.6rem; cursor:pointer; line-height:1;">✕</button>
+    <div style="font-size:1.05rem; font-weight:800; color:var(--accent-green); border-bottom:1px solid rgba(52,211,153,0.3); padding-bottom:10px; margin-bottom:16px;">✏️ 詳細解析</div>
+    <div id="answer-modal-content" style="font-size:1.1rem; line-height:2.1; color:#f0f9ff; padding-bottom:8px;"></div>
+</div>
+
+<!-- ======= 隱藏詳解資料 ======= -->
+<div style="display:none;">
+
+  <div id="answer-data-endpoint-ex">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(B)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>根據當量點公式：氧化劑當量數 = 還原劑當量數<br>
+    $KMnO_4$ 在酸性環境中：$MnO_4^- \rightarrow Mn^{2+}$，$e = 5$<br>
+    $Fe^{2+}$ 氧化成 $Fe^{3+}$：$Fe^{2+} \rightarrow Fe^{3+} + e^-$，$e = 1$<br>
+    <br>
+    設試樣中鐵的重量百分率為 $x$，則純鐵重量為 $1.0 \times x\ (g)$<br>
+    $\text{鐵的當量數} = \frac{W_{Fe}}{M_{Fe}} \times e = \frac{1.0 \times x}{56} \times 1$<br>
+    $KMnO_4\ \text{的當量數} = C_M \times V_{(L)} \times e = 0.2 \times \frac{15.0}{1000} \times 5$<br>
+    <br>
+    兩者相等：<br>
+    $\frac{1.0 \times x}{56} = 0.2 \times 0.015 \times 5$<br>
+    $\frac{x}{56} = 0.015$<br>
+    $x = 0.015 \times 56 = 0.84 = 84.0\%$</p>
+  </div>
+
+  <div id="answer-data-iodometry-ex1">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(C)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>間接碘滴定法：$H_2O_2$ 的當量數 = 產生 $I_2$ 的當量數 = 消耗 $S_2O_3^{2-}$ 的當量數。<br>
+    $H_2O_2$ 還原半反應：$H_2O_2 + 2H^+ + 2e^- \rightarrow 2H_2O$（$e = 2$）<br>
+    $S_2O_3^{2-}$ 氧化半反應：$2S_2O_3^{2-} \rightarrow S_4O_6^{2-} + 2e^-$（每莫耳 $S_2O_3^{2-}$ 失去 $1\ e^-$，所以 $e = 1$）<br>
+    <br>
+    設過氧化氫水溶液含 $H_2O_2$ 重量百分率為 $x\%$，則純 $H_2O_2$ 重量為 $3 \times \frac{x}{100}$ 克。<br>
+    $\text{當量數} = \frac{W}{M} \times e = \frac{3 \times \frac{x}{100}}{34} \times 2$<br>
+    $Na_2S_2O_3\ \text{的當量數} = C_M \times V_{(L)} \times e = 0.4 \times \frac{30}{1000} \times 1 = 0.012$<br>
+    <br>
+    兩者相等：<br>
+    $\frac{6x}{3400} = 0.012$<br>
+    $6x = 0.012 \times 3400 = 40.8$<br>
+    $x = \frac{40.8}{6} = 6.8\%$</p>
+  </div>
+
+  <div id="answer-data-iodometry-ex2">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(D)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>間接碘滴定法：$IO_3^-$ 的當量數 = 產生 $I_2$ 的當量數 = 消耗 $S_2O_3^{2-}$ 的當量數。<br>
+    $IO_3^-$ 到最終還原為 $I^-$ 的整體電子轉移數（每莫耳 $IO_3^-$ 得到 $6\ e^-$）：<br>
+    $IO_3^- \rightarrow I^- \ (\text{氧化數 } +5 \rightarrow -1)$，所以 $e = 6$<br>
+    $S_2O_3^{2-}$ 氧化半反應：$2S_2O_3^{2-} \rightarrow S_4O_6^{2-} + 2e^-$（$e = 1$）<br>
+    <br>
+    設 $KIO_3$ 溶液體積莫耳濃度為 $C_M$<br>
+    $KIO_3\ \text{的當量數} = C_M \times V_{(L)} \times e = C_M \times \frac{15.0}{1000} \times 6$<br>
+    $Na_2S_2O_3\ \text{的當量數} = 0.10 \times \frac{45.0}{1000} \times 1$<br>
+    <br>
+    兩者相等：<br>
+    $C_M \times 15.0 \times 6 = 0.10 \times 45.0$<br>
+    $C_M \times 90 = 4.5$<br>
+    $C_M = \frac{4.5}{90} = 0.050\ M$</p>
+  </div>
+
+  <div id="answer-data-iodine-clock-ex">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(1) (B)(E) &nbsp;&nbsp;(2) (B)(E) &nbsp;&nbsp;(3) (B)(C)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p><strong>實驗原理與流程分析：</strong><br>
+    起始溶液（碘酒）含有 $I_2, I_3^-, I^-$，呈現黃褐色。</p>
+    <p><strong>【第一階段】</strong><br>
+    ✅ <strong>甲液（加亞硫酸氫鈉）：</strong><br>
+    $I_2$ 作氧化劑，把 $HSO_3^-$ 氧化成 $SO_4^{2-}$，自身還原為 $I^-$。<br>
+    反應式：$I_2 + HSO_3^- + H_2O \rightarrow 2I^- + SO_4^{2-} + 3H^+$<br>
+    ➔ <span style="color:var(--accent-cyan);">甲液成分為：$I^-, SO_4^{2-}, H^+$ (無色)</span></p>
+    <p>✅ <strong>乙液（加氫氧化鈉）：</strong><br>
+    $I_2$ 在鹼性環境中發生自身氧化還原，生成 $I^-$ 與 $IO_3^-$。<br>
+    反應式：$3I_2 + 6OH^- \rightarrow 5I^- + IO_3^- + 3H_2O$<br>
+    ➔ <span style="color:var(--accent-cyan);">乙液成分為：$I^-, IO_3^-$ (無色)</span></p>
+    <p><strong>【第二階段】</strong><br>
+    ✅ <strong>丙液（甲加雙氧水）：</strong><br>
+    酸性環境下，雙氧水將 $I^-$ 氧化成 $I_2$。<br>
+    反應式：$2I^- + H_2O_2 + 2H^+ \rightarrow I_2 + 2H_2O$<br>
+    ➔ <span style="color:var(--accent-yellow);">生成 $I_2$，故溶液呈黃褐色。</span></p>
+    <p>✅ <strong>丁液（甲加鹽酸）：</strong><br>
+    溶液中只有 $I^-, SO_4^{2-}, H^+, Cl^-$，沒有氧化劑，不反應。<br>
+    ➔ <span style="color:#cbd5e1;">維持無色。</span></p>
+    <p>✅ <strong>戊液（乙加雙氧水）：</strong><br>
+    鹼性環境下雙氧水不易氧化 $I^-$，不會有明顯的 $I_2$ 產生。<br>
+    ➔ <span style="color:#cbd5e1;">維持無色。</span></p>
+    <p>✅ <strong>己液（乙加鹽酸）：</strong><br>
+    加酸後，環境轉為酸性，溶液中的 $I^-$ 與 $IO_3^-$ 發生逆向的歸中反應。<br>
+    反應式：$IO_3^- + 5I^- + 6H^+ \rightarrow 3I_2 + 3H_2O$<br>
+    ➔ <span style="color:var(--accent-yellow);">生成 $I_2$，故溶液呈黃褐色。</span></p>
+  </div>
+
+  <div id="answer-data-1">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(C)(D)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>(A) 碘分子 ($I_2$) 與澱粉呈藍色，不是 $KI$。<br>
+    (B) $KI$ 在反應中提供 $I^-$ 變成 $I_2$，失去電子，作<strong>還原劑</strong>。<br>
+    (C) 滴定過程中，$I^-$ 先被 $KMnO_4$ 氧化成 $I_2$，隨後又被 $Na_2S_2O_3$ 還原回 $I^-$，故 $KI$ 的莫耳數不變。<br>
+    (D)(E) 根據當量點公式：$n_{\text{氧化劑}} \times e_{\text{氧化劑}} = n_{\text{還原劑}} \times e_{\text{還原劑}}$<br>
+    $KMnO_4$ 得到電子數 = $Na_2S_2O_3$ 失去電子數<br>
+    $C_{KMnO_4} \times 20\ mL \times 5 = 0.1\ M \times 50\ mL \times 1$<br>
+    $100 \times C_{KMnO_4} = 5 \implies C_{KMnO_4} = 0.05\ M$</p>
+  </div>
+
+  <div id="answer-data-2">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(B)(D)(E)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>(A)(B) 此法為利用氧化劑先產生 $I_2$，再滴定 $I_2$，屬於<strong>間接碘滴定法</strong>。<br>
+    (C) $K_2Cr_2O_7$ 得到電子莫耳數 = $Na_2S_2O_3$ 失去電子莫耳數<br>
+    $C_{K_2Cr_2O_7} \times 20\ mL \times 6 = 0.10\ M \times 48\ mL \times 1$<br>
+    $120 \times C_{K_2Cr_2O_7} = 4.8 \implies C_{K_2Cr_2O_7} = 0.04\ M$<br>
+    (D)(E) 滴定碘時，需加入澱粉溶液，澱粉與尚未反應的 $I_2$ 形成藍色錯合物。當 $I_2$ 耗盡，藍色瞬間消失即為滴定終點。</p>
+  </div>
+
+  <div id="answer-data-3">
+    <p><strong>正確答案：<span style="color:var(--accent-green); font-size:1.2rem;">(C)(D)(E)</span></strong></p>
+    <p><strong>解析：</strong></p>
+    <p>(A) 硫代硫酸鈉 ($Na_2S_2O_3$) 被氧化成連四硫酸鈉 ($Na_2S_4O_6$)。<br>
+    (B) $KIO_3$ 必須在<strong>酸性</strong>環境下才能順利將 $KI$ 氧化成 $I_2$。<br>
+    (C) 碘酸根在酸性下與碘離子反應的正確淨離子方程式。<br>
+    (D) $2S_2O_3^{2-} \rightarrow S_4O_6^{2-} + 2e^-$，每 1 莫耳 $S_2O_3^{2-}$ 釋出 1 莫耳電子。正確。<br>
+    (E) $KIO_3$ 莫耳數 = $1.07 / 214 = 0.005\ mol$ (在 $100\ mL$ 中)。<br>
+    取出 $25.0\ mL$，含有 $KIO_3$ 為 $0.005 \times \frac{25}{100} = 0.00125\ mol$。<br>
+    $KIO_3$ 得到電子數 = $Na_2S_2O_3$ 失去電子數<br>
+    $0.00125 \times 6 = C_M \times 0.025\ L \times 1$<br>
+    $0.0075 = C_M \times 0.025 \implies C_M = 0.3\ M$。</p>
+  </div>
+
+</div>
+
+<!-- ======= SCRIPTS ======= -->
+<script>
+// Answers modal logic
+function showAnswerModal(id) {
+    var src = document.getElementById('answer-data-' + id);
+    if (!src) return;
+    var overlay = document.getElementById('answer-overlay');
+    var modal   = document.getElementById('answer-modal');
+    var contentEl = document.getElementById('answer-modal-content');
+    contentEl.innerHTML = src.innerHTML;
+    contentEl.querySelectorAll('p').forEach(function(p){ p.style.marginBottom = '0.85rem'; });
+    overlay.style.display = 'block';
+    modal.style.display   = 'block';
+    modal.scrollTop = 0;
+    if (window.MathJax) MathJax.typesetPromise([contentEl]);
+}
+function closeAnswerModal() {
+    document.getElementById('answer-overlay').style.display = 'none';
+    document.getElementById('answer-modal').style.display = 'none';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeAnswerModal(); });
+
+// Start Overlay logic
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return; starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function(){}); } catch(e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch(e) {}
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof resizeCanvas === 'function') resizeCanvas();
+            });
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) {
+        btn.addEventListener('click', startTeaching);
+        btn.addEventListener('touchend', startTeaching, { passive: false });
+    }
+})();
+
+// Drawing Layer Logic
+let isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+let currentSlideKey = 'global';
+
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+    const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    canvas.width = sw; canvas.height = sh;
+    restoreDrawing();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+
+function startDrawing(e) {
+    if (!isDrawingMode || !ctx) return;
+    isDrawing = true; [lastX, lastY] = getCoords(e);
+}
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)'; ctx.lineWidth = 38;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = penColor; ctx.lineWidth = 3.5;
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlideKey] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlideKey]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlideKey];
+    }
+}
+
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove',  e => { if (isDrawingMode) e.preventDefault(); draw(e); },          { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+// Toolbar Interactions
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color; drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlideKey] = null; }
+});
+
+document.getElementById('btn-top').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Toolbar Drag
+(function () {
+    const tb = document.getElementById('toolbar');
+    const dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+// Random Draw Logic
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+    const drawTotalInput = document.getElementById('draw-total-input');
+
+    let totalBalls = 40;
+    let drawBalls = [];
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = '';
+        drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball';
+            ball.textContent = i;
+            ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball);
+            drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw.addEventListener('click', () => {
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block';
+            btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) {
+                totalBalls = parseInt(drawTotalInput.value) || 40;
+                renderBalls();
+            }
+        }
+    });
+
+    btnCloseDraw.addEventListener('click', () => {
+        drawModal.style.display = 'none';
+        btnRandomDraw.classList.remove('active-tool');
+    });
+
+    drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value);
+        if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val;
+        totalBalls = val;
+        renderBalls();
+    });
+
+    let drawInterval;
+    let drawTimeout;
+
+    btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+
+        const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+        
+        if (availableBalls.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) {
+            prevWinner.classList.remove('winner');
+            prevWinner.classList.add('drawn');
+        }
+
+        const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (currentAvailable.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        btnDoDraw.disabled = true;
+        drawTotalInput.disabled = true;
+
+        const flickerDuration = 2000;
+        const flickerSpeed = 50;
+
+        drawInterval = setInterval(() => {
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+            currentAvailable[randomIdx].classList.add('flicker');
+        }, flickerSpeed);
+
+        drawTimeout = setTimeout(() => {
+            clearInterval(drawInterval);
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+            const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+            const winnerBall = currentAvailable[winnerIdx];
+            winnerBall.classList.add('winner');
+
+            btnDoDraw.disabled = false;
+            drawTotalInput.disabled = false;
+        }, flickerDuration);
+    });
+})();
+</script>
+</body>
+</html>

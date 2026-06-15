@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+    <meta content="yes" name="apple-mobile-web-app-capable"/>
+    <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+    <title>常用電池 | 互動教學</title>
+    <meta content="選修化學四：氧化還原反應——常用電池互動教學" name="description"/>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden; scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        
+        /* ---- Start Overlay ---- */
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(167,139,250,0.12) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; color: var(--accent-purple);
+            background: transparent; border: none; padding: 0; margin-top: -10vh; margin-bottom: 1.5rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-cyan); text-shadow: 0 0 40px rgba(34,211,238,0.35);
+        }
+        .btn-start {
+            margin-top: 2rem; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(34,211,238,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+
+        /* ---- Slides ---- */
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; }
+        #slides-container { position: relative; padding: 60px 68px 20px 2.5vw; }
+        .slide {
+            position: relative; padding: 2rem 0.5rem 2rem; opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; min-height: 100vh; border-bottom: 2px dashed rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.55rem, 2.6vw, 2.3rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 30px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.1rem, 1.7vw, 1.45rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(1.0rem, 1.35vw, 1.22rem); line-height: 1.6; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        
+        .formula-box { background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green); padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center; font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0; }
+        .formula-box-blue { background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue); padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center; font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0; }
+        .formula-box-red { background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-red); padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center; font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0; }
+        .info-card { background: rgba(56,189,248,0.08); border-radius: 11px; padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0; }
+        
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.2vw, 1.1rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.55rem 0.7rem; text-align: center; }
+        table.data-table th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+        
+        /* ---- Navbar ---- */
+        #top-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9500; background: rgba(15,23,42,0.85); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; padding: 10px 20px; overflow-x: auto; white-space: nowrap;
+        }
+        .nav-link { color: var(--accent-cyan); text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 4px 8px; border-radius: 20px; border: 1px solid transparent; transition: 0.3s; }
+        .nav-link:hover { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.4); }
+
+        /* ---- Toolbar ---- */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        
+        /* ---- Drawing Canvas ---- */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;
+        }
+        #random-draw-balls { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center; margin: 0 auto 20px auto; width: 100%; max-width: 500px; }
+        .draw-ball {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s;
+        }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-purple { color: var(--accent-purple); }
+        .text-cyan { color: var(--accent-cyan); }
+
+        /* ---- Battery Animation ---- */
+        .electron-dot {
+            offset-path: path("M 180,430 L 110,430 L 110,130 L 300,130");
+            animation: moveElectron 2.5s linear infinite;
+        }
+        @keyframes moveElectron {
+            0% { offset-distance: 0%; opacity: 1; }
+            95% { opacity: 1; }
+            100% { offset-distance: 100%; opacity: 0; }
+        }
+        .bulb-glow {
+            fill: rgba(251,191,36,0.6) !important;
+            filter: drop-shadow(0 0 15px #fbbf24);
+            transition: all 0.3s;
+        }
+        .bubble {
+            animation: bubblePulse 2s ease-in-out infinite alternate;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+        .bubble.show {
+            opacity: 0.9;
+        }
+        @keyframes bubblePulse {
+            0% { transform: scale(0.9) translateY(0px); }
+            100% { transform: scale(1.1) translateY(-3px); }
+        }
+        .pb-electron-discharge {
+            offset-path: path("M 180,100 L 180,45 L 520,45 L 520,100");
+            animation: moveElectron 2.5s linear infinite;
+        }
+        .pb-electron-charge {
+            offset-path: path("M 520,100 L 520,45 L 180,45 L 180,100");
+            animation: moveElectron 2.5s linear infinite;
+        }
+        .ion-left {
+            animation: moveIonLeft 2.4s linear forwards;
+        }
+        .ion-right {
+            animation: moveIonRight 2.4s linear forwards;
+        }
+        @keyframes moveIonLeft {
+            0% { transform: translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(-60px); opacity: 0; }
+        }
+        @keyframes moveIonRight {
+            0% { transform: translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateX(60px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="start-overlay">
+        <div class="start-badge">選修化學四：氧化還原反應</div>
+        <h1 class="start-title">常用電池</h1>
+        <button class="btn-start" id="btn-start" type="button">開始教學 ✦</button>
+    </div>
+
+    <div id="presentation-area">
+        <nav id="top-nav">
+            <a class="nav-link" href="#slide-1">電池原理</a>
+            <a class="nav-link" href="#slide-2">乾電池</a>
+            <a class="nav-link" href="#slide-3">鹼性電池</a>
+            <a class="nav-link" href="#slide-4">鉛蓄電池</a>
+            <a class="nav-link" href="#slide-5">其他電池</a>
+            <a class="nav-link" href="#slide-6">鋰電池</a>
+            <a class="nav-link" href="#slide-7">燃料電池</a>
+            <a class="nav-link" href="#slide-8">光電池</a>
+        </nav>
+
+        <div id="slides-container">
+            <!-- Slide 1: 電池原理 -->
+            <div class="slide active" id="slide-1">
+                <h1>化學電池的原理</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2 class="text-yellow">什麼是電池？</h2>
+                        <p>電池是利用<strong class="text-cyan">自發性的氧化還原反應</strong>，將化學能轉換為電能的裝置。</p>
+                        
+                        <div class="info-card" style="border-color: var(--accent-red); margin-top: 1rem;">
+                            <h3 class="text-red">陽極 (Anode) / 負極 (－)</h3>
+                            <ul>
+                                <li>發生<strong>氧化</strong>反應（失去電子）。</li>
+                                <li>電子由陽極流出。</li>
+                                <li>常為活性較大、易失去電子的金屬（如：鋅、鉛）。</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="info-card" style="border-color: var(--accent-blue); margin-top: 1rem;">
+                            <h3 class="text-blue">陰極 (Cathode) / 正極 (＋)</h3>
+                            <ul>
+                                <li>發生<strong>還原</strong>反應（得到電子）。</li>
+                                <li>電子流入陰極。</li>
+                                <li>常為活性較小或惰性電極搭配強氧化劑。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel" style="justify-content: center; align-items: center;">
+                        <div class="info-card" style="width: 100%; text-align: center; padding: 2rem;">
+                            <h2 class="text-cyan" style="font-size: 2rem;">電池分類</h2>
+                            <p style="font-size: 1.4rem; color: var(--accent-yellow); margin-top: 1rem;">一次電池</p>
+                            <p>無法充電，反應不可逆。例如：乾電池、鹼性電池。</p>
+                            
+                            <p style="font-size: 1.4rem; color: var(--accent-green); margin-top: 1rem;">二次電池</p>
+                            <p>可以充電重複使用，反應可逆。例如：鉛蓄電池、鋰離子電池。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: 乾電池 -->
+            <div class="slide" id="slide-2">
+                <h1>乾電池 (勒克朗舍電池)</h1>
+                <div style="display: flex; gap: 1rem; flex: 1; min-height: 0; overflow: hidden;">
+                    <!-- Left Panel -->
+                    <div class="panel scroll-panel" style="flex: 1.2;">
+                        <h2 class="text-red">基本構造與反應</h2>
+                        <ul style="font-size: 1.1rem; margin-bottom: 0;">
+                            <li><span class="text-cyan">陽極(－)：</span> 鋅筒 ($Zn$)</li>
+                            <li><span class="text-cyan">陰極(＋)：</span> 碳棒(石墨) 與 二氧化錳 ($MnO_2$)</li>
+                            <li><span class="text-cyan">電解液：</span> $NH_4Cl$ (酸性糊狀物) + $ZnCl_2$</li>
+                        </ul>
+                        
+                        <div class="formula-box-red" style="font-size: 1.1rem; padding: 0.5rem; margin: 0.3rem 0;">
+                            陽極：$Zn \rightarrow Zn^{2+} + 2e^-$
+                        </div>
+                        <div class="formula-box-blue" style="font-size: 1.1rem; padding: 0.5rem; margin: 0.3rem 0;">
+                            陰極：$2NH_4^+ + 2e^- \rightarrow H_2 + 2NH_3$
+                        </div>
+                        <div class="formula-box" style="font-size: 1.1rem; border-left-color: var(--accent-yellow); padding: 0.5rem; margin: 0.3rem 0;">
+                            全反應：$Zn + 2NH_4^+ + 2MnO_2 \rightarrow Zn^{2+} + Mn_2O_3 + H_2O + 2NH_3$
+                        </div>
+                        
+                        <h2 class="text-cyan" style="margin-top: 0.5rem;">特點與化學作用</h2>
+                        <ul style="line-height: 1.6; font-size: 1.1rem;">
+                            <li><strong>極化：</strong> 陰極產生 $H_2(g)$ 附著碳棒妨礙反應。</li>
+                            <li><strong>去極劑：</strong> 利用 $MnO_2$ 氧化除去氫氣：<br><span style="color:var(--accent-purple);">$H_2 + 2MnO_2 \rightarrow H_2O + Mn_2O_3$</span></li>
+                            <li><strong>$ZnCl_2$ 功用：</strong> 吸收 $NH_3$ 形成錯離子 $Zn(NH_3)_2^{2+}$，並依據 $\Delta T_f = K_f \cdot C_m \cdot i$ <strong class="text-green">降低冰點</strong>，維持電壓穩定。</li>
+                        </ul>
+                    </div>
+                    <!-- Right Panel (Animation) -->
+                    <div class="panel" style="flex: 1.4; display: flex; flex-direction: column; align-items: center; position: relative;">
+                        <h2 class="text-yellow" style="margin: 0; font-size: 1.3rem;">內部構造與放電動畫</h2>
+                        <div id="dry-cell-anim-container" style="flex: 1; width: 100%; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; background: rgba(0,0,0,0.2); border-radius: 12px; margin-top: 0.5rem;">
+                            <svg viewBox="0 0 600 550" style="width: 100%; height: 100%; max-height: 600px;" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <linearGradient id="zincGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#94a3b8" />
+                                        <stop offset="50%" stop-color="#f8fafc" />
+                                        <stop offset="100%" stop-color="#475569" />
+                                    </linearGradient>
+                                    <linearGradient id="pasteGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#cbd5e1" />
+                                        <stop offset="50%" stop-color="#f1f5f9" />
+                                        <stop offset="100%" stop-color="#94a3b8" />
+                                    </linearGradient>
+                                    <linearGradient id="mno2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#1e293b" />
+                                        <stop offset="50%" stop-color="#64748b" />
+                                        <stop offset="100%" stop-color="#0f172a" />
+                                    </linearGradient>
+                                    <linearGradient id="carbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#000000" />
+                                        <stop offset="40%" stop-color="#475569" />
+                                        <stop offset="100%" stop-color="#000000" />
+                                    </linearGradient>
+                                    <radialGradient id="topSealGrad" cx="50%" cy="50%" r="50%" fx="40%" fy="30%">
+                                        <stop offset="0%" stop-color="#f87171" />
+                                        <stop offset="100%" stop-color="#7f1d1d" />
+                                    </radialGradient>
+                                    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+                                        <feDropShadow dx="3" dy="5" stdDeviation="5" flood-opacity="0.4" flood-color="#000" />
+                                    </filter>
+                                </defs>
+                                
+                                <!-- Wire Path -->
+                                <path id="wire-path" d="M 180,430 L 110,430 L 110,130 L 300,130" fill="none" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                
+                                <!-- Bulb -->
+                                <circle id="bulb" cx="110" cy="255" r="22" fill="rgba(255,255,255,0.05)" stroke="#cbd5e1" stroke-width="2"/>
+                                <path d="M 100,255 L 110,240 L 120,255" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                                
+                                <!-- Cylinder back rim -->
+                                <ellipse cx="300" cy="170" rx="120" ry="25" fill="#475569"/>
+
+                                <!-- Zinc casing -->
+                                <path d="M 180,170 L 420,170 L 420,460 A 120 25 0 0 1 180,460 Z" fill="url(#zincGrad)" stroke="#334155" stroke-width="1" filter="url(#dropShadow)"/>
+                                
+                                <!-- NH4Cl Paste -->
+                                <path d="M 200,180 L 400,180 L 400,450 A 100 20 0 0 1 200,450 Z" fill="url(#pasteGrad)"/>
+                                
+                                <!-- MnO2 Paste -->
+                                <path d="M 230,190 L 370,190 L 370,440 A 70 15 0 0 1 230,440 Z" fill="url(#mno2Grad)"/>
+                                
+                                <!-- Carbon Rod -->
+                                <path d="M 285,140 L 315,140 L 315,450 A 15 5 0 0 1 285,450 Z" fill="url(#carbonGrad)"/>
+                                <ellipse cx="300" cy="140" rx="15" ry="5" fill="#334155"/>
+                                <text x="300" y="130" fill="white" font-size="24" text-anchor="middle" font-weight="bold" font-family="sans-serif">+</text>
+                                <text x="140" y="450" fill="white" font-size="28" text-anchor="middle" font-weight="bold" font-family="sans-serif">-</text>
+                                
+                                <!-- Top seal -->
+                                <path d="M 180,170 A 120 25 0 0 0 420,170 A 120 25 0 0 0 180,170" fill="none" stroke="#475569" stroke-width="2"/>
+                                <path d="M 200,180 A 100 20 0 0 0 400,180 L 420,170 A 120 25 0 0 1 180,170 Z" fill="url(#topSealGrad)" opacity="0.9"/>
+                                
+                                <!-- Labels -->
+                                <g font-size="15" fill="#f8fafc" font-weight="600" font-family="sans-serif">
+                                    <text x="460" y="240">鋅殼 (陽極 -)</text>
+                                    <path d="M 420,235 L 450,235" stroke="#f8fafc" fill="none" stroke-width="1.5"/>
+                                    
+                                    <text x="460" y="290">NH₄Cl/ZnCl₂ 糊狀物</text>
+                                    <path d="M 395,285 L 450,285" stroke="#f8fafc" fill="none" stroke-width="1.5"/>
+                                    
+                                    <text x="460" y="340">MnO₂ 去極劑</text>
+                                    <path d="M 365,335 L 450,335" stroke="#f8fafc" fill="none" stroke-width="1.5"/>
+                                    
+                                    <text x="460" y="150">石墨棒 (陰極 +)</text>
+                                    <path d="M 320,145 L 450,145" stroke="#f8fafc" fill="none" stroke-width="1.5"/>
+                                    
+                                    <text x="460" y="190">蓋子 (絕緣體)</text>
+                                    <path d="M 380,185 L 450,185" stroke="#f8fafc" fill="none" stroke-width="1.5"/>
+                                </g>
+                                
+                                <!-- Dynamic Elements Group -->
+                                <g id="dynamic-elements">
+                                    <!-- H2 Bubbles -->
+                                    <g id="h2-bubbles" opacity="0">
+                                        <!-- Label -->
+                                        <g transform="translate(350, 310)">
+                                            <text x="0" y="0" fill="#f8fafc" font-size="14" font-weight="bold">H₂ 氣泡附著 (極化)</text>
+                                            <line x1="-5" y1="-5" x2="-25" y2="-5" stroke="#f8fafc" stroke-width="1.5"/>
+                                        </g>
+                                        <!-- Left side (X ≈ 283) -->
+                                        <circle cx="283" cy="400" r="4" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0s;"/>
+                                        <circle cx="281" cy="370" r="5" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.3s;"/>
+                                        <circle cx="284" cy="340" r="3" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.7s;"/>
+                                        <circle cx="282" cy="310" r="6" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.2s;"/>
+                                        <circle cx="284" cy="270" r="4" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.8s;"/>
+                                        <circle cx="281" cy="230" r="5" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.5s;"/>
+                                        
+                                        <!-- Right side (X ≈ 317) -->
+                                        <circle cx="317" cy="420" r="5" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.5s;"/>
+                                        <circle cx="319" cy="380" r="6" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.1s;"/>
+                                        <circle cx="316" cy="350" r="4" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.6s;"/>
+                                        <circle cx="318" cy="320" r="5" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.4s;"/>
+                                        <circle cx="317" cy="290" r="3" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.9s;"/>
+                                        <circle cx="318" cy="250" r="6" fill="rgba(255,255,255,0.9)" class="bubble" style="animation-delay: 0.3s;"/>
+                                        
+                                        <!-- Front/Middle (X ≈ 300) -->
+                                        <circle cx="295" cy="410" r="5" fill="rgba(255,255,255,0.7)" class="bubble" style="animation-delay: 0.2s;"/>
+                                        <circle cx="305" cy="360" r="4" fill="rgba(255,255,255,0.7)" class="bubble" style="animation-delay: 0.6s;"/>
+                                        <circle cx="290" cy="330" r="6" fill="rgba(255,255,255,0.7)" class="bubble" style="animation-delay: 0.3s;"/>
+                                        <circle cx="308" cy="280" r="4" fill="rgba(255,255,255,0.7)" class="bubble" style="animation-delay: 0.7s;"/>
+                                        <circle cx="300" cy="240" r="5" fill="rgba(255,255,255,0.7)" class="bubble" style="animation-delay: 0.1s;"/>
+                                    </g>
+                                    
+                                    <!-- Electrons -->
+                                    <g id="electrons"></g>
+                                </g>
+                                
+                                <!-- Reaction texts appearing during animation -->
+                                <g id="anim-texts" opacity="0" style="transition: opacity 0.5s;">
+                                    <text x="150" y="500" fill="#f87171" font-size="16" font-weight="bold" text-anchor="middle">Zn → Zn²⁺ + 2e⁻</text>
+                                    <text x="350" y="500" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">2NH₄⁺ + 2e⁻ → 2NH₃ + H₂</text>
+                                </g>
+                                <g id="anim-texts-depol" opacity="0" style="transition: opacity 0.5s;">
+                                    <text x="300" y="530" fill="#a78bfa" font-size="18" font-weight="bold" text-anchor="middle">H₂ + 2MnO₂ → H₂O + Mn₂O₃</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button id="btn-anim-play" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">▶ 播放放電</button>
+                            <button id="btn-anim-depol" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-red)); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">★ 去極化作用</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: 鹼性電池 -->
+            <div class="slide" id="slide-3">
+                <h1>鹼性電池</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2 class="text-blue">基本構造 (一次電池)</h2>
+                        <p>為傳統乾電池的改良版，主要差在<strong class="text-red">電解液改為鹼性</strong>。</p>
+                        <ul style="font-size: 1.3rem;">
+                            <li><span class="text-cyan">陽極(－)：</span> 鋅 ($Zn$)</li>
+                            <li><span class="text-cyan">陰極(＋)：</span> 二氧化錳 ($MnO_2$)，以碳棒為電極。</li>
+                            <li><span class="text-cyan">電解液：</span> 氫氧化鉀 ($KOH$) (鹼性)</li>
+                            <li><span class="text-cyan">電壓：</span> 約 1.54 V</li>
+                        </ul>
+                        
+                        <div class="info-card" style="margin-top: 1rem;">
+                            <h3 class="text-yellow">反應式</h3>
+                            <p style="font-size: 1.1rem; margin-top: 0.5rem;">陽極：$Zn + 2OH^- \rightarrow ZnO + H_2O + 2e^-$</p>
+                            <p style="font-size: 1.1rem;">陰極：$2MnO_2 + H_2O + 2e^- \rightarrow Mn_2O_3 + 2OH^-$</p>
+                            <hr style="border-color: rgba(255,255,255,0.2); margin: 0.5rem 0;" />
+                            <p style="font-size: 1.1rem; color: var(--accent-green);">全反應：$Zn + 2MnO_2 \rightarrow ZnO + Mn_2O_3$</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2 class="text-green">優點 (與碳鋅電池比較)</h2>
+                        <div class="info-card" style="background: rgba(52,211,153,0.1); border-color: var(--accent-green);">
+                            <ul style="line-height: 2;">
+                                <li><strong>電壓穩定：</strong> 由於放電時 $KOH$ 濃度幾乎不變，因此電壓維持平穩，適合大耗電量設備。</li>
+                                <li><strong>壽命更長：</strong> 內部電阻小，容量比普通乾電池大數倍。</li>
+                                <li><strong>不漏電、耐寒佳：</strong> 鹼性液體不易腐蝕鋅外殼。</li>
+                                <li>尺寸規格與氧化劑、還原劑皆與乾電池相同。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 鉛蓄電池 -->
+            <div class="slide" id="slide-4">
+                <h1>鉛蓄電池 (二次電池)</h1>
+                <div style="display: flex; flex: 1; gap: 2rem; overflow: hidden; margin-top: 1rem;">
+                    <div class="scroll-panel" style="flex: 1.15; padding-right: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+
+                        <div class="panel">
+                            <h2 class="text-red">放電反應 (自發性)</h2>
+                            <div class="formula-box" style="font-size: 1.1rem;">
+                                全反應：$Pb_{(s)} + PbO_{2(s)} + 2H_2SO_{4(aq)} \rightarrow 2PbSO_{4(s)} + 2H_2O_{(l)}$
+                            </div>
+                            <ul style="font-size: 1.1rem;">
+                                <li>放電時，兩極皆生成白色的<strong>硫酸鉛 ($PbSO_4$)</strong>。</li>
+                                <li><strong class="text-red">電解液變淡：</strong> 消耗 $H_2SO_4$ 生成水，密度與濃度下降。</li>
+                            </ul>
+
+                            <div class="info-card" style="margin-top: 0.8rem; border-color: var(--accent-yellow); padding: 1rem;">
+                                <h3 class="text-yellow" style="font-size: 1.1rem; margin-bottom: 0.5rem;">每轉移 2 莫耳電子時：</h3>
+                                <ul style="font-size: 1rem; line-height: 1.6; padding-left: 1.5rem; margin-bottom: 0;">
+                                    <li>
+                                        <strong class="text-cyan">電極：</strong>
+                                        <ul style="color: #cbd5e1; list-style-type: circle; margin-top: 0.2rem;">
+                                            <li>陽極 $Pb \rightarrow PbSO_4$ (結合 $SO_4^{2-}$)，增重 <strong>96 公克</strong></li>
+                                            <li>陰極 $PbO_2 \rightarrow PbSO_4$ (相當於結合 $SO_2$)，增重 <strong>64 公克</strong></li>
+                                            <li><span style="color: var(--accent-red);">兩極總共增重 160g</span></li>
+                                        </ul>
+                                    </li>
+                                    <li style="margin-top: 0.5rem;">
+                                        <strong class="text-cyan">電解液：</strong>
+                                        <ul style="color: #cbd5e1; list-style-type: circle; margin-top: 0.2rem;">
+                                            <li>減少了 2 mol $H_2SO_4$ ($98 \times 2 = 196g$)</li>
+                                            <li>增加了 2 mol $H_2O$ ($18 \times 2 = 36g$)</li>
+                                            <li><span style="color: var(--accent-red);">電解液總共損失 160g</span></li>
+                                        </ul>
+                                    </li>
+                                    <li style="margin-top: 0.5rem;">放電時，硫酸溶液比重變小，由比重的變化量可了解放電情形。</li>
+                                    <li style="margin-top: 0.2rem; color: var(--accent-yellow);">（當電解液的濃度降至 <strong>14.7%</strong> 時，就必須充電）</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <h2 class="text-green">充電反應 (需直流電)</h2>
+                            <div class="formula-box" style="font-size: 1.1rem; border-left-color: var(--accent-blue);">
+                                全反應：$2PbSO_{4(s)} + 2H_2O_{(l)} \rightarrow Pb_{(s)} + PbO_{2(s)} + 2H_2SO_{4(aq)}$
+                            </div>
+                            <ul style="font-size: 1.1rem;">
+                                <li>強制電流逆向流入，兩極的 $PbSO_4$ 恢復為 $Pb$ 和 $PbO_2$。</li>
+                                <li>電解液生成 $H_2SO_4$，濃度上升。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="scroll-panel" style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="panel">
+                            <h2 class="text-yellow">基本構造</h2>
+                            <ul style="font-size: 1.1rem;">
+                                <li><span class="text-cyan">陽極(－)：</span> 鉛 ($Pb$)</li>
+                                <li><span class="text-cyan">陰極(＋)：</span> 二氧化鉛 ($PbO_2$)</li>
+                                <li><span class="text-cyan">電解液：</span> 稀硫酸 ($H_2SO_4$)</li>
+                                <li><span class="text-cyan">電壓：</span> 單槽約 2.0 V</li>
+                            </ul>
+                        </div>
+
+                        <div class="panel" style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                            <h2 class="text-yellow" style="margin: 0; font-size: 1.3rem;">充放電動畫</h2>
+                        <div id="pb-acid-anim-container" style="width: 100%; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; background: rgba(0,0,0,0.2); border-radius: 12px; margin-top: 0.5rem; padding: 1rem;">
+                            <svg viewBox="0 0 700 520" style="width: 100%; height: auto; max-height: 600px;" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <filter id="pb-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                        <feGaussianBlur stdDeviation="6" result="blur"/>
+                                        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                    </filter>
+                                </defs>
+                                <!-- Beaker and liquid -->
+                                <path d="M 120,150 L 120,350 A 20,20 0 0,0 140,370 L 560,370 A 20,20 0 0,0 580,350 L 580,150" fill="none" stroke="#94a3b8" stroke-width="6"/>
+                                <path id="pb-liquid" d="M 123,200 L 577,200 L 577,350 A 17,17 0 0,1 560,367 L 140,367 A 17,17 0 0,1 123,350 Z" fill="rgba(56, 189, 248, 0.4)" style="transition: fill 2.5s;"/>
+                                <text x="350" y="345" fill="rgba(255,255,255,0.7)" font-size="20" text-anchor="middle" font-weight="bold">稀硫酸 (H₂SO₄)</text>
+
+                                <!-- Electrodes -->
+                                <g id="pb-anode-group">
+                                    <rect x="150" y="100" width="60" height="250" fill="url(#pbGrad)" rx="5" />
+                                    <defs><linearGradient id="pbGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#64748b"/><stop offset="50%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#64748b"/></linearGradient></defs>
+                                    <rect id="pb-anode-coating" x="146" y="195" width="68" height="160" fill="rgba(255,255,255,0)" rx="8" style="transition: fill 2.5s;"/>
+                                    <text x="180" y="182" fill="#0f172a" font-weight="bold" text-anchor="middle" font-size="22">Pb</text>
+                                    <text x="180" y="88" fill="#94a3b8" font-size="18" text-anchor="middle">負極 (-)</text>
+                                </g>
+
+                                <g id="pb-cathode-group">
+                                    <defs><linearGradient id="pbo2Grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#7f1d1d"/><stop offset="50%" stop-color="#dc2626"/><stop offset="100%" stop-color="#7f1d1d"/></linearGradient></defs>
+                                    <rect x="490" y="100" width="60" height="250" fill="url(#pbo2Grad)" rx="5" />
+                                    <rect id="pb-cathode-coating" x="486" y="195" width="68" height="160" fill="rgba(255,255,255,0)" rx="8" style="transition: fill 2.5s;"/>
+                                    <text x="520" y="182" fill="#fef2f2" font-weight="bold" text-anchor="middle" font-size="22">PbO₂</text>
+                                    <text x="520" y="88" fill="#fca5a5" font-size="18" text-anchor="middle">正極 (+)</text>
+                                </g>
+
+                                <!-- Circuit Wire -->
+                                <path d="M 180,100 L 180,45 L 520,45 L 520,100" fill="none" stroke="#f8fafc" stroke-width="4"/>
+
+                                <!-- Bulb (Discharge) -->
+                                <g id="pb-bulb" transform="translate(350, 45)">
+                                    <circle cx="0" cy="-20" r="15" fill="rgba(255,255,255,0.1)" stroke="#f8fafc" stroke-width="2"/>
+                                    <path d="M -8,-10 L 0,-25 L 8,-10" fill="none" stroke="#f8fafc" stroke-width="2"/>
+                                    <rect x="-10" y="-5" width="20" height="10" fill="#64748b"/>
+                                    <circle id="pb-bulb-glow" cx="0" cy="-20" r="25" fill="rgba(250, 204, 21, 0)" style="transition: fill 0.3s;" filter="url(#pb-glow)"/>
+                                </g>
+                                <!-- DC Power (Charge) -->
+                                <g id="pb-dc-power" transform="translate(350, 45)" opacity="0" style="transition: opacity 0.5s;">
+                                    <rect x="-42" y="-38" width="84" height="48" fill="#0f172a"/>
+                                    <rect x="-38" y="-34" width="76" height="40" fill="#1e293b" stroke="#38bdf8" stroke-width="2" rx="5"/>
+                                    <text x="0" y="-8" fill="#38bdf8" font-size="13" text-anchor="middle" font-weight="bold">DC 電源</text>
+                                    <text x="-22" y="-38" fill="#f8fafc" font-size="14" text-anchor="middle">-</text>
+                                    <text x="22" y="-38" fill="#f8fafc" font-size="14" text-anchor="middle">+</text>
+                                </g>
+
+                                <!-- Half-reaction labels: DISCHARGE -->
+                                <g id="pb-discharge-labels" opacity="0" style="transition: opacity 0.8s;">
+                                    <!-- Left: Anode (oxidation) -->
+                                    <rect x="20" y="380" width="320" height="70" fill="rgba(239,68,68,0.18)" rx="10" stroke="rgba(239,68,68,0.6)" stroke-width="2"/>
+                                    <text x="180" y="405" fill="#f87171" font-size="18" font-weight="bold" text-anchor="middle">【陽極 氧化】</text>
+                                    <text x="180" y="435" fill="#fca5a5" font-size="16" font-weight="bold" text-anchor="middle">Pb + SO₄²⁻ → PbSO₄ + 2e⁻</text>
+
+                                    <!-- Right: Cathode (reduction) -->
+                                    <rect x="350" y="380" width="340" height="70" fill="rgba(56,189,248,0.18)" rx="10" stroke="rgba(56,189,248,0.6)" stroke-width="2"/>
+                                    <text x="520" y="405" fill="#38bdf8" font-size="18" font-weight="bold" text-anchor="middle">【陰極 還原】</text>
+                                    <text x="520" y="435" fill="#93c5fd" font-size="16" font-weight="bold" text-anchor="middle">PbO₂ + SO₄²⁻ + 4H⁺ + 2e⁻ → PbSO₄ + 2H₂O</text>
+                                </g>
+
+                                <!-- Half-reaction labels: CHARGE -->
+                                <g id="pb-charge-labels" opacity="0" style="transition: opacity 0.8s;">
+                                    <!-- Left -->
+                                    <rect x="20" y="380" width="320" height="70" fill="rgba(167,139,250,0.18)" rx="10" stroke="rgba(167,139,250,0.6)" stroke-width="2"/>
+                                    <text x="180" y="405" fill="#a78bfa" font-size="18" font-weight="bold" text-anchor="middle">【陰極 (強制還原)】</text>
+                                    <text x="180" y="435" fill="#c4b5fd" font-size="16" font-weight="bold" text-anchor="middle">PbSO₄ + 2e⁻ → Pb + SO₄²⁻</text>
+
+                                    <!-- Right -->
+                                    <rect x="350" y="380" width="340" height="70" fill="rgba(52,211,153,0.18)" rx="10" stroke="rgba(52,211,153,0.6)" stroke-width="2"/>
+                                    <text x="520" y="405" fill="#34d399" font-size="18" font-weight="bold" text-anchor="middle">【陽極 (強制氧化)】</text>
+                                    <text x="520" y="435" fill="#6ee7b7" font-size="16" font-weight="bold" text-anchor="middle">PbSO₄ + 2H₂O → PbO₂ + SO₄²⁻ + 4H⁺ + 2e⁻</text>
+                                </g>
+
+                                <!-- Arrow markers -->
+                                <defs>
+                                    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                        <path d="M0,0 L0,6 L8,3 z" fill="#f87171"/>
+                                    </marker>
+                                    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                        <path d="M0,0 L0,6 L8,3 z" fill="#38bdf8"/>
+                                    </marker>
+                                    <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                        <path d="M0,0 L0,6 L8,3 z" fill="#34d399"/>
+                                    </marker>
+                                    <marker id="arrowPurple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                                        <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+                                    </marker>
+                                </defs>
+
+                                <g id="pb-ions"></g>
+                                <g id="pb-electrons"></g>
+
+                                <!-- Bottom reaction summary -->
+                                <g id="pb-summary-discharge" opacity="0" style="transition: opacity 0.8s;">
+                                    <rect x="50" y="465" width="600" height="32" fill="rgba(239,68,68,0.15)" rx="6"/>
+                                    <text x="350" y="486" fill="#f87171" font-size="13" font-weight="bold" text-anchor="middle">全反應：Pb + PbO₂ + 2H₂SO₄ → 2PbSO₄ + 2H₂O　(電解液變淡)</text>
+                                </g>
+                                <g id="pb-summary-charge" opacity="0" style="transition: opacity 0.8s;">
+                                    <rect x="50" y="465" width="600" height="32" fill="rgba(52,211,153,0.15)" rx="6"/>
+                                    <text x="350" y="486" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">全反應：2PbSO₄ + 2H₂O → Pb + PbO₂ + 2H₂SO₄　(電解液變濃)</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button id="btn-pb-discharge" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue)); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">▶ 播放放電</button>
+                            <button id="btn-pb-charge" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-red)); color: #0f172a; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;">⚡ 播放充電</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 其他電池 -->
+            <div class="slide" id="slide-5">
+                <h1>其他常見電池</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2 class="text-cyan">氧化銀電池 (水銀電池替代品)</h2>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="flex: 1;">
+                                <p>體積小，電壓穩定，常做為手錶、計算機的鈕扣電池。</p>
+                                <ul>
+                                    <li>陽極(－)：鋅 ($Zn$)</li>
+                                    <li>陰極(＋)：氧化銀 ($Ag_2O$)</li>
+                                    <li>電解液：$KOH$ 或 $NaOH$ 鹼性溶液</li>
+                                </ul>
+                            </div>
+                            <div style="width: 140px; height: 140px; flex-shrink: 0; display: flex; justify-content: center; align-items: center;">
+                                <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; filter: drop-shadow(0 8px 8px rgba(0,0,0,0.4));">
+                                    <defs>
+                                        <linearGradient id="silverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#cbd5e1" />
+                                            <stop offset="50%" stop-color="#f8fafc" />
+                                            <stop offset="100%" stop-color="#94a3b8" />
+                                        </linearGradient>
+                                        <linearGradient id="silverGradTop" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#94a3b8" />
+                                            <stop offset="40%" stop-color="#ffffff" />
+                                            <stop offset="100%" stop-color="#cbd5e1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Base shadow/bottom -->
+                                    <ellipse cx="50" cy="65" rx="42" ry="16" fill="#334155" />
+                                    <!-- Body -->
+                                    <path d="M 8,50 L 8,65 A 42,16 0 0,0 92,65 L 92,50 A 42,16 0 0,1 8,50 Z" fill="#64748b" />
+                                    <!-- Lip -->
+                                    <ellipse cx="50" cy="50" rx="42" ry="16" fill="url(#silverGrad)" />
+                                    <!-- Top inner -->
+                                    <ellipse cx="50" cy="48" rx="36" ry="13" fill="url(#silverGradTop)" stroke="#e2e8f0" stroke-width="1"/>
+                                    <!-- Engravings -->
+                                    <text x="50" y="52" fill="#64748b" font-size="14" font-weight="bold" text-anchor="middle" style="transform: scaleY(0.7); transform-origin: center;">+</text>
+                                    <text x="50" y="42" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="middle" style="transform: scaleY(0.7); transform-origin: center;">Ag₂O 1.55V</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="formula-box" style="font-size: 1.1rem;">
+                            全反應：$Zn + Ag_2O + H_2O \rightarrow Zn(OH)_2 + 2Ag$
+                        </div>
+                    </div>
+                    
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column;">
+                        <h2 class="text-cyan">鎳鎘與鎳氫電池 (二次電池)</h2>
+                        <div style="display: flex; gap: 1rem; flex: 1; align-items: center;">
+                            <div style="flex: 1;">
+                                <p><strong>鎳鎘電池 (Ni-Cd)：</strong> 有記憶效應，且含重金屬鎘，會汙染環境，已漸淘汰。</p>
+                                <ul>
+                                    <li>陽極(－)：鎘 ($Cd$)</li>
+                                    <li>陰極(＋)：氫氧化氧鎳 ($NiO(OH)$)</li>
+                                </ul>
+                                <p style="margin-top:1rem;"><strong>鎳氫電池 (Ni-MH)：</strong> 以儲氫合金取代有毒的鎘，容量更高，無明顯記憶效應，環保且普及。</p>
+                                <ul>
+                                    <li>陽極(－)：儲氫合金 ($MH$)</li>
+                                    <li>陰極(＋)：氫氧化氧鎳 ($NiO(OH)$)</li>
+                                </ul>
+                            </div>
+                            <div style="width: 90px; flex-shrink: 0; display: flex; justify-content: center; align-items: center;">
+                                <svg viewBox="0 0 100 220" style="width: 100%; height: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.5));">
+                                    <defs>
+                                        <linearGradient id="nimhBody" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#16a34a" />
+                                            <stop offset="25%" stop-color="#4ade80" />
+                                            <stop offset="80%" stop-color="#16a34a" />
+                                            <stop offset="100%" stop-color="#14532d" />
+                                        </linearGradient>
+                                        <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#94a3b8" />
+                                            <stop offset="30%" stop-color="#f8fafc" />
+                                            <stop offset="100%" stop-color="#475569" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Positive terminal -->
+                                    <path d="M 35,25 L 35,15 A 15,5 0 0,1 65,15 L 65,25 Z" fill="url(#metalGrad)"/>
+                                    <ellipse cx="50" cy="15" rx="15" ry="5" fill="#f8fafc"/>
+                                    
+                                    <!-- Body -->
+                                    <path d="M 15,25 L 15,195 A 35,10 0 0,0 85,195 L 85,25 Z" fill="url(#nimhBody)"/>
+                                    <ellipse cx="50" cy="25" rx="35" ry="10" fill="url(#metalGrad)"/>
+                                    <ellipse cx="50" cy="195" rx="35" ry="10" fill="#14532d"/>
+                                    
+                                    <!-- Striping / Details -->
+                                    <path d="M 15,45 L 85,45" stroke="#f0fdf4" stroke-width="2" opacity="0.6" fill="none"/>
+                                    <path d="M 15,175 L 85,175" stroke="#f0fdf4" stroke-width="2" opacity="0.6" fill="none"/>
+                                    
+                                    <!-- Text -->
+                                    <text x="-120" y="55" fill="#f0fdf4" font-size="22" font-weight="bold" transform="rotate(-90)">Ni-MH</text>
+                                    <text x="-165" y="50" fill="#bbf7d0" font-size="11" font-weight="bold" transform="rotate(-90)">1.2V Rechargeable</text>
+                                    <text x="-165" y="65" fill="#86efac" font-size="10" font-weight="bold" transform="rotate(-90)">2000mAh</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 鋰電池 -->
+            <div class="slide" id="slide-6">
+                <h1>鋰電池系列</h1>
+                <div class="grid-3">
+                    <div class="panel scroll-panel">
+                        <h2 class="text-red">鋰電池 (一次電池)</h2>
+                        <p>鋰是電位最低、最輕的金屬，因此電壓高（約3V）、能量密度極大。</p>
+                        <ul>
+                            <li><strong>陽極：</strong> 鋰金屬。</li>
+                            <li><strong>陰極：</strong> 常用 $MnO_2$ 或 $SOCl_2$。</li>
+                            <li><strong>特點：</strong> 鋰遇到水會產生激烈反應，故<strong>必須使用非水溶劑</strong>（有機溶劑）作為電解液。</li>
+                            <li>壽命極長，常用於主機板 CMOS 或起搏器。</li>
+                        </ul>
+                        <div style="display: flex; justify-content: center; margin-top: auto; padding-top: 1rem;">
+                            <svg viewBox="0 0 100 100" style="width: 100px; height: 100px; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));">
+                                <defs>
+                                    <linearGradient id="liGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#cbd5e1" />
+                                        <stop offset="50%" stop-color="#f8fafc" />
+                                        <stop offset="100%" stop-color="#94a3b8" />
+                                    </linearGradient>
+                                    <linearGradient id="liGradTop" x1="0%" y1="100%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#94a3b8" />
+                                        <stop offset="40%" stop-color="#ffffff" />
+                                        <stop offset="100%" stop-color="#cbd5e1" />
+                                    </linearGradient>
+                                </defs>
+                                <ellipse cx="50" cy="65" rx="45" ry="16" fill="#334155" />
+                                <path d="M 5,50 L 5,65 A 45,16 0 0,0 95,65 L 95,50 A 45,16 0 0,1 5,50 Z" fill="#64748b" />
+                                <ellipse cx="50" cy="50" rx="45" ry="16" fill="url(#liGrad)" />
+                                <ellipse cx="50" cy="48" rx="38" ry="13" fill="url(#liGradTop)" stroke="#e2e8f0" stroke-width="1"/>
+                                <text x="50" y="47" fill="#64748b" font-size="12" font-weight="bold" text-anchor="middle" style="transform: scaleY(0.7); transform-origin: center;">CR2032</text>
+                                <text x="50" y="58" fill="#94a3b8" font-size="8" font-weight="bold" text-anchor="middle" style="transform: scaleY(0.7); transform-origin: center;">3V LITHIUM</text>
+                                <text x="50" y="35" fill="#475569" font-size="14" font-weight="bold" text-anchor="middle" style="transform: scaleY(0.7); transform-origin: center;">+</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2 class="text-blue">鋰離子電池 (Li-ion)</h2>
+                        <p>目前最廣泛使用的二次電池（手機、筆電）。</p>
+                        <ul>
+                            <li><strong>陽極：</strong> 嵌有鋰的石墨 ($Li_xC_6$)。</li>
+                            <li><strong>陰極：</strong> 鋰鈷氧化物 ($LiCoO_2$) 等。</li>
+                            <li><strong>原理：</strong> 充放電過程中，鋰離子 ($Li^+$) 在兩極的層狀結構中來回嵌入與脫出，被稱為<strong class="text-yellow">「搖椅式電池」</strong>。</li>
+                            <li>安全度較高，不含易燃的純鋰金屬。</li>
+                        </ul>
+                        <div style="display: flex; justify-content: center; margin-top: auto; padding-top: 1rem;">
+                            <svg viewBox="0 0 100 120" style="width: 85px; height: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));">
+                                <rect x="10" y="10" width="80" height="100" rx="6" fill="#334155" />
+                                <rect x="12" y="12" width="76" height="96" rx="4" fill="#0f172a" />
+                                <rect x="25" y="8" width="12" height="4" fill="#fbbf24" rx="1"/>
+                                <rect x="44" y="8" width="12" height="4" fill="#fbbf24" rx="1"/>
+                                <rect x="63" y="8" width="12" height="4" fill="#fbbf24" rx="1"/>
+                                <rect x="18" y="28" width="64" height="70" fill="#f8fafc" rx="3" />
+                                <text x="50" y="48" fill="#3b82f6" font-size="14" font-weight="bold" text-anchor="middle">Li-ion</text>
+                                <text x="50" y="65" fill="#64748b" font-size="10" font-weight="bold" text-anchor="middle">3.7V</text>
+                                <text x="50" y="78" fill="#64748b" font-size="9" font-weight="bold" text-anchor="middle">3000mAh</text>
+                                <text x="50" y="90" fill="#ef4444" font-size="12" text-anchor="middle">⚡</text>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2 class="text-green">鋰聚合物電池 (Li-polymer)</h2>
+                        <p>鋰離子電池的改良升級版。</p>
+                        <ul>
+                            <li><strong>電解質：</strong> 以高分子聚合物凝膠取代了液態有機溶劑。</li>
+                            <li><strong>優點：</strong> 沒有漏液問題，安全性更高。</li>
+                            <li>可將電池做成非常薄，或是配合設備形狀任意塑形。</li>
+                            <li>目前輕薄型電子產品（平板、手機）的主要配置。</li>
+                        </ul>
+                        <div style="display: flex; justify-content: center; margin-top: auto; padding-top: 1rem;">
+                            <svg viewBox="0 0 100 120" style="width: 85px; height: auto; filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));">
+                                <defs>
+                                    <linearGradient id="pouchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#94a3b8" />
+                                        <stop offset="100%" stop-color="#475569" />
+                                    </linearGradient>
+                                    <linearGradient id="pouchGradInner" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#cbd5e1" />
+                                        <stop offset="50%" stop-color="#f8fafc" />
+                                        <stop offset="100%" stop-color="#cbd5e1" />
+                                    </linearGradient>
+                                </defs>
+                                <rect x="15" y="20" width="70" height="90" rx="3" fill="url(#pouchGrad)" />
+                                <rect x="20" y="25" width="60" height="80" rx="2" fill="url(#pouchGradInner)" />
+                                <rect x="28" y="5" width="14" height="18" fill="#cbd5e1" rx="1"/>
+                                <rect x="58" y="5" width="14" height="18" fill="#fca5a5" rx="1"/>
+                                <rect x="22" y="14" width="56" height="12" fill="#1e293b" rx="2"/>
+                                <text x="50" y="60" fill="#0f172a" font-size="14" font-weight="bold" text-anchor="middle">Li-Po</text>
+                                <text x="50" y="75" fill="#475569" font-size="9" font-weight="bold" text-anchor="middle">3.7V 5000mAh</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 燃料電池 -->
+            <div class="slide" id="slide-7">
+                <h1>燃料電池 (Fuel Cells)</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2 class="text-yellow">氫氧燃料電池</h2>
+                        <p>直接將化學能轉換為電能，轉換效率極高 (可達 80%)，且產物只有水，無汙染。</p>
+                        <ul style="font-size: 1.1rem;">
+                            <li><span class="text-cyan">陽極(－) 燃料：</span> 氫氣 ($H_2$)</li>
+                            <li><span class="text-cyan">陰極(＋) 氧化劑：</span> 氧氣 ($O_2$)</li>
+                            <li><span class="text-cyan">電解液：</span> $KOH_{(aq)}$ (或高分子質子交換膜)</li>
+                            <li><span class="text-cyan">電極材質：</span> 多孔性碳棒，表面常鍍有鉑 ($Pt$) 催化劑。</li>
+                        </ul>
+                        <div class="formula-box" style="font-size: 1.1rem; padding: 0.8rem;">
+                            <div style="color: #cbd5e1; font-size: 1rem; margin-bottom: 0.5rem;">(以 $KOH$ 鹼性電解液為例)</div>
+                            <div style="margin-bottom: 0.3rem;"><span class="text-red font-bold">陽極：</span> $H_2 + 2OH^- \rightarrow 2H_2O + 2e^-$</div>
+                            <div style="margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 0.6rem;"><span class="text-blue font-bold">陰極：</span> $O_2 + 2H_2O + 4e^- \rightarrow 4OH^-$</div>
+                            <div><span class="text-yellow font-bold">全反應：</span> $2H_2 + O_2 \rightarrow 2H_2O$</div>
+                        </div>
+                        <p style="margin-top: 1rem;">只要持續提供氫氣與氧氣，就能不斷發電。曾應用於阿波羅太空船。</p>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2 class="text-green">甲醇燃料電池</h2>
+                        <p>由於氫氣的儲存與運送較困難，科學家也開發了使用甲醇 ($CH_3OH$) 或天然氣的燃料電池。</p>
+                        <ul style="font-size: 1.1rem;">
+                            <li><span class="text-cyan">陽極(－) 燃料：</span> 甲醇 ($CH_3OH$)</li>
+                            <li><span class="text-cyan">陰極(＋) 氧化劑：</span> 氧氣 ($O_2$)</li>
+                        </ul>
+                        <div class="formula-box" style="font-size: 1.1rem; border-left-color: var(--accent-red); padding: 0.8rem;">
+                            <div style="color: #cbd5e1; font-size: 1rem; margin-bottom: 0.5rem;">(以酸性環境為例)</div>
+                            <div style="margin-bottom: 0.3rem;"><span class="text-red font-bold">陽極：</span> $CH_3OH + H_2O \rightarrow CO_2 + 6H^+ + 6e^-$</div>
+                            <div style="margin-bottom: 0.6rem; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 0.6rem;"><span class="text-blue font-bold">陰極：</span> $\frac{3}{2}O_2 + 6H^+ + 6e^- \rightarrow 3H_2O$</div>
+                            <div><span class="text-yellow font-bold">全反應：</span> $CH_3OH + \frac{3}{2}O_2 \rightarrow CO_2 + 2H_2O$</div>
+                            <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.4rem;">(亦可將係數同乘2：$2CH_3OH + 3O_2 \rightarrow 2CO_2 + 4H_2O$)</div>
+                        </div>
+                        <p style="margin-top: 1rem;"><strong>優缺點：</strong> 燃料容易取得且安全，但在反應過程中依然會產生些許二氧化碳排放，且鉑催化劑成本高昂。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: 光電池 -->
+            <div class="slide" id="slide-8" style="display: flex; flex-direction: column; gap: 1rem;">
+                <h1>光電池 (補充) & 展望總結</h1>
+                
+                <div style="display: flex; gap: 1rem; flex: 1; overflow: hidden;">
+                    <!-- Left: AgCl Cell -->
+                    <div class="panel scroll-panel" style="flex: 1.1;">
+                        <h2 class="text-cyan">氯化銀光電池 (大考補充)</h2>
+                        <p style="font-size: 1rem; margin-bottom: 0.5rem;">光電池是利用光能直接驅動電子流動，產生電壓的裝置。組成如下圖：</p>
+                        <div style="display: flex; gap: 1rem; align-items: stretch;">
+                            <div style="flex: 1;">
+                                <p style="font-size: 0.95rem; line-height: 1.4;">
+                                    <strong>構造：</strong> 左側半電池裝有 $1M$ $KCl$ 及鑲有 $AgCl$ 的銀棒；右側裝有 $CuCl$ 及白金絲 ($Pt$)。<br>
+                                    <strong>原理：</strong> 受光照射時，$AgCl$ 轉變成 $Ag$ 與 $Cl$。氯原子會暫時吸附在氯化銀上 ($Cl_{(AgCl)}$)，成為極強的氧化劑。移去光源則回復初始狀態。
+                                </p>
+                                <div style="background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 6px; font-size: 0.85rem; color: #cbd5e1; margin-top: 0.5rem; font-family: monospace;">
+                                    <div style="color: #94a3b8; margin-bottom: 2px;">已知還原半反應：</div>
+                                    <div>$AgCl_{(s)} + e^- \rightarrow Ag_{(s)} + Cl^-_{(aq)}$ <span style="float:right;">$E^\circ = 0.22V$</span></div>
+                                    <div>$Cu^{2+}_{(aq)} + e^- \rightarrow Cu^+_{(aq)}$ <span style="float:right;">$E^\circ = 0.15V$</span></div>
+                                    <div class="text-yellow">$Cl_{(AgCl)} + e^- \rightarrow Cl^-_{(aq)}$ <span style="float:right;">$E^\circ = 3.80V$</span></div>
+                                    <div>$Cu^+_{(aq)} + e^- \rightarrow Cu_{(s)}$ <span style="float:right;">$E^\circ = 0.52V$</span></div>
+                                    <div>$Ag^+_{(aq)} + e^- \rightarrow Ag_{(s)}$ <span style="float:right;">$E^\circ = 0.79V$</span></div>
+                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.95rem; background: rgba(56,189,248,0.1); padding: 0.5rem; border-left: 3px solid #38bdf8;">
+                                    <div><strong class="text-blue">陰極 (Ag棒)：</strong> $Cl_{(AgCl)}$ 發生的還原反應驅動了電池。</div>
+                                    <div><strong class="text-red">陽極 (Pt絲)：</strong> $Cu^+$ 則被迫發生氧化反應 ($Cu^+ \rightarrow Cu^{2+} + e^-$)。</div>
+                                </div>
+                            </div>
+                            <div style="width: 190px; flex-shrink: 0; background: #e2e8f0; border-radius: 8px; padding: 0.5rem; display: flex; justify-content: center; align-items: center; position: relative;">
+                                <svg viewBox="0 0 200 220" style="width: 100%; height: auto;">
+                                    <rect x="25" y="80" width="60" height="90" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                                    <rect x="115" y="80" width="60" height="90" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                                    <line x1="28" y1="90" x2="82" y2="90" stroke="#64748b" stroke-dasharray="2,2"/>
+                                    <line x1="118" y1="90" x2="172" y2="90" stroke="#64748b" stroke-dasharray="2,2"/>
+                                    <path d="M 65,115 L 65,70 L 135,70 L 135,115" fill="none" stroke="#334155" stroke-width="12"/>
+                                    <path d="M 65,115 L 65,70 L 135,70 L 135,115" fill="none" stroke="#f8fafc" stroke-width="8"/>
+                                    <text x="75" y="105" fill="#334155" font-size="10" font-weight="bold">K⁺</text>
+                                    <text x="120" y="105" fill="#334155" font-size="10" font-weight="bold">Cl⁻</text>
+                                    <rect x="43" y="30" width="4" height="60" fill="#334155"/>
+                                    <rect x="35" y="90" width="20" height="50" fill="url(#agGrad)"/>
+                                    <rect x="35" y="90" width="20" height="50" fill="none" stroke="#334155" stroke-width="1"/>
+                                    <text x="45" y="25" fill="#334155" font-size="12" font-weight="bold" text-anchor="middle">Ag</text>
+                                    <text x="45" y="152" fill="#334155" font-size="10" font-weight="bold" text-anchor="middle">AgCl</text>
+                                    <rect x="143" y="30" width="4" height="100" fill="#334155"/>
+                                    <text x="150" y="45" fill="#334155" font-size="12" font-weight="bold">Pt</text>
+                                    <text x="65" y="150" fill="#334155" font-size="10" font-weight="bold">Cl⁻</text>
+                                    <text x="148" y="130" fill="#334155" font-size="10" font-weight="bold">Cu⁺</text>
+                                    <text x="148" y="145" fill="#334155" font-size="10" font-weight="bold">Cl⁻</text>
+                                    <path d="M 45,30 L 45,15 L 145,15 L 145,30" fill="none" stroke="#334155" stroke-width="1.5"/>
+                                    <text x="40" y="10" fill="#334155" font-size="10" font-weight="bold">A</text>
+                                    <text x="148" y="10" fill="#334155" font-size="10" font-weight="bold">B</text>
+                                    <g transform="translate(15, 125) rotate(-35)">
+                                        <path d="M 0,0 L 25,0 L 25,-5 L 35,5 L 25,15 L 25,10 L 0,10 Z" fill="none" stroke="#334155" stroke-width="1.5"/>
+                                        <text x="10" y="-5" fill="#334155" font-size="12" font-weight="bold">光</text>
+                                    </g>
+                                    <text x="100" y="195" fill="#334155" font-size="12" font-weight="bold" text-anchor="middle">圖 5</text>
+                                    <defs>
+                                        <linearGradient id="agGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#94a3b8" />
+                                            <stop offset="50%" stop-color="#f8fafc" />
+                                            <stop offset="100%" stop-color="#64748b" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: DSSC -->
+                    <div class="panel scroll-panel" style="flex: 1;">
+                        <h2 class="text-green">二氧化鈦奈米光電池 (DSSC) 原理：</h2>
+                        <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">又稱「染料敏化太陽能電池」，利用染料吸收光能，再由奈米 $TiO_2$ 傳遞電子：</p>
+                        <div style="display: flex; gap: 0.5rem; align-items: stretch;">
+                            <div style="flex: 1;">
+                                <ul style="margin: 0 0 0 1.2rem; color: #cbd5e1; font-size: 0.95rem; list-style-type: decimal; padding-left: 0;">
+                                    <li style="margin-bottom: 0.3rem;"><strong class="text-yellow">光激發：</strong> 染料($S$)受光躍遷為激發態:<br> <span style="color:var(--accent-red);">$S + 光能 \rightarrow S^*$</span></li>
+                                    <li style="margin-bottom: 0.3rem;"><strong class="text-yellow">注電子：</strong> 激發態染料注入 $TiO_2$:<br> <span style="color:var(--accent-red);">$S^* \rightarrow S^+ + e^-$</span></li>
+                                    <li style="margin-bottom: 0.3rem;"><strong class="text-yellow">染還原：</strong> 電解液還原染料:<br> <span style="color:var(--accent-red);">$2S^+ + 3I^- \rightarrow 2S + I_3^-$</span></li>
+                                    <li><strong class="text-yellow">液再生：</strong> 電子在陰極還原電解液:<br> <span style="color:var(--accent-red);">$I_3^- + 2e^- \rightarrow 3I^-$</span></li>
+                                </ul>
+                            </div>
+                            <div style="width: 160px; flex-shrink: 0; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 0.5rem; display: flex; justify-content: center; align-items: center;">
+                                <svg viewBox="0 0 200 250" style="width: 100%; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">
+                                    <circle cx="30" cy="40" r="15" fill="#fbbf24"/>
+                                    <path d="M 45,55 L 70,80 M 50,40 L 80,40 M 45,25 L 70,10" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4,4"/>
+                                    <rect x="70" y="80" width="10" height="150" fill="rgba(255,255,255,0.4)" rx="2"/>
+                                    <text x="75" y="245" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle">陽極</text>
+                                    <rect x="80" y="90" width="30" height="130" fill="#94a3b8" rx="2" opacity="0.8"/>
+                                    <circle cx="90" cy="110" r="6" fill="#f8fafc"/><circle cx="100" cy="120" r="6" fill="#f8fafc"/>
+                                    <circle cx="88" cy="135" r="6" fill="#f8fafc"/><circle cx="102" cy="145" r="6" fill="#f8fafc"/>
+                                    <circle cx="90" cy="160" r="6" fill="#f8fafc"/><circle cx="100" cy="175" r="6" fill="#f8fafc"/>
+                                    <text x="95" y="245" fill="#f8fafc" font-size="11" text-anchor="middle">TiO₂</text>
+                                    <circle cx="110" cy="105" r="4" fill="#ef4444"/><circle cx="110" cy="125" r="4" fill="#ef4444"/>
+                                    <circle cx="110" cy="145" r="4" fill="#ef4444"/><circle cx="110" cy="165" r="4" fill="#ef4444"/>
+                                    <circle cx="110" cy="185" r="4" fill="#ef4444"/>
+                                    <rect x="110" y="80" width="40" height="150" fill="rgba(56,189,248,0.2)"/>
+                                    <text x="130" y="140" fill="#38bdf8" font-size="14" font-weight="bold" text-anchor="middle">I⁻/I₃⁻</text>
+                                    <rect x="150" y="80" width="10" height="150" fill="rgba(255,255,255,0.4)" rx="2"/>
+                                    <text x="155" y="245" fill="#f8fafc" font-size="12" font-weight="bold" text-anchor="middle">陰極</text>
+                                    <rect x="145" y="90" width="5" height="130" fill="#cbd5e1"/>
+                                    <text x="145" y="233" fill="#cbd5e1" font-size="10" text-anchor="middle">Pt</text>
+                                    <path d="M 75,80 L 75,30 L 155,30 L 155,80" stroke="#cbd5e1" stroke-width="2" fill="none"/>
+                                    <circle cx="115" cy="30" r="10" fill="#fbbf24"/>
+                                    <text x="115" y="34" fill="#0f172a" font-size="10" text-anchor="middle" font-weight="bold">V</text>
+                                    <path d="M 90,30 L 100,25 L 100,35 Z" fill="#f8fafc" />
+                                    <text x="95" y="20" fill="#f8fafc" font-size="10" font-weight="bold" text-anchor="middle">e⁻</text>
+                                </svg>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #94a3b8; margin-top: 0.5rem;">優點：製造成本低、可透光或半透明、具可撓性，適合結合大樓玻璃帷幕（BIPV）。</p>
+                    </div>
+                </div>
+
+                <!-- Bottom: Summary -->
+                <div class="panel" style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1.5rem; background: linear-gradient(135deg, rgba(15,23,42,0.8), rgba(30,41,59,0.8));">
+                    <h2 class="text-cyan" style="font-size: 1.8rem; margin-bottom: 0.5rem;">總結與展望</h2>
+                    <p style="font-size: 1.15rem; margin: 0; max-width: 900px;">不同的電池利用不同的氧化還原半反應，為現代科技提供了穩定的動力來源。從早期的碳鋅電池，到強大的鉛蓄電池，再到輕巧的鋰聚合物與純淨的燃料電池、以及新世代的光電池。電池技術的進步正持續推動人類生活前進！</p>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+        <canvas aria-label="手寫繪圖層" id="drawing-layer" role="application" tabindex="0"></canvas>
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<button class="btn-tool" id="btn-top" style="position: fixed; bottom: 20px; right: 20px; z-index: 9000; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-cyan); color: #0f172a; cursor: pointer;" title="回到頂部" type="button">↑</button>
+
+<!-- Toolbar -->
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button class="btn-tool" id="btn-draw" title="手寫功能" type="button">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+        <div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+        <div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+        <div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+        <div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+        <div class="color-dot" data-color="#a78bfa" style="width:22px;height:22px;background:#a78bfa;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button class="btn-tool" id="btn-eraser" title="橡皮擦" type="button">
+            <svg fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"></path></svg>
+        </button>
+        <button class="btn-tool" id="btn-clear" title="清除手寫" type="button">🗑</button>
+    </div>
+    <button class="btn-tool" id="btn-random-draw" title="隨機抽號" type="button">🎲</button>
+    <button class="btn-tool" id="btn-home" title="回到目錄" type="button">🏠</button>
+</div>
+
+<!-- Random Draw Modal -->
+<div id="random-draw-modal">
+    <button id="btn-close-draw" title="關閉" type="button">×</button>
+    <div id="random-draw-balls"></div>
+    <div id="random-draw-controls">
+        <button id="btn-do-draw" type="button">抽號</button>
+        <div class="draw-input-group">
+            <label for="draw-total-input">籤號總數：</label>
+            <input id="draw-total-input" max="100" min="1" type="number" value="40"/>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ─── Start overlay ─── */
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return; starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        requestAnimationFrame(function () {
+            if (typeof resizeCanvas === 'function') resizeCanvas();
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+
+/* ─── Drawing layer ─── */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth); 
+    canvas.height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    restoreDrawing();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = 38;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = 3.5;
+    }
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings['all'] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings['all']) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings['all'];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color; drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings['all'] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+document.getElementById('btn-top')?.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+/* ─── Toolbar drag ─── */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+/* ─── Random Draw Modal ─── */
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+
+    let drawBalls = [];
+    let totalBalls = 40;
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = '';
+        drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball';
+            ball.textContent = i;
+            ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball);
+            drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw.addEventListener('click', () => {
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block';
+            btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) {
+                totalBalls = parseInt(drawTotalInput.value) || 40;
+                renderBalls();
+            }
+        }
+    });
+
+    btnCloseDraw.addEventListener('click', () => {
+        drawModal.style.display = 'none';
+        btnRandomDraw.classList.remove('active-tool');
+    });
+
+    drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value);
+        if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val;
+        totalBalls = val;
+        renderBalls();
+    });
+
+    let drawInterval;
+    let drawTimeout;
+
+    btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+        const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+        
+        if (availableBalls.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) {
+            prevWinner.classList.remove('winner');
+            prevWinner.classList.add('drawn');
+        }
+
+        const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (currentAvailable.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        btnDoDraw.disabled = true;
+        drawTotalInput.disabled = true;
+
+        const flickerDuration = 3000;
+        const flickerSpeed = 50;
+
+        drawInterval = setInterval(() => {
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+            currentAvailable[randomIdx].classList.add('flicker');
+        }, flickerSpeed);
+
+        drawTimeout = setTimeout(() => {
+            clearInterval(drawInterval);
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+            const winnerBall = currentAvailable[winnerIdx];
+            winnerBall.classList.add('winner');
+            btnDoDraw.disabled = false;
+            drawTotalInput.disabled = false;
+        }, flickerDuration);
+    });
+})();
+
+/* ─── Battery Animation Logic ─── */
+(function() {
+    const btnPlay = document.getElementById('btn-anim-play');
+    const btnDepol = document.getElementById('btn-anim-depol');
+    const electronsGroup = document.getElementById('electrons');
+    const bulb = document.getElementById('bulb');
+    const h2Bubbles = document.getElementById('h2-bubbles');
+    const animTexts = document.getElementById('anim-texts');
+    const animTextsDepol = document.getElementById('anim-texts-depol');
+    let isPlaying = false;
+    let electronInterval;
+
+    function createElectron() {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', '4');
+        circle.setAttribute('fill', '#fbbf24');
+        circle.classList.add('electron-dot');
+        electronsGroup.appendChild(circle);
+        setTimeout(() => {
+            if (circle.parentNode) circle.parentNode.removeChild(circle);
+        }, 2500);
+    }
+
+    if (btnPlay) {
+        btnPlay.addEventListener('click', () => {
+            if (!isPlaying) {
+                isPlaying = true;
+                btnPlay.textContent = '⏸ 暫停放電';
+                bulb.classList.add('bulb-glow');
+                h2Bubbles.setAttribute('opacity', '1');
+                animTexts.setAttribute('opacity', '1');
+                animTextsDepol.setAttribute('opacity', '0');
+                
+                document.querySelectorAll('.bubble').forEach((b, i) => {
+                    setTimeout(() => { if (isPlaying) b.classList.add('show'); }, i * 150);
+                });
+                
+                electronInterval = setInterval(createElectron, 400);
+            } else {
+                isPlaying = false;
+                btnPlay.textContent = '▶ 播放放電';
+                bulb.classList.remove('bulb-glow');
+                h2Bubbles.setAttribute('opacity', '0');
+                animTexts.setAttribute('opacity', '0');
+                clearInterval(electronInterval);
+                electronsGroup.innerHTML = '';
+                document.querySelectorAll('.bubble').forEach(b => b.classList.remove('show'));
+            }
+        });
+    }
+
+    if (btnDepol) {
+        btnDepol.addEventListener('click', () => {
+            if (isPlaying) {
+                h2Bubbles.setAttribute('opacity', '0.3');
+                animTextsDepol.setAttribute('opacity', '1');
+                setTimeout(() => {
+                    if (isPlaying) h2Bubbles.setAttribute('opacity', '1');
+                    animTextsDepol.setAttribute('opacity', '0');
+                }, 4000);
+            } else {
+                animTextsDepol.setAttribute('opacity', '1');
+                setTimeout(() => {
+                    animTextsDepol.setAttribute('opacity', '0');
+                }, 3000);
+            }
+        });
+    }
+
+    /* ─── Pb-Acid Battery Animation Logic ─── */
+    const btnPbDischarge = document.getElementById('btn-pb-discharge');
+    const btnPbCharge = document.getElementById('btn-pb-charge');
+    const pbLiquid = document.getElementById('pb-liquid');
+    const pbAnodeCoating = document.getElementById('pb-anode-coating');
+    const pbCathodeCoating = document.getElementById('pb-cathode-coating');
+    const pbBulbGlow = document.getElementById('pb-bulb-glow');
+    const pbDcPower = document.getElementById('pb-dc-power');
+    const pbElectronsGroup = document.getElementById('pb-electrons');
+    const pbIonsGroup = document.getElementById('pb-ions');
+    const pbDischargeLabels = document.getElementById('pb-discharge-labels');
+    const pbChargeLabels = document.getElementById('pb-charge-labels');
+    const pbSummaryDischarge = document.getElementById('pb-summary-discharge');
+    const pbSummaryCharge = document.getElementById('pb-summary-charge');
+
+    let isPbDischarging = false;
+    let isPbCharging = false;
+    let pbElectronInterval;
+    let pbIonInterval;
+
+    function createPbIon(mode) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const yPositions = [215, 245, 275, 305, 335];
+        const y = yPositions[Math.floor(Math.random() * yPositions.length)];
+
+        if (mode === 'discharge') {
+            const so4 = document.createElementNS(ns, 'text');
+            so4.setAttribute('x', String(300 + Math.random() * 100));
+            so4.setAttribute('y', String(y));
+            so4.setAttribute('fill', '#f87171');
+            so4.setAttribute('font-size', '12');
+            so4.setAttribute('font-weight', 'bold');
+            so4.setAttribute('text-anchor', 'middle');
+            so4.textContent = 'SO₄²⁻';
+            so4.classList.add('ion-left');
+            so4.style.animationDelay = (Math.random() * 1.5) + 's';
+            pbIonsGroup.appendChild(so4);
+            setTimeout(() => { if (so4.parentNode) so4.parentNode.removeChild(so4); }, 2400);
+
+            const hp = document.createElementNS(ns, 'text');
+            hp.setAttribute('x', String(200 + Math.random() * 100));
+            hp.setAttribute('y', String(y + 15 > 350 ? y - 15 : y + 15));
+            hp.setAttribute('fill', '#93c5fd');
+            hp.setAttribute('font-size', '12');
+            hp.setAttribute('font-weight', 'bold');
+            hp.setAttribute('text-anchor', 'middle');
+            hp.textContent = 'H⁺';
+            hp.classList.add('ion-right');
+            hp.style.animationDelay = (Math.random() * 1.5) + 's';
+            pbIonsGroup.appendChild(hp);
+            setTimeout(() => { if (hp.parentNode) hp.parentNode.removeChild(hp); }, 2400);
+        } else {
+            const so4 = document.createElementNS(ns, 'text');
+            so4.setAttribute('x', String(200 + Math.random() * 100));
+            so4.setAttribute('y', String(y));
+            so4.setAttribute('fill', '#34d399');
+            so4.setAttribute('font-size', '12');
+            so4.setAttribute('font-weight', 'bold');
+            so4.setAttribute('text-anchor', 'middle');
+            so4.textContent = 'SO₄²⁻';
+            so4.classList.add('ion-right');
+            so4.style.animationDelay = (Math.random() * 1.5) + 's';
+            pbIonsGroup.appendChild(so4);
+            setTimeout(() => { if (so4.parentNode) so4.parentNode.removeChild(so4); }, 2400);
+
+            const hp = document.createElementNS(ns, 'text');
+            hp.setAttribute('x', String(200 + Math.random() * 100));
+            hp.setAttribute('y', String(y + 15 > 350 ? y - 15 : y + 15));
+            hp.setAttribute('fill', '#a78bfa');
+            hp.setAttribute('font-size', '12');
+            hp.setAttribute('font-weight', 'bold');
+            hp.setAttribute('text-anchor', 'middle');
+            hp.textContent = 'H⁺';
+            hp.classList.add('ion-right');
+            hp.style.animationDelay = (Math.random() * 1.5) + 's';
+            pbIonsGroup.appendChild(hp);
+            setTimeout(() => { if (hp.parentNode) hp.parentNode.removeChild(hp); }, 2400);
+        }
+    }
+
+    function resetPbAnim() {
+        clearInterval(pbElectronInterval);
+        clearInterval(pbIonInterval);
+        pbElectronsGroup.innerHTML = '';
+        pbIonsGroup.innerHTML = '';
+        pbBulbGlow.setAttribute('fill', 'rgba(250, 204, 21, 0)');
+        pbDcPower.style.opacity = '0';
+        pbDischargeLabels.style.opacity = '0';
+        pbChargeLabels.style.opacity = '0';
+        pbSummaryDischarge.style.opacity = '0';
+        pbSummaryCharge.style.opacity = '0';
+
+        isPbDischarging = false;
+        isPbCharging = false;
+        if (btnPbDischarge) btnPbDischarge.textContent = '▶ 播放放電';
+        if (btnPbCharge) btnPbCharge.textContent = '⚡ 播放充電';
+
+        pbLiquid.setAttribute('fill', 'rgba(56, 189, 248, 0.4)');
+        pbAnodeCoating.setAttribute('fill', 'rgba(255,255,255,0)');
+        pbCathodeCoating.setAttribute('fill', 'rgba(255,255,255,0)');
+    }
+
+    function createPbElectron(mode) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('r', '4');
+        circle.setAttribute('fill', '#fbbf24');
+        circle.classList.add(mode === 'discharge' ? 'pb-electron-discharge' : 'pb-electron-charge');
+        pbElectronsGroup.appendChild(circle);
+        setTimeout(() => {
+            if (circle.parentNode) circle.parentNode.removeChild(circle);
+        }, 2500);
+    }
+
+    if (btnPbDischarge && btnPbCharge) {
+        btnPbDischarge.addEventListener('click', () => {
+            if (!isPbDischarging) {
+                resetPbAnim();
+                isPbDischarging = true;
+                btnPbDischarge.textContent = '⏸ 停止';
+
+                // Light up bulb
+                pbBulbGlow.setAttribute('fill', 'rgba(250, 204, 21, 0.6)');
+
+                // Show discharge labels and summary
+                pbDischargeLabels.style.opacity = '1';
+                pbSummaryDischarge.style.opacity = '1';
+
+                // Electrode coating (PbSO4 forms)
+                pbLiquid.setAttribute('fill', 'rgba(56, 189, 248, 0.1)');
+                pbAnodeCoating.setAttribute('fill', 'rgba(255,255,255,0.7)');
+                pbCathodeCoating.setAttribute('fill', 'rgba(255,255,255,0.7)');
+
+                pbElectronInterval = setInterval(() => createPbElectron('discharge'), 400);
+                pbIonInterval = setInterval(() => createPbIon('discharge'), 600);
+            } else {
+                resetPbAnim();
+            }
+        });
+
+        btnPbCharge.addEventListener('click', () => {
+            if (!isPbCharging) {
+                resetPbAnim();
+                // Start from discharge state then restore
+                pbAnodeCoating.setAttribute('fill', 'rgba(255,255,255,0.7)');
+                pbCathodeCoating.setAttribute('fill', 'rgba(255,255,255,0.7)');
+                pbLiquid.setAttribute('fill', 'rgba(56, 189, 248, 0.1)');
+
+                isPbCharging = true;
+                btnPbCharge.textContent = '⏸ 停止';
+
+                // Show DC power source
+                pbDcPower.style.opacity = '1';
+
+                // Show charge labels and summary
+                pbChargeLabels.style.opacity = '1';
+                pbSummaryCharge.style.opacity = '1';
+
+                // After delay, restore coatings (charging reverses the reaction)
+                setTimeout(() => {
+                    if (isPbCharging) {
+                        pbLiquid.setAttribute('fill', 'rgba(56, 189, 248, 0.4)');
+                        pbAnodeCoating.setAttribute('fill', 'rgba(255,255,255,0)');
+                        pbCathodeCoating.setAttribute('fill', 'rgba(255,255,255,0)');
+                    }
+                }, 3000);
+
+                pbElectronInterval = setInterval(() => createPbElectron('charge'), 400);
+                pbIonInterval = setInterval(() => createPbIon('charge'), 600);
+            } else {
+                resetPbAnim();
+            }
+        });
+    }
+})();
+</script>
+</body>
+</html>

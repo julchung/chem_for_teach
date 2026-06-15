@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>影響反應速率的因素 | 互動教學</title>
+    <meta name="description" content="選修化學二：影響反應速率的因素——速率定律式、濃度、溫度、催化劑互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(251,191,36,0.12) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-yellow);
+            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56,189,248,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(251,191,36,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1vh; left: 2.5vw; right: 68px; bottom: 1vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.5rem 0.5rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-yellow); font-size: clamp(1.55rem, 2.6vw, 2.3rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(251,191,36,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 30px; background: var(--accent-yellow); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.1rem, 1.7vw, 1.45rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(1.0rem, 1.35vw, 1.22rem); line-height: 1.6; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.12rem 0.65rem; border-radius: 18px; font-size: 0.88rem; font-weight: 700; margin-right: 0.3rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.2vw, 1.1rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.55rem 0.7rem; text-align: center; }
+        table.data-table th { background: rgba(251,191,36,0.12); color: var(--accent-yellow); }
+        .svg-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .svg-wrap svg { max-width: 100%; max-height: 100%; display: block; }
+        .diagram-panel {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.32); border-radius: 12px; padding: 0.35rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 1.1rem 1.25rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+        .quiz-options li { font-size: clamp(1.0rem, 1.3vw, 1.18rem); padding: 0.55rem 0.75rem; margin-bottom: 0.3rem; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+        .quiz-options li span.opt-label { color: var(--accent-yellow); font-weight: 700; min-width: 2.2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-yellow); color: #0f172a; border: none; padding: 0.75rem 1.6rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+            align-self: flex-start; margin-top: 0.5rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 16px 32px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 8px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 18px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 52px; height: 10vh; max-height: 82px; position: relative;
+            font-size: clamp(0.95rem, 1.3vw, 1.18rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot {
+            width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-yellow); color: #0f172a; border-color: var(--accent-yellow); box-shadow: 0 0 15px rgba(251,191,36,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        /* Slide intro larger font */
+        .slide-intro h1 { font-size: clamp(2.0rem, 3.5vw, 2.9rem); }
+        .slide-intro h2 { font-size: clamp(1.3rem, 2.1vw, 1.7rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.12rem, 1.65vw, 1.32rem); line-height: 1.6; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 58px; }
+            .game-columns { padding: 12px 16px; }
+        }
+        /* Interactive simulator */
+        .sim-slider { width: 100%; accent-color: var(--accent-yellow); cursor: pointer; height: 6px; margin: 4px 0 8px; }
+        .sim-value { color: var(--accent-cyan); font-weight: 700; font-size: 1.2rem; }
+        label { font-size: 1.05rem !important; }
+        canvas.rate-canvas { width: 100%; height: 100%; display: block; border-radius: 8px; }
+        /* k factor glow cards */
+        .k-card {
+            background: rgba(0,0,0,0.3); border-radius: 14px; padding: 1rem 1.1rem;
+            border: 1.5px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.45rem;
+            transition: all 0.3s; cursor: default;
+        }
+        .k-card:hover { border-color: var(--accent-yellow); box-shadow: 0 0 18px rgba(251,191,36,0.25); }
+        .k-card-title { font-size: 1.35rem; font-weight: 700; color: var(--accent-yellow); }
+        .k-card-text { font-size: 1.15rem; color: rgba(255,255,255,0.8); line-height: 1.65; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- Slide 1: 課程導覽 / 速率定律式總覽 -->
+            <div class="slide slide-intro active" id="slide-overview">
+                <h1>影響反應速率的因素 — 速率定律式觀點</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>速率定律式（Rate Law）</h2>
+                        <div class="formula-box">
+                            $$ R = k[\text{A}]^m[\text{B}]^n $$
+                        </div>
+                        <div class="info-card">
+                            <p><strong>R</strong>：反應速率（M/s 或 atm/s）</p>
+                            <p><strong>k</strong>：速率常數（rate constant），與溫度、催化劑有關</p>
+                            <p><strong>[A]、[B]</strong>：反應物濃度（M）或壓力（atm）</p>
+                            <p><strong>m、n</strong>：反應級數（由實驗決定，≠ 化學計量係數）</p>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.5rem;">
+                            <p><strong>關鍵理解：</strong>速率受到「濃度項」與「速率常數 $k$」兩部分控制</p>
+                            <ul style="margin-left:1rem; margin-top:0.3rem;">
+                                <li>濃度↑ → $R$ 直接變大（對 m, n 級有效）</li>
+                                <li>溫度↑ 或加催化劑 → <em>k 值變大</em> → $R$ 加快</li>
+                            </ul>
+                        </div>
+                        <div class="info-card-red" style="margin-top:0.3rem;">
+                            <p><strong>不影響 k 值的因素：</strong>反應物濃度、壓力、反應熱</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>影響因素架構圖</h2>
+                        <div class="svg-wrap">
+                            <svg viewBox="0 0 420 300">
+                                <defs>
+                                    <filter id="glow0" x="-30%" y="-30%" width="160%" height="160%">
+                                        <feGaussianBlur stdDeviation="4" result="b"/>
+                                        <feComposite in="SourceGraphic" in2="b" operator="over"/>
+                                    </filter>
+                                    <marker id="arr0" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                        <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24"/>
+                                    </marker>
+                                    <marker id="arr0b" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                        <path d="M0,0 L8,4 L0,8 Z" fill="#38bdf8"/>
+                                    </marker>
+                                </defs>
+                                <!-- Speed v box -->
+                                <rect x="170" y="20" width="80" height="38" rx="10" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="2"/>
+                                <text x="210" y="44" text-anchor="middle" fill="#fbbf24" font-weight="900" font-size="20">速率 R</text>
+                                <!-- k box -->
+                                <rect x="20" y="110" width="80" height="38" rx="10" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="2"/>
+                                <text x="60" y="134" text-anchor="middle" fill="#38bdf8" font-weight="900" font-size="20">常數 k</text>
+                                <!-- [A]^m box -->
+                                <rect x="320" y="110" width="80" height="38" rx="10" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="2"/>
+                                <text x="360" y="134" text-anchor="middle" fill="#34d399" font-weight="700" font-size="16">[A]ᵐ[B]ⁿ</text>
+                                <!-- Lines from v -->
+                                <line x1="185" y1="58" x2="90" y2="110" stroke="#fbbf24" stroke-width="2" marker-end="url(#arr0)"/>
+                                <line x1="235" y1="58" x2="340" y2="110" stroke="#fbbf24" stroke-width="2" marker-end="url(#arr0)"/>
+                                <!-- k factors -->
+                                <rect x="20" y="200" width="80" height="34" rx="8" fill="rgba(248,113,113,0.12)" stroke="#f87171" stroke-width="1.5"/>
+                                <text x="60" y="222" text-anchor="middle" fill="#f87171" font-size="14" font-weight="700">溫度 T</text>
+                                <rect x="115" y="200" width="88" height="34" rx="8" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" stroke-width="1.5"/>
+                                <text x="159" y="222" text-anchor="middle" fill="#a78bfa" font-size="14" font-weight="700">催化劑</text>
+                                <rect x="62" y="252" width="88" height="34" rx="8" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.5"/>
+                                <text x="106" y="274" text-anchor="middle" fill="#22d3ee" font-size="13" font-weight="700">活化能 Ea</text>
+                                <!-- Lines k factors -->
+                                <line x1="60" y1="148" x2="60" y2="200" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr0b)"/>
+                                <line x1="85" y1="148" x2="140" y2="200" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr0b)"/>
+                                <line x1="65" y1="234" x2="90" y2="252" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3"/>
+                                <line x1="159" y1="234" x2="125" y2="252" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="5,3"/>
+                                <!-- [A] factors -->
+                                <rect x="300" y="200" width="100" height="34" rx="8" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1.5"/>
+                                <text x="350" y="222" text-anchor="middle" fill="#34d399" font-size="13" font-weight="700">濃度（壓力）</text>
+                                <line x1="360" y1="148" x2="350" y2="200" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr0b)"/>
+                                <!-- Labels -->
+                                <text x="210" y="295" text-anchor="middle" fill="rgba(255,255,255,0.45)" font-size="13">R = k[A]ᵐ[B]ⁿ — 速率方程式架構</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: 速率常數 k 的單位 -->
+            <div class="slide" id="slide-kunit">
+                <h1>速率常數 $k$ 的單位</h1>
+                <div style="display:flex; flex-direction:column; gap:0.7rem; flex:1; overflow:hidden;">
+                    <div class="panel scroll-panel" style="flex:0 0 auto;">
+                        <h2>不同反應總級數，$k$ 的單位不同（可由反應總級數推求）</h2>
+                        <table class="data-table" style="margin-top:0.4rem;">
+                            <thead>
+                                <tr>
+                                    <th>反應總級數</th>
+                                    <th>0 級</th>
+                                    <th>1 級</th>
+                                    <th>2 級</th>
+                                    <th>m 級（一般式）</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="color:var(--accent-blue);font-weight:700;">以濃度（M）表示</td>
+                                    <td>M·s⁻¹</td>
+                                    <td>s⁻¹</td>
+                                    <td>M⁻¹·s⁻¹</td>
+                                    <td style="color:var(--accent-cyan);">M<sup>(1−m)</sup>·s⁻¹</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:var(--accent-green);font-weight:700;">以壓力（atm）表示</td>
+                                    <td>atm·s⁻¹</td>
+                                    <td>s⁻¹</td>
+                                    <td>atm⁻¹·s⁻¹</td>
+                                    <td style="color:var(--accent-cyan);">atm<sup>(1−m)</sup>·s⁻¹</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="grid-3" style="flex:1; min-height:0;">
+                        <div class="panel scroll-panel">
+                            <h2>🔢 推導方法</h2>
+                            <div class="formula-box" style="font-size:1rem;">$R = k[\text{A}]^m$</div>
+                            <p>整理後：$k = \dfrac{R}{[\text{A}]^m}$</p>
+                            <div class="info-card" style="margin-top:0.5rem;">
+                                <p><strong>單位推導（以濃度為例）：</strong></p>
+                                <p>$[k] = \dfrac{\text{M/s}}{\text{M}^m} = \text{M}^{1-m}\cdot\text{s}^{-1}$</p>
+                            </div>
+                            <div class="info-card-yellow" style="margin-top:0.3rem;">
+                                <p>判斷訣竅：</p>
+                                <p style="margin-left:0.8rem; margin-top:0.2rem;"><strong>單位中有 M（或 atm）</strong><br>→ 不是一級</p>
+                                <p style="margin-left:0.8rem; margin-top:0.2rem;"><strong>單位只有 s⁻¹</strong><br>→ 一級反應</p>
+                            </div>
+                        </div>
+                        <div class="panel scroll-panel">
+                            <h2>📋 各級數特徵整理</h2>
+                            <div class="info-card" style="margin-top:0.3rem;">
+                                <p><span class="tag tag-green">0 級</span> $R = k$</p>
+                                <p style="margin-top:0.2rem; color:rgba(255,255,255,0.85);">速率恆定，與濃度無關</p>
+                            </div>
+                            <div class="info-card" style="margin-top:0.3rem;">
+                                <p><span class="tag tag-blue">1 級</span> $R = k[\text{A}]$</p>
+                                <p style="margin-top:0.2rem; color:rgba(255,255,255,0.85);">速率正比於濃度</p>
+                                <p style="font-size:1.0rem; color:rgba(255,255,255,0.6); margin-top:0.2rem;">例：放射性衰變、一級藥物代謝</p>
+                            </div>
+                            <div class="info-card" style="margin-top:0.3rem;">
+                                <p><span class="tag tag-yellow">2 級</span> $R = k[\text{A}]^2$</p>
+                                <p style="margin-top:0.2rem; color:rgba(255,255,255,0.85);">速率與濃度平方成正比</p>
+                                <p style="font-size:1.0rem; color:rgba(255,255,255,0.6); margin-top:0.2rem;">例：$2\text{NO}_2\rightarrow 2\text{NO}+\text{O}_2$</p>
+                            </div>
+                        </div>
+                        <div class="panel scroll-panel">
+                            <h2>⚠️ 重要觀念</h2>
+                            <div class="info-card-red">
+                                <p>反應級數（m、n）<strong>必須由實驗決定</strong>，不等於化學方程式中的計量係數！</p>
+                            </div>
+                            <div class="info-card-purple" style="margin-top:0.4rem;">
+                                <p><strong>k 值的特性：</strong></p>
+                                <ul style="margin-left:1rem; margin-top:0.3rem;">
+                                    <li>對固定反應，$k$ 只隨<em>溫度</em>改變</li>
+                                    <li>加<em>催化劑</em>可改變 $k$</li>
+                                    <li>濃度、壓力、反應熱<strong>不影響</strong> $k$</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: 濃度（壓力）的影響 -->
+            <div class="slide" id="slide-conc">
+                <h1>濃度（壓力）對反應速率的影響</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>從速率定律式切入</h2>
+                        <div class="formula-box">
+                            $R = k[\text{A}]^m[\text{B}]^n$
+                        </div>
+                        <p>增加反應物濃度（或壓力）→ <strong>[A]↑</strong> → $R$ 增大</p>
+                        <div class="info-card" style="margin-top:0.4rem;">
+                            <p><strong>碰撞理論解釋：</strong></p>
+                            <p>濃度↑ → 單位體積粒子數↑ → 有效碰撞頻率↑ → 反應速率↑</p>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.3rem;">
+                            <p><strong>氣體反應的壓力效應：</strong></p>
+                            <p>對氣體：$P = nRT/V$，增加壓力（壓縮體積）→ 濃度↑ → 等效於濃度增加</p>
+                            <div class="formula-box-blue" style="margin-top:0.4rem; font-size:0.95rem;">
+                                $c = \dfrac{n}{V} = \dfrac{P}{RT}$（理想氣體）
+                            </div>
+                        </div>
+                        <div class="info-card-red" style="margin-top:0.3rem;">
+                            <p><strong>注意：</strong>改變濃度（壓力）不改變 $k$ 值，只改變速率定律式中的濃度項。</p>
+                        </div>
+                        <div class="info-card-green" style="margin-top:0.3rem;">
+                            <p><strong>0 級反應例外：</strong>速率與濃度無關（$R = k$），增加濃度對速率無影響。</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>互動模擬：濃度對速率的影響</h2>
+                        <div style="flex:0 0 auto; margin-bottom:0.5rem;">
+                            <label style="font-size:0.88rem; color:rgba(255,255,255,0.7);">反應級數 m：<span class="sim-value" id="order-val">1</span></label>
+                            <input type="range" class="sim-slider" id="order-slider" min="0" max="3" step="1" value="1">
+                            <label style="font-size:0.88rem; color:rgba(255,255,255,0.7);">濃度 [A]：<span class="sim-value" id="conc-val">1.0</span> M</label>
+                            <input type="range" class="sim-slider" id="conc-slider" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+                        <div style="flex:0 0 auto; padding:0.5rem; background:rgba(0,0,0,0.3); border-radius:8px; margin-bottom:0.5rem;">
+                            <p style="text-align:center; font-size:1rem;">速率 $R = k \cdot [A]^m$ = <span class="sim-value" id="rate-result">1.00</span> M/s</p>
+                            <p style="text-align:center; font-size:0.82rem; color:rgba(255,255,255,0.5);">（假設 $k = 1.0$ M<sup>(1-m)</sup>·s⁻¹）</p>
+                        </div>
+                        <div style="flex:1; min-height:0;">
+                            <canvas id="conc-canvas" class="rate-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: 溫度對速率常數 k 的影響 -->
+            <div class="slide" id="slide-temp">
+                <h1>溫度對速率常數 $k$ 的影響</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>Arrhenius 方程式</h2>
+                        <div class="formula-box">
+                            $k = A \cdot e^{-E_a/RT}$
+                        </div>
+                        <div class="info-card">
+                            <p><strong>A</strong>：頻率因子（碰撞頻率）</p>
+                            <p><strong>$E_a$</strong>：活化能（Activation Energy，單位 kJ/mol）</p>
+                            <p><strong>R</strong>：氣體常數（8.314 J/mol·K）</p>
+                            <p><strong>T</strong>：絕對溫度（K）</p>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.4rem;">
+                            <p><strong>溫度↑ 的效果：</strong></p>
+                            <ul style="margin-left:1rem; margin-top:0.3rem;">
+                                <li>$T$↑ → $e^{-E_a/RT}$↑（指數項增大）→ $k$↑</li>
+                                <li>分子平均動能↑ → 超過活化能的分子比例↑</li>
+                                <li>Maxwell–Boltzmann 分布曲線右移</li>
+                            </ul>
+                        </div>
+                        <div class="info-card-green" style="margin-top:0.3rem;">
+                            <p><strong>經驗規律（van't Hoff 規則）：</strong></p>
+                            <p>溫度每升高 <strong>10°C</strong>，反應速率約增大為 <em>2～4 倍</em></p>
+                        </div>
+                        <div class="info-card-purple" style="margin-top:0.3rem;">
+                            <p><strong>活化能愈小，k 值愈大：</strong>$E_a$↓ → $e^{-E_a/RT}$↑ → $k$↑ → 反應愈快</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>Maxwell–Boltzmann 能量分布圖</h2>
+                        <div style="flex:1; min-height:0;">
+                            <canvas id="mb-canvas" class="rate-canvas"></canvas>
+                        </div>
+                        <div style="flex:0 0 auto; margin-top:0.5rem;">
+                            <label style="font-size:0.85rem; color:rgba(255,255,255,0.7);">溫度：<span class="sim-value" id="temp-val">300</span> K</label>
+                            <input type="range" class="sim-slider" id="temp-slider" min="200" max="700" step="10" value="300">
+                            <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); text-align:center; margin-top:0.3rem;">
+                                黃線 = 活化能門檻 | 陰影區域 = 有效碰撞分子比例
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: 催化劑對 k 的影響 -->
+            <div class="slide" id="slide-cat">
+                <h1>催化劑對速率常數 $k$ 的影響</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>催化劑的作用機制</h2>
+                        <div class="info-card">
+                            <p>催化劑提供<strong>不同的反應途徑</strong>，降低活化能 $E_a$：</p>
+                            <div class="formula-box" style="margin-top:0.4rem;">
+                                $E_a$（有催化劑）$\lt E_a$（無催化劑）
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.4rem;">
+                            <p><strong>結果：</strong></p>
+                            <ul style="margin-left:1rem; margin-top:0.3rem;">
+                                <li>$E_a$↓ → $k$↑（由 Arrhenius 方程）</li>
+                                <li>正、逆反應速率<strong>同時加快</strong></li>
+                                <li>平衡位置不改變（$\Delta G$ 不變）</li>
+                                <li>催化劑本身不被消耗（可再生）</li>
+                            </ul>
+                        </div>
+                        <div class="info-card-red" style="margin-top:0.3rem;">
+                            <p><strong>催化劑不影響：</strong>反應熱 $\Delta H$、平衡常數 $K_{eq}$、活化能以外的因素</p>
+                        </div>
+                        <div class="info-card-purple" style="margin-top:0.4rem;">
+                            <p><strong>均相 vs 非均相催化劑：</strong></p>
+                            <ul style="margin-left:1rem; margin-top:0.2rem;">
+                                <li><em>均相</em>：催化劑與反應物同相（如酸催化水解）</li>
+                                <li><em>非均相</em>：固體催化劑（如 Pt 催化 H₂ + O₂）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>催化劑降低活化能示意圖</h2>
+                        <div class="svg-wrap">
+                            <svg viewBox="0 0 420 280">
+                                <defs>
+                                    <filter id="glow-cat" x="-30%" y="-30%" width="160%" height="160%">
+                                        <feGaussianBlur stdDeviation="2.5" result="b"/>
+                                        <feComposite in="SourceGraphic" in2="b" operator="over"/>
+                                    </filter>
+                                    <linearGradient id="grad-uncat" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#f87171" stop-opacity="0.35"/>
+                                        <stop offset="100%" stop-color="#f87171" stop-opacity="0.0"/>
+                                    </linearGradient>
+                                    <linearGradient id="grad-cat" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"/>
+                                        <stop offset="100%" stop-color="#34d399" stop-opacity="0.0"/>
+                                    </linearGradient>
+                                    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                        <path d="M0,0 L0,8 L8,4 z" fill="#a78bfa"/>
+                                    </marker>
+                                    <marker id="arr-yellow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                        <path d="M0,0 L0,8 L8,4 z" fill="#fbbf24"/>
+                                    </marker>
+                                </defs>
+                                
+                                <!-- Fills -->
+                                <path d="M 50 240 L 50 190 L 110 190 C 160 190, 180 40, 220 40 C 260 40, 280 220, 330 220 L 390 220 L 390 240 Z" fill="url(#grad-uncat)"/>
+                                <path d="M 50 240 L 50 190 L 110 190 C 130 190, 150 100, 170 100 C 190 100, 200 140, 220 140 C 240 140, 250 110, 270 110 C 290 110, 310 220, 330 220 L 390 220 L 390 240 Z" fill="url(#grad-cat)"/>
+
+                                <!-- Baselines (dashed) -->
+                                <line x1="50" y1="190" x2="380" y2="190" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                <line x1="330" y1="220" x2="380" y2="220" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+                                <!-- Curves (Strokes) -->
+                                <path d="M 50 190 L 110 190 C 160 190, 180 40, 220 40 C 260 40, 280 220, 330 220 L 390 220" fill="none" stroke="#f87171" stroke-width="3" filter="url(#glow-cat)"/>
+                                <path d="M 50 190 L 110 190 C 130 190, 150 100, 170 100 C 190 100, 200 140, 220 140 C 240 140, 250 110, 270 110 C 290 110, 310 220, 330 220 L 390 220" fill="none" stroke="#34d399" stroke-width="3" filter="url(#glow-cat)"/>
+
+                                <!-- Axes -->
+                                <line x1="50" y1="240" x2="390" y2="240" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                                <line x1="50" y1="20" x2="50" y2="240" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+                                <text x="210" y="265" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="14" font-weight="700">反應進度</text>
+                                <text x="22" y="140" fill="rgba(255,255,255,0.6)" font-size="14" font-weight="700" transform="rotate(-90,22,140)">位能</text>
+                                
+                                <!-- Level texts -->
+                                <rect x="55" y="164" width="50" height="22" rx="4" fill="rgba(0,0,0,0.6)"/>
+                                <text x="80" y="180" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="12" font-weight="700">反應物</text>
+                                
+                                <rect x="335" y="194" width="50" height="22" rx="4" fill="rgba(0,0,0,0.6)"/>
+                                <text x="360" y="210" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-size="12" font-weight="700">生成物</text>
+
+                                <!-- Uncatalyzed Peak Annotation -->
+                                <line x1="220" y1="40" x2="220" y2="190" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5,4"/>
+                                <rect x="180" y="14" width="80" height="22" rx="4" fill="rgba(248,113,113,0.2)"/>
+                                <text x="220" y="30" text-anchor="middle" fill="#f87171" font-size="13" font-weight="700">Ea（無催）</text>
+
+                                <!-- Catalyzed Peak Annotation -->
+                                <line x1="170" y1="100" x2="170" y2="190" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,4"/>
+                                <rect x="130" y="74" width="80" height="22" rx="4" fill="rgba(52,211,153,0.2)"/>
+                                <text x="170" y="90" text-anchor="middle" fill="#34d399" font-size="13" font-weight="700">Ea'（有催）</text>
+
+                                <!-- Delta H arrow -->
+                                <line x1="370" y1="190" x2="370" y2="216" stroke="#a78bfa" stroke-width="2" marker-end="url(#arr-purple)"/>
+                                <text x="382" y="209" fill="#a78bfa" font-size="14" font-weight="700">ΔH</text>
+
+                                <!-- Arrow showing reduction -->
+                                <line x1="220" y1="40" x2="245" y2="40" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                <line x1="170" y1="100" x2="245" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                <line x1="240" y1="40" x2="240" y2="95" stroke="#fbbf24" stroke-width="2" marker-end="url(#arr-yellow)"/>
+                                <rect x="248" y="58" width="56" height="22" rx="4" fill="rgba(251,191,36,0.15)"/>
+                                <text x="276" y="74" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="700">降低 Ea</text>
+
+                                <!-- Legend (Moved to Top Right) -->
+                                <rect x="265" y="5" width="145" height="50" rx="6" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.15)"/>
+                                <line x1="275" y1="20" x2="295" y2="20" stroke="#f87171" stroke-width="3"/>
+                                <text x="305" y="24" fill="#f87171" font-size="12" font-weight="700">無催化劑（高 Ea）</text>
+                                <line x1="275" y1="40" x2="295" y2="40" stroke="#34d399" stroke-width="3"/>
+                                <text x="305" y="44" fill="#34d399" font-size="12" font-weight="700">有催化劑（低 Ea'）</text>
+                            </svg>
+                        </div>
+                        <div class="info-card-green" style="flex:0 0 auto; margin-top:0.3rem;">
+                            <p style="font-size:0.85rem;">催化劑降低活化能 → $k$↑ → 正逆反應均加快 → <strong>△H 不變</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: 速率常數 k 的影響因素綜整 -->
+            <div class="slide" id="slide-kfactors">
+                <h1>速率常數 $k$ 的影響因素綜整</h1>
+                <div style="display:flex; flex-direction:column; gap:0.7rem; flex:1; overflow:hidden;">
+                    <div class="panel scroll-panel" style="flex:0 0 auto;">
+                        <div class="formula-box" style="font-size: 1.6rem; padding: 1rem;">
+                            $k = A \cdot e^{-E_a/RT}$ &nbsp;&nbsp;&nbsp;（Arrhenius 方程式）
+                        </div>
+                    </div>
+                    <div class="grid-3" style="flex:1; min-height:0;">
+                        <div class="k-card">
+                            <div class="k-card-title">① 反應物種類（活化能）</div>
+                            <div class="tag tag-red" style="margin-top:0.4rem; font-size:1.1rem; padding:4px 12px;">決定 Eₐ 大小</div>
+                            <div class="k-card-text" style="margin-top:0.7rem;">
+                                <p>• 活化能愈小，$k$ 值愈大</p>
+                                <p>• 不同反應物種類 → 不同的鍵能與反應路徑 → 不同 $E_a$</p>
+                                <p>• 例：Na 與水反應（低 $E_a$）遠快於 Cu 與水</p>
+                            </div>
+                            <div class="formula-box" style="margin-top:auto; font-size:1.3rem; padding:0.6rem;">$E_a$↓ → $k$↑</div>
+                        </div>
+                        <div class="k-card">
+                            <div class="k-card-title">② 溫度（Temperature）</div>
+                            <div class="tag tag-yellow" style="margin-top:0.4rem; font-size:1.1rem; padding:4px 12px;">影響最顯著</div>
+                            <div class="k-card-text" style="margin-top:0.7rem;">
+                                <p>• 溫度愈高，$k$ 值愈大</p>
+                                <p>• $T$↑ → $e^{-E_a/RT}$↑ → $k$↑</p>
+                                <p>• 每升高 10°C，速率約增大 2–4 倍</p>
+                                <p>• Arrhenius plot：$\ln k$ vs $\dfrac{1}{T}$ 為直線，斜率 = $-\dfrac{E_a}{R}$</p>
+                            </div>
+                            <div class="formula-box" style="margin-top:auto; font-size:1.3rem; padding:0.6rem;">$T$↑ → $k$↑</div>
+                        </div>
+                        <div class="k-card">
+                            <div class="k-card-title">③ 催化劑（Catalyst）</div>
+                            <div class="tag tag-purple" style="margin-top:0.4rem; font-size:1.1rem; padding:4px 12px;">降低 Eₐ</div>
+                            <div class="k-card-text" style="margin-top:0.7rem;">
+                                <p>• 加入催化劑，$k$ 值變大</p>
+                                <p>• 催化劑提供新反應路徑，降低 $E_a$</p>
+                                <p>• 正、逆反應 $k$ 均增大，平衡不移動</p>
+                                <p>• 抑制劑（inhibitor）使 $E_a$↑ → $k$↓</p>
+                            </div>
+                            <div class="formula-box" style="margin-top:auto; font-size:1.3rem; padding:0.6rem;">催化劑 → $E_a$↓ → $k$↑</div>
+                        </div>
+                    </div>
+                    <div class="panel" style="flex:0 0 auto;">
+                        <div class="info-card-red" style="margin:0;">
+                            <p><strong>不影響 k 值的因素：</strong>
+                            <span class="tag tag-green">反應物濃度</span>
+                            <span class="tag tag-green">壓力</span>
+                            <span class="tag tag-green">反應熱 △H</span>
+                            — 這些只影響速率定律式中的濃度項，不改變 $k$</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: 常見化學反應速率比較 -->
+            <div class="slide" id="slide-examples">
+                <h1>常見化學反應的反應速率</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>反應速率的相對大小</h2>
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>反應類型</th><th>典型例子</th><th>速率特徵</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="color:#f87171;">爆炸性反應</td>
+                                    <td>$\text{H}_2 + \text{Cl}_2 \rightarrow 2\text{HCl}$（光引發）</td>
+                                    <td><span class="tag tag-red">極快</span>鏈鎖反應</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#fb923c;">快速反應</td>
+                                    <td>$\text{Na}+\text{H}_2\text{O}\rightarrow\text{NaOH}+\frac{1}{2}\text{H}_2$</td>
+                                    <td><span class="tag tag-yellow">快</span>室溫即可</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#fbbf24;">中速反應</td>
+                                    <td>$\text{Fe}+\text{稀H}_2\text{SO}_4\rightarrow\text{FeSO}_4+\text{H}_2$↑</td>
+                                    <td><span class="tag tag-blue">中等</span>氣泡可見</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#34d399;">慢速反應</td>
+                                    <td>$\text{Fe 生鏽}$（鐵的氧化）</td>
+                                    <td><span class="tag tag-green">慢</span>數天~數月</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#38bdf8;">極慢反應</td>
+                                    <td>煤的形成、岩石風化</td>
+                                    <td><span class="tag tag-purple">極慢</span>萬年以上</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="info-card-yellow" style="margin-top:0.6rem;">
+                            <p><strong>離子反應最快：</strong>中和反應、沉澱反應（如 $\text{Ag}^++\text{Cl}^-\rightarrow\text{AgCl}$）幾乎瞬間完成</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>工業上重要的速率控制案例</h2>
+                        <div class="k-card">
+                            <div class="k-card-title">⚗️ 哈柏法（Haber Process）製氨</div>
+                            <div class="k-card-text" style="margin-top:0.3rem;">
+                                <p>$\text{N}_2 + 3\text{H}_2 \rightleftharpoons 2\text{NH}_3$</p>
+                                <p>• 高壓（150–300 atm）：↑[N₂][H₂] → $R$↑</p>
+                                <p>• 鐵催化劑：$E_a$↓ → $k$↑</p>
+                                <p>• 400–500°C：平衡與速率間的折衷</p>
+                            </div>
+                        </div>
+                        <div class="k-card" style="margin-top:0.5rem;">
+                            <div class="k-card-title">🏭 接觸法（Contact Process）製硫酸</div>
+                            <div class="k-card-text" style="margin-top:0.3rem;">
+                                <p>$2\text{SO}_2 + \text{O}_2 \rightleftharpoons 2\text{SO}_3$</p>
+                                <p>• V₂O₅ 催化劑：大幅降低 $E_a$</p>
+                                <p>• 約 450°C 操作：速率與轉化率的最佳點</p>
+                            </div>
+                        </div>
+                        <div class="k-card" style="margin-top:0.5rem;">
+                            <div class="k-card-title">🧪 過氧化氫分解</div>
+                            <div class="k-card-text" style="margin-top:0.3rem;">
+                                <p>$2\text{H}_2\text{O}_2 \rightarrow 2\text{H}_2\text{O} + \text{O}_2$</p>
+                                <p>• 無催化劑：慢速分解</p>
+                                <p>• MnO₂ 或 KI 催化：速率激增</p>
+                                <p>• 生物體中酶（過氧化氫酶）催化更有效</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: 實驗數據分析——如何決定反應級數 -->
+            <div class="slide" id="slide-expdata">
+                <h1>實驗數據分析——如何決定反應級數</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>方法：初速率法（Initial Rate Method）</h2>
+                        <div class="info-card">
+                            <p>固定其他反應物濃度，改變一種反應物濃度，比較初速率：</p>
+                            <div class="formula-box" style="margin-top:0.4rem; font-size:0.95rem;">
+                                $\dfrac{R_2}{R_1} = \left(\dfrac{[\text{A}]_2}{[\text{A}]_1}\right)^m$
+                            </div>
+                            <p style="margin-top:0.3rem;">取對數可求出 $m$：</p>
+                            <div class="formula-box-blue" style="font-size:0.95rem;">
+                                $m = \dfrac{\ln(R_2/R_1)}{\ln([\text{A}]_2/[\text{A}]_1)}$
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.5rem;">
+                            <p><strong>求 k 值：</strong>代入任一組實驗數據</p>
+                            <div class="formula-box" style="font-size:0.95rem;">$k = \dfrac{R}{[\text{A}]^m[\text{B}]^n}$</div>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>範例計算</h2>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7);">反應：$A + B \rightarrow$ 生成物</p>
+                        <table class="data-table" style="margin-top:0.4rem;">
+                            <thead>
+                                <tr><th>實驗</th><th>[A] (M)</th><th>[B] (M)</th><th>R (M/s)</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>1</td><td>0.10</td><td>0.10</td><td>2.0×10⁻³</td></tr>
+                                <tr><td>2</td><td>0.20</td><td>0.10</td><td>4.0×10⁻³</td></tr>
+                                <tr><td>3</td><td>0.10</td><td>0.20</td><td>8.0×10⁻³</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="info-card" style="margin-top:0.5rem;">
+                            <p><strong>解析：</strong></p>
+                            <p>比較實驗 1,2：[A] 倍增，$R$ 倍增 → <strong>m = 1（一級）</strong></p>
+                            <p>比較實驗 1,3：[B] 倍增，$R$ 增大 4 倍 → <strong>n = 2（二級）</strong></p>
+                            <p>速率定律式：$R = k[\text{A}][\text{B}]^2$</p>
+                            <p>$k = \dfrac{2.0\times10^{-3}}{(0.10)(0.10)^2} = 2.0\text{ M}^{-2}\cdot\text{s}^{-1}$</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: 範例與思考 -->
+            <div class="slide" id="slide-quiz">
+                <h1>影響反應速率範例與思考</h1>
+                <div class="grid-2">
+                    <div class="quiz-item">
+                        <h2>範例 1</h2>
+                        <p>下列關於速率常數 $k$ 的敘述，何者正確？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 增加反應物濃度，$k$ 值增大</li>
+                            <li><span class="opt-label">(B)</span> 升高溫度，$k$ 值增大</li>
+                            <li><span class="opt-label">(C)</span> 增加壓力，$k$ 值減小</li>
+                            <li><span class="opt-label">(D)</span> 放熱反應的 $k$ 值一定大於吸熱反應</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans1">
+                            <h2 style="color:var(--accent-green);">解答：(B) 升高溫度，$k$ 值增大</h2>
+                            <p><strong>解析：</strong></p>
+                            <p>(A) 錯誤：$k$ 值與濃度無關，濃度↑只使速率公式 $R=k[A]^m$ 中濃度項增大。</p>
+                            <p>(B) 正確：由 Arrhenius 方程 $k=Ae^{-E_a/RT}$，$T$↑ → $k$↑。</p>
+                            <p>(C) 錯誤：壓力不影響 $k$ 值。</p>
+                            <p>(D) 錯誤：$k$ 值大小取決於活化能，與反應熱無直接關係。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">關閉</button>
+                        </div>
+                    </div>
+                    <div class="quiz-item">
+                        <h2>範例 2</h2>
+                        <p>已知某反應的速率定律式 $R = k[\text{A}]^2$，當 [A] 由 0.5 M 增加至 2.0 M 時，速率增大為原來的多少倍？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 2 倍</li>
+                            <li><span class="opt-label">(B)</span> 4 倍</li>
+                            <li><span class="opt-label">(C)</span> 8 倍</li>
+                            <li><span class="opt-label">(D)</span> 16 倍</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans2">
+                            <h2 style="color:var(--accent-green);">解答：(D) 16 倍</h2>
+                            <p><strong>解析：</strong></p>
+                            <p>$\dfrac{R_2}{R_1} = \left(\dfrac{[\text{A}]_2}{[\text{A}]_1}\right)^2 = \left(\dfrac{2.0}{0.5}\right)^2 = 4^2 = 16$ 倍</p>
+                            <p>因為 m = 2（二級反應），濃度增大 4 倍，速率增大 4² = 16 倍。</p>
+                            <p>這展示了高級數反應對濃度的高度敏感性。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 10: 觀念連連看互動遊戲 -->
+            <div class="slide" id="slide-game">
+                <h1 style="color:var(--accent-purple);">單元挑戰：反應速率觀念連連看</h1>
+                <p style="font-size:0.88rem;color:rgba(255,255,255,0.55);flex-shrink:0;">從左側概念拖曳連線至右側說明；正確顯示綠線並保留，錯誤顯示紅線後消失</p>
+                <div class="game-area">
+                    <svg id="game-svg" role="img" aria-label="連連看互動區"></svg>
+                    <div class="game-columns">
+                        <div id="left-column"></div>
+                        <div id="right-column"></div>
+                    </div>
+                    <div id="game-feedback">🎉 太棒了！全對！</div>
+                </div>
+                <div style="text-align:center;margin-top:0.5rem;flex-shrink:0;">
+                    <button type="button" class="btn-action" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid var(--accent-yellow);" onclick="resetGame()">重新挑戰（隨機出題）</button>
+                </div>
+            </div>
+
+        </div><!-- /slides-container -->
+        <canvas id="drawing-layer" role="application" aria-label="手寫繪圖層" tabindex="0"></canvas>
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<div id="slide-info">1 / 10</div>
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#fbbf24"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
+</div>
+
+<div id="start-overlay">
+    <div class="start-badge">選修化學二 · 第三章 · 化學反應速率</div>
+    <h1 class="start-title">影響反應速率的因素</h1>
+    <p class="start-sub">互動教學（支援 iPad 全螢幕 · 分頁 · 手寫 · 範例 · 觀念連連看）</p>
+    <button type="button" class="btn-start" id="btn-start">開始探索教學 ✦</button>
+    <div class="start-info">
+        <div class="info-chip"><span>⚡</span><span>速率定律式觀點</span></div>
+        <div class="info-chip"><span>🌡️</span><span>溫度與 Arrhenius 方程</span></div>
+        <div class="info-chip"><span>🧪</span><span>催化劑降低活化能</span></div>
+        <div class="info-chip"><span>📊</span><span>濃度壓力效應</span></div>
+        <div class="info-chip"><span>✏️</span><span>手寫 · 連連看</span></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return;
+        starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof window.updateSlides === 'function') window.updateSlides();
+                drawConcCanvas();
+                drawMBCanvas();
+            });
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+</script>
+
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.style.display === 'flex';
+    el.style.display = open ? 'none' : 'flex';
+    if (btn) btn.textContent = open ? '顯示解答' : '關閉';
+}
+
+/* ---- Concentration Simulator Canvas ---- */
+function drawConcCanvas() {
+    const cvs = document.getElementById('conc-canvas');
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = rect.width * dpr; cvs.height = rect.height * dpr;
+    const g = cvs.getContext('2d');
+    g.scale(dpr, dpr);
+    const w = rect.width, h = rect.height;
+    const m = parseInt(document.getElementById('order-slider').value);
+    const concCurrent = parseFloat(document.getElementById('conc-slider').value);
+
+    g.clearRect(0, 0, w, h);
+
+    // Background
+    g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(0, 0, w, h);
+
+    // Draw rate vs concentration curve
+    const pad = { l: 45, r: 15, t: 15, b: 35 };
+    const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+    const maxC = 3.0;
+    const maxV = Math.pow(maxC, Math.max(m, 1)) * 1.1;
+
+    // Grid
+    g.strokeStyle = 'rgba(255,255,255,0.07)'; g.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+        const yg = pad.t + gh - (i / 4) * gh;
+        g.beginPath(); g.moveTo(pad.l, yg); g.lineTo(pad.l + gw, yg); g.stroke();
+    }
+
+    // Axes
+    g.strokeStyle = 'rgba(255,255,255,0.4)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(pad.l, pad.t); g.lineTo(pad.l, pad.t + gh); g.lineTo(pad.l + gw, pad.t + gh); g.stroke();
+
+    // Labels
+    g.fillStyle = 'rgba(255,255,255,0.5)'; g.font = '14px sans-serif'; g.textAlign = 'center';
+    g.fillText('[A] (M)', pad.l + gw / 2, h - 3);
+    g.save(); g.translate(14, pad.t + gh / 2); g.rotate(-Math.PI / 2);
+    g.fillText('速率 R', 0, 0); g.restore();
+
+    // Curve
+    const colors = ['#34d399','#38bdf8','#fbbf24','#f87171'];
+    const color = colors[m] || '#f8fafc';
+    g.strokeStyle = color; g.lineWidth = 2.5;
+    g.beginPath();
+    for (let xi = 0; xi <= gw; xi++) {
+        const c = (xi / gw) * maxC;
+        const v = m === 0 ? 1.0 : Math.pow(c, m);
+        const x = pad.l + xi;
+        const y = pad.t + gh - (v / maxV) * gh;
+        xi === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+    }
+    g.stroke();
+
+    // Current point
+    const vCurrent = m === 0 ? 1.0 : Math.pow(concCurrent, m);
+    const xPt = pad.l + (concCurrent / maxC) * gw;
+    const yPt = pad.t + gh - (vCurrent / maxV) * gh;
+    g.fillStyle = '#fbbf24';
+    g.beginPath(); g.arc(xPt, yPt, 6, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
+
+    // Dotted lines to axes
+    g.strokeStyle = 'rgba(251,191,36,0.5)'; g.lineWidth = 1; g.setLineDash([4, 3]);
+    g.beginPath(); g.moveTo(xPt, yPt); g.lineTo(xPt, pad.t + gh); g.stroke();
+    g.beginPath(); g.moveTo(xPt, yPt); g.lineTo(pad.l, yPt); g.stroke();
+    g.setLineDash([]);
+
+    // Axis value labels
+    g.fillStyle = '#fbbf24'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center';
+    g.fillText(concCurrent.toFixed(1), xPt, pad.t + gh + 17);
+    g.textAlign = 'right';
+    g.fillText(vCurrent.toFixed(2), pad.l - 6, yPt + 5);
+
+    // Order label
+    const orderNames = ['0 級', '1 級', '2 級', '3 級'];
+    g.fillStyle = color; g.font = 'bold 16px sans-serif'; g.textAlign = 'right';
+    g.fillText(orderNames[m], pad.l + gw - 5, pad.t + 20);
+}
+
+function updateConc() {
+    const m = parseInt(document.getElementById('order-slider').value);
+    const c = parseFloat(document.getElementById('conc-slider').value);
+    document.getElementById('order-val').textContent = m;
+    document.getElementById('conc-val').textContent = c.toFixed(1);
+    const v = m === 0 ? 1.0 : Math.pow(c, m);
+    document.getElementById('rate-result').textContent = v.toFixed(3);
+    drawConcCanvas();
+}
+document.getElementById('order-slider').addEventListener('input', updateConc);
+document.getElementById('conc-slider').addEventListener('input', updateConc);
+
+/* ---- Maxwell-Boltzmann Canvas ---- */
+let mbEa = 1000; // global activation energy threshold
+const mbMaxE = 1600; // global max energy scale
+
+function drawMBCanvas() {
+    const cvs = document.getElementById('mb-canvas');
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = rect.width * dpr; cvs.height = rect.height * dpr;
+    const g = cvs.getContext('2d');
+    g.scale(dpr, dpr);
+    const w = rect.width, h = rect.height;
+    const T = parseInt(document.getElementById('temp-slider').value);
+
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(0, 0, w, h);
+
+    const pad = { l: 40, r: 15, t: 15, b: 35 };
+    const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+    const kB = 1.0; // normalized
+    const Ea = mbEa;
+    const maxE = mbMaxE;
+
+    // Maxwell-Boltzmann: f(E) = 2π*(1/πkT)^(3/2) * sqrt(E) * exp(-E/kT)
+    // Normalized proportional function for constant area:
+    const f = (E) => (Math.sqrt(E) * Math.exp(-E / (kB * T))) / Math.pow(kB * T, 1.5);
+
+    // To scale the curve nicely, find the maximum possible value which occurs at the lowest temperature (T=200).
+    // Peak occurs at E = kT/2.
+    const minT = 200;
+    const peakValMinT = (Math.sqrt(minT / 2) * Math.exp(-0.5)) / Math.pow(minT, 1.5);
+    const scaleY = (0.9 * gh) / peakValMinT;
+
+    // Shade area beyond Ea (active molecules)
+    g.beginPath();
+    const xEa = pad.l + (Ea / maxE) * gw;
+    g.moveTo(xEa, pad.t + gh);
+    for (let xi = Math.floor((Ea / maxE) * gw); xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const y = pad.t + gh - f(E) * scaleY;
+        g.lineTo(pad.l + xi, y);
+    }
+    g.lineTo(pad.l + gw, pad.t + gh);
+    g.closePath();
+    g.fillStyle = T > 450 ? 'rgba(248,113,113,0.3)' : 'rgba(52,211,153,0.2)';
+    g.fill();
+
+    // Draw curve
+    const tempFrac = (T - 200) / 500; // 0 to 1 for T 200-700K
+    const r = Math.round(56 + tempFrac * 200);
+    const b = Math.round(248 - tempFrac * 150);
+    g.strokeStyle = `rgb(${r},${Math.round(189-tempFrac*80)},${b})`;
+    g.lineWidth = 2.5;
+    g.beginPath();
+    for (let xi = 0; xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const y = pad.t + gh - f(E) * scaleY;
+        xi === 0 ? g.moveTo(pad.l + xi, y) : g.lineTo(pad.l + xi, y);
+    }
+    g.stroke();
+
+    // Axes
+    g.strokeStyle = 'rgba(255,255,255,0.4)'; g.lineWidth = 1.5;
+    g.beginPath(); g.moveTo(pad.l, pad.t); g.lineTo(pad.l, pad.t + gh); g.lineTo(pad.l + gw, pad.t + gh); g.stroke();
+
+    // Ea threshold line
+    g.strokeStyle = '#fbbf24'; g.lineWidth = 2; g.setLineDash([6, 4]);
+    g.beginPath(); g.moveTo(xEa, pad.t); g.lineTo(xEa, pad.t + gh); g.stroke();
+    g.setLineDash([]);
+    
+    // Draw grab handle
+    g.fillStyle = '#fbbf24';
+    g.beginPath(); g.arc(xEa, pad.t + gh / 2, 5, 0, Math.PI * 2); g.fill();
+    g.font = 'bold 14px sans-serif'; g.textAlign = 'center';
+    g.fillText('Eₐ', xEa, pad.t + 16);
+
+    // Labels
+    g.fillStyle = 'rgba(255,255,255,0.5)'; g.font = '14px sans-serif'; g.textAlign = 'center';
+    g.fillText('分子能量 E', pad.l + gw / 2, h - 3);
+    g.save(); g.translate(14, pad.t + gh / 2); g.rotate(-Math.PI / 2);
+    g.fillText('分子數比例', 0, 0); g.restore();
+
+    // Temperature label
+    const frac = (() => {
+        let sum = 0, total = 0;
+        for (let xi = 0; xi <= gw; xi++) {
+            const E = (xi / gw) * maxE;
+            const val = f(E);
+            if ((xi / gw) * maxE >= Ea) sum += val;
+            total += val;
+        }
+        return total > 0 ? (sum / total * 100).toFixed(1) : '0.0';
+    })();
+
+    g.fillStyle = T > 450 ? '#f87171' : '#34d399';
+    g.font = 'bold 15px sans-serif'; g.textAlign = 'left';
+    g.fillText(`T = ${T} K`, pad.l + 5, pad.t + 22);
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.font = '14px sans-serif';
+    g.fillText(`有效碰撞比例 ≈ ${frac}%`, pad.l + 5, pad.t + 40);
+}
+
+document.getElementById('temp-slider').addEventListener('input', function () {
+    document.getElementById('temp-val').textContent = this.value;
+    drawMBCanvas();
+});
+
+// MB Canvas Drag Interaction for Ea
+(function initMBInteraction() {
+    const cvs = document.getElementById('mb-canvas');
+    if (!cvs) return;
+    let isDraggingEa = false;
+    
+    function getMousePos(evt) {
+        const rect = cvs.getBoundingClientRect();
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        return clientX - rect.left;
+    }
+    
+    function getXEa(gw) {
+        return 40 + (mbEa / mbMaxE) * gw; // pad.l is 40
+    }
+    
+    function updateCursor(evt) {
+        if (isDraggingEa) return;
+        const x = getMousePos(evt);
+        const gw = cvs.getBoundingClientRect().width - 40 - 15;
+        if (Math.abs(x - getXEa(gw)) < 15) {
+            cvs.style.cursor = 'ew-resize';
+        } else {
+            cvs.style.cursor = 'default';
+        }
+    }
+    
+    cvs.addEventListener('mousedown', (e) => {
+        const gw = cvs.getBoundingClientRect().width - 40 - 15;
+        if (Math.abs(getMousePos(e) - getXEa(gw)) < 15) isDraggingEa = true;
+    });
+    
+    cvs.addEventListener('mousemove', (e) => {
+        updateCursor(e);
+        if (!isDraggingEa) return;
+        const gw = cvs.getBoundingClientRect().width - 40 - 15;
+        let newEa = ((getMousePos(e) - 40) / gw) * mbMaxE;
+        if (newEa < 50) newEa = 50;
+        if (newEa > mbMaxE - 10) newEa = mbMaxE - 10;
+        mbEa = newEa;
+        drawMBCanvas();
+    });
+    
+    cvs.addEventListener('mouseup', () => isDraggingEa = false);
+    cvs.addEventListener('mouseleave', () => {
+        isDraggingEa = false;
+        cvs.style.cursor = 'default';
+    });
+    
+    cvs.addEventListener('touchstart', (e) => {
+        const gw = cvs.getBoundingClientRect().width - 40 - 15;
+        if (Math.abs(getMousePos(e) - getXEa(gw)) < 25) {
+            isDraggingEa = true;
+            e.preventDefault();
+        }
+    }, {passive: false});
+    
+    cvs.addEventListener('touchmove', (e) => {
+        if (!isDraggingEa) return;
+        e.preventDefault();
+        const gw = cvs.getBoundingClientRect().width - 40 - 15;
+        let newEa = ((getMousePos(e) - 40) / gw) * mbMaxE;
+        if (newEa < 50) newEa = 50;
+        if (newEa > mbMaxE - 10) newEa = mbMaxE - 10;
+        mbEa = newEa;
+        drawMBCanvas();
+    }, {passive: false});
+    
+    cvs.addEventListener('touchend', () => isDraggingEa = false);
+    cvs.addEventListener('touchcancel', () => isDraggingEa = false);
+})();
+
+/* ---- Drawing layer ---- */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+    ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ---- Slide navigation ---- */
+window.updateSlides = function () {
+    slides.forEach((s, i) => {
+        s.classList.toggle('active', i === currentSlide);
+    });
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    // Redraw canvases if on relevant slides
+    setTimeout(() => {
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-conc') drawConcCanvas();
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-temp') drawMBCanvas();
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') { initGame(); drawConnections(); }
+    }, 100);
+};
+
+// Touch swipe navigation
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', e => {
+    if (isDrawingMode) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', e => {
+    if (isDrawingMode) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 40) {
+        if (dy < 0 && currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+        else if (dy > 0 && currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    }
+}, { passive: true });
+
+document.addEventListener('keydown', ev => {
+    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+/* ---- Toolbar drag ---- */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+/* ---- Game ---- */
+const GAME_POOL = [
+    { left: '速率常數 k', right: '與溫度及催化劑有關' },
+    { left: '反應級數 m、n', right: '由實驗決定，非計量係數' },
+    { left: '溫度↑', right: 'k 值增大' },
+    { left: '催化劑的效果', right: '降低活化能 Ea' },
+    { left: '濃度↑（0級除外）', right: '反應速率 R 增大' },
+    { left: 'Arrhenius 方程', right: 'k = A·e^(-Ea/RT)' },
+    { left: '活化能 Ea↓', right: 'k 值↑，速率加快' },
+    { left: '壓力對氣體反應', right: '等效於濃度增加' },
+    { left: '正逆反應均加快', right: '催化劑的特性' },
+    { left: '0 級反應速率', right: 'R = k（與濃度無關）' },
+    { left: '哈柏法鐵催化劑', right: '降低 Ea 加速合成氨' },
+    { left: '溫度每升高 10°C', right: '速率約增大 2~4 倍' },
+    { left: '不影響 k 的因素', right: '濃度、壓力、反應熱' },
+    { left: '1 級反應 k 單位', right: 's⁻¹' },
+    { left: '2 級反應 k 單位', right: 'M⁻¹·s⁻¹' },
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left, y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-yellow)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left);
+    currentLine.setAttribute('y2', cy - rect.top);
+}
+
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.touches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.touches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(d => {
+        if (d === startDot || d.classList.contains('active')) return;
+        const r = d.getBoundingClientRect();
+        if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) targetDot = d;
+    });
+    if (!targetDot || !currentLine) {
+        if (currentLine) currentLine.remove();
+        currentLine = null; startDot = null; return;
+    }
+    const si = parseInt(startDot.dataset.index), ti = parseInt(targetDot.dataset.index);
+    const correct = si === ti;
+    // Draw result line
+    const svg = document.getElementById('game-svg');
+    const rect = svg.getBoundingClientRect();
+    const tr = targetDot.getBoundingClientRect();
+    currentLine.setAttribute('x2', tr.left + tr.width / 2 - rect.left);
+    currentLine.setAttribute('y2', tr.top + tr.height / 2 - rect.top);
+    if (correct) {
+        currentLine.setAttribute('stroke', 'var(--accent-green)'); currentLine.setAttribute('stroke-width', '4');
+        startDot.classList.add('active'); targetDot.classList.add('active');
+        connections.push({ from: startDot, to: targetDot, line: currentLine });
+        if (document.querySelectorAll('.dot.active').length === GAME_COUNT * 2) {
+            document.getElementById('game-feedback').style.display = 'block';
+        }
+    } else {
+        currentLine.setAttribute('stroke', 'var(--accent-red)');
+        setTimeout(() => { if (currentLine) currentLine.remove(); }, 600);
+    }
+    currentLine = null; startDot = null;
+}
+
+window.addEventListener('mousemove', gameDragMove);
+window.addEventListener('mouseup', gameDragEnd);
+window.addEventListener('touchmove', gameDragMove, { passive: false });
+window.addEventListener('touchend', gameDragEnd);
+
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(conn => {
+        const fr = conn.from.getBoundingClientRect(), tr = conn.to.getBoundingClientRect();
+        conn.line.setAttribute('x1', fr.left + fr.width / 2 - rect.left);
+        conn.line.setAttribute('y1', fr.top + fr.height / 2 - rect.top);
+        conn.line.setAttribute('x2', tr.left + tr.width / 2 - rect.left);
+        conn.line.setAttribute('y2', tr.top + tr.height / 2 - rect.top);
+    });
+}
+
+function resetGame() { initGame(); }
+
+// Init
+window.updateSlides();
+</script>
+</body>
+</html>

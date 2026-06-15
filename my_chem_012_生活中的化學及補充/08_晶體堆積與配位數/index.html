@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>晶體堆積與配位數 | 互動教學</title>
+    <meta name="description" content="選修化學二 第二章 晶體堆積、配位數、半徑比與離子晶體結構互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --cation: #ff4d6d;
+            --anion: #4895ef;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 5000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.15) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: 0.95rem; color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.35);
+            padding: 0.35rem 1.2rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.08em;
+        }
+        .start-title {
+            font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 900; text-align: center;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56, 189, 248, 0.35);
+            margin-bottom: 0.4rem;
+        }
+        .btn-start {
+            background: var(--accent-blue); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.4rem; font-weight: 800;
+            cursor: pointer; box-shadow: 0 0 30px rgba(56, 189, 248, 0.5);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            touch-action: manipulation; margin-top: 2rem;
+        }
+        .btn-start:hover { transform: scale(1.08); }
+        .start-chips { margin-top: 2rem; display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
+        .chip { font-size: 0.85rem; color: rgba(255,255,255,0.45); display: flex; align-items: center; gap: 0.4rem; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.5rem 0.4rem;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: scale(0.99); display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+            margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.7rem;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.25); padding-bottom: 0.35rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 28px; background: var(--accent-blue); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1rem, 1.5vw, 1.28rem); margin: 0.35rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.9rem, 1.2vw, 1.05rem); margin: 0.2rem 0; }
+        p, li { font-size: clamp(0.88rem, 1.2vw, 1.08rem); line-height: 1.5; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        ul { margin-left: 1.25rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-1-2 { grid-template-columns: 1fr 1.35fr !important; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 18px;
+            padding: 1rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.4); border-radius: 12px; border-left: 5px solid var(--accent-green);
+            padding: 0.7rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.1rem, 1.6vw, 1.45rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56, 189, 248, 0.08); border-radius: 12px; padding: 0.7rem;
+            border: 1px solid rgba(56, 189, 248, 0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(251, 191, 36, 0.08); border-radius: 12px; padding: 0.7rem;
+            border: 1px solid rgba(251, 191, 36, 0.3); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag {
+            display: inline-block; padding: 0.1rem 0.55rem; border-radius: 20px;
+            font-size: 0.76rem; font-weight: 700; margin-right: 0.25rem;
+        }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-purple { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); color: var(--accent-purple); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.78rem, 1.05vw, 0.92rem); }
+        table.data-table th, table.data-table td {
+            border: 1px solid rgba(255,255,255,0.14); padding: 0.4rem 0.45rem; text-align: center;
+        }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+        table.data-table tr:nth-child(even) td { background: rgba(255,255,255,0.03); }
+        table.data-table tr.active-row td { background: rgba(56,189,248,0.18); }
+        table.data-table tr { cursor: pointer; transition: background 0.2s; }
+        .metal-btn {
+            background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.2);
+            color: var(--text-main); padding: 0.45rem 0.75rem; border-radius: 10px;
+            cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; margin: 0.15rem;
+            font-family: inherit;
+        }
+        .metal-btn.active { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); }
+        .btn-action {
+            background: var(--accent-blue); color: #0f172a; border: none;
+            padding: 0.65rem 1.4rem; border-radius: 10px; cursor: pointer;
+            font-weight: 700; font-size: 0.95rem; transition: 0.2s; flex-shrink: 0; margin-top: 0.4rem;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.04); }
+        .quiz-item { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .quiz-options { list-style: none; margin: 0.4rem 0; padding: 0; }
+        .quiz-options li {
+            font-size: clamp(0.88rem, 1.15vw, 1.02rem); padding: 0.35rem 0.5rem; margin-bottom: 0.2rem;
+            border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+        }
+        .opt-label { color: var(--accent-yellow); font-weight: 700; margin-right: 0.35rem; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(10, 15, 30, 0.97);
+            z-index: 100; flex-direction: column; padding: 1.5rem; border-radius: 18px;
+            border: 2px solid var(--accent-green); animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+        }
+        .ans-inline {
+            display: none; margin-top: 0.6rem; padding: 0.75rem;
+            background: rgba(52, 211, 153, 0.1); border-radius: 10px;
+            border-left: 4px solid var(--accent-green);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+        .svg-wrap svg { max-width: 100%; max-height: 100%; }
+        .metal-geo-stack {
+            flex: 1; min-height: 200px; display: flex; flex-direction: column;
+            margin-top: 0.45rem; flex-shrink: 0; overflow: visible;
+        }
+        .metal-geo-panel { display: none; flex-direction: column; flex: 1; min-height: 0; overflow: visible; }
+        .metal-geo-panel.active { display: flex; }
+        .metal-geo-panel h3 { margin: 0 0 0.25rem; font-size: 0.88rem; }
+        .metal-geo-svg {
+            flex: 1; width: 100%; min-height: 155px; max-height: 240px;
+            background: rgba(0,0,0,0.25); border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            overflow: visible;
+        }
+        .metal-geo-svg foreignObject { overflow: visible; }
+        .geo-svg-math {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 100%; margin: 0; padding: 0 2px;
+            font-size: 14px; line-height: 1.15;
+            background: transparent;
+            box-sizing: border-box;
+        }
+        .geo-svg-math-blue { color: #38bdf8; }
+        .geo-svg-math-red { color: #f87171; }
+        .close-pack-panel { display: flex; flex-direction: column; min-height: 0; }
+        .close-pack-panel h2 { margin-bottom: 0.3rem; }
+        .close-pack-panel > p { flex-shrink: 0; }
+        .close-pack-stats {
+            margin: 0.35rem 0 0; padding-left: 1.1rem;
+            font-size: 0.86rem; color: rgba(255,255,255,0.82);
+            flex-shrink: 0;
+        }
+        .close-pack-stats li { margin: 0.12rem 0; }
+        .close-pack-strip-wrap {
+            margin: 0.4rem 0 0.35rem;
+            flex-shrink: 0;
+        }
+        .close-pack-strip {
+            display: block;
+            max-width: 100%;
+            max-height: clamp(108px, 17vh, 155px);
+            width: auto;
+            height: auto;
+            margin: 0 auto;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        .close-pack-dual-img {
+            display: grid;
+            grid-template-columns: 1fr 1.05fr;
+            gap: 0.4rem;
+            margin: 0.4rem 0 0.35rem;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .close-pack-part {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: clamp(108px, 17vh, 155px);
+            object-fit: contain;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        /* 第 4 頁：離子晶體的堆積 — 字體放大 */
+        #slide-ion-basics p,
+        #slide-ion-basics li {
+            font-size: clamp(1.02rem, 1.45vw, 1.2rem);
+            line-height: 1.55;
+        }
+        #slide-ion-basics h2 { font-size: clamp(1.12rem, 1.65vw, 1.38rem); }
+        #slide-ion-basics table.data-table {
+            font-size: clamp(0.95rem, 1.28vw, 1.08rem);
+        }
+        #slide-ion-basics table.data-table th,
+        #slide-ion-basics table.data-table td { padding: 0.5rem 0.55rem; }
+        #slide-ion-basics .highlight-box p { font-size: clamp(0.98rem, 1.35vw, 1.12rem); }
+
+        #slide-quiz .quiz-options li {
+            font-size: clamp(0.95rem, 1.25vw, 1.1rem);
+        }
+        #slide-quiz .quiz-item > p:first-child { font-size: clamp(0.98rem, 1.3vw, 1.12rem); }
+        /* 解答層不蓋住切換鈕，按鈕可點「隱藏解答」 */
+        #slide-quiz .quiz-item .btn-toggle-ans {
+            position: relative;
+            z-index: 110;
+            align-self: flex-start;
+        }
+        #slide-quiz .ans-overlay .btn-hide-ans {
+            align-self: flex-end;
+            flex-shrink: 0;
+            margin: 0 0 0.75rem;
+            z-index: 1;
+        }
+
+        .geo-svg-math .mjx-chtml {
+            font-size: 100% !important;
+            background: transparent !important;
+            filter: drop-shadow(0 0 4px rgba(15, 23, 42, 0.95)) drop-shadow(0 1px 2px rgba(15, 23, 42, 0.9));
+        }
+        .geo-svg-math mjx-container,
+        .geo-svg-math mjx-math { background: transparent !important; }
+        .metal-geo-eq {
+            text-align: center; margin-top: 0.35rem; font-size: clamp(1rem, 1.4vw, 1.25rem);
+            flex-shrink: 0; color: var(--accent-green);
+        }
+        .metal-geo-hint {
+            font-size: 0.72rem; color: rgba(255,255,255,0.45); text-align: center; margin-top: 0.2rem;
+        }
+
+        .metal-vis-panel { padding: 0.65rem 0.75rem; min-height: 0; flex: 1; display: flex; flex-direction: column; }
+        .metal-vis-header {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 0.4rem; margin-bottom: 0.4rem; flex-shrink: 0;
+        }
+        .metal-vis-header h2 { margin: 0; font-size: clamp(0.95rem, 1.35vw, 1.15rem); border: none; }
+        .metal-mode-toggle { display: flex; gap: 0.25rem; }
+        .mode-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.75); padding: 0.35rem 0.75rem; border-radius: 8px;
+            font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit;
+        }
+        .mode-btn.active { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); }
+        #metal-canvas-wrap {
+            flex: 1; min-height: 280px; min-width: 240px; position: relative;
+            border-radius: 14px; background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
+        }
+        #metal-canvas-wrap canvas {
+            display: block !important; width: 100% !important; height: 100% !important;
+            position: absolute; top: 0; left: 0;
+        }
+        .metal-layer-controls {
+            flex-shrink: 0; margin-top: 0.4rem; padding: 0.5rem 0.65rem;
+            background: rgba(0,0,0,0.35); border-radius: 10px;
+            border: 1px solid rgba(56,189,248,0.25);
+        }
+        .metal-layer-controls[hidden] { display: none !important; }
+        .metal-layer-row {
+            display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+            font-size: 0.78rem; color: rgba(255,255,255,0.75);
+        }
+        .metal-layer-row + .metal-layer-row { margin-top: 0.4rem; }
+        .metal-layer-row label { flex: 0 0 auto; min-width: 4.5em; }
+        .metal-layer-row select {
+            flex: 1; min-width: 8rem; padding: 0.25rem 0.4rem; border-radius: 6px;
+            background: rgba(255,255,255,0.08); color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2); font-family: inherit; font-size: 0.78rem;
+        }
+        .metal-layer-row input[type="range"] { flex: 1; min-width: 6rem; accent-color: var(--accent-blue); }
+        #metal-layer-val { min-width: 2.5em; text-align: right; color: var(--accent-cyan); font-weight: 700; }
+
+        /* Ion sim slide */
+        #slide-ion-sim .sim-layout {
+            display: grid; grid-template-columns: 1fr 340px; gap: 0.75rem;
+            flex: 1; min-height: 0; overflow: hidden;
+        }
+        #pack-canvas-wrap {
+            position: relative; flex: 1; min-height: 0; border-radius: 16px;
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
+        }
+        #pack-canvas-wrap canvas { display: block !important; }
+        .pack-hint {
+            position: absolute; bottom: 10px; right: 12px; font-size: 0.72rem;
+            color: rgba(255,255,255,0.45); pointer-events: none;
+            background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 20px;
+        }
+        .discuss-panel {
+            display: flex; flex-direction: column; gap: 0.5rem;
+            overflow-y: auto; min-height: 0;
+        }
+        .discuss-panel::-webkit-scrollbar { width: 3px; }
+        .ratio-hero {
+            background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(56,189,248,0.15));
+            border-radius: 14px; padding: 0.85rem; text-align: center;
+            border: 1px solid rgba(99,102,241,0.35);
+        }
+        .ratio-hero .ratio-val {
+            font-size: clamp(1.6rem, 2.5vw, 2rem); font-weight: 800;
+            color: var(--accent-blue); letter-spacing: -0.02em;
+        }
+        .status-pill {
+            display: inline-block; padding: 0.35rem 0.9rem; border-radius: 30px;
+            background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(168,85,247,0.15));
+            color: var(--accent-cyan); font-size: 0.82rem; font-weight: 700;
+            margin: 0.35rem 0; border: 1px solid rgba(56,189,248,0.3);
+        }
+        .discuss-desc {
+            font-size: 0.82rem; color: rgba(248,250,252,0.75); line-height: 1.45;
+            padding: 0.5rem 0.6rem; background: rgba(0,0,0,0.25); border-radius: 10px;
+        }
+        .slider-block label { font-size: 0.8rem; color: rgba(255,255,255,0.7); font-weight: 600; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+        .dot-cat { background: var(--cation); box-shadow: 0 0 8px rgba(255,77,109,0.5); }
+        .dot-an { background: var(--anion); box-shadow: 0 0 8px rgba(72,149,239,0.5); }
+        .slider-row { display: flex; align-items: center; gap: 0.5rem; }
+        .slider-row input[type=range] { flex: 1; accent-color: var(--accent-blue); height: 5px; }
+        .val-badge {
+            min-width: 42px; text-align: center; font-weight: 700; font-size: 0.85rem;
+            background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 8px;
+            color: var(--accent-blue);
+        }
+        .preset-btns { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .preset-btn {
+            font-size: 0.72rem; padding: 0.3rem 0.55rem; border-radius: 8px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.8); cursor: pointer; font-family: inherit;
+        }
+        .preset-btn:hover { background: rgba(56,189,248,0.2); border-color: var(--accent-blue); }
+
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15, 23, 42, 0.92); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px var(--accent-blue); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 18px; left: 18px; z-index: 9000;
+            font-size: 0.95rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        @media (max-width: 900px) {
+            #slides-container { right: 58px; }
+            .grid-2, .grid-1-2, #slide-ion-sim .sim-layout,
+            .slide [style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+            #slide-ion-sim .sim-layout { grid-template-rows: 1fr auto; }
+            #pack-canvas-wrap { min-height: 220px; }
+            .discuss-panel { max-height: 42vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="start-overlay">
+        <div class="start-badge">選修化學二 · 第二章 · 物質結構與化學鍵</div>
+        <h1 class="start-title" style="border:none;">晶體堆積與配位數</h1>
+        <button type="button" class="btn-start" id="btn-start">開始探索教學</button>
+        <div class="start-chips">
+            <span class="chip">📐 金屬立方晶系</span>
+            <span class="chip">💎 離子堆積與半徑比</span>
+            <span class="chip">✏️ 範例解析</span>
+        </div>
+    </div>
+
+    <div id="presentation-area">
+        <div id="slides-container">
+
+            <!-- 1 晶體基本概念 -->
+            <div class="slide active">
+                <h1>晶體、晶格與單位晶格</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>基本名詞（講義補充）</h2>
+                        <ul>
+                            <li><strong>晶體 (crystal)：</strong>組成粒子排列很整齊的固體。</li>
+                            <li><strong>晶格 (crystal lattice)：</strong>以三度空間點陣表示晶體結構，每一點代表原子相對位置。</li>
+                            <li><strong>單位晶格 (unit cell)：</strong>晶格中可向各方向延伸、重複堆積的最小單元。</li>
+                        </ul>
+                        <div class="info-card">
+                            <p><strong>配位數：</strong>中心粒子周圍與其<strong>直接接觸</strong>的鄰近粒子數目。</p>
+                            <p style="margin:0.3rem 0 0;">金屬：同一種原子；離子晶體：通常指正離子周圍接觸的<strong>負離子</strong>數目。</p>
+                        </div>
+                        <div class="highlight-box">
+                            <p style="margin:0;">堆積愈緊密 → 配位數通常愈高 → <strong>空間利用率</strong>（密集程度）愈大。</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>晶格延伸示意</h2>
+                        <div class="svg-wrap">
+                            <svg viewBox="0 0 320 240" width="100%">
+                                <defs>
+                                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(56,189,248,0.25)" stroke-width="1"/>
+                                    </pattern>
+                                </defs>
+                                <rect x="20" y="20" width="280" height="200" fill="url(#grid)" stroke="rgba(56,189,248,0.5)" stroke-width="2" rx="8"/>
+                                <rect x="60" y="60" width="80" height="80" fill="rgba(56,189,248,0.15)" stroke="var(--accent-yellow)" stroke-width="2" stroke-dasharray="6"/>
+                                <text x="100" y="105" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="bold">單位晶格</text>
+                                <circle cx="60" cy="60" r="6" fill="#38bdf8"/><circle cx="140" cy="60" r="6" fill="#38bdf8"/>
+                                <circle cx="60" cy="140" r="6" fill="#38bdf8"/><circle cx="140" cy="140" r="6" fill="#38bdf8"/>
+                                <path d="M 140 100 L 200 100" stroke="#34d399" stroke-width="2" marker-end="url(#ar)"/>
+                                <text x="170" y="92" fill="#34d399" font-size="10" text-anchor="middle">重複堆積</text>
+                                <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#34d399"/></marker></defs>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2 金屬立方晶系 -->
+            <div class="slide" id="slide-metal-cubic">
+                <h1>金屬的立方晶系堆積</h1>
+                <div class="grid-2 grid-1-2">
+                    <div class="panel scroll-panel">
+                        <div style="margin-bottom:0.5rem;">
+                            <button type="button" class="metal-btn active" data-metal="sc">簡單立方 SC</button>
+                            <button type="button" class="metal-btn" data-metal="bcc">體心立方 BCC</button>
+                            <button type="button" class="metal-btn" data-metal="fcc">面心立方 FCC</button>
+                        </div>
+                        <table class="data-table" id="metal-table">
+                            <tr><th>名稱</th><th>配位數</th><th>單位晶格原子數</th><th>密集程度</th></tr>
+                            <tr data-metal="sc" class="active-row"><td>簡單立方</td><td>6</td><td>1</td><td>52%</td></tr>
+                            <tr data-metal="bcc"><td>體心立方</td><td>8</td><td>2</td><td>68%</td></tr>
+                            <tr data-metal="fcc"><td>面心立方</td><td>12</td><td>4</td><td>74%</td></tr>
+                        </table>
+                        <div class="metal-geo-stack" id="metal-geo-stack">
+                            <div class="metal-geo-panel active" id="metal-geo-sc" data-metal-geo="sc">
+                                <h3>簡單立方 · 邊長與半徑</h3>
+                                <svg class="metal-geo-svg" viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" aria-label="簡單立方正面示意">
+                                    <defs>
+                                        <radialGradient id="scBall" cx="35%" cy="30%"><stop offset="0%" stop-color="#f0f0f8"/><stop offset="100%" stop-color="#a8a0b8"/></radialGradient>
+                                    </defs>
+                                    <rect x="55" y="45" width="180" height="110" fill="none" stroke="rgba(200,210,230,0.45)" stroke-width="1.5" stroke-dasharray="4 3"/>
+                                    <circle cx="55" cy="155" r="24" fill="url(#scBall)" stroke="#8890a8" stroke-width="1"/>
+                                    <circle cx="235" cy="155" r="24" fill="url(#scBall)" stroke="#8890a8" stroke-width="1"/>
+                                    <line x1="79" y1="155" x2="211" y2="155" stroke="#38bdf8" stroke-width="2.4"/>
+                                    <text x="145" y="178" fill="#38bdf8" font-size="16" font-weight="700" text-anchor="middle" font-family="Segoe UI, sans-serif">l</text>
+                                    <text x="145" y="38" fill="rgba(255,255,255,0.5)" font-size="11" text-anchor="middle" font-family="Segoe UI, sans-serif">頂點原子相切</text>
+                                </svg>
+                                <div class="metal-geo-eq">$l = 2r$</div>
+                                <p class="metal-geo-hint">兩頂點原子相切，邊長 = 直徑</p>
+                            </div>
+                            <div class="metal-geo-panel" id="metal-geo-bcc" data-metal-geo="bcc">
+                                <h3>體心立方 · 3D 透視（體對角線）</h3>
+                                <svg class="metal-geo-svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-label="體心立方透視與體對角線">
+                                    <defs>
+                                        <radialGradient id="bccRed" cx="35%" cy="30%"><stop offset="0%" stop-color="#ff8888"/><stop offset="100%" stop-color="#c03030"/></radialGradient>
+                                        <radialGradient id="bccYel" cx="35%" cy="30%"><stop offset="0%" stop-color="#ffe080"/><stop offset="100%" stop-color="#d4a020"/></radialGradient>
+                                    </defs>
+                                    <text x="28" y="32" fill="rgba(255,255,255,0.7)" font-size="14" font-weight="700" font-family="Segoe UI, Microsoft JhengHei, sans-serif">體心立方</text>
+                                    <g stroke="rgba(180,190,210,0.85)" stroke-width="1.5" fill="none">
+                                        <path d="M 100 210 L 220 210 L 260 178 L 140 178 Z"/>
+                                        <path d="M 100 210 L 100 90 L 140 58 L 140 178"/>
+                                        <path d="M 220 210 L 220 90 L 260 58 L 260 178"/>
+                                        <path d="M 100 90 L 220 90 L 260 58 L 140 58 Z"/>
+                                        <line x1="100" y1="90" x2="140" y2="58"/><line x1="220" y1="90" x2="260" y2="58"/>
+                                        <line x1="100" y1="210" x2="140" y2="178"/><line x1="220" y1="210" x2="260" y2="178"/>
+                                    </g>
+                                    <circle cx="100" cy="210" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="220" cy="210" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="260" cy="58" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="140" cy="58" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="100" cy="90" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="220" cy="90" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="260" cy="178" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="140" cy="178" r="16" fill="url(#bccRed)" stroke="#8a2020"/>
+                                    <circle cx="180" cy="134" r="16" fill="url(#bccYel)" stroke="#9a7010"/>
+                                    <line x1="100" y1="210" x2="220" y2="210" stroke="#38bdf8" stroke-width="2.2"/>
+                                    <foreignObject x="138" y="216" width="44" height="26"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-blue">$l$</div></foreignObject>
+                                    <line x1="100" y1="210" x2="260" y2="178" stroke="#38bdf8" stroke-width="2"/>
+                                    <foreignObject x="158" y="182" width="72" height="30"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-blue">$\sqrt{2}\,l$</div></foreignObject>
+                                    <line x1="100" y1="90" x2="260" y2="178" stroke="#38bdf8" stroke-width="2.8"/>
+                                    <foreignObject x="182" y="108" width="72" height="30"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-blue">$\sqrt{3}\,l$</div></foreignObject>
+                                    <foreignObject x="118" y="2" width="164" height="34"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-blue">$\sqrt{3}\,l = 4r$</div></foreignObject>
+                                </svg>
+                                <div class="metal-geo-eq">$\sqrt{3}\,l = 4r$　⇒　$a = \dfrac{4r}{\sqrt{3}}$</div>
+                                <p class="metal-geo-hint">藍線：邊長 $l$、底面對角線 $\sqrt{2}\,l$、體對角線 $\sqrt{3}\,l$（四個半徑）</p>
+                            </div>
+                            <div class="metal-geo-panel" id="metal-geo-fcc" data-metal-geo="fcc">
+                                <h3>面心立方 · 單一面剖面（四角扇形 + 面心圓）</h3>
+                                <svg class="metal-geo-svg" viewBox="0 0 320 260" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-label="面心立方單面：中心圓與四角扇形相切">
+                                    <defs>
+                                        <radialGradient id="fccPur" cx="35%" cy="28%"><stop offset="0%" stop-color="#8a7aa8"/><stop offset="100%" stop-color="#4a3868"/></radialGradient>
+                                        <radialGradient id="fccGold" cx="38%" cy="28%"><stop offset="0%" stop-color="#e8f0a0"/><stop offset="55%" stop-color="#c8d060"/><stop offset="100%" stop-color="#98a838"/></radialGradient>
+                                    </defs>
+                                    <!-- 邊長 l，半徑 r：l = 2√2·r，中心圓與四角扇形相切 -->
+                                    <rect x="80" y="48" width="160" height="160" fill="#faf8f2" stroke="#1a1a1a" stroke-width="2.2"/>
+                                    <path d="M 80 208 L 80 151 A 57 57 0 0 1 137 208 Z" fill="url(#fccPur)" stroke="#3a3058" stroke-width="1"/>
+                                    <path d="M 240 208 L 183 208 A 57 57 0 0 1 240 151 Z" fill="url(#fccPur)" stroke="#3a3058" stroke-width="1"/>
+                                    <path d="M 240 48 L 240 105 A 57 57 0 0 1 183 48 Z" fill="url(#fccPur)" stroke="#3a3058" stroke-width="1"/>
+                                    <path d="M 80 48 L 137 48 A 57 57 0 0 1 80 105 Z" fill="url(#fccPur)" stroke="#3a3058" stroke-width="1"/>
+                                    <circle cx="160" cy="128" r="57" fill="url(#fccGold)" stroke="#6a7828" stroke-width="1.2"/>
+                                    <line x1="80" y1="48" x2="240" y2="208" stroke="#e03030" stroke-width="2.5"/>
+                                    <foreignObject x="118" y="62" width="88" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-red">$\sqrt{2}\,l$</div></foreignObject>
+                                    <line x1="58" y1="208" x2="80" y2="208" stroke="#38bdf8" stroke-width="2"/>
+                                    <foreignObject x="40" y="190" width="44" height="28"><div xmlns="http://www.w3.org/1999/xhtml" class="geo-svg-math geo-svg-math-blue">$l$</div></foreignObject>
+                                </svg>
+                                <div class="metal-geo-eq">$\sqrt{2}\,l = 4r$　⇒　$a = 2\sqrt{2}\,r$</div>
+                                <p class="metal-geo-hint">同一半徑 $r$：四角 1/8 球（扇形）與面心 1/2 球（圓）彼此相切</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel metal-vis-panel">
+                        <div class="metal-vis-header">
+                            <h2 id="metal-diagram-title">簡單立方 · 3D 示意</h2>
+                            <div class="metal-mode-toggle">
+                                <button type="button" class="mode-btn active" data-metal-mode="packing">堆積</button>
+                                <button type="button" class="mode-btn" data-metal-mode="lattice">晶格</button>
+                            </div>
+                        </div>
+                        <div id="metal-canvas-wrap">
+                            <div class="pack-hint">🖱️ 拖曳旋轉 · 滾輪縮放 · 📱 雙指操作</div>
+                        </div>
+                        <div id="metal-layer-controls" class="metal-layer-controls" hidden>
+                            <div class="metal-layer-row">
+                                <label for="metal-layer-slider">FCC 層間距（⟨111⟩）</label>
+                                <input type="range" id="metal-layer-slider" min="0" max="100" value="0" step="1" aria-label="面心立方沿體對角線分層距離">
+                                <span id="metal-layer-val">0</span>
+                            </div>
+                            <p id="metal-layer-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.42); margin:0.35rem 0 0;">0 = 相切堆積；A 藍 · C 橘 · B 綠（1-6-6-1）</p>
+                        </div>
+                        <p id="metal-vis-caption" style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin-top:0.35rem; text-align:center; flex-shrink:0;">堆積：8 顆球佔立方體 8 頂點，彼此相切</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 最密堆積 -->
+            <div class="slide" id="slide-close-pack">
+                <h1>球的最密堆積</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel close-pack-panel">
+                        <h2>立方最密堆積 CCP（＝ 面心立方 FCC）</h2>
+                        <p>三層球作 <strong>ABC</strong> 交錯堆疊，重複後形成<strong>面心立方</strong>晶格；又稱 cubic close packing (CCP)。</p>
+                        <figure class="close-pack-strip-wrap" aria-label="CCP 示意圖">
+                            <img class="close-pack-strip" src="img/ccp-strip.png" alt="FCC 單位晶格、ccp 密堆與 ABC 展開" loading="lazy">
+                        </figure>
+                        <div class="formula-box">$a = 2\sqrt{2}\,r$</div>
+                        <ul class="close-pack-stats">
+                            <li>配位數 <strong>12</strong>；單位晶格 <strong>4</strong> 原子</li>
+                            <li>填充率 <strong>74%</strong></li>
+                        </ul>
+                    </div>
+                    <div class="panel scroll-panel close-pack-panel">
+                        <h2>六方最密堆積 HCP</h2>
+                        <p>三層球作 <strong>ABA</strong> 重複堆疊（上下兩層 A 取向相同），形成<strong>六方</strong>晶系單位晶格。</p>
+                        <figure class="close-pack-strip-wrap" aria-label="HCP 示意圖">
+                            <img class="close-pack-strip" src="img/hcp-strip.png" alt="六方單位晶格、hcp 密堆與 ABA 展開" loading="lazy">
+                        </figure>
+                        <div class="formula-box">$c/a \approx 1.633$</div>
+                        <ul class="close-pack-stats">
+                            <li>配位數 <strong>12</strong>；單位晶格 <strong>6</strong> 原子</li>
+                            <li>填充率同為 <strong>74%</strong>（與 CCP 相同，堆疊方式不同）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 離子堆積概念 -->
+            <div class="slide" id="slide-ion-basics">
+                <h1>離子晶體的堆積</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>堆積原則</h2>
+                        <ol style="margin-left:1.2rem;">
+                            <li><strong>配位數：</strong>正離子周圍與其接觸的負離子數目。</li>
+                            <li>負離子通常較大 → 先作一定堆積，正離子嵌入<strong>空隙</strong>中。</li>
+                            <li>配位數隨半徑比 $r_+/r_-$ 改變，晶體結構亦改變。</li>
+                        </ol>
+                        <table class="data-table" style="margin-top:0.5rem;">
+                            <tr><th>配位數</th><th>$r_+/r_-$</th><th>幾何</th><th>實例</th></tr>
+                            <tr><td>2</td><td>0 ~ 0.155</td><td>線形</td><td>HF₂⁻</td></tr>
+                            <tr><td>3</td><td>0.155 ~ 0.225</td><td>三角形</td><td>BO₃³⁻</td></tr>
+                            <tr><td>4</td><td>0.225 ~ 0.414</td><td>四面體</td><td>ZnS</td></tr>
+                            <tr><td>6</td><td>0.414 ~ 0.732</td><td>八面體</td><td>NaCl、MgO</td></tr>
+                            <tr><td>8</td><td>0.732 ~ 1.0</td><td>立方體</td><td>CsCl</td></tr>
+                        </table>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>常見離子晶體型式</h2>
+                        <table class="data-table">
+                            <tr><th>型式</th><th>堆積</th><th>配位</th><th>單位晶格</th></tr>
+                            <tr><td>CsCl</td><td>體心立方</td><td>8 : 8</td><td>1 個 CsCl</td></tr>
+                            <tr><td>NaCl</td><td>雙面心（八面體）</td><td>6 : 6</td><td>4 Na⁺、4 Cl⁻</td></tr>
+                            <tr><td>ZnS</td><td>四面體</td><td>4 : 4</td><td>4 個 ZnS</td></tr>
+                            <tr><td>CaF₂</td><td>螢石型</td><td>8 : 4</td><td>—</td></tr>
+                            <tr><td>TiO₂</td><td>金紅石型</td><td>—</td><td>—</td></tr>
+                        </table>
+                        <div class="highlight-box">
+                            <p style="margin:0; font-size:0.88rem;">下一頁可<strong>拖曳滑桿</strong>改變離子半徑，觀察配位幾何如何隨半徑比轉換。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 半徑比互動 + 討論區 -->
+            <div class="slide" id="slide-ion-sim">
+                <h1>半徑比與配位數 — 互動探索</h1>
+                <div class="sim-layout">
+                    <div id="pack-canvas-wrap">
+                        <div class="pack-hint">🖱️ 拖曳旋轉 · 滾輪縮放 · 📱 雙指操作</div>
+                    </div>
+                    <div class="panel discuss-panel">
+                        <div class="ratio-hero">
+                            <div style="font-size:0.78rem; color:rgba(255,255,255,0.5);">半徑比 $r_+/r_-$</div>
+                            <div class="ratio-val" id="ratio-display">1.000</div>
+                            <div class="status-pill" id="structure-badge">立方體填隙 (CN=8)</div>
+                        </div>
+                        <div class="slider-block">
+                            <label><span class="dot dot-cat"></span> 陽離子 $r_+$</label>
+                            <div class="slider-row">
+                                <input type="range" id="r-plus" min="20" max="250" value="100">
+                                <span class="val-badge" id="r-plus-val">100</span>
+                            </div>
+                        </div>
+                        <div class="slider-block">
+                            <label><span class="dot dot-an"></span> 陰離子 $r_-$</label>
+                            <div class="slider-row">
+                                <input type="range" id="r-minus" min="50" max="250" value="100">
+                                <span class="val-badge" id="r-minus-val">100</span>
+                            </div>
+                        </div>
+                        <p class="discuss-desc" id="structure-desc">$r_+/r_- \geq 0.732$：陽離子位於立方體中心，被 8 個陰離子包圍（CsCl 型）。</p>
+                        <table class="data-table" id="ratio-table" style="font-size:0.72rem;">
+                            <tr><th>CN</th><th>比值範圍</th><th>空隙</th></tr>
+                            <tr data-th="0.732"><td>8</td><td>≥ 0.732</td><td>立方</td></tr>
+                            <tr data-th="0.414"><td>6</td><td>0.414–0.732</td><td>八面體</td></tr>
+                            <tr data-th="0.225"><td>4</td><td>0.225–0.414</td><td>四面體</td></tr>
+                            <tr data-th="0.155"><td>3</td><td>0.155–0.225</td><td>三角</td></tr>
+                            <tr data-th="0"><td>2</td><td>&lt; 0.155</td><td>線形</td></tr>
+                        </table>
+                        <div class="preset-btns">
+                            <button type="button" class="preset-btn" data-rp="74" data-rm="100">CsCl</button>
+                            <button type="button" class="preset-btn" data-rp="95" data-rm="181">NaCl</button>
+                            <button type="button" class="preset-btn" data-rp="41" data-rm="100">ZnS</button>
+                            <button type="button" class="preset-btn" data-rp="50" data-rm="100">BO₃³⁻</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7 範例練習（左右：範例 2 · 範例 3） -->
+            <div class="slide" id="slide-quiz">
+                <h1>範例練習</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel quiz-item">
+                        <p><span class="tag tag-purple">範例 2</span> Zn²⁺ (1.5 Å) 與 S²⁻ (3.7 Å)，(1) Zn²⁺ 周圍接觸幾個 S²⁻？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 4 個</li>
+                            <li><span class="opt-label">(B)</span> 6 個</li>
+                            <li><span class="opt-label">(C)</span> 8 個</li>
+                            <li><span class="opt-label">(D)</span> 12 個</li>
+                        </ul>
+                        <button type="button" class="btn-action btn-toggle-ans" data-ans="ans-q2">顯示解答</button>
+                        <div class="ans-overlay" id="ans-q2">
+                            <button type="button" class="btn-action btn-hide-ans" data-ans="ans-q2">隱藏解答</button>
+                            <p style="font-size:1.15rem; color:var(--accent-green);"><strong>解答：(A) 4 個</strong></p>
+                            <p>$r_+/r_- = 1.5/3.7 \approx 0.41$ → 四面體空隙 → ZnS 型，配位數 4。</p>
+                            <p>最近 S²⁻ 距離 ≈ $2r_- = 7.4$ Å；S²⁻ 骨架為<strong>面心立方</strong>；邊長約 12 Å；密度約 0.375 g/cm³。</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel quiz-item">
+                        <p><span class="tag tag-purple">範例 3</span> 離子化合物 AB(s)：$r_{\mathrm{A}^+}=2$ Å，$r_{\mathrm{B}^-}=4$ Å，原子量分別為 $a$、$b$ g/mol。</p>
+                        <ul class="quiz-options">
+                            <li>(1) 此晶體為何種結構？</li>
+                            <li>(2) 配位數為何？</li>
+                            <li>(3) 單位晶格體積？</li>
+                            <li>(4) 晶體密度？</li>
+                        </ul>
+                        <button type="button" class="btn-action btn-toggle-ans" data-ans="ans-q3">顯示解答</button>
+                        <div class="ans-overlay" id="ans-q3">
+                            <button type="button" class="btn-action btn-hide-ans" data-ans="ans-q3">隱藏解答</button>
+                            <p style="font-size:1.1rem; color:var(--accent-green);"><strong>解答</strong></p>
+                            <p><strong>(1)</strong> 八面體堆積（雙面心交錯，NaCl 型）</p>
+                            <p><strong>(2)</strong> 配位數 <strong>6</strong>（$r_+/r_- = 0.5$，介於 0.414～0.732）</p>
+                            <p><strong>(3)</strong> $V = a^3 \approx 1.728\times 10^{-21}$ cm³（依講義計算）</p>
+                            <p><strong>(4)</strong> $\rho \approx 3.85\times 10^{-3}(a+b)$ g/cm³</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9 概念總覽 -->
+            <div class="slide">
+                <h1>單元概念總覽</h1>
+                <div class="panel" style="flex:1;">
+                    <svg viewBox="0 0 520 260" style="width:100%; max-height:100%;">
+                        <rect x="200" y="8" width="120" height="44" rx="10" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="2"/>
+                        <text x="260" y="35" text-anchor="middle" fill="#38bdf8" font-size="13" font-weight="bold">晶體堆積</text>
+                        <line x1="230" y1="52" x2="110" y2="95" stroke="rgba(255,255,255,0.3)"/>
+                        <line x1="290" y1="52" x2="410" y2="95" stroke="rgba(255,255,255,0.3)"/>
+                        <rect x="35" y="95" width="150" height="72" rx="10" fill="rgba(96,165,250,0.12)" stroke="#60a5fa"/>
+                        <text x="110" y="118" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="bold">金屬立方晶系</text>
+                        <text x="110" y="138" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-size="10">SC·BCC·FCC</text>
+                        <text x="110" y="155" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="9">CN 6·8·12 · 52·68·74%</text>
+                        <rect x="335" y="95" width="150" height="72" rx="10" fill="rgba(168,85,247,0.12)" stroke="#a855f7"/>
+                        <text x="410" y="118" text-anchor="middle" fill="#a855f7" font-size="12" font-weight="bold">離子晶體</text>
+                        <text x="410" y="138" text-anchor="middle" fill="rgba(255,255,255,0.65)" font-size="10">$r_+/r_-$ → 空隙類型</text>
+                        <text x="410" y="155" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="9">CsCl·NaCl·ZnS</text>
+                        <rect x="155" y="185" width="210" height="58" rx="10" fill="rgba(52,211,153,0.1)" stroke="#34d399"/>
+                        <text x="260" y="210" text-anchor="middle" fill="#34d399" font-size="11" font-weight="bold">配位數 = 直接接觸鄰粒子數</text>
+                        <text x="260" y="228" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10">離子：指正離子周圍 Cl⁻ 數；金屬：指同種原子數</text>
+                    </svg>
+                    <p style="text-align:center; margin-top:0.6rem; color:rgba(255,255,255,0.45); font-size:0.85rem;">資料來源：選化二 第二章 物質結構與化學鍵 2024（講義 pp.13–19）</p>
+                </div>
+            </div>
+
+        </div>
+        <canvas id="drawing-layer"></canvas>
+    </div>
+</div>
+
+<div id="slide-info">1 / 7</div>
+
+<div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button type="button" class="btn-tool" id="btn-prev" title="上一頁">▲</button>
+    <button type="button" class="btn-tool" id="btn-next" title="下一頁">▼</button>
+    <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+    <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:4px;">
+        <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f8fafc"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#f87171"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#38bdf8"></div>
+        <div class="color-dot" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;" data-color="#34d399"></div>
+    </div>
+    <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+        <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+        </button>
+        <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+    </div>
+    <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-home" title="回到首頁">🏠</button>
+</div>
+
+<script>
+(function () {
+    /* --- Slide navigation & handwriting (ref_index pattern) --- */
+    let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+    let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+    const slides = document.querySelectorAll('.slide');
+    const slideInfo = document.getElementById('slide-info');
+    const canvas = document.getElementById('drawing-layer');
+    const ctx = canvas.getContext('2d');
+
+    function toggleAns(id, btn) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const inline = el.classList.contains('ans-inline');
+        const disp = inline ? 'block' : 'flex';
+        const open = el.style.display === disp;
+        el.style.display = open ? 'none' : disp;
+        if (btn) btn.textContent = open ? '顯示解答' : '隱藏解答';
+    }
+    window.toggleAns = toggleAns;
+    function bindQuizAnsButtons() {
+        document.querySelectorAll('.btn-toggle-ans, .btn-hide-ans').forEach((btn) => {
+            if (btn.dataset.ansBound) return;
+            btn.dataset.ansBound = '1';
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.ans;
+                const toggleBtn = document.querySelector(`.btn-toggle-ans[data-ans="${id}"]`);
+                toggleAns(id, toggleBtn || btn);
+            });
+        });
+    }
+    bindQuizAnsButtons();
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        restoreDrawing();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function getCoords(e) {
+        const r = canvas.getBoundingClientRect();
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        return [cx - r.left, cy - r.top];
+    }
+    function startDrawing(e) { if (!isDrawingMode) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+    function draw(e) {
+        if (!isDrawing) return;
+        const [x, y] = getCoords(e);
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+        ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
+        ctx.lineWidth = drawMode === 'eraser' ? 40 : 3;
+        ctx.lineCap = 'round'; ctx.stroke();
+        [lastX, lastY] = [x, y];
+    }
+    function stopDrawing() {
+        if (isDrawing) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+    }
+    function restoreDrawing() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (slideDrawings[currentSlide]) {
+            const img = new Image();
+            img.onload = () => ctx.drawImage(img, 0, 0);
+            img.src = slideDrawings[currentSlide];
+        }
+    }
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    let packSketch = null, metalSketch = null;
+    let packInited = false, metalInited = false;
+
+    function destroyPackSim() {
+        if (packSketch) { packSketch.remove(); packSketch = null; }
+        packInited = false;
+    }
+    function destroyMetalSim() {
+        if (metalSketch) { metalSketch.remove(); metalSketch = null; }
+        metalP5 = null;
+        metalInited = false;
+    }
+
+    function updateSlides() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+        restoreDrawing();
+        const sid = slides[currentSlide].id;
+        if (sid === 'slide-ion-sim') { initPackSim(); destroyMetalSim(); }
+        else if (sid === 'slide-metal-cubic') {
+            destroyPackSim();
+            initMetalSim();
+            requestAnimationFrame(() => {
+                resizeMetalCanvas();
+                requestMetalRedraw();
+                typesetMetalGeoPanel();
+            });
+        } else { destroyPackSim(); destroyMetalSim(); }
+        if (sid !== 'slide-quiz') {
+            document.querySelectorAll('#slide-quiz .ans-overlay').forEach((el) => { el.style.display = 'none'; });
+            document.querySelectorAll('#slide-quiz .btn-toggle-ans').forEach((btn) => { btn.textContent = '顯示解答'; });
+        }
+        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) MathJax.typesetPromise();
+    }
+    window.updateSlides = updateSlides;
+
+    document.getElementById('btn-next').onclick = () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } };
+    document.getElementById('btn-prev').onclick = () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } };
+    document.getElementById('btn-draw').onclick = e => {
+        isDrawingMode = !isDrawingMode;
+        if (isDrawingMode) drawMode = 'pen';
+        e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+        canvas.classList.toggle('drawing-active', isDrawingMode);
+        document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+        document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+    };
+    document.getElementById('btn-eraser').onclick = e => {
+        drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+        e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+    };
+    document.querySelectorAll('.color-dot').forEach(dot => {
+        dot.onclick = () => {
+            document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+            dot.style.borderColor = 'white';
+            penColor = dot.dataset.color;
+            drawMode = 'pen';
+            document.getElementById('btn-eraser').classList.remove('active-tool');
+        };
+    });
+    document.getElementById('btn-clear').onclick = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        slideDrawings[currentSlide] = null;
+    };
+    document.getElementById('btn-start').onclick = () => {
+        document.getElementById('start-overlay').style.display = 'none';
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        updateSlides();
+    };
+    document.getElementById('btn-home').onclick = () => { window.location.href = '../../index.html'; };
+
+    /* Toolbar drag */
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    dh.onmousedown = e => { isDT = true; tOY = e.clientY - tb.offsetTop; };
+    window.onmousemove = e => { if (isDT) { tb.style.top = (e.clientY - tOY) + 'px'; tb.style.transform = 'none'; } };
+    window.onmouseup = () => isDT = false;
+    dh.ontouchstart = e => { isDT = true; tOY = e.touches[0].clientY - tb.offsetTop; };
+    window.ontouchmove = e => { if (isDT) { tb.style.top = (e.touches[0].clientY - tOY) + 'px'; tb.style.transform = 'none'; } };
+    window.ontouchend = () => isDT = false;
+
+    /* iPad swipe */
+    let touchY0 = null;
+    document.getElementById('presentation-area').addEventListener('touchstart', e => {
+        if (isDrawingMode || e.touches.length !== 1) return;
+        touchY0 = e.touches[0].clientY;
+    }, { passive: true });
+    document.getElementById('presentation-area').addEventListener('touchend', e => {
+        if (touchY0 == null || isDrawingMode) return;
+        const dy = e.changedTouches[0].clientY - touchY0;
+        if (Math.abs(dy) > 60) {
+            if (dy < 0 && currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
+            if (dy > 0 && currentSlide > 0) { currentSlide--; updateSlides(); }
+        }
+        touchY0 = null;
+    }, { passive: true });
+
+    /* --- Metal cubic 3D（預建網格 + 按需重繪，避免每幀重算交集） --- */
+    const METAL_R = 36;
+    const GEO_SLICES = 14;
+    let metalType = 'sc';
+    let metalViewMode = 'packing';
+    let metalP5 = null;
+    let metalUserZoom = 1;
+    let metalLayerGap = 0;
+    let metalPackAxis = '111';
+
+    /** 實心 1/8 球：球面 + x/y/z 三個切面封閉 */
+    function buildOctantTris(slices) {
+        const H = Math.PI / 2, surface = [], caps = [];
+        const v = (t, p) => {
+            const st = Math.sin(t), ct = Math.cos(t);
+            return [st * Math.cos(p), st * Math.sin(p), ct];
+        };
+        for (let i = 0; i < slices; i++) {
+            const t0 = (i / slices) * H, t1 = ((i + 1) / slices) * H;
+            for (let j = 0; j < slices; j++) {
+                const p0 = (j / slices) * H, p1 = ((j + 1) / slices) * H;
+                const a = v(t0, p0), b = v(t0, p1), c = v(t1, p1), d = v(t1, p0);
+                surface.push(a, b, c, a, c, d);
+            }
+        }
+        for (let i = 0; i < slices; i++) {
+            const a0 = (i / slices) * H, a1 = ((i + 1) / slices) * H;
+            caps.push([0, 0, 0], [Math.cos(a0), Math.sin(a0), 0], [Math.cos(a1), Math.sin(a1), 0]);
+            caps.push([0, 0, 0], [Math.cos(a0), 0, Math.sin(a0)], [Math.cos(a1), 0, Math.sin(a1)]);
+            caps.push([0, 0, 0], [0, Math.cos(a0), Math.sin(a0)], [0, Math.cos(a1), Math.sin(a1)]);
+        }
+        return { surface, caps };
+    }
+
+    /** 實心半球：曲面 + x=0 圓盤切面封閉 */
+    function buildHalfNegXTris(slices) {
+        const surface = [], caps = [];
+        const v = (t, p) => {
+            const st = Math.sin(t), ct = Math.cos(t);
+            return [st * Math.cos(p), st * Math.sin(p), ct];
+        };
+        for (let i = 0; i < slices; i++) {
+            const t0 = (i / slices) * Math.PI, t1 = ((i + 1) / slices) * Math.PI;
+            for (let j = 0; j < slices; j++) {
+                const p0 = Math.PI / 2 + (j / slices) * Math.PI;
+                const p1 = Math.PI / 2 + ((j + 1) / slices) * Math.PI;
+                const a = v(t0, p0), b = v(t0, p1), c = v(t1, p1), d = v(t1, p0);
+                surface.push(a, b, c, a, c, d);
+            }
+        }
+        for (let i = 0; i < slices; i++) {
+            const a0 = (i / slices) * Math.PI * 2, a1 = ((i + 1) / slices) * Math.PI * 2;
+            caps.push([0, 0, 0], [0, Math.cos(a0), Math.sin(a0)], [0, Math.cos(a1), Math.sin(a1)]);
+        }
+        return { surface, caps };
+    }
+
+    /** 實心整球（與 1/8、1/2 球相同繪製方式，避免球面與切面色差） */
+    function buildFullSphereTris(slices) {
+        const tris = [];
+        const v = (t, p) => {
+            const st = Math.sin(t), ct = Math.cos(t);
+            return [st * Math.cos(p), st * Math.sin(p), ct];
+        };
+        const rings = slices * 2;
+        for (let i = 0; i < slices; i++) {
+            const t0 = (i / slices) * Math.PI, t1 = ((i + 1) / slices) * Math.PI;
+            for (let j = 0; j < rings; j++) {
+                const p0 = (j / rings) * Math.PI * 2, p1 = ((j + 1) / rings) * Math.PI * 2;
+                const a = v(t0, p0), b = v(t0, p1), c = v(t1, p1), d = v(t1, p0);
+                tris.push(a, b, c, a, c, d);
+            }
+        }
+        return tris;
+    }
+
+    const GEO_OCTANT = buildOctantTris(GEO_SLICES);
+    const GEO_HALF = buildHalfNegXTris(GEO_SLICES);
+    const GEO_FULL = buildFullSphereTris(GEO_SLICES);
+
+    const metalData = {
+        sc: {
+            title: '簡單立方 SC',
+            note: '僅 8 頂點各有 1/8 原子 → 共 1 原子；配位數 6；利用率 52%。',
+            formula: '邊長 $a = 2r$',
+            packingCap: '堆積：8 顆等徑球在立方體 8 頂點相切，中央留空隙（如講義上圖）',
+            latticeCap: '晶格：球 ∩ 單位晶格，僅顯示晶格內部分（8 個 1/8 球，如講義下圖）'
+        },
+        bcc: {
+            title: '體心立方 BCC',
+            note: '頂點 8×1/8 + 體心 1 → 共 2 原子；配位數 8；利用率 68%。',
+            formula: '體對角線 $= 4r$，$a = \\dfrac{4r}{\\sqrt{3}}$',
+            packingCap: '堆積：中心紅球 + 8 頂點白球相切（頂點彼此不相切）',
+            latticeCap: '晶格：體心完整球 + 8 頂點各 1/8 球（球∩立方體）'
+        },
+        fcc: {
+            title: '面心立方 FCC',
+            note: '頂點 + 六面心 → 4 原子；配位數 12；最密堆積之一，利用率 74%。',
+            formula: '$a = 2\\sqrt{2}\\,r$',
+            packingCap: '堆積：8 頂點 + 6 面心，共 14 顆球（CCP 立方堆積）',
+            latticeCap: '晶格：每面 4 個頂點 1/8 球（扇形）與面心 1/2 球（圓）相切；共 8×1/8 + 6×1/2 = 4 原子'
+        }
+    };
+
+    function metalUnitA(type) {
+        if (type === 'sc') return 2 * METAL_R;
+        if (type === 'bcc') return (4 * METAL_R) / Math.sqrt(3);
+        return 2 * Math.SQRT2 * METAL_R;
+    }
+
+    function unitCellCorners(h) {
+        const corners = [];
+        for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+            corners.push({ x: sx * h, y: sy * h, z: sz * h, role: 'corner', sx, sy, sz });
+        }
+        return corners;
+    }
+
+    function unitCellFaces(h) {
+        return [
+            { x: h, y: 0, z: 0, role: 'face', axis: 'x', sign: 1 },
+            { x: -h, y: 0, z: 0, role: 'face', axis: 'x', sign: -1 },
+            { x: 0, y: h, z: 0, role: 'face', axis: 'y', sign: 1 },
+            { x: 0, y: -h, z: 0, role: 'face', axis: 'y', sign: -1 },
+            { x: 0, y: 0, z: h, role: 'face', axis: 'z', sign: 1 },
+            { x: 0, y: 0, z: -h, role: 'face', axis: 'z', sign: -1 }
+        ];
+    }
+
+    function getMetalAtoms(type, mode) {
+        const a = metalUnitA(type);
+        const h = a / 2;
+        const corners = unitCellCorners(h);
+
+        if (mode === 'packing') {
+            if (type === 'sc') return corners;
+            if (type === 'bcc') return [...corners, { x: 0, y: 0, z: 0, role: 'body' }];
+            return [...corners, ...unitCellFaces(h)];
+        }
+        if (type === 'sc') return corners;
+        if (type === 'bcc') return [...corners, { x: 0, y: 0, z: 0, role: 'body' }];
+        return [...corners, ...unitCellFaces(h)];
+    }
+
+    function packAxisUnit(axisKey) {
+        if (axisKey === '110') {
+            const s = 1 / Math.SQRT2;
+            return { x: s, y: s, z: 0 };
+        }
+        if (axisKey === '101') {
+            const s = 1 / Math.SQRT2;
+            return { x: s, y: 0, z: s };
+        }
+        const s = 1 / Math.sqrt(3);
+        return { x: s, y: s, z: s };
+    }
+
+    function buildPackLayers(atoms, type, axisKey) {
+        const u = packAxisUnit(axisKey);
+        const a = metalUnitA(type);
+        const tol = a * 0.07;
+        const sorted = atoms.map(atom => ({
+            atom,
+            proj: atom.x * u.x + atom.y * u.y + atom.z * u.z
+        })).sort((p, q) => p.proj - q.proj);
+        const layers = [];
+        sorted.forEach(item => {
+            const last = layers[layers.length - 1];
+            if (!last || Math.abs(last.proj - item.proj) > tol) {
+                layers.push({ proj: item.proj, atoms: [item.atom] });
+            } else {
+                last.atoms.push(item.atom);
+            }
+        });
+        return { u, layers, maxSep: a * 0.62 };
+    }
+
+    function packLayerShift(layerIndex, layerCount, gapPct, maxSep) {
+        const mid = (layerCount - 1) / 2;
+        return (layerIndex - mid) * (gapPct / 100) * maxSep;
+    }
+
+    const FCC_LAYER_COLORS = {
+        A: [88, 148, 238],
+        C: [238, 158, 72],
+        B: [118, 198, 108]
+    };
+
+    function fccLayerColor(layerIndex, layerCount) {
+        if (layerCount === 4) {
+            const keys = ['A', 'C', 'B', 'A'];
+            return FCC_LAYER_COLORS[keys[layerIndex]] || FCC_LAYER_COLORS.A;
+        }
+        const palette = [FCC_LAYER_COLORS.A, FCC_LAYER_COLORS.C, FCC_LAYER_COLORS.B];
+        return palette[layerIndex % palette.length];
+    }
+
+    function fccCanExpandLayers() {
+        return metalViewMode === 'packing' && metalType === 'fcc';
+    }
+
+    function updateMetalLayerControls() {
+        const box = document.getElementById('metal-layer-controls');
+        if (box) box.hidden = !fccCanExpandLayers();
+        const val = document.getElementById('metal-layer-val');
+        if (val) val.textContent = String(metalLayerGap);
+    }
+
+    function updateMetalCaption() {
+        const d = metalData[metalType];
+        const cap = document.getElementById('metal-vis-caption');
+        if (!cap) return;
+        let text = metalViewMode === 'packing' ? d.packingCap : d.latticeCap;
+        if (fccCanExpandLayers() && metalLayerGap > 0) {
+            text += ` · 層間距 ${metalLayerGap}（1-6-6-1 沿 ⟨111⟩ 展開）`;
+        }
+        cap.textContent = text;
+    }
+
+    function typesetMetalGeoPanel() {
+        const panel = document.getElementById('metal-geo-' + metalType);
+        if (!panel || !window.MathJax?.typesetPromise) return Promise.resolve();
+        return MathJax.typesetPromise([panel]);
+    }
+
+    function setMetal(type) {
+        metalType = type;
+        if (type !== 'fcc') {
+            metalLayerGap = 0;
+            const sl = document.getElementById('metal-layer-slider');
+            if (sl) sl.value = '0';
+        }
+        const d = metalData[type];
+        document.getElementById('metal-diagram-title').textContent = d.title + ' · 3D 示意';
+        document.querySelectorAll('.metal-geo-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.dataset.metalGeo === type);
+        });
+        document.querySelectorAll('.metal-btn').forEach(b => b.classList.toggle('active', b.dataset.metal === type));
+        document.querySelectorAll('#metal-table tr[data-metal]').forEach(tr => tr.classList.toggle('active-row', tr.dataset.metal === type));
+        updateMetalCaption();
+        updateMetalLayerControls();
+        typesetMetalGeoPanel();
+    }
+
+    function requestMetalRedraw() {
+        if (metalSketch && typeof metalSketch.redraw === 'function') metalSketch.redraw();
+    }
+
+    document.querySelectorAll('.metal-btn').forEach(b => b.onclick = () => { setMetal(b.dataset.metal); requestMetalRedraw(); });
+    document.querySelectorAll('#metal-table tr[data-metal]').forEach(tr => tr.onclick = () => { setMetal(tr.dataset.metal); requestMetalRedraw(); });
+    document.querySelectorAll('[data-metal-mode]').forEach(btn => {
+        btn.onclick = () => {
+            metalViewMode = btn.dataset.metalMode;
+            document.querySelectorAll('[data-metal-mode]').forEach(b => b.classList.toggle('active', b.dataset.metalMode === metalViewMode));
+            if (metalViewMode !== 'packing' || metalType !== 'fcc') metalLayerGap = 0;
+            const sl = document.getElementById('metal-layer-slider');
+            if (sl && metalType !== 'fcc') sl.value = '0';
+            updateMetalCaption();
+            updateMetalLayerControls();
+            requestMetalRedraw();
+        };
+    });
+
+    const metalLayerSlider = document.getElementById('metal-layer-slider');
+    if (metalLayerSlider) {
+        metalLayerSlider.oninput = () => {
+            if (!fccCanExpandLayers()) return;
+            metalLayerGap = +metalLayerSlider.value;
+            updateMetalLayerControls();
+            updateMetalCaption();
+            requestMetalRedraw();
+        };
+    }
+
+    setMetal('sc');
+    if (window.MathJax?.startup?.promise) {
+        MathJax.startup.promise.then(() => typesetMetalGeoPanel());
+    }
+
+    /* 堆積：頂點白、體心紅、面心淺紅；晶格：球面／切面分色，FCC 頂點球面與面心球面亦分色 */
+    const COL = {
+        packCorner: [228, 228, 238],
+        packBody: [235, 88, 88],
+        packFace: [235, 95, 95],
+        latCornerSurf: [205, 178, 115],
+        latFaceSurf: [218, 138, 88],
+        latBodySurf: [228, 92, 92],
+        latCutFace: [138, 128, 168],
+        scPack: [178, 170, 198]
+    };
+
+    function metalLatticeSurfColor(atom) {
+        if (atom.role === 'body') return COL.latBodySurf;
+        if (atom.role === 'face') return COL.latFaceSurf;
+        return COL.latCornerSurf;
+    }
+
+    function metalLatticeCutColor() {
+        return COL.latCutFace;
+    }
+
+    function metalAtomColor(atom) {
+        if (metalViewMode !== 'packing') return metalLatticeSurfColor(atom);
+        if (metalType === 'sc') return COL.scPack;
+        if (atom.role === 'body') return COL.packBody;
+        if (atom.role === 'face') return COL.packFace;
+        return COL.packCorner;
+    }
+
+    /** 晶格：僅 12 條細線標出單位晶格邊長（無半透明面） */
+    function drawUnitCellEdges(p, type) {
+        const h = metalUnitA(type) / 2;
+        const v = [
+            [-h, -h, -h], [h, -h, -h], [h, h, -h], [-h, h, -h],
+            [-h, -h, h], [h, -h, h], [h, h, h], [-h, h, h]
+        ];
+        const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7]
+        ];
+        p.noFill();
+        p.stroke(215, 210, 230, 255);
+        p.strokeWeight(1.15);
+        p.beginShape(p.LINES);
+        edges.forEach(([i, j]) => {
+            p.vertex(v[i][0], v[i][1], v[i][2]);
+            p.vertex(v[j][0], v[j][1], v[j][2]);
+        });
+        p.endShape();
+    }
+
+    function unitSphereNormal(v) {
+        const len = Math.hypot(v[0], v[1], v[2]) || 1;
+        return [v[0] / len, v[1] / len, v[2] / len];
+    }
+
+    /** 晶格切球：無方向光、平面填色（切面用） */
+    function drawLatticeSolidTris(p, tris, r, col) {
+        const gl = p.drawingContext;
+        const wasCull = gl.isEnabled(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);
+        p.noStroke();
+        p.noLights();
+        p.fill(col[0], col[1], col[2]);
+        p.beginShape(p.TRIANGLES);
+        for (let i = 0; i < tris.length; i++) {
+            const v = tris[i];
+            p.vertex(v[0] * r, v[1] * r, v[2] * r);
+        }
+        p.endShape();
+        if (wasCull) gl.enable(gl.CULL_FACE);
+    }
+
+    /** 球面：場景光源 + 平滑法線，呈現明暗與色差（晶格模式用） */
+    function drawLatticeSolidTrisLit(p, tris, r, col) {
+        const gl = p.drawingContext;
+        const wasCull = gl.isEnabled(gl.CULL_FACE);
+        gl.disable(gl.CULL_FACE);
+        p.noStroke();
+        p.ambientMaterial(col[0] * 0.42, col[1] * 0.42, col[2] * 0.42);
+        p.specularMaterial(
+            Math.min(255, col[0] + 72),
+            Math.min(255, col[1] + 58),
+            Math.min(255, col[2] + 38)
+        );
+        p.shininess(48);
+        p.beginShape(p.TRIANGLES);
+        for (let i = 0; i < tris.length; i++) {
+            const v = tris[i];
+            const n = unitSphereNormal(v);
+            p.normal(n[0], n[1], n[2]);
+            p.vertex(v[0] * r, v[1] * r, v[2] * r);
+        }
+        p.endShape();
+        if (wasCull) gl.enable(gl.CULL_FACE);
+    }
+
+    function drawLatticePartMesh(p, mesh, r, surfCol, capCol) {
+        drawLatticeSolidTrisLit(p, mesh.surface, r, surfCol);
+        drawLatticeSolidTris(p, mesh.caps, r, capCol);
+    }
+
+    function drawLatticeOctant(p, atom, r, col, capCol) {
+        p.push();
+        p.translate(atom.x, atom.y, atom.z);
+        p.scale(-atom.sx, -atom.sy, -atom.sz);
+        drawLatticePartMesh(p, GEO_OCTANT, r, col, capCol);
+        p.pop();
+    }
+
+    /**
+     * 面心 1/2 球：GEO_HALF 為 x≤0 半球，切面在 x=0，球心在原點。
+     * 旋轉使切面貼在立方體面上、曲面朝向晶胞內（與四頂點 1/8 球相切）。
+     */
+    function drawLatticeFaceHalf(p, r, col, capCol, axis, faceSign) {
+        const h = metalUnitA(metalType) / 2;
+        p.push();
+        if (axis === 'x') {
+            p.translate(faceSign * h, 0, 0);
+            if (faceSign < 0) p.scale(-1, 1, 1);
+        } else if (axis === 'y') {
+            p.translate(0, faceSign * h, 0);
+            if (faceSign > 0) p.rotateZ(p.HALF_PI);
+            else p.rotateZ(-p.HALF_PI);
+        } else {
+            p.translate(0, 0, faceSign * h);
+            if (faceSign > 0) p.rotateY(-p.HALF_PI);
+            else p.rotateY(p.HALF_PI);
+        }
+        drawLatticePartMesh(p, GEO_HALF, r, col, capCol);
+        p.pop();
+    }
+
+    function drawMetalSpherePacking(p, atom, r, dx, dy, dz, colOverride) {
+        const col = colOverride || metalAtomColor(atom);
+        p.push();
+        p.translate(atom.x + (dx || 0), atom.y + (dy || 0), atom.z + (dz || 0));
+        p.noStroke();
+        p.ambientMaterial(col[0] * 0.55, col[1] * 0.55, col[2] * 0.55);
+        p.specularMaterial(Math.min(255, col[0] + 80), Math.min(255, col[1] + 80), Math.min(255, col[2] + 80));
+        p.shininess(100);
+        p.sphere(r, 20);
+        p.pop();
+    }
+
+    /** FCC 展開：不透明球體 + 光影（依層上色） */
+    function drawMetalSpherePackingLit(p, atom, r, dx, dy, dz, col) {
+        p.push();
+        p.translate(atom.x + (dx || 0), atom.y + (dy || 0), atom.z + (dz || 0));
+        p.noStroke();
+        p.ambientMaterial(col[0] * 0.48, col[1] * 0.48, col[2] * 0.48);
+        p.specularMaterial(
+            Math.min(255, col[0] + 95),
+            Math.min(255, col[1] + 95),
+            Math.min(255, col[2] + 95)
+        );
+        p.shininess(100);
+        p.sphere(r, 22);
+        p.pop();
+    }
+
+    function layerCentroid(atoms) {
+        let x = 0, y = 0, z = 0;
+        atoms.forEach(a => { x += a.x; y += a.y; z += a.z; });
+        const n = atoms.length || 1;
+        return { x: x / n, y: y / n, z: z / n };
+    }
+
+    function drawPackLayerPlanes(p, layers, u, gapPct, maxSep, type) {
+        if (gapPct < 8 || layers.length < 2) return;
+        const h = metalUnitA(type) / 2;
+        const extent = h * 1.35;
+        const perpA = Math.abs(u.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 0, y: 1, z: 0 };
+        let ax = perpA.y * u.z - perpA.z * u.y;
+        let ay = perpA.z * u.x - perpA.x * u.z;
+        let az = perpA.x * u.y - perpA.y * u.x;
+        const alen = Math.hypot(ax, ay, az) || 1;
+        ax /= alen; ay /= alen; az /= alen;
+        let bx = u.y * az - u.z * ay;
+        let by = u.z * ax - u.x * az;
+        let bz = u.x * ay - u.y * ax;
+        const blen = Math.hypot(bx, by, bz) || 1;
+        bx /= blen; by /= blen; bz /= blen;
+        const planeColors = [
+            [255, 220, 80, 55],
+            [120, 220, 140, 50]
+        ];
+        for (let i = 0; i < layers.length - 1; i++) {
+            const si = packLayerShift(i, layers.length, gapPct, maxSep);
+            const sj = packLayerShift(i + 1, layers.length, gapPct, maxSep);
+            const c0 = layerCentroid(layers[i].atoms);
+            const c1 = layerCentroid(layers[i + 1].atoms);
+            const cx = (c0.x + c1.x) / 2 + u.x * (si + sj) / 2;
+            const cy = (c0.y + c1.y) / 2 + u.y * (si + sj) / 2;
+            const cz = (c0.z + c1.z) / 2 + u.z * (si + sj) / 2;
+            const col = planeColors[i % planeColors.length];
+            p.noStroke();
+            p.fill(col[0], col[1], col[2], col[3]);
+            p.beginShape();
+            p.vertex(cx - ax * extent - bx * extent, cy - ay * extent - by * extent, cz - az * extent - bz * extent);
+            p.vertex(cx + ax * extent - bx * extent, cy + ay * extent - by * extent, cz + az * extent - bz * extent);
+            p.vertex(cx + ax * extent + bx * extent, cy + ay * extent + by * extent, cz + az * extent + bz * extent);
+            p.vertex(cx - ax * extent + bx * extent, cy - ay * extent + by * extent, cz - az * extent + bz * extent);
+            p.endShape(p.CLOSE);
+        }
+    }
+
+    function drawPackDiagonalGuide(p, u, layers, gapPct, maxSep) {
+        if (gapPct < 3 || layers.length < 2) return;
+        const h = metalUnitA(metalType) / 2;
+        const pad = (gapPct / 100) * maxSep * ((layers.length - 1) / 2) + h * 0.15;
+        const t0 = layers[0].proj + packLayerShift(0, layers.length, gapPct, maxSep) - pad;
+        const t1 = layers[layers.length - 1].proj + packLayerShift(layers.length - 1, layers.length, gapPct, maxSep) + pad;
+        p.stroke(56, 189, 248, 140);
+        p.strokeWeight(1.2);
+        p.line(u.x * t0, u.y * t0, u.z * t0, u.x * t1, u.y * t1, u.z * t1);
+    }
+
+    function drawMetalPackingScene(p, r) {
+        const atoms = getMetalAtoms(metalType, 'packing');
+        const fccExpand = fccCanExpandLayers() && metalLayerGap > 0;
+        if (!fccExpand) {
+            atoms.forEach(atom => drawMetalSpherePacking(p, atom, r));
+            drawUnitCellEdges(p, metalType);
+            return;
+        }
+        const { u, layers, maxSep } = buildPackLayers(atoms, 'fcc', '111');
+        drawPackLayerPlanes(p, layers, u, metalLayerGap, maxSep, 'fcc');
+        drawPackDiagonalGuide(p, u, layers, metalLayerGap, maxSep);
+        layers.forEach((layer, li) => {
+            const d = packLayerShift(li, layers.length, metalLayerGap, maxSep);
+            const dx = u.x * d, dy = u.y * d, dz = u.z * d;
+            const col = fccLayerColor(li, layers.length);
+            layer.atoms.forEach(atom => drawMetalSpherePackingLit(p, atom, r, dx, dy, dz, col));
+        });
+        drawUnitCellEdges(p, metalType);
+    }
+
+    function drawMetalSphereLatticeFull(p, atom, r, col) {
+        p.push();
+        p.translate(atom.x, atom.y, atom.z);
+        drawLatticeSolidTrisLit(p, GEO_FULL, r, col);
+        p.pop();
+    }
+
+    function drawMetalScene(p) {
+        const packing = metalViewMode === 'packing';
+        const r = METAL_R;
+
+        if (packing) {
+            drawMetalPackingScene(p, r);
+            return;
+        }
+
+        const cutCol = metalLatticeCutColor();
+        const atoms = getMetalAtoms(metalType, 'lattice');
+        atoms.forEach(atom => {
+            const surfCol = metalLatticeSurfColor(atom);
+            if (atom.role === 'corner') {
+                drawLatticeOctant(p, atom, r, surfCol, cutCol);
+            } else if (atom.role === 'face') {
+                drawLatticeFaceHalf(p, r, surfCol, cutCol, atom.axis, atom.sign);
+            } else if (atom.role === 'body') {
+                drawMetalSphereLatticeFull(p, atom, r, surfCol);
+            }
+        });
+        drawUnitCellEdges(p, metalType);
+    }
+
+    function metalCanvasSize() {
+        const wrap = document.getElementById('metal-canvas-wrap');
+        if (!wrap) return [400, 280];
+        const w = wrap.clientWidth > 50 ? wrap.clientWidth : 400;
+        const h = wrap.clientHeight > 50 ? wrap.clientHeight : 280;
+        return [w, h];
+    }
+
+    function resizeMetalCanvas() {
+        if (!metalSketch || !metalSketch.resizeCanvas) return;
+        const [w, h] = metalCanvasSize();
+        metalSketch.resizeCanvas(w, h);
+    }
+
+    function initMetalSim() {
+        const wrap = document.getElementById('metal-canvas-wrap');
+        if (!wrap || typeof p5 === 'undefined') return;
+        if (metalSketch) {
+            resizeMetalCanvas();
+            requestMetalRedraw();
+            return;
+        }
+        const [initW, initH] = metalCanvasSize();
+        metalSketch = new p5(p => {
+            metalP5 = p;
+            p.setup = () => {
+                const cnv = p.createCanvas(initW, initH, p.WEBGL);
+                cnv.parent('metal-canvas-wrap');
+                p.pixelDensity(1);
+                p.noLoop();
+            };
+            const renderMetal = () => {
+                if (p.width < 2 || p.height < 2) return;
+                p.background(18, 22, 38);
+                const latticeLit = metalViewMode === 'lattice';
+                const fccExpandLit = fccCanExpandLayers() && metalLayerGap > 0;
+                p.ambientLight(latticeLit ? 95 : 118);
+                p.pointLight(255, 255, 255, 280, -280, 380);
+                p.directionalLight(90, 90, 100, 0.3, 0.75, -0.35);
+                if (latticeLit) {
+                    p.pointLight(255, 200, 150, -220, 180, 260);
+                    p.directionalLight(70, 55, 45, -0.55, -0.2, 0.8);
+                } else if (fccExpandLit) {
+                    p.pointLight(255, 248, 240, -200, 160, 320);
+                    p.directionalLight(75, 78, 85, -0.45, 0.65, -0.4);
+                }
+                p.orbitControl(1, 1, 0);
+                p.push();
+                const zoom = (Math.min(p.width, p.height) / 355) * metalUserZoom;
+                p.scale(zoom);
+                drawMetalScene(p);
+                p.pop();
+            };
+            p.draw = renderMetal;
+            const needRedraw = () => p.redraw();
+            p.mouseDragged = needRedraw;
+            p.touchMoved = needRedraw;
+            p.mouseWheel = (event) => {
+                const delta = event && event.delta !== undefined ? event.delta : 0;
+                const step = delta > 0 ? 0.9 : 1.11;
+                metalUserZoom = Math.max(0.45, Math.min(2.75, metalUserZoom * step));
+                p.redraw();
+                return false;
+            };
+            p.doubleClicked = needRedraw;
+            p.windowResized = () => {
+                const [w, h] = metalCanvasSize();
+                if (w > 0 && h > 0) {
+                    p.resizeCanvas(w, h);
+                    p.redraw();
+                }
+            };
+            p.redraw();
+        });
+        metalInited = true;
+    }
+
+    window.addEventListener('resize', () => {
+        if (slides[currentSlide] && slides[currentSlide].id === 'slide-metal-cubic') resizeMetalCanvas();
+    });
+
+    /* --- Ion packing p5 (from packing.html) --- */
+    const structures = [
+        { threshold: 0.732, name: '立方體填隙 (CN=8)', desc: '$r_+/r_- \\geq 0.732$：陽離子位於立方體中心，周圍 8 個陰離子（CsCl 型）。', type: 'cube' },
+        { threshold: 0.414, name: '八面體填隙 (CN=6)', desc: '比值 0.414–0.732：陽離子位於八面體中心，周圍 6 個陰離子（NaCl、MgO）。', type: 'octa' },
+        { threshold: 0.225, name: '四面體填隙 (CN=4)', desc: '比值 0.225–0.414：四面體中心，4 配位（ZnS）。', type: 'tetra' },
+        { threshold: 0.155, name: '平面三角形 (CN=3)', desc: '比值 0.155–0.225：三角形中心，3 配位。', type: 'tri' },
+        { threshold: 0, name: '線性填隙 (CN=2)', desc: '比值 < 0.155：兩陰離子夾一陽離子，線形（如 HF₂⁻）。', type: 'line' }
+    ];
+    let rPlus = 100, rMinus = 100;
+
+    function updatePackUI() {
+        const rp = document.getElementById('r-plus'), rm = document.getElementById('r-minus');
+        rPlus = +rp.value; rMinus = +rm.value;
+        document.getElementById('r-plus-val').textContent = rPlus;
+        document.getElementById('r-minus-val').textContent = rMinus;
+        const ratio = rPlus / rMinus;
+        document.getElementById('ratio-display').textContent = ratio.toFixed(3);
+        const cur = structures.find(s => ratio >= s.threshold);
+        if (cur) {
+            document.getElementById('structure-badge').textContent = cur.name;
+            document.getElementById('structure-desc').innerHTML = cur.desc;
+            document.querySelectorAll('#ratio-table tr[data-th]').forEach(tr => {
+                tr.classList.toggle('active-row', parseFloat(tr.dataset.th) === cur.threshold);
+            });
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise(['#structure-desc']);
+        }
+    }
+
+    document.getElementById('r-plus').oninput = updatePackUI;
+    document.getElementById('r-minus').oninput = updatePackUI;
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.getElementById('r-plus').value = btn.dataset.rp;
+            document.getElementById('r-minus').value = btn.dataset.rm;
+            updatePackUI();
+        };
+    });
+    document.querySelectorAll('#ratio-table tr[data-th]').forEach(tr => {
+        tr.onclick = () => {
+            const th = parseFloat(tr.dataset.th);
+            const rm = 100;
+            let rp = th >= 0.732 ? 80 : th >= 0.414 ? 55 : th >= 0.225 ? 35 : th >= 0.155 ? 20 : 12;
+            document.getElementById('r-plus').value = Math.round(rp);
+            document.getElementById('r-minus').value = rm;
+            updatePackUI();
+        };
+    });
+
+    function initPackSim() {
+        if (packInited) return;
+        packInited = true;
+        updatePackUI();
+        const wrap = document.getElementById('pack-canvas-wrap');
+        packSketch = new p5(p => {
+            p.setup = () => {
+                const c = p.createCanvas(wrap.clientWidth, wrap.clientHeight, p.WEBGL);
+                c.parent(wrap);
+                p.pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+            };
+            p.draw = () => {
+                p.background(15, 23, 42);
+                p.ambientLight(90);
+                p.pointLight(255, 255, 255, 400, -400, 400);
+                p.directionalLight(80, 80, 80, 0, 1, -1);
+                p.orbitControl(1, 1, 0.05);
+                p.push();
+                const sc = Math.min(p.width, p.height) / 650;
+                p.scale(sc);
+                p.noStroke();
+                p.fill(255, 77, 109);
+                p.specularMaterial(255);
+                p.shininess(80);
+                p.sphere(rPlus, 48);
+                p.fill(72, 149, 239, 180);
+                const ratio = rPlus / rMinus;
+                if (ratio >= 0.732) drawCube(p);
+                else if (ratio >= 0.414) drawSix(p);
+                else if (ratio >= 0.225) drawFour(p);
+                else if (ratio >= 0.155) drawTri(p);
+                else drawLine(p);
+                p.pop();
+            };
+            p.windowResized = () => {
+                if (wrap && packInited) p.resizeCanvas(wrap.clientWidth, wrap.clientHeight);
+            };
+        }, wrap);
+    }
+
+    function drawCube(p) {
+        const l = (rPlus + rMinus) / Math.sqrt(3);
+        for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+            p.push(); p.translate(x * l, y * l, z * l); p.sphere(rMinus, 40); p.pop();
+        }
+        p.stroke(255, 215, 0, 90); p.noFill(); p.box(l * 2);
+    }
+    function drawSix(p) {
+        const d = rPlus + rMinus;
+        const pos = [[d,0,0],[-d,0,0],[0,d,0],[0,-d,0],[0,0,d],[0,0,-d]];
+        pos.forEach(pt => { p.push(); p.translate(...pt); p.sphere(rMinus, 40); p.pop(); });
+    }
+    function drawFour(p) {
+        const l = (rPlus + rMinus) / Math.sqrt(3);
+        [[l,l,l],[-l,-l,l],[-l,l,-l],[l,-l,-l]].forEach(pt => { p.push(); p.translate(...pt); p.sphere(rMinus, 40); p.pop(); });
+    }
+    function drawTri(p) {
+        const d = rPlus + rMinus;
+        for (let i = 0; i < 3; i++) {
+            const ang = p.TWO_PI / 3 * i - p.HALF_PI;
+            p.push(); p.translate(p.cos(ang) * d, p.sin(ang) * d, 0); p.sphere(rMinus, 40); p.pop();
+        }
+    }
+    function drawLine(p) {
+        const d = rPlus + rMinus;
+        [-d, d].forEach(z => { p.push(); p.translate(0, 0, z); p.sphere(rMinus, 40); p.pop(); });
+    }
+})();
+</script>
+</body>
+</html>
