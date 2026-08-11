@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<title>酸鹼滴定與滴定曲線 | 互動教學</title>
+<meta content="選修化學三：水溶液中酸鹼鹽的平衡——酸鹼滴定與滴定曲線互動教學" name="description"/>
+<script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+<script async="" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(167,139,250,0.12) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-purple);
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-cyan); text-shadow: 0 0 40px rgba(34,211,238,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(34,211,238,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; }
+        #slides-container { position: relative; padding: 60px 68px 20px 2.5vw; }
+        .slide {
+            position: relative; padding: 2rem 0.5rem 2rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; min-height: 100vh; border-bottom: 2px dashed rgba(255,255,255,0.1);
+        }
+        
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.55rem, 2.6vw, 2.3rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 30px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.1rem, 1.7vw, 1.45rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(1.0rem, 1.35vw, 1.22rem); line-height: 1.6; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.12rem 0.65rem; border-radius: 18px; font-size: 0.88rem; font-weight: 700; margin-right: 0.3rem; }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.2vw, 1.1rem); margin-top: 0.5rem; }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.55rem 0.7rem; text-align: center; }
+        table.data-table th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+        .calc-step {
+            background: rgba(0,0,0,0.2); border-left: 4px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0; padding: 0.65rem 1rem; margin: 0.4rem 0; flex-shrink: 0;
+        }
+        
+        /* ---- Navbar ---- */
+        #top-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9500;
+            background: rgba(15,23,42,0.85); backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; gap: 15px; padding: 10px 20px; overflow-x: auto;
+            white-space: nowrap;
+        }
+        .nav-link {
+            color: var(--accent-cyan); text-decoration: none; font-weight: 700; font-size: 0.82rem;
+            padding: 4px 8px; border-radius: 20px; border: 1px solid transparent;
+            transition: 0.3s;
+        }
+        .nav-link:hover { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.4); }
+
+        /* ---- Toolbar ---- */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px;
+            padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;
+        }
+        #random-draw-balls {
+            display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center;
+            margin: 0 auto 20px auto; width: 100%; max-width: 500px;
+        }
+        .draw-ball {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff;
+            position: relative; z-index: 1; transition: all 0.3s;
+        }
+        .draw-ball.flicker {
+            background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan);
+            border-color: #fff; z-index: 10;
+        }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner {
+            background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000;
+            transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10;
+        }
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none;
+            padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        #btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #btn-close-draw:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+<div id="app">
+<div id="presentation-area">
+<nav id="top-nav">
+<a class="nav-link" href="#slide-1">酸鹼滴定與指示劑</a>
+<a class="nav-link" href="#slide-2">指示劑選用</a>
+<a class="nav-link" href="#slide-3">滴定終點與當量點</a>
+<a class="nav-link" href="#slide-4">滴定曲線分析</a>
+<a class="nav-link" href="#slide-5">計算：強酸強鹼</a>
+<a class="nav-link" href="#slide-6">計算：弱酸強鹼</a>
+<a class="nav-link" href="#slide-7">弱鹼強酸</a>
+</nav>
+
+<div id="slides-container">
+
+<!-- Slide 1: 指示劑原理 -->
+<div class="slide active" id="slide-1">
+<h1>酸鹼滴定與指示劑</h1>
+<div class="grid-2">
+<div class="panel scroll-panel">
+<h2 class="text-yellow">酸鹼指示劑原理</h2>
+<p>指示劑本身常為一種<strong class="text-cyan">弱酸</strong>或<strong class="text-cyan">弱鹼</strong>，其分子與離子之顏色不同，而深受溶液中 $[H^+]$ 濃度的影響。</p>
+<div class="formula-box">
+    $HIn_{(aq)} \rightleftharpoons H^+_{(aq)} + In^-_{(aq)}$
+</div>
+<p style="text-align:center; font-size: 0.95rem; color: var(--accent-green); margin-top: -0.5rem;">(酸型顏色) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (鹼型顏色)</p>
+<p style="margin-top: 1rem;">其平衡常數為：</p>
+<div class="formula-box">
+    $K_a = \frac{[H^+][In^-]}{[HIn]}$ $\implies$ $\frac{[In^-]}{[HIn]} = \frac{K_a}{[H^+]}$
+</div>
+</div>
+<div class="panel scroll-panel">
+<h2 class="text-blue">變色範圍</h2>
+<p>在不同的 $[H^+]$ 濃度下，$[HIn]$ 與 $[In^-]$ 的比例不同，因而呈現出不同的顏色。當濃度差在 <strong class="text-red">10倍以上</strong> 時，肉眼才會明顯看出顏色變化。</p>
+<div class="info-card">
+    <ul>
+        <li>當 $\frac{[In^-]}{[HIn]} \ge 10$ $\implies [H^+] \le \frac{K_a}{10}$ $\implies pH \ge pK_a + 1$ (呈鹼型顏色)</li>
+        <li>當 $\frac{[In^-]}{[HIn]} \le \frac{1}{10}$ $\implies [H^+] \ge 10 K_a$ $\implies pH \le pK_a - 1$ (呈酸型顏色)</li>
+    </ul>
+</div>
+<div class="formula-box" style="border-left-color: var(--accent-yellow); font-size: 1.3rem;">
+    指示劑變色範圍：$pH = pK_a \pm 1$
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 2: 指示劑種類及變色範圍 -->
+<div class="slide" id="slide-2">
+<h1>指示劑種類及變色範圍</h1>
+<div class="panel scroll-panel" style="margin-top: 1rem;">
+<p>常見指示劑的變色範圍與顏色：</p>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>指示劑</th>
+            <th>酸型顏色</th>
+            <th>變色範圍 ($pH$)</th>
+            <th>鹼型顏色</th>
+            <th>滴定終點時的顏色 ($pH$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>甲基橙 (Methyl Orange)</td><td class="text-red"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f87171;margin-right:6px;vertical-align:middle;"></span>紅</td><td>3.1 ~ 4.4</td><td class="text-yellow"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fbbf24;margin-right:6px;vertical-align:middle;"></span>黃</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:middle;"></span>橙 (3.7)</td></tr>
+        <tr><td>甲基紅 (Methyl Red)</td><td class="text-red"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f87171;margin-right:6px;vertical-align:middle;"></span>紅</td><td>4.2 ~ 6.3</td><td class="text-yellow"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fbbf24;margin-right:6px;vertical-align:middle;"></span>黃</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fb923c;margin-right:6px;vertical-align:middle;"></span>橙 (5.0)</td></tr>
+        <tr><td>石蕊 (Litmus)</td><td class="text-red"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f87171;margin-right:6px;vertical-align:middle;"></span>紅</td><td>5.0 ~ 8.0</td><td class="text-blue"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:middle;"></span>藍</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#a78bfa;margin-right:6px;vertical-align:middle;"></span>淡紫 (6.8)</td></tr>
+        <tr><td>溴瑞香草藍 (Bromothymol Blue)</td><td class="text-yellow"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fbbf24;margin-right:6px;vertical-align:middle;"></span>黃</td><td>6.0 ~ 8.0</td><td class="text-blue"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#38bdf8;margin-right:6px;vertical-align:middle;"></span>藍</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#34d399;margin-right:6px;vertical-align:middle;"></span>綠 (6.8)</td></tr>
+        <tr><td>酚酞 (Phenolphthalein)</td><td style="color: #aaa;"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:transparent;border:1px solid #aaa;margin-right:6px;vertical-align:middle;"></span>無色</td><td>8.0 ~ 10.0</td><td class="text-red"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f87171;margin-right:6px;vertical-align:middle;"></span>紅</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#fca5a5;margin-right:6px;vertical-align:middle;"></span>淡紅 (8.8)</td></tr>
+    </tbody>
+</table>
+</div>
+</div>
+
+<!-- Slide 3: 滴定終點與當量點 -->
+<div class="slide" id="slide-3">
+<h1>滴定終點與當量點的差異</h1>
+<div class="grid-2">
+<div class="panel scroll-panel">
+<h2 class="text-yellow">1. 滴定終點 (End Point)</h2>
+<p>滴定時，<strong class="text-red">指示劑改變顏色的瞬間</strong>稱為滴定終點。</p>
+<p>一般滴定的目的是尋找「當量點」，故指示劑的變色範圍應盡量選擇在「當量點附近」。滴定終點可表示當量點，但<strong>不完全相等</strong>。</p>
+<h2 class="text-blue" style="margin-top: 1.5rem;">2. 中性點 (Neutral Point)</h2>
+<p>酸鹼滴定時，恰使水溶液呈<strong>中性</strong> ($pH = 7$) 稱為中性點。</p>
+</div>
+<div class="panel scroll-panel">
+<h2 class="text-green">3. 滴定當量點 (Equivalence Point)</h2>
+<p>定義：<strong class="text-cyan">酸中 $H^+$ 莫耳數 = 鹼中 $OH^-$ 莫耳數</strong></p>
+<div class="info-card" style="margin-top: 1rem;">
+    <p>依據滴定組合，當量點的 $pH$ 值會因為鹽類的水解而不同：</p>
+    <ul>
+        <li><span class="tag tag-blue">強酸 + 強鹼</span> 當量點 $pH = 7$ (中性)</li>
+        <li><span class="tag tag-red">強酸 + 弱鹼</span> 當量點 $pH < 7$ (酸性)</li>
+        <li><span class="tag tag-blue">弱酸 + 強鹼</span> 當量點 $pH > 7$ (鹼性)</li>
+    </ul>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 4: 滴定曲線分析 -->
+<div class="slide" id="slide-4">
+<h1>滴定曲線分析原理</h1>
+<div class="panel scroll-panel">
+<p>酸鹼滴定過程中，溶液的 pH 值隨滴定液加入體積改變而繪出的曲線稱為「滴定曲線」。手算求取 pH 值可分為四個階段：</p>
+<style>
+#table-slide4 th { padding: 1.2rem; text-align: center; }
+#table-slide4 td { padding: 1.2rem; text-align: left; line-height: 1.8; }
+</style>
+<table id="table-slide4" class="data-table">
+    <thead>
+        <tr>
+            <th>滴定階段</th>
+            <th>主要成分</th>
+            <th>pH 計算方法</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>1. 滴定前</strong></td>
+            <td>只有被滴定的酸(或鹼)</td>
+            <td>直接由初濃度與 $K_a$ (或 $K_b$) 計算。若是強酸/強鹼則完全解離。</td>
+        </tr>
+        <tr>
+            <td><strong>2. 達當量點前</strong></td>
+            <td>未滴定完的酸(或鹼) + 生成的鹽類</td>
+            <td>若是強+強：計算剩餘未中和的 $H^+$ 或 $OH^-$ 濃度。<br>若是弱+強：形成<strong>緩衝溶液</strong>，利用 $pH = pK_a + \log \frac{[A^-]}{[HA]}$ 計算。</td>
+        </tr>
+        <tr>
+            <td><strong>3. 當量點時</strong></td>
+            <td>只有鹽類</td>
+            <td>完全中和。計算鹽類的濃度，再代入<strong>鹽類水解</strong>公式求 pH 值。</td>
+        </tr>
+        <tr>
+            <td><strong>4. 達當量點後</strong></td>
+            <td>過量的滴定液(強酸/強鹼) + 鹽類</td>
+            <td>由過量的滴定液(強酸/強鹼) 決定 pH 值，忽略鹽類水解產生的微量 $H^+ / OH^-$。</td>
+        </tr>
+    </tbody>
+</table>
+</div>
+</div>
+
+<!-- Slide 5: 強酸強鹼 互動式 -->
+<div class="slide" id="slide-5" style="height:100vh; display:flex; flex-direction:column; padding: 0.5rem 0.5rem 1rem; box-sizing:border-box;">
+
+<style>
+/* ── Slide 5 local styles ── */
+#s5-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  flex: 1;
+  min-height: 0;
+  /* No overflow:hidden here — let children manage their own scroll */
+}
+#s5-left {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  background: var(--glass); border: 1.5px solid var(--glass-border);
+  border-radius: 14px; padding: 0.85rem 1rem;
+  overflow: hidden;
+  min-height: 0;
+}
+#s5-right {
+  background: var(--glass); border: 1.5px solid var(--glass-border);
+  border-radius: 14px; padding: 0.85rem 1rem;
+  /* height: 100% ensures the grid cell constrains this box */
+  height: 100%;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 0.6rem;
+  box-sizing: border-box;
+}
+#s5-right::-webkit-scrollbar { width: 4px; }
+#s5-right::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+/* table */
+#tbl-sa-sb { width: 100%; border-collapse: collapse; font-size: clamp(0.82rem, 1.1vw, 1rem); flex-shrink: 0; }
+#tbl-sa-sb th, #tbl-sa-sb td {
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.45rem 0.5rem; text-align: center;
+}
+#tbl-sa-sb th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+#tbl-sa-sb td.filled { color: var(--accent-yellow); font-weight: 700; animation: fadeIn 0.5s ease; }
+#tbl-sa-sb td.eq-pt { background: rgba(248,113,113,0.12); }
+@keyframes fadeIn { from { opacity:0; transform: scale(0.8); } to { opacity:1; transform: scale(1); } }
+
+/* canvas wrapper */
+#s5-chart-wrap { flex: 1; position: relative; min-height: 0; }
+#s5-canvas { width: 100%; height: 100%; display: block; border-radius: 8px; }
+
+/* calc blocks in right column */
+.s5-calc-block {
+  border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.2); overflow: hidden;
+  flex-shrink: 0;
+}
+.s5-calc-header {
+  padding: 0.65rem 1rem; display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; transition: 0.25s;
+  background: rgba(255,255,255,0.04);
+  user-select: none;
+}
+.s5-calc-header:hover { background: rgba(34,211,238,0.1); }
+.s5-calc-header.done { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.3); }
+.s5-badge { font-size: 0.78rem; padding: 0.15rem 0.6rem; border-radius: 20px;
+  background: rgba(34,211,238,0.18); color: var(--accent-cyan); font-weight: 700; }
+.s5-badge.done { background: rgba(52,211,153,0.18); color: var(--accent-green); }
+.s5-steps { padding: 0; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; }
+.s5-steps.open { max-height: 2500px; padding: 0.7rem 1rem 0.9rem; }
+.s5-step { display: none; animation: fadeIn 0.4s ease; }
+.s5-step.visible { display: block; }
+.s5-step p { font-size: 0.92rem; line-height: 1.7; margin-bottom: 0.3rem; }
+.ice-table {
+  width: 100%; font-size: 0.88rem; border-collapse: collapse;
+  margin: 0.4rem 0; text-align: center;
+}
+.ice-table th { color: rgba(255,255,255,0.5); font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 0.2rem; }
+.ice-table td { padding: 0.25rem 0.4rem; }
+.ice-table .label { color: rgba(255,255,255,0.5); font-size: 0.8rem; text-align: left; }
+.ice-table .val-acid { color: var(--accent-red); font-weight: 700; }
+.ice-table .val-base { color: var(--accent-blue); font-weight: 700; }
+.ice-table .val-salt { color: var(--accent-green); font-weight: 700; }
+.ice-table .val-ph { color: var(--accent-yellow); font-weight: 700; }
+.s5-btn-next {
+  margin-top: 0.6rem; width: 100%;
+  background: linear-gradient(90deg, rgba(34,211,238,0.15), rgba(167,139,250,0.15));
+  border: 1px dashed rgba(34,211,238,0.4);
+  color: var(--accent-cyan); padding: 0.5rem; border-radius: 8px;
+  cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: 0.25s;
+}
+.s5-btn-next:hover { background: rgba(34,211,238,0.2); }
+.s5-btn-next.done { background: rgba(52,211,153,0.15); border-color: rgba(52,211,153,0.4); color: var(--accent-green); cursor: default; }
+.result-box {
+  background: rgba(0,0,0,0.3); border-left: 4px solid var(--accent-yellow);
+  border-radius: 0 8px 8px 0; padding: 0.5rem 0.8rem; margin-top: 0.4rem;
+  font-size: 0.92rem;
+}
+</style>
+
+<h1 style="flex-shrink:0; margin-bottom:0.4rem;">計算範例：強酸強鹼滴定</h1>
+
+<div id="s5-layout">
+  <!-- LEFT COLUMN -->
+  <div id="s5-left">
+    <p style="font-size:0.92rem; color: rgba(255,255,255,0.75); flex-shrink:0;">
+      例：有一 <strong class="text-cyan">0.1M HCl 50mL</strong>，加入溴瑞香草藍為指示劑，
+      以 <strong class="text-blue">0.1M NaOH</strong> 逐次加入，觀察 pH 值變化。<br>
+      $HCl + NaOH \rightarrow NaCl + H_2O$
+    </p>
+
+    <!-- Data Table -->
+    <table id="tbl-sa-sb">
+      <thead>
+        <tr>
+          <th>加入 NaOH<br>(mL)</th>
+          <th>$[H^+]$ (M)</th>
+          <th>$[OH^-]$ (M)</th>
+          <th>pH 值</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-sa-sb-body">
+        <tr data-row="0">  <td>0</td>  <td class="tbl-h" id="h0">—</td>  <td class="tbl-oh" id="oh0">—</td>  <td class="tbl-ph" id="ph0">?</td></tr>
+        <tr data-row="1">  <td>25</td> <td class="tbl-h" id="h1">—</td>  <td class="tbl-oh" id="oh1">—</td>  <td class="tbl-ph" id="ph1">?</td></tr>
+        <tr data-row="2">  <td>49</td> <td class="tbl-h" id="h2">—</td>  <td class="tbl-oh" id="oh2">—</td>  <td class="tbl-ph" id="ph2">?</td></tr>
+        <tr data-row="3" class="eq-pt">  <td style="color:var(--accent-red)">50 ★</td> <td class="tbl-h" id="h3">—</td>  <td class="tbl-oh" id="oh3">—</td>  <td class="tbl-ph" id="ph3">?</td></tr>
+        <tr data-row="4">  <td>51</td> <td class="tbl-h" id="h4">—</td>  <td class="tbl-oh" id="oh4">—</td>  <td class="tbl-ph" id="ph4">?</td></tr>
+        <tr data-row="5">  <td>75</td> <td class="tbl-h" id="h5">—</td>  <td class="tbl-oh" id="oh5">—</td>  <td class="tbl-ph" id="ph5">?</td></tr>
+        <tr data-row="6">  <td>100</td><td class="tbl-h" id="h6">—</td>  <td class="tbl-oh" id="oh6">—</td>  <td class="tbl-ph" id="ph6">?</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Chart -->
+    <div id="s5-chart-wrap">
+      <canvas id="s5-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: interactive step-by-step calc -->
+  <div id="s5-right">
+    <p style="font-size:0.82rem; color:rgba(255,255,255,0.4); flex-shrink:0; margin-bottom:0.2rem;">▶ 點擊標題展開，逐步點擊「下一步」填寫計算表，完成後自動更新左方表格與曲線。</p>
+    <!-- Blocks generated by JS below -->
+  </div><!-- /s5-right -->
+</div><!-- /s5-layout -->
+</div><!-- /slide-5 -->
+
+<style>
+/* ── Unified ICE table ── */
+.ice-uni { width:100%; border-collapse:collapse; font-size:0.88rem; margin:0.5rem 0; }
+.ice-uni th { font-size:0.78rem; color:rgba(255,255,255,0.45); padding:0.2rem 0.4rem; border-bottom:1px solid rgba(255,255,255,0.15); text-align:center; }
+.ice-uni td { padding:0.3rem 0.5rem; text-align:center; vertical-align:middle; }
+.ice-uni .row-lbl { color:rgba(255,255,255,0.45); font-size:0.78rem; text-align:left; white-space:nowrap; }
+.ice-uni .r-init td { border-top:1px solid rgba(255,255,255,0.25); }
+.ice-uni .r-chg td  { }
+.ice-uni .r-fin td  { border-top:2px solid rgba(255,255,255,0.5); font-weight:700; }
+.va { color:#f87171; font-weight:700; }  /* acid red */
+.vb { color:#38bdf8; font-weight:700; }  /* base blue */
+.vs { color:#34d399; font-weight:700; }  /* salt green */
+.eq-line-row { font-size:0.92rem; padding:0.35rem 0 0.1rem; }
+.ice-row-hidden { display:none; }
+.ice-row-show { animation: fadeIn 0.35s ease; }
+</style>
+
+<script>
+/* ====== SLIDE 5 INTERACTIVE LOGIC (unified ICE table) ====== */
+(function(){
+
+  /* ── Data for each of 7 points ── */
+  const s5Data = [
+    {
+      vol:0,  label:'① 加入 <strong>0 mL</strong> NaOH（滴定前）',
+      // ICE rows: [HCl, NaOH, NaCl]
+      init:  ['0.1×50 = 5', '0.1×0 = 0', '0'],
+      chg:   ['－0',        '－0',        '＋0'],
+      fin:   ['5',          '0',          '0'],
+      finV: 50,
+      resultHTML:`總體積 = 50 mL，HCl 過剩，強酸完全解離：<br>
+        $[H^+] = \\dfrac{5}{50} = 0.1 = 10^{-1}\\ M$<br>
+        $[OH^-] = \\dfrac{10^{-14}}{10^{-1}} = 10^{-13}\\ M$<br>
+        $\\mathbf{pH = 1}$`,
+      Ht:'10⁻¹', OHt:'10⁻¹³', pHt:'1', pH:1
+    },
+    {
+      vol:25, label:'② 加入 <strong>25 mL</strong> NaOH（½ 當量點）',
+      init:  ['0.1×50 = 5', '0.1×25 = 2.5', '0'],
+      chg:   ['－2.5',       '－2.5',        '＋2.5'],
+      fin:   ['2.5',         '0',             '2.5'],
+      finV: 75,
+      resultHTML:`總體積 = 50+25 = 75 mL，HCl 仍過剩：<br>
+        $[H^+] = \\dfrac{2.5}{75} \\approx 3.33 \\times 10^{-2}\\ M$<br>
+        $[OH^-] \\approx 3 \\times 10^{-13}\\ M$<br>
+        $\\mathbf{pH \\approx 1.48}$`,
+      Ht:'3.33×10⁻²', OHt:'3×10⁻¹³', pHt:'1.48', pH:1.48
+    },
+    {
+      vol:49, label:'③ 加入 <strong>49 mL</strong> NaOH（接近當量點）',
+      init:  ['0.1×50 = 5', '0.1×49 = 4.9', '0'],
+      chg:   ['－4.9',       '－4.9',        '＋4.9'],
+      fin:   ['0.1',         '0',             '4.9'],
+      finV: 99,
+      resultHTML:`總體積 = 99 mL，HCl 微量過剩：<br>
+        $[H^+] = \\dfrac{0.1}{99} \\approx 1.01 \\times 10^{-3}\\ M$<br>
+        $[OH^-] \\approx 9.9 \\times 10^{-12}\\ M$<br>
+        $\\mathbf{pH \\approx 3}$`,
+      Ht:'10⁻³', OHt:'≈10⁻¹¹', pHt:'3', pH:3
+    },
+    {
+      vol:50, label:'④ 加入 <strong>50 mL</strong> NaOH ⭐ 當量點',
+      init:  ['0.1×50 = 5', '0.1×50 = 5', '0'],
+      chg:   ['－5',         '－5',        '＋5'],
+      fin:   ['0 ✓',         '0 ✓',        '5'],
+      finV: 100,
+      resultHTML:`完全中和，溶液只含 NaCl（強酸強鹼鹽，<strong>不水解</strong>）：<br>
+        $[H^+] = [OH^-] = 10^{-7}\\ M$<br>
+        $\\mathbf{pH = 7}$（中性）`,
+      Ht:'10⁻⁷', OHt:'10⁻⁷', pHt:'7', pH:7, isEq:true
+    },
+    {
+      vol:51, label:'⑤ 加入 <strong>51 mL</strong> NaOH（當量點後）',
+      init:  ['0.1×50 = 5', '0.1×51 = 5.1', '0'],
+      chg:   ['－5',         '－5',           '＋5'],
+      fin:   ['0',           '0.1（過量）',   '5'],
+      finV: 101,
+      resultHTML:`總體積 = 101 mL，NaOH 過量決定 pH：<br>
+        $[OH^-] = \\dfrac{0.1}{101} \\approx 9.9 \\times 10^{-4}\\ M$<br>
+        $[H^+] \\approx 1.01 \\times 10^{-11}\\ M$<br>
+        $\\mathbf{pH \\approx 11}$`,
+      Ht:'≈10⁻¹¹', OHt:'≈10⁻³', pHt:'11', pH:11
+    },
+    {
+      vol:75, label:'⑥ 加入 <strong>75 mL</strong> NaOH',
+      init:  ['0.1×50 = 5', '0.1×75 = 7.5', '0'],
+      chg:   ['－5',         '－5',           '＋5'],
+      fin:   ['0',           '2.5（過量）',   '5'],
+      finV: 125,
+      resultHTML:`總體積 = 125 mL，NaOH 過量：<br>
+        $[OH^-] = \\dfrac{2.5}{125} = 2 \\times 10^{-2}\\ M$<br>
+        $[H^+] = 5 \\times 10^{-13}\\ M$<br>
+        $\\mathbf{pH \\approx 12.3}$`,
+      Ht:'5×10⁻¹³', OHt:'2×10⁻²', pHt:'12.3', pH:12.3
+    },
+    {
+      vol:100, label:'⑦ 加入 <strong>100 mL</strong> NaOH',
+      init:  ['0.1×50 = 5', '0.1×100 = 10', '0'],
+      chg:   ['－5',          '－5',          '＋5'],
+      fin:   ['0',            '5（過量）',    '5'],
+      finV: 150,
+      resultHTML:`總體積 = 150 mL，NaOH 過量：<br>
+        $[OH^-] = \\dfrac{5}{150} = \\dfrac{1}{30} \\approx 3.33 \\times 10^{-2}\\ M$<br>
+        $[H^+] = 3 \\times 10^{-13}\\ M$<br>
+        $\\mathbf{pH \\approx 12.52}$`,
+      Ht:'3×10⁻¹³', OHt:'≈3.3×10⁻²', pHt:'12.52', pH:12.52
+    }
+  ];
+
+  const blockStep = new Array(7).fill(0);
+  const blockDone = new Array(7).fill(false);
+
+  /* ── Build block HTML ── */
+  function buildBlock(i, d) {
+    const eqBorder = d.isEq ? 'border-color:rgba(248,113,113,0.5);' : '';
+    return `
+    <div class="s5-calc-block" id="blk${i}" style="${eqBorder}">
+      <div class="s5-calc-header" onclick="s5Toggle(${i})">
+        <span>${d.label}</span>
+        <span class="s5-badge" id="badge${i}">點擊展開</span>
+      </div>
+      <div class="s5-steps" id="steps${i}">
+        <!-- unified equation + ICE table -->
+        <div class="eq-line-row">
+          $HCl + NaOH \\rightarrow NaCl + H_2O$
+        </div>
+        <table class="ice-uni" id="ice${i}">
+          <thead>
+            <tr>
+              <th style="text-align:left">n mol<br><span style="font-weight:400">量數</span></th>
+              <th class="va-h">HCl</th>
+              <th>+</th>
+              <th class="vb-h">NaOH</th>
+              <th>→</th>
+              <th class="vs-h">NaCl</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- row 1: initial (step 1) -->
+            <tr class="r-init ice-row-hidden" id="ri${i}">
+              <td class="row-lbl">反應前</td>
+              <td class="va">${d.init[0]}</td>
+              <td></td>
+              <td class="vb">${d.init[1]}</td>
+              <td></td>
+              <td class="vs">${d.init[2]}</td>
+            </tr>
+            <!-- row 2: change (step 2) -->
+            <tr class="r-chg ice-row-hidden" id="rc${i}">
+              <td class="row-lbl">反應</td>
+              <td class="va">${d.chg[0]}</td>
+              <td></td>
+              <td class="vb">${d.chg[1]}</td>
+              <td></td>
+              <td class="vs">${d.chg[2]}</td>
+            </tr>
+            <!-- row 3: final (step 3) -->
+            <tr class="r-fin ice-row-hidden" id="rf${i}">
+              <td class="row-lbl">反應後</td>
+              <td class="va">${d.fin[0]}</td>
+              <td></td>
+              <td class="vb">${d.fin[1]}</td>
+              <td></td>
+              <td class="vs">${d.fin[2]}</td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- result box (step 3) -->
+        <div class="result-box ice-row-hidden" id="rr${i}">${d.resultHTML}</div>
+        <button class="s5-btn-next" id="btn${i}" onclick="s5Next(${i})">▶ 下一步</button>
+      </div>
+    </div>`;
+  }
+
+  const rightCol = document.getElementById('s5-right');
+  rightCol.innerHTML = `<p style="font-size:0.82rem; color:rgba(255,255,255,0.4); flex-shrink:0; margin-bottom:0.2rem;">▶ 點擊標題展開，逐步點擊「下一步」填寫計算表，完成後自動更新左方表格與曲線。</p>`
+    + s5Data.map((d,i) => buildBlock(i,d)).join('');
+
+  /* ── Toggle open/close ── */
+  window.s5Toggle = function(i) {
+    const steps = document.getElementById('steps'+i);
+    if (!steps) return;
+    const open = steps.classList.contains('open');
+    if (!open) {
+      steps.classList.add('open');
+      if (blockStep[i] === 0) { 
+        blockStep[i] = 1; 
+        revealRow(i); 
+      } else {
+        setTimeout(() => {
+          const btn = document.getElementById('btn'+i);
+          const rightCol = document.getElementById('s5-right');
+          if (btn && rightCol) {
+            const btnRect = btn.getBoundingClientRect();
+            const colRect = rightCol.getBoundingClientRect();
+            if (btnRect.bottom > colRect.bottom) {
+              rightCol.scrollBy({ top: btnRect.bottom - colRect.bottom + 10, behavior: 'smooth' });
+            }
+          }
+        }, 400);
+      }
+    } else {
+      steps.classList.remove('open');
+    }
+  };
+
+  /* ── Next step ── */
+  window.s5Next = function(i) {
+    if (blockDone[i]) { s5Toggle(i); return; }
+    blockStep[i]++;
+    revealRow(i);
+  };
+
+  function revealRow(i) {
+    const step = blockStep[i];
+    const ids = { 1:`ri${i}`, 2:`rc${i}`, 3:`rf${i}` };
+    const el = document.getElementById(ids[step]);
+    if (el) {
+      el.classList.remove('ice-row-hidden');
+      el.classList.add('ice-row-show');
+    }
+    if (step === 3) {
+      // show result
+      const rr = document.getElementById('rr'+i);
+      if (rr) { rr.classList.remove('ice-row-hidden'); rr.classList.add('ice-row-show'); }
+      // change button style
+      const btn = document.getElementById('btn'+i);
+      if (btn) {
+        btn.textContent = '✓ 填入表格與圖表';
+        btn.style.background = 'rgba(52,211,153,0.15)';
+        btn.style.borderColor = 'rgba(52,211,153,0.4)';
+        btn.style.color = 'var(--accent-green)';
+        // auto-fill after short delay
+        setTimeout(() => fillRow(i), 500);
+      }
+    }
+    // typeset MathJax for newly visible element
+    const doScroll = () => {
+      setTimeout(() => {
+        const btn = document.getElementById('btn'+i);
+        const rightCol = document.getElementById('s5-right');
+        if (btn && rightCol) {
+          const btnRect = btn.getBoundingClientRect();
+          const colRect = rightCol.getBoundingClientRect();
+          if (btnRect.bottom > colRect.bottom) {
+             rightCol.scrollBy({ top: btnRect.bottom - colRect.bottom + 10, behavior: 'smooth' });
+          }
+        }
+      }, 300);
+    };
+
+    if (typeof MathJax !== 'undefined' && MathJax.typesetPromise && el) {
+      const rr2 = document.getElementById('rr'+i);
+      MathJax.typesetPromise([el, rr2].filter(Boolean)).then(doScroll).catch(()=>{});
+    } else {
+      doScroll();
+    }
+  }
+
+  function fillRow(i) {
+    const d = s5Data[i];
+    ['h','oh','ph'].forEach((pfx, j) => {
+      const key = ['Ht','OHt','pHt'][j];
+      const el = document.getElementById(pfx+i);
+      if (el) { el.textContent = d[key]; el.classList.add('filled'); }
+    });
+    blockDone[i] = true;
+    const badge = document.getElementById('badge'+i);
+    if (badge) { badge.textContent = '✓ 完成'; badge.classList.add('done'); }
+    const hdr = document.querySelector('#blk'+i+' .s5-calc-header');
+    if (hdr) hdr.classList.add('done');
+    const btn = document.getElementById('btn'+i);
+    if (btn) { btn.textContent = '縮合 / 展開'; btn.classList.add('done'); btn.disabled = false; }
+    drawChart();
+  }
+
+  /* ── Canvas chart ── */
+  function drawChart() {
+    const canvas = document.getElementById('s5-canvas');
+    if (!canvas) return;
+    const wrap = document.getElementById('s5-chart-wrap');
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    const W = canvas.width, H = canvas.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,W,H);
+    const ml=48, mr=16, mt=16, mb=38;
+    const plotW = W-ml-mr, plotH = H-mt-mb;
+    const pHtoY = pH => mt + plotH*(1-pH/14);
+    const volToX = v => ml + plotW*(v/100);
+
+    // BTB indicator band
+    ctx.fillStyle = 'rgba(56,189,248,0.1)';
+    ctx.fillRect(ml, pHtoY(8), plotW, pHtoY(6)-pHtoY(8));
+    ctx.fillStyle = 'rgba(56,189,248,0.3)'; ctx.font='10px sans-serif';
+    ctx.fillText('BTB 6~8', ml+4, pHtoY(7));
+
+    // grid
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+    for(let ph=0;ph<=14;ph+=2){
+      const y=pHtoY(ph); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(W-mr,y); ctx.stroke();
+    }
+    for(let v=0;v<=100;v+=25){
+      const x=volToX(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,H-mb); ctx.stroke();
+    }
+    // axes
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(ml,mt); ctx.lineTo(ml,H-mb); ctx.lineTo(W-mr,H-mb); ctx.stroke();
+    // labels
+    ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='11px sans-serif'; ctx.textAlign='right';
+    for(let ph=0;ph<=14;ph+=2){ ctx.fillText(ph, ml-5, pHtoY(ph)+4); }
+    ctx.textAlign='center';
+    for(let v=0;v<=100;v+=25){ ctx.fillText(v, volToX(v), H-mb+14); }
+    ctx.save(); ctx.translate(12,mt+plotH/2); ctx.rotate(-Math.PI/2); ctx.fillText('pH',0,0); ctx.restore();
+    ctx.fillText('NaOH (mL)', ml+plotW/2, H-2);
+    // equivalence point dashed line
+    ctx.strokeStyle='rgba(248,113,113,0.5)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(volToX(50),mt); ctx.lineTo(volToX(50),H-mb); ctx.stroke();
+    ctx.setLineDash([]);
+    // data points & curve
+    const done = s5Data.filter((_,i)=>blockDone[i]);
+    if(done.length>1){
+      ctx.strokeStyle='rgba(34,211,238,0.85)'; ctx.lineWidth=2.5; ctx.lineJoin='round';
+      ctx.beginPath();
+      done.forEach((d,i)=>{ const x=volToX(d.vol),y=pHtoY(d.pH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+      ctx.stroke();
+    }
+    done.forEach(d=>{
+      const x=volToX(d.vol),y=pHtoY(d.pH);
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+      ctx.fillStyle = d.isEq ? '#f87171':'#fbbf24';
+      ctx.fill(); ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+    });
+  }
+
+  window.addEventListener('resize', drawChart);
+  setTimeout(drawChart, 400);
+})();
+</script>
+
+
+
+<!-- Slide 6: 弱酸強鹼 -->
+<div class="slide" id="slide-6" style="height:100vh; display:flex; flex-direction:column; padding: 0.5rem 0.5rem 1rem; box-sizing:border-box;">
+<h1 style="flex-shrink:0; margin-bottom:0.4rem;">計算範例：弱酸強鹼滴定</h1>
+<div id="s6-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; flex: 1; min-height: 0;">
+  <div id="s6-left" style="display: flex; flex-direction: column; gap: 0.5rem; background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px; padding: 0.85rem 1rem; overflow: hidden; min-height: 0;">
+    <p style="font-size:0.92rem; color: rgba(255,255,255,0.75); flex-shrink:0;">
+      例：以 <strong class="text-blue">0.1M NaOH</strong> 滴定 <strong class="text-red">100mL 之 0.1M $CH_3COOH$</strong>，試完成下表？<br>
+      ($CH_3COOH$ 之 $K_a = 1.8 \times 10^{-5}$)
+    </p>
+    <div style="flex-shrink: 0; max-height: 40%; overflow-y: auto;">
+      <table id="tbl-wa-sb" style="width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 1vw, 0.9rem);">
+        <style>
+        #tbl-wa-sb th, #tbl-wa-sb td { border: 1px solid rgba(255,255,255,0.15); padding: 0.25rem 0.4rem; text-align: center; }
+        #tbl-wa-sb th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); position: sticky; top: 0; }
+        #tbl-wa-sb td.filled { color: var(--accent-yellow); font-weight: 700; animation: fadeIn 0.5s ease; }
+        #tbl-wa-sb tr.eq-pt { background: rgba(248,113,113,0.12); }
+        </style>
+        <thead><tr><th>加入 NaOH(mL)</th><th>$[H^+]$ (M)</th><th>$[OH^-]$ (M)</th><th>pH 值</th></tr></thead>
+        <tbody id="tbl-wa-sb-body">
+          <tr data-row="0"><td>0</td><td id="h6_0">—</td><td id="oh6_0">—</td><td id="ph6_0">?</td></tr>
+          <tr data-row="1"><td>20</td><td id="h6_1">—</td><td id="oh6_1">—</td><td id="ph6_1">?</td></tr>
+          <tr data-row="2"><td>50</td><td id="h6_2">—</td><td id=\"oh6_2\">—</td><td id="ph6_2">?</td></tr>
+          <tr data-row="3"><td>75</td><td id="h6_3">—</td><td id=\"oh6_3\">—</td><td id="ph6_3">?</td></tr>
+          <tr data-row="4"><td>90</td><td id="h6_4">—</td><td id=\"oh6_4\">—</td><td id="ph6_4">?</td></tr>
+          <tr data-row="5"><td>95</td><td id="h6_5">—</td><td id=\"oh6_5\">—</td><td id="ph6_5">?</td></tr>
+          <tr data-row="6"><td>99</td><td id="h6_6">—</td><td id=\"oh6_6\">—</td><td id="ph6_6">?</td></tr>
+          <tr data-row="7" class="eq-pt"><td style="color:var(--accent-red)">100 ★</td><td id="h6_7">—</td><td id="oh6_7">—</td><td id="ph6_7">?</td></tr>
+          <tr data-row="8"><td>101</td><td id="h6_8">—</td><td id=\"oh6_8\">—</td><td id="ph6_8">?</td></tr>
+          <tr data-row="9"><td>110</td><td id="h6_9">—</td><td id=\"oh6_9\">—</td><td id="ph6_9">?</td></tr>
+          <tr data-row="10"><td>120</td><td id="h6_10">—</td><td id=\"oh6_10\">—</td><td id="ph6_10">?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="s6-chart-wrap" style="flex: 1; position: relative; min-height: 0; margin-top: 5px;">
+      <canvas id="s6-canvas" style="width: 100%; height: 100%; display: block; border-radius: 8px;"></canvas>
+    </div>
+  </div>
+  <div id="s6-right" style="background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px; padding: 0.85rem 1rem; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; box-sizing: border-box;">
+    <p style="font-size:0.82rem; color:rgba(255,255,255,0.4); flex-shrink:0; margin-bottom:0.2rem;">▶ 點擊標題展開，逐步點擊「下一步」填寫計算表，完成後自動更新左方表格與曲線。</p>
+  </div>
+</div>
+</div>
+
+<!-- Slide 7: 弱鹼強酸滴定 -->
+<div class="slide" id="slide-7" style="height:100vh; display:flex; flex-direction:column; padding: 0.5rem 0.5rem 1rem; box-sizing:border-box;">
+<h1 style="flex-shrink:0; margin-bottom:0.4rem;">計算範例：弱鹼強酸滴定</h1>
+<div id="s7-layout" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; flex: 1; min-height: 0;">
+  <div id="s7-left" style="display: flex; flex-direction: column; gap: 0.5rem; background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px; padding: 0.85rem 1rem; overflow: hidden; min-height: 0;">
+    <p style="font-size:0.92rem; color: rgba(255,255,255,0.75); flex-shrink:0;">
+      例：以 <strong class="text-red">0.1M HCl</strong> 滴定 <strong class="text-blue">100mL 之 0.1M $NH_3$</strong>，試完成下表？<br>
+      ($NH_3$ 之 $K_b = 1.8 \times 10^{-5}$)
+    </p>
+    <div style="flex-shrink: 0; max-height: 40%; overflow-y: auto;">
+      <table id="tbl-wb-sa" style="width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 1vw, 0.9rem);">
+        <style>
+        #tbl-wb-sa th, #tbl-wb-sa td { border: 1px solid rgba(255,255,255,0.15); padding: 0.25rem 0.4rem; text-align: center; }
+        #tbl-wb-sa th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); position: sticky; top: 0; }
+        #tbl-wb-sa td.filled { color: var(--accent-yellow); font-weight: 700; animation: fadeIn 0.5s ease; }
+        #tbl-wb-sa tr.eq-pt { background: rgba(248,113,113,0.12); }
+        </style>
+        <thead><tr><th>加入 HCl(mL)</th><th>$[H^+]$ (M)</th><th>$[OH^-]$ (M)</th><th>pH 值</th></tr></thead>
+        <tbody id="tbl-wb-sa-body">
+          <tr data-row="0"><td>0</td><td id="h7_0">—</td><td id="oh7_0">—</td><td id="ph7_0">?</td></tr>
+          <tr data-row="1"><td>20</td><td id="h7_1">—</td><td id="oh7_1">—</td><td id="ph7_1">?</td></tr>
+          <tr data-row="2"><td>50</td><td id="h7_2">—</td><td id="oh7_2">—</td><td id="ph7_2">?</td></tr>
+          <tr data-row="3"><td>75</td><td id="h7_3">—</td><td id="oh7_3">—</td><td id="ph7_3">?</td></tr>
+          <tr data-row="4"><td>90</td><td id="h7_4">—</td><td id="oh7_4">—</td><td id="ph7_4">?</td></tr>
+          <tr data-row="5"><td>95</td><td id="h7_5">—</td><td id="oh7_5">—</td><td id="ph7_5">?</td></tr>
+          <tr data-row="6"><td>99</td><td id="h7_6">—</td><td id="oh7_6">—</td><td id="ph7_6">?</td></tr>
+          <tr data-row="7" class="eq-pt"><td style="color:var(--accent-red)">100 ★</td><td id="h7_7">—</td><td id="oh7_7">—</td><td id="ph7_7">?</td></tr>
+          <tr data-row="8"><td>101</td><td id="h7_8">—</td><td id="oh7_8">—</td><td id="ph7_8">?</td></tr>
+          <tr data-row="9"><td>110</td><td id="h7_9">—</td><td id="oh7_9">—</td><td id="ph7_9">?</td></tr>
+          <tr data-row="10"><td>120</td><td id="h7_10">—</td><td id="oh7_10">—</td><td id="ph7_10">?</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="s7-chart-wrap" style="flex: 1; position: relative; min-height: 0; margin-top: 5px;">
+      <canvas id="s7-canvas" style="width: 100%; height: 100%; display: block; border-radius: 8px;"></canvas>
+    </div>
+  </div>
+  <div id="s7-right" style="background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px; padding: 0.85rem 1rem; height: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; box-sizing: border-box;">
+    <p style="font-size:0.82rem; color:rgba(255,255,255,0.4); flex-shrink:0; margin-bottom:0.2rem;">▶ 點擊標題展開，逐步點擊「下一步」填寫計算表，完成後自動更新左方表格與曲線。</p>
+  </div>
+</div>
+</div>
+
+<script>
+(function() {
+  window.s7Toggle = function(i) {
+    var steps = document.getElementById('steps7_' + i);
+    if (!steps) return;
+    if (!steps.classList.contains('open')) {
+      steps.classList.add('open');
+      if (blockStep7[i] === 0) { blockStep7[i] = 1; revealRow7(i); }
+      else { doScroll7(i); }
+    } else { steps.classList.remove('open'); }
+  };
+  window.s7Next = function(i) {
+    if (blockDone7[i]) { s7Toggle(i); return; }
+    blockStep7[i]++; revealRow7(i);
+  };
+  var s7Data = [{"vol": 0, "isEq": false, "label": "① 加入 0 mL HCl", "tables": [{"title": "弱鹼解離", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["0.1", "0", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$0.1 - x \\approx 0.1$", "x", "x"]}], "resultHTML": "$K_b = \\frac{x^2}{0.1} = 1.8 \\times 10^{-5}$<br>$[OH^-] = x = 1.34 \\times 10^{-3}M$<br>$pOH = 2.87, \\; pH = 11.13$", "Ht": "$7.45 \\times 10^{-12}$", "OHt": "$1.34 \\times 10^{-3}$", "pH": "11.13"}, {"vol": 20, "isEq": false, "label": "② 加入 20 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "2", "0"], "chg": ["- 2", "- 2", "+ 2"], "fin": ["8", "0", "2"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{8}{120}$", "$\\frac{2}{120}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{8}{120}$", "$\\frac{2}{120}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{2}{120}$ \\cdot x }{ $\\frac{8}{120}$ }$<br>$[OH^-] = x = 7.20 \\times 10^{-5}M$<br>$pOH = 4.14 \\implies pH = 9.86$", "Ht": "$1.39 \\times 10^{-10}$", "OHt": "$7.20 \\times 10^{-5}$", "pH": "9.86"}, {"vol": 50, "isEq": false, "label": "③ 加入 50 mL HCl (半當量點)", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "5", "0"], "chg": ["- 5", "- 5", "+ 5"], "fin": ["5", "0", "5"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{5}{150}$", "$\\frac{5}{150}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{5}{150}$", "$\\frac{5}{150}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{5}{150}$ \\cdot x }{ $\\frac{5}{150}$ }$<br>$[OH^-] = x = 1.80 \\times 10^{-5}M$<br>$pOH = 4.74 \\implies pH = 9.26$", "Ht": "$5.56 \\times 10^{-10}$", "OHt": "$1.80 \\times 10^{-5}$", "pH": "9.26"}, {"vol": 75, "isEq": false, "label": "④ 加入 75 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "7.5", "0"], "chg": ["- 7.5", "- 7.5", "+ 7.5"], "fin": ["2.5", "0", "7.5"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{2.5}{175}$", "$\\frac{7.5}{175}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{2.5}{175}$", "$\\frac{7.5}{175}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{7.5}{175}$ \\cdot x }{ $\\frac{2.5}{175}$ }$<br>$[OH^-] = x = 6.00 \\times 10^{-6}M$<br>$pOH = 5.22 \\implies pH = 8.78$", "Ht": "$1.67 \\times 10^{-9}$", "OHt": "$6.00 \\times 10^{-6}$", "pH": "8.78"}, {"vol": 90, "isEq": false, "label": "⑤ 加入 90 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "9", "0"], "chg": ["- 9", "- 9", "+ 9"], "fin": ["1", "0", "9"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{1}{190}$", "$\\frac{9}{190}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{1}{190}$", "$\\frac{9}{190}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{9}{190}$ \\cdot x }{ $\\frac{1}{190}$ }$<br>$[OH^-] = x = 2.00 \\times 10^{-6}M$<br>$pOH = 5.70 \\implies pH = 8.30$", "Ht": "$5.00 \\times 10^{-9}$", "OHt": "$2.00 \\times 10^{-6}$", "pH": "8.30"}, {"vol": 95, "isEq": false, "label": "⑥ 加入 95 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "9.5", "0"], "chg": ["- 9.5", "- 9.5", "+ 9.5"], "fin": ["0.5", "0", "9.5"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{0.5}{195}$", "$\\frac{9.5}{195}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{0.5}{195}$", "$\\frac{9.5}{195}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{9.5}{195}$ \\cdot x }{ $\\frac{0.5}{195}$ }$<br>$[OH^-] = x = 9.47 \\times 10^{-7}M$<br>$pOH = 6.02 \\implies pH = 7.98$", "Ht": "$1.06 \\times 10^{-8}$", "OHt": "$9.47 \\times 10^{-7}$", "pH": "7.98"}, {"vol": 99, "isEq": false, "label": "⑦ 加入 99 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "9.9", "0"], "chg": ["- 9.9", "- 9.9", "+ 9.9"], "fin": ["0.1", "0", "9.9"]}, {"title": "(2) 再考慮平衡 (緩衝)", "op1": "⇌", "op2": "+", "eq": "$NH_3 + H_2O \\rightleftharpoons NH_4^+ + OH^-$", "heads": ["$NH_3$", "$NH_4^+$", "$OH^-$"], "init": ["$\\frac{0.1}{199}$", "$\\frac{9.9}{199}$", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{0.1}{199}$", "$\\frac{9.9}{199}$", "x"]}], "resultHTML": "$K_b = 1.8 \\times 10^{-5} = \\frac{ $\\frac{9.9}{199}$ \\cdot x }{ $\\frac{0.1}{199}$ }$<br>$[OH^-] = x = 1.82 \\times 10^{-7}M$<br>$pOH = 6.74 \\implies pH = 7.26$", "Ht": "$5.50 \\times 10^{-8}$", "OHt": "$1.82 \\times 10^{-7}$", "pH": "7.26"}, {"vol": 100, "isEq": true, "label": "⑧ 加入 100 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "10", "0"], "chg": ["- 10", "- 10", "+ 10"], "fin": ["0", "0", "10"]}, {"title": "(2) 再考慮平衡 (水解)", "op1": "⇌", "op2": "+", "eq": "$NH_4^+ \\rightleftharpoons NH_3 + H^+$", "heads": ["$NH_4^+$", "$NH_3$", "$H^+$"], "init": ["$\\frac{10}{200}$", "0", "0"], "chg": ["- x", "+ x", "+ x"], "fin": ["$\\frac{10}{200}$", "x", "x"]}], "resultHTML": "$K_h = \\frac{K_w}{K_b} = 5.56 \\times 10^{-10} = \\frac{x^2}{ $\\frac{10}{200}$ }$<br>$[H^+] = x = 5.27 \\times 10^{-6}M$<br>$pH = 5.28$", "Ht": "$5.27 \\times 10^{-6}$", "OHt": "$1.90 \\times 10^{-9}$", "pH": "5.28"}, {"vol": 101, "isEq": false, "label": "⑨ 加入 101 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "10.1", "0"], "chg": ["- 10", "- 10", "+ 10"], "fin": ["0", "0.1", "10"]}, {"title": "(2) 再考慮平衡", "op1": "⇌", "op2": "+", "eq": "$NH_4^+ \\rightleftharpoons NH_3 + H^+$", "heads": ["$NH_4^+$", "$NH_3$", "$H^+$"], "init": ["$\\frac{10}{201}$", "0", "$\\frac{0.1}{201}$"], "chg": ["- y", "+ y", "+ y"], "fin": ["$\\frac{10}{201}$", "y", "$\\frac{0.1}{201}$"]}], "resultHTML": "此時強酸主導 pH（y ≈ 0）<br>$[H^+] \\approx $\\frac{0.1}{201}$ = 4.98 \\times 10^{-4}M$<br>$pH = 3.30$", "Ht": "$4.98 \\times 10^{-4}$", "OHt": "$2.01 \\times 10^{-11}$", "pH": "3.30"}, {"vol": 110, "isEq": false, "label": "⑩ 加入 110 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "11", "0"], "chg": ["- 10", "- 10", "+ 10"], "fin": ["0", "1", "10"]}, {"title": "(2) 再考慮平衡", "op1": "⇌", "op2": "+", "eq": "$NH_4^+ \\rightleftharpoons NH_3 + H^+$", "heads": ["$NH_4^+$", "$NH_3$", "$H^+$"], "init": ["$\\frac{10}{210}$", "0", "$\\frac{1}{210}$"], "chg": ["- y", "+ y", "+ y"], "fin": ["$\\frac{10}{210}$", "y", "$\\frac{1}{210}$"]}], "resultHTML": "此時強酸主導 pH（y ≈ 0）<br>$[H^+] \\approx $\\frac{1}{210}$ = 4.76 \\times 10^{-3}M$<br>$pH = 2.32$", "Ht": "$4.76 \\times 10^{-3}$", "OHt": "$2.10 \\times 10^{-12}$", "pH": "2.32"}, {"vol": 120, "isEq": false, "label": "⑪ 加入 120 mL HCl", "tables": [{"title": "(1) 先中和 (單位：mmol)", "op1": "+", "op2": "→", "eq": "$NH_3 + HCl \\rightarrow NH_4^+ + Cl^-$", "heads": ["$NH_3$", "$HCl$", "$NH_4^+$"], "init": ["10", "12", "0"], "chg": ["- 10", "- 10", "+ 10"], "fin": ["0", "2", "10"]}, {"title": "(2) 再考慮平衡", "op1": "⇌", "op2": "+", "eq": "$NH_4^+ \\rightleftharpoons NH_3 + H^+$", "heads": ["$NH_4^+$", "$NH_3$", "$H^+$"], "init": ["$\\frac{10}{220}$", "0", "$\\frac{2}{220}$"], "chg": ["- y", "+ y", "+ y"], "fin": ["$\\frac{10}{220}$", "y", "$\\frac{2}{220}$"]}], "resultHTML": "此時強酸主導 pH（y ≈ 0）<br>$[H^+] \\approx $\\frac{2}{220}$ = 9.09 \\times 10^{-3}M$<br>$pH = 2.04$", "Ht": "$9.09 \\times 10^{-3}$", "OHt": "$1.10 \\times 10^{-12}$", "pH": "2.04"}];
+  var rightCol7 = document.getElementById('s7-right');
+  var blockStep7 = new Array(11).fill(0);
+  var blockDone7 = new Array(11).fill(false);
+  function getIds7(i, t, s) { return 's7_'+i+'_t'+t+'_'+s; }
+  function buildBlock7(i, d) {
+    var eb = d.isEq ? 'border-color:rgba(248,113,113,0.5);':'';
+    var h = '<div class="s5-calc-block" id="blk7_'+i+'" style="'+eb+' flex-shrink:0;">';
+    h += '<div class="s5-calc-header" onclick="s7Toggle('+i+')"><span>'+d.label+'</span>';
+    h += '<span class="s5-badge" id="badge7_'+i+'">點擊展開</span></div>';
+    h += '<div class="s5-steps" id="steps7_'+i+'">';
+    d.tables.forEach(function(t,ti) {
+      h += '<div class="eq-line-row" style="margin-top:10px;color:var(--accent-yellow);font-size:1.1rem;">'+t.title+'</div>';
+      h += '<div class="eq-line-row">'+t.eq+'</div>';
+      h += '<table class="ice-uni"><thead><tr>';
+      h += '<th style="text-align:left">n mol<br><span style="font-weight:400">量數</span></th>';
+      h += '<th class="va-h">'+t.heads[0]+'</th><th>'+(t.op1||'+')+'</th>';
+      h += '<th class="vb-h">'+t.heads[1]+'</th><th>'+(t.op2||'→')+'</th>';
+      h += '<th class="vs-h">'+t.heads[2]+'</th></tr></thead><tbody>';
+      var ii=getIds7(i,ti,'init'),ci=getIds7(i,ti,'chg'),fi=getIds7(i,ti,'fin');
+      h += '<tr class="r-init ice-row-hidden" id="'+ii+'"><td class="row-lbl">反應前</td>';
+      h += '<td class="va">'+t.init[0]+'</td><td></td><td class="vb">'+t.init[1]+'</td><td></td><td class="vs">'+t.init[2]+'</td></tr>';
+      h += '<tr class="r-chg ice-row-hidden" id="'+ci+'"><td class="row-lbl">反應</td>';
+      h += '<td class="va">'+t.chg[0]+'</td><td></td><td class="vb">'+t.chg[1]+'</td><td></td><td class="vs">'+t.chg[2]+'</td></tr>';
+      h += '<tr class="r-fin ice-row-hidden" id="'+fi+'"><td class="row-lbl">反應後</td>';
+      h += '<td class="va">'+t.fin[0]+'</td><td></td><td class="vb">'+t.fin[1]+'</td><td></td><td class="vs">'+t.fin[2]+'</td></tr>';
+      h += '</tbody></table>';
+    });
+    h += '<div class="result-box ice-row-hidden" id="rr7_'+i+'" style="margin-top:15px;">'+d.resultHTML+'</div>';
+    h += '<button class="s5-btn-next" id="btn7_'+i+'" onclick="s7Next('+i+')">▶ 下一步</button>';
+    h += '</div></div>';
+    return h;
+  }
+  function revealRow7(i) {
+    var step=blockStep7[i], d=s7Data[i], el=null, done=false;
+    if(step===1) el=document.getElementById(getIds7(i,0,'init'));
+    if(step===2) el=document.getElementById(getIds7(i,0,'chg'));
+    if(step===3) el=document.getElementById(getIds7(i,0,'fin'));
+    if(d.tables.length===2) {
+      if(step===4) el=document.getElementById(getIds7(i,1,'init'));
+      if(step===5) el=document.getElementById(getIds7(i,1,'chg'));
+      if(step===6) el=document.getElementById(getIds7(i,1,'fin'));
+      if(step===7){el=document.getElementById('rr7_'+i);done=true;}
+    } else { if(step===4){el=document.getElementById('rr7_'+i);done=true;} }
+    if(el){el.classList.remove('ice-row-hidden');el.classList.add('ice-row-show');}
+    if(done){blockDone7[i]=true;fillRow7(i);drawChart7();}
+    else doScroll7(i);
+  }
+  function doScroll7(i) {
+    setTimeout(function(){
+      try {
+        var run=function(){
+          var btn=document.getElementById('btn7_'+i),rc=document.getElementById('s7-right');
+          if(btn&&rc){var b=btn.getBoundingClientRect(),c=rc.getBoundingClientRect();
+            if(b.bottom>c.bottom) rc.scrollBy({top:b.bottom-c.bottom+20,behavior:'smooth'});}
+        };
+        if(typeof MathJax!=='undefined'&&MathJax.typesetPromise) MathJax.typesetPromise().catch(function(){}).then(function(){setTimeout(run,100);});
+        else run();
+      }catch(e){}
+    },50);
+  }
+  function fillRow7(i) {
+    var d=s7Data[i];
+    ['h7_','oh7_','ph7_'].forEach(function(pfx,pi){
+      var el=document.getElementById(pfx+i);
+      if(el){el.innerHTML=[d.Ht,d.OHt,d.pH][pi];el.classList.add('filled');}
+    });
+    var badge=document.getElementById('badge7_'+i);
+    if(badge){badge.textContent='完成';badge.classList.add('done');}
+    var btn=document.getElementById('btn7_'+i);
+    if(btn){btn.textContent='縮合 / 展開';btn.classList.add('done');btn.disabled=false;}
+    doScroll7(i);
+  }
+  var cvs7=document.getElementById('s7-canvas'),ctx7=cvs7?cvs7.getContext('2d'):null;
+  function drawChart7() {
+    if(!ctx7) return;
+    var W=cvs7.parentElement.clientWidth,H=cvs7.parentElement.clientHeight;
+    if(!W||!H) return;
+    cvs7.width=W;cvs7.height=H;ctx7.clearRect(0,0,W,H);
+    var mt=20,mb=40,ml=40,mr=20,pw=W-ml-mr,ph=H-mt-mb;
+    var vx=function(v){return ml+(v/120)*pw;},py=function(p){return mt+ph-(p/14)*ph;};
+    ctx7.strokeStyle='rgba(255,255,255,0.06)';ctx7.lineWidth=1;
+    for(var p=0;p<=14;p+=2){ctx7.beginPath();ctx7.moveTo(ml,py(p));ctx7.lineTo(W-mr,py(p));ctx7.stroke();}
+    for(var v=0;v<=120;v+=20){ctx7.beginPath();ctx7.moveTo(vx(v),mt);ctx7.lineTo(vx(v),H-mb);ctx7.stroke();}
+    ctx7.strokeStyle='rgba(255,255,255,0.5)';ctx7.lineWidth=1.5;
+    ctx7.beginPath();ctx7.moveTo(ml,mt);ctx7.lineTo(ml,H-mb);ctx7.lineTo(W-mr,H-mb);ctx7.stroke();
+    ctx7.fillStyle='rgba(255,255,255,0.7)';ctx7.font='11px sans-serif';ctx7.textAlign='right';
+    for(var p2=0;p2<=14;p2+=2) ctx7.fillText(p2,ml-5,py(p2)+4);
+    ctx7.textAlign='center';
+    for(var v2=0;v2<=120;v2+=20) ctx7.fillText(v2,vx(v2),H-mb+14);
+    ctx7.save();ctx7.translate(12,mt+ph/2);ctx7.rotate(-Math.PI/2);ctx7.fillText('pH',0,0);ctx7.restore();
+    ctx7.fillText('HCl (mL)',ml+pw/2,H-2);
+    ctx7.strokeStyle='rgba(248,113,113,0.5)';ctx7.setLineDash([4,4]);ctx7.lineWidth=1;
+    ctx7.beginPath();ctx7.moveTo(vx(100),mt);ctx7.lineTo(vx(100),H-mb);ctx7.stroke();
+    ctx7.setLineDash([]);
+    var done=s7Data.filter(function(_,i){return blockDone7[i];});
+    if(done.length>1){
+      ctx7.strokeStyle='rgba(34,211,238,0.85)';ctx7.lineWidth=2.5;ctx7.lineJoin='round';
+      ctx7.beginPath();
+      done.forEach(function(d,i){var x=vx(d.vol),y=py(d.pH);if(i===0)ctx7.moveTo(x,y);else ctx7.lineTo(x,y);});
+      ctx7.stroke();
+    }
+    done.forEach(function(d){
+      var x=vx(d.vol),y=py(d.pH);
+      ctx7.beginPath();ctx7.arc(x,y,5,0,Math.PI*2);
+      ctx7.fillStyle=d.isEq?'#f87171':'#fbbf24';
+      ctx7.fill();ctx7.strokeStyle='#fff';ctx7.lineWidth=1.5;ctx7.stroke();
+    });
+  }
+  if(rightCol7){
+    var bh='';
+    for(var k=0;k<s7Data.length;k++) bh+=buildBlock7(k,s7Data[k]);
+    rightCol7.innerHTML+=bh;
+    try{if(typeof MathJax!=='undefined'&&MathJax.typesetPromise) MathJax.typesetPromise([rightCol7]).catch(function(){});}catch(e){}
+  }
+  window.addEventListener('resize',drawChart7);
+  setTimeout(drawChart7,500);
+})();
+</script>
+<!-- Slide 8: 滴定模擬器 Iframe -->
+<div class="slide" id="slide-8" style="padding: 0; display: flex; flex-direction: column;">
+<h1 style="margin: 20px 68px 10px 2.5vw;">滴定模擬器</h1>
+<div style="flex: 1; position: relative; width: 100%; min-height: 80vh;">
+    <iframe src="titration_blogger.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" title="Titration Simulator"></iframe>
+</div>
+</div>
+
+</div><!-- /slides-container -->
+
+<canvas aria-label="手寫繪圖層" id="drawing-layer" role="application" tabindex="0"></canvas>
+</div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<button class="btn-tool" id="btn-top" style="position: fixed; bottom: 20px; right: 20px; z-index: 9000; width: 40px; height: 40px; border-radius: 50%; background: var(--accent-cyan); color: #0f172a; cursor: pointer;" title="回到頂部" type="button">↑</button>
+
+<div id="toolbar">
+<div id="drag-handle">≡</div>
+<div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+<button class="btn-tool" id="btn-draw" title="手寫功能" type="button">✎</button>
+<div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+<div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+<div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+<div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+<div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+<div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+<div class="color-dot" data-color="#a78bfa" style="width:22px;height:22px;background:#a78bfa;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+</div>
+<div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+<button class="btn-tool" id="btn-eraser" title="橡皮擦" type="button">
+<svg fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"></path></svg>
+</button>
+<button class="btn-tool" id="btn-clear" title="清除手寫" type="button">🗑</button>
+</div>
+<button class="btn-tool" id="btn-random-draw" title="隨機抽號" type="button">🎲</button>
+<button class="btn-tool" id="btn-home" title="回到 my_化學網 首頁" type="button">🏠</button>
+</div>
+
+<div id="start-overlay">
+<div class="start-badge" style="font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; background: transparent; border: none; padding: 0; margin-top: -10vh; margin-bottom: 1.5rem;">選修化學三   水溶液的平衡</div>
+<h1 class="start-title">酸鹼滴定與滴定曲線</h1>
+<button class="btn-start" id="btn-start" style="margin-top: 1rem;" type="button">開始探索教學 ✦</button>
+</div>
+
+<!-- Random Draw Modal -->
+<div id="random-draw-modal">
+<button id="btn-close-draw" title="關閉" type="button">×</button>
+<div id="random-draw-balls"></div>
+<div id="random-draw-controls">
+<button id="btn-do-draw" type="button">抽號</button>
+<div class="draw-input-group">
+<label for="draw-total-input">籤號總數：</label>
+<input id="draw-total-input" max="100" min="1" type="number" value="40"/>
+</div>
+</div>
+</div>
+
+<script>
+/* ─── Start overlay ─── */
+(function () {
+    let starting = false;
+    function startTeaching(ev) {
+        if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+        if (starting) return; starting = true;
+        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('app').classList.add('started');
+        const el = document.documentElement;
+        try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(function () {}); } catch (e) {}
+        try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch (e) {}
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                if (typeof window.updateSlides === 'function') window.updateSlides();
+                if (typeof resizeCanvas === 'function') resizeCanvas();
+            });
+        });
+    }
+    const btn = document.getElementById('btn-start');
+    if (btn) { btn.addEventListener('click', startTeaching); btn.addEventListener('touchend', startTeaching, { passive: false }); }
+})();
+
+/* ─── Drawing layer ─── */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+    canvas.height = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    restoreDrawing();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = 38;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = 3.5;
+    }
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+window.updateSlides = function () {
+    restoreDrawing();
+};
+
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color; drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+document.getElementById('btn-top')?.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+/* ─── Toolbar drag ─── */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+window.updateSlides();
+
+/* ======= RANDOM DRAW LOGIC ======= */
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+
+    let drawBalls = [];
+    let totalBalls = 40;
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = '';
+        drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball';
+            ball.textContent = i;
+            ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball);
+            drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw.addEventListener('click', () => {
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block';
+            btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) {
+                totalBalls = parseInt(drawTotalInput.value) || 40;
+                renderBalls();
+            }
+        }
+    });
+
+    btnCloseDraw.addEventListener('click', () => {
+        drawModal.style.display = 'none';
+        btnRandomDraw.classList.remove('active-tool');
+    });
+
+    drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value);
+        if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val;
+        totalBalls = val;
+        renderBalls();
+    });
+
+    let drawInterval;
+    let drawTimeout;
+
+    btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+        const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+        
+        if (availableBalls.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) {
+            prevWinner.classList.remove('winner');
+            prevWinner.classList.add('drawn');
+        }
+
+        const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (currentAvailable.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        btnDoDraw.disabled = true;
+        drawTotalInput.disabled = true;
+
+        let flickerCount = 0;
+        const flickerDuration = 3000;
+        const flickerSpeed = 50;
+
+        drawInterval = setInterval(() => {
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+            currentAvailable[randomIdx].classList.add('flicker');
+        }, flickerSpeed);
+
+        drawTimeout = setTimeout(() => {
+            clearInterval(drawInterval);
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+            const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+            const winnerBall = currentAvailable[winnerIdx];
+            winnerBall.classList.add('winner');
+
+            btnDoDraw.disabled = false;
+            drawTotalInput.disabled = false;
+        }, flickerDuration);
+    });
+})();
+</script>
+
+\n
+<script>
+(function() {
+  // 1. Export globals immediately before anything else can fail
+  window.s6Toggle = function(i) {
+    var steps = document.getElementById('steps6_' + i);
+    if (!steps) return;
+    var open = steps.classList.contains('open');
+    if (!open) {
+      steps.classList.add('open');
+      if (blockStep6[i] === 0) {
+        blockStep6[i] = 1;
+        revealRow6(i);
+      } else {
+        doScroll6(i);
+      }
+    } else {
+      steps.classList.remove('open');
+    }
+  };
+
+  window.s6Next = function(i) {
+    if (blockDone6[i]) { s6Toggle(i); return; }
+    blockStep6[i]++;
+    revealRow6(i);
+  };
+
+  // 2. Data and variables
+  var s6Data = [{"vol": 0, "label": "① 加入 <strong>0 mL</strong> NaOH (滴定前)", "isEq": false, "tables": [{"title": "(1) 弱酸解離", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["0.1", "0", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["0.1－x &approx; 0.1", "x", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{x^2}{0.1}$<br>$x = [H^+] = 1.34 \\times 10^{-3} M$<br>$\\implies \\mathbf{pH = 2.87}$", "pH": 2.87, "Ht": "1.34&times;10<sup>-3</sup>", "OHt": "7.45&times;10<sup>-12</sup>"}, {"vol": 20, "label": "② 加入 <strong>20 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["0.1×100 = 10", "0.1×20 = 2", "0"], "chg": ["－2", "－2", "＋2"], "fin": ["8", "0", "2"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["8/120", "2/120", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{8}{120}$", "$\\frac{2}{120}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{\\frac{2}{120} \\cdot x}{\\frac{8}{120}}$<br>$[H^+] = x = 7.2 \\times 10^{-5} M$<br>$\\implies \\mathbf{pH = 4.14}$", "pH": 4.14, "Ht": "7.20&times;10<sup>-5</sup>", "OHt": "1.39&times;10<sup>-10</sup>"}, {"vol": 50, "label": "③ 加入 <strong>50 mL</strong> NaOH (半當量點)", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "5", "0"], "chg": ["－5", "－5", "＋5"], "fin": ["5", "0", "5"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["5/150", "5/150", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{5}{150}$", "$\\frac{5}{150}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{\\frac{5}{150} \\cdot x}{\\frac{5}{150}}$<br>$[H^+] = x = 1.8 \\times 10^{-5} M$<br>$\\implies \\mathbf{pH = pK_a = 4.74}$", "pH": 4.74, "Ht": "1.80&times;10<sup>-5</sup>", "OHt": "5.56&times;10<sup>-10</sup>"}, {"vol": 75, "label": "④ 加入 <strong>75 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "7.5", "0"], "chg": ["－7.5", "－7.5", "＋7.5"], "fin": ["2.5", "0", "7.5"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["2.5/175", "7.5/175", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{2.5}{175}$", "$\\frac{7.5}{175}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{7.5 \\cdot x}{2.5}$<br>$[H^+] = x = 6.0 \\times 10^{-6} M$<br>$\\implies \\mathbf{pH = 5.22}$", "pH": 5.22, "Ht": "6.00&times;10<sup>-6</sup>", "OHt": "1.67&times;10<sup>-9</sup>"}, {"vol": 90, "label": "⑤ 加入 <strong>90 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "9", "0"], "chg": ["－9", "－9", "＋9"], "fin": ["1", "0", "9"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["1/190", "9/190", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{1}{190}$", "$\\frac{9}{190}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{9 \\cdot x}{1}$<br>$[H^+] = x = 2.0 \\times 10^{-6} M$<br>$\\implies \\mathbf{pH = 5.70}$", "pH": 5.7, "Ht": "2.00&times;10<sup>-6</sup>", "OHt": "5.00&times;10<sup>-9</sup>"}, {"vol": 95, "label": "⑥ 加入 <strong>95 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "9.5", "0"], "chg": ["－9.5", "－9.5", "＋9.5"], "fin": ["0.5", "0", "9.5"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["0.5/195", "9.5/195", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{0.5}{195}$", "$\\frac{9.5}{195}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_a = 1.8 \\times 10^{-5} = \\frac{9.5 \\cdot x}{0.5}$<br>$[H^+] = x = 9.47 \\times 10^{-7} M$<br>$\\implies \\mathbf{pH = 6.02}$", "pH": 6.02, "Ht": "9.47&times;10<sup>-7</sup>", "OHt": "1.06&times;10<sup>-8</sup>"}, {"vol": 99, "label": "⑦ 加入 <strong>99 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "9.9", "0"], "chg": ["－9.9", "－9.9", "＋9.9"], "fin": ["0.1", "0", "9.9"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (緩衝)", "eq": "$CH_3COOH \\rightleftharpoons CH_3COO^- + H^+$", "heads": ["$CH_3COOH$", "$CH_3COO^-$", "$H^+$"], "init": ["0.1/199", "9.9/199", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{0.1}{199}$", "$\\frac{9.9}{199}$", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$[H^+] = 1.8 \\times 10^{-5} \\times \\frac{0.1}{9.9} = 1.82 \\times 10^{-7} M$<br>$\\implies \\mathbf{pH = 6.74}$", "pH": 6.74, "Ht": "1.82&times;10<sup>-7</sup>", "OHt": "5.50&times;10<sup>-8</sup>"}, {"vol": 100, "label": "⑧ 加入 <strong>100 mL</strong> NaOH ★ 當量點", "isEq": true, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "10", "0"], "chg": ["－10", "－10", "＋10"], "fin": ["0", "0", "10"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (鹽類水解)", "eq": "$CH_3COO^- + H_2O \\rightleftharpoons CH_3COOH + OH^-$", "heads": ["$CH_3COO^-$", "$CH_3COOH$", "$OH^-$"], "init": ["10/200 = 0.05", "0", "0"], "chg": ["－x", "＋x", "＋x"], "fin": ["0.05－x &approx; 0.05", "x", "x"], "op1": "⇌", "op2": "+"}], "resultHTML": "$K_h = \\frac{K_w}{K_a} = \\frac{10^{-14}}{1.8 \\times 10^{-5}} = 5.56 \\times 10^{-10}$<br>$5.56 \\times 10^{-10} = \\frac{x^2}{0.05} \\implies x = [OH^-] = 5.27 \\times 10^{-6} M$<br>$pOH = 5.28 \\implies \\mathbf{pH = 8.72}$", "pH": 8.72, "Ht": "1.90&times;10<sup>-9</sup>", "OHt": "5.27&times;10<sup>-6</sup>"}, {"vol": 101, "label": "⑨ 加入 <strong>101 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "10.1", "0"], "chg": ["－10", "－10", "＋10"], "fin": ["0", "0.1", "10"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (同離子效應)", "eq": "$CH_3COO^- + H_2O \\rightleftharpoons CH_3COOH + OH^-$", "heads": ["$CH_3COO^-$", "$CH_3COOH$", "$OH^-$"], "init": ["10/201", "0", "0.1/201"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{10}{201}$", "x", "$\\frac{0.1}{201} + x \\approx \\frac{0.1}{201}$"], "op1": "⇌", "op2": "+"}], "resultHTML": "$強鹼過量，強烈抑制水解，可忽略水解的 $OH^-$。<br>$[OH^-] \\approx \\frac{0.1}{201} \\approx 4.98 \\times 10^{-4} M$<br>$pOH = 3.30 \\implies \\mathbf{pH = 10.70}$$", "pH": 10.7, "Ht": "2.01&times;10<sup>-11</sup>", "OHt": "4.98&times;10<sup>-4</sup>"}, {"vol": 110, "label": "⑩ 加入 <strong>110 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "11", "0"], "chg": ["－10", "－10", "＋10"], "fin": ["0", "1", "10"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (同離子效應)", "eq": "$CH_3COO^- + H_2O \\rightleftharpoons CH_3COOH + OH^-$", "heads": ["$CH_3COO^-$", "$CH_3COOH$", "$OH^-$"], "init": ["10/210", "0", "1/210"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{10}{210}$", "x", "$\\frac{1}{210}$"], "op1": "⇌", "op2": "+"}], "resultHTML": "$強鹼過量：$[OH^-] \\approx \\frac{1}{210} \\approx 4.76 \\times 10^{-3} M$<br>$pOH = 2.32 \\implies \\mathbf{pH = 11.68}$$", "pH": 11.68, "Ht": "2.10&times;10<sup>-12</sup>", "OHt": "4.76&times;10<sup>-3</sup>"}, {"vol": 120, "label": "⑪ 加入 <strong>120 mL</strong> NaOH", "isEq": false, "tables": [{"title": "(1) 先中和 (單位：mmol)", "eq": "$CH_3COOH + NaOH \\rightarrow CH_3COONa + H_2O$", "heads": ["$CH_3COOH$", "$NaOH$", "$CH_3COONa$"], "init": ["10", "12", "0"], "chg": ["－10", "－10", "＋10"], "fin": ["0", "2", "10"], "op1": "+", "op2": "→"}, {"title": "(2) 再考慮平衡 (同離子效應)", "eq": "$CH_3COO^- + H_2O \\rightleftharpoons CH_3COOH + OH^-$", "heads": ["$CH_3COO^-$", "$CH_3COOH$", "$OH^-$"], "init": ["10/220", "0", "2/220"], "chg": ["－x", "＋x", "＋x"], "fin": ["$\\frac{10}{220}$", "x", "$\\frac{2}{220}$"], "op1": "⇌", "op2": "+"}], "resultHTML": "$強鹼過量：$[OH^-] \\approx \\frac{2}{220} \\approx 9.09 \\times 10^{-3} M$<br>$pOH = 2.04 \\implies \\mathbf{pH = 11.96}$$", "pH": 11.96, "Ht": "1.10&times;10<sup>-12</sup>", "OHt": "9.09&times;10<sup>-3</sup>"}];
+  var rightCol = document.getElementById('s6-right');
+  var blockStep6 = new Array(11).fill(0);
+  var blockDone6 = new Array(11).fill(false);
+  
+  function getIds6(i, tIndex, stepType) { return 's6_' + i + '_t' + tIndex + '_' + stepType; }
+
+  function buildBlock6(i, d) {
+    var eqBorder = d.isEq ? 'border-color:rgba(248,113,113,0.5);' : '';
+    var html = '<div class="s5-calc-block" id="blk6_' + i + '" style="' + eqBorder + ' flex-shrink: 0;">';
+    html += '<div class="s5-calc-header" onclick="s6Toggle(' + i + ')">';
+    html += '<span>' + d.label + '</span>';
+    html += '<span class="s5-badge" id="badge6_' + i + '">點擊展開</span>';
+    html += '</div>';
+    html += '<div class="s5-steps" id="steps6_' + i + '">';
+
+    d.tables.forEach(function(t, tIndex) {
+      html += '<div class="eq-line-row s6-eq-title" style="margin-top:10px;color:var(--accent-yellow);font-size:1.1rem;">' + t.title + '</div>';
+      html += '<div class="eq-line-row">' + t.eq + '</div>';
+      html += '<table class="ice-uni" id="ice6_' + i + '_' + tIndex + '">';
+      html += '<thead><tr>';
+      html += '<th style="text-align:left">n mol<br><span style="font-weight:400">量數</span></th>';
+      html += '<th class="va-h">' + t.heads[0] + '</th>';
+      html += '<th>' + (t.op1 || '+') + '</th>';
+      html += '<th class="vb-h">' + t.heads[1] + '</th>';
+      html += '<th>' + (t.op2 || '→') + '</th>';
+      html += '<th class="vs-h">' + t.heads[2] + '</th>';
+      html += '</tr></thead><tbody>';
+
+      var initId = getIds6(i, tIndex, 'init');
+      var chgId  = getIds6(i, tIndex, 'chg');
+      var finId  = getIds6(i, tIndex, 'fin');
+
+      html += '<tr class="r-init ice-row-hidden" id="' + initId + '">';
+      html += '<td class="row-lbl">反應前</td>';
+      html += '<td class="va">' + t.init[0] + '</td><td></td><td class="vb">' + t.init[1] + '</td><td></td><td class="vs">' + t.init[2] + '</td></tr>';
+
+      html += '<tr class="r-chg ice-row-hidden" id="' + chgId + '">';
+      html += '<td class="row-lbl">反應</td>';
+      html += '<td class="va">' + t.chg[0] + '</td><td></td><td class="vb">' + t.chg[1] + '</td><td></td><td class="vs">' + t.chg[2] + '</td></tr>';
+
+      html += '<tr class="r-fin ice-row-hidden" id="' + finId + '">';
+      html += '<td class="row-lbl">反應後</td>';
+      html += '<td class="va">' + t.fin[0] + '</td><td></td><td class="vb">' + t.fin[1] + '</td><td></td><td class="vs">' + t.fin[2] + '</td></tr>';
+
+      html += '</tbody></table>';
+    });
+
+    html += '<div class="result-box ice-row-hidden" id="rr6_' + i + '" style="margin-top:15px;">' + d.resultHTML + '</div>';
+    html += '<button class="s5-btn-next" id="btn6_' + i + '" onclick="s6Next(' + i + ')">▶ 下一步</button>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function revealRow6(i) {
+    var step = blockStep6[i];
+    var d = s6Data[i];
+    var elToReveal = null;
+    var isDone = false;
+
+    if (step === 1) elToReveal = document.getElementById(getIds6(i, 0, 'init'));
+    if (step === 2) elToReveal = document.getElementById(getIds6(i, 0, 'chg'));
+    if (step === 3) elToReveal = document.getElementById(getIds6(i, 0, 'fin'));
+
+    if (d.tables.length === 2) {
+      if (step === 4) elToReveal = document.getElementById(getIds6(i, 1, 'init'));
+      if (step === 5) elToReveal = document.getElementById(getIds6(i, 1, 'chg'));
+      if (step === 6) elToReveal = document.getElementById(getIds6(i, 1, 'fin'));
+      if (step === 7) { elToReveal = document.getElementById('rr6_' + i); isDone = true; }
+    } else {
+      if (step === 4) { elToReveal = document.getElementById('rr6_' + i); isDone = true; }
+    }
+
+    if (elToReveal) {
+      elToReveal.classList.remove('ice-row-hidden');
+      elToReveal.classList.add('ice-row-show');
+    }
+
+    if (isDone) {
+      blockDone6[i] = true;
+      fillRow6(i);
+      drawChart6();
+    } else {
+      doScroll6(i);
+    }
+  }
+
+  function doScroll6(i) {
+    setTimeout(function() {
+      try {
+        if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+          MathJax.typesetPromise().catch(function(){}).then(function() {
+            setTimeout(function() {
+              var btn = document.getElementById('btn6_' + i);
+              var rc = document.getElementById('s6-right');
+              if (btn && rc) {
+                var btnRect = btn.getBoundingClientRect();
+                var colRect = rc.getBoundingClientRect();
+                if (btnRect.bottom > colRect.bottom) {
+                  rc.scrollBy({ top: btnRect.bottom - colRect.bottom + 20, behavior: 'smooth' });
+                }
+              }
+            }, 100);
+          });
+        } else {
+          var btn = document.getElementById('btn6_' + i);
+          var rc = document.getElementById('s6-right');
+          if (btn && rc) {
+            var btnRect = btn.getBoundingClientRect();
+            var colRect = rc.getBoundingClientRect();
+            if (btnRect.bottom > colRect.bottom) {
+              rc.scrollBy({ top: btnRect.bottom - colRect.bottom + 20, behavior: 'smooth' });
+            }
+          }
+        }
+      } catch(e) {}
+    }, 50);
+  }
+
+  function fillRow6(i) {
+    var d = s6Data[i];
+    var h  = document.getElementById('h6_' + i);
+    var oh = document.getElementById('oh6_' + i);
+    var ph = document.getElementById('ph6_' + i);
+    if (h)  { h.innerHTML  = d.Ht;  h.classList.add('filled');  }
+    if (oh) { oh.innerHTML = d.OHt; oh.classList.add('filled'); }
+    if (ph) { ph.innerHTML = d.pH;  ph.classList.add('filled'); }
+    var badge = document.getElementById('badge6_' + i);
+    if (badge) { badge.textContent = '完成'; badge.classList.add('done'); }
+    var btn = document.getElementById('btn6_' + i);
+    if (btn)  { btn.textContent = '縮合 / 展開'; btn.classList.add('done'); btn.disabled = false; }
+    doScroll6(i);
+  }
+
+  var canvas6 = document.getElementById('s6-canvas');
+  var ctx6 = canvas6 ? canvas6.getContext('2d') : null;
+
+  function drawChart6() {
+    if (!ctx6) return;
+    var canvas = canvas6;
+    var W = canvas.parentElement.clientWidth;
+    var H = canvas.parentElement.clientHeight;
+    if (W === 0 || H === 0) return;
+    canvas.width = W; canvas.height = H;
+    ctx6.clearRect(0, 0, W, H);
+    var mt=20, mb=40, ml=40, mr=20;
+    var plotW = W-ml-mr, plotH = H-mt-mb;
+    function volToX(v) { return ml + (v/120)*plotW; }
+    function pHtoY(p)  { return mt + plotH - (p/14)*plotH; }
+
+    ctx6.strokeStyle='rgba(255,255,255,0.06)'; ctx6.lineWidth=1;
+    for (var ph=0;ph<=14;ph+=2) { ctx6.beginPath(); ctx6.moveTo(ml,pHtoY(ph)); ctx6.lineTo(W-mr,pHtoY(ph)); ctx6.stroke(); }
+    for (var v=0;v<=120;v+=20) { ctx6.beginPath(); ctx6.moveTo(volToX(v),mt); ctx6.lineTo(volToX(v),H-mb); ctx6.stroke(); }
+
+    ctx6.strokeStyle='rgba(255,255,255,0.5)'; ctx6.lineWidth=1.5;
+    ctx6.beginPath(); ctx6.moveTo(ml,mt); ctx6.lineTo(ml,H-mb); ctx6.lineTo(W-mr,H-mb); ctx6.stroke();
+
+    ctx6.fillStyle='rgba(255,255,255,0.7)'; ctx6.font='11px sans-serif'; ctx6.textAlign='right';
+    for (var ph2=0;ph2<=14;ph2+=2) { ctx6.fillText(ph2, ml-5, pHtoY(ph2)+4); }
+    ctx6.textAlign='center';
+    for (var v2=0;v2<=120;v2+=20) { ctx6.fillText(v2, volToX(v2), H-mb+14); }
+    ctx6.save(); ctx6.translate(12,mt+plotH/2); ctx6.rotate(-Math.PI/2); ctx6.fillText('pH',0,0); ctx6.restore();
+    ctx6.fillText('NaOH (mL)', ml+plotW/2, H-2);
+
+    ctx6.strokeStyle='rgba(248,113,113,0.5)'; ctx6.setLineDash([4,4]); ctx6.lineWidth=1;
+    ctx6.beginPath(); ctx6.moveTo(volToX(100),mt); ctx6.lineTo(volToX(100),H-mb); ctx6.stroke();
+    ctx6.setLineDash([]);
+
+    var done = s6Data.filter(function(_,i){ return blockDone6[i]; });
+    if (done.length > 1) {
+      ctx6.strokeStyle='rgba(34,211,238,0.85)'; ctx6.lineWidth=2.5; ctx6.lineJoin='round';
+      ctx6.beginPath();
+      done.forEach(function(d,i) { var x=volToX(d.vol),y=pHtoY(d.pH); if(i===0) ctx6.moveTo(x,y); else ctx6.lineTo(x,y); });
+      ctx6.stroke();
+    }
+    done.forEach(function(d) {
+      var x=volToX(d.vol),y=pHtoY(d.pH);
+      ctx6.beginPath(); ctx6.arc(x,y,5,0,Math.PI*2);
+      ctx6.fillStyle = d.isEq ? '#f87171':'#fbbf24';
+      ctx6.fill(); ctx6.strokeStyle='#fff'; ctx6.lineWidth=1.5; ctx6.stroke();
+    });
+  }
+
+  // Initialize DOM
+  if (rightCol) {
+    var blocksHTML = '';
+    for (var k = 0; k < s6Data.length; k++) { blocksHTML += buildBlock6(k, s6Data[k]); }
+    rightCol.innerHTML += blocksHTML;
+    
+    // Call MathJax ONLY if safely defined, and catch any errors
+    try {
+      if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+        MathJax.typesetPromise([rightCol]).catch(function(){});
+      }
+    } catch(e) {
+      console.warn("MathJax initial typeset failed", e);
+    }
+  }
+
+  window.addEventListener('resize', drawChart6);
+  setTimeout(drawChart6, 500);
+
+})();
+</script>pt>
+
+
+</body>
+</html>

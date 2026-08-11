@@ -1,0 +1,15 @@
+- [x] 完成雙欄式介面與多智能體架構的計畫書 (implementation_plan.md)
+- [x] 建立前端 UI 雛型 (ai_tutor_prototype.html)
+- [x] 開發階段 1: 介面與基本功能完善
+  - [x] 優化左側展示區與分頁功能
+  - [x] 實作聊天室組件 (輸入框、歷史對話區、多媒體上傳按鈕)
+- [x] 開發階段 2: 串接本地 Ollama API
+  - [x] 實作 JavaScript `fetch` 呼叫 `http://localhost:11434/api/generate` 或 `/api/chat`
+  - [x] 處理 API Streaming (實現流暢的打字機效果)
+- [x] 開發階段 3: 核心實作 - 多智能體協作 (Multi-Agent Workflow)
+  - [x] 實作 **Model 1 (Router)** 意圖判斷與分流邏輯
+  - [x] 實作 **Model 2 (Reasoner)** 教學內容生成與 System Prompt 設計
+  - [x] 實作 **Model 3 (Visualizer)** 將文字轉為前端圖表 (SVG/Chart.js) 並於左側動態渲染
+- [ ] 測試與優化
+  - [ ] 驗證針對化學問題 (酸鹼滴定等) 的回答邏輯與視覺化品質
+  - [ ] 處理模型幻覺與錯誤輸出時的網頁容錯機制

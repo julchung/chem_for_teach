@@ -132,7 +132,7 @@ const container = document.getElementById('three-container');
 // Scene Setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-camera.position.set(0, -8, 14); // Angled view to see XY plane and Z axis clearly
+camera.position.set(0, 10, 15); // Isometric view: looking down at the horizontal ring
 
 // WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -161,8 +161,8 @@ dirLight.position.set(5, 5, 10);
 scene.add(dirLight);
 
 const molGroup = new THREE.Group();
-// Tilt the molecule slightly so the XY plane is easier to view
-molGroup.rotation.x = Math.PI / 6;
+// Tilt the molecule so the XY plane becomes the XZ plane (horizontal ring)
+molGroup.rotation.x = -Math.PI / 2;
 scene.add(molGroup);
 
 // Colors
@@ -290,7 +290,7 @@ const DUR = 10000; // 10 seconds total
 function updatePositions(prog) {
     // Stage 1: Carbons approach (0 to 0.3)
     const tC = Math.min(Math.max(prog / 0.3, 0), 1);
-    const currCDist = 4.0 - (4.0 - C_DIST) * tC;
+    const currCDist = 3.0 - (3.0 - C_DIST) * tC;
     
     carbons.forEach(c => {
         c.group.position.set(Math.cos(c.angle) * currCDist, Math.sin(c.angle) * currCDist, 0);
@@ -298,8 +298,9 @@ function updatePositions(prog) {
 
     // Stage 2: Hydrogens approach (0.3 to 0.6)
     const tH = Math.min(Math.max((prog - 0.3) / 0.3, 0), 1);
-    // H absolute distance from center: starts far, ends at C_DIST + H_DIST
-    const currHDist = 5.5 - (5.5 - (C_DIST + H_DIST)) * tH;
+    // H offset starts at 2.0 (outside the sp2 lobes), ends at H_DIST (1.09)
+    const currHOffset = 2.0 - (2.0 - H_DIST) * tH;
+    const currHDist = currCDist + currHOffset;
     
     hydrogens.forEach(h => {
         h.mesh.position.set(Math.cos(h.angle) * currHDist, Math.sin(h.angle) * currHDist, 0);

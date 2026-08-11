@@ -777,8 +777,27 @@
         <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
     </div>
     <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
     <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
 </div>
+
+<!-- RANDOM DRAW MODAL -->
+<div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 99999; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+    <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+    <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+    <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+        <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+        <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+    </div>
+</div>
+
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-gold)); border-color:var(--accent-gold); box-shadow:0 0 15px var(--accent-gold); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
 
 <div id="start-overlay">
     <div class="start-badge">選修化學二 · 第二章 · 物質結構與化學鍵</div>
@@ -876,9 +895,16 @@
         if (!isDrawing || !ctx) return;
         const [x, y] = getCoords(e);
         ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
-        ctx.strokeStyle = drawMode === 'eraser' ? '#0a0f1e' : penColor;
-        ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
-        ctx.lineCap = 'round'; ctx.stroke();
+        if (drawMode === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 38;
+            ctx.strokeStyle = 'rgba(0,0,0,1)';
+        } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = penColor;
+        }
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
         [lastX, lastY] = [x, y];
     }
     function stopDrawing() {
@@ -958,6 +984,9 @@
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     slideDrawings[currentSlide] = null;
                 }
+            } else if (id === 'btn-random-draw') {
+                const rdModal = document.getElementById('random-draw-modal');
+                if (rdModal) { rdModal.style.display = 'block'; initBalls(); }
             } else if (id === 'btn-home') {
                 window.location.href = '../../index.html';
             }
@@ -1561,6 +1590,64 @@
         if (e.key === 'ArrowDown' || e.key === 'PageDown') { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } }
         if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (currentSlide > 0) { currentSlide--; updateSlides(); } }
     });
+
+    // ═══════════════ Random Draw Logic ═══════════════
+    let drawnNumbers = new Set();
+    let drawTotal = 40;
+    const rdModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+    const ballsContainer = document.getElementById('random-draw-balls');
+    const drawInput = document.getElementById('draw-total-input');
+
+    function initBalls() {
+        if (!ballsContainer) return;
+        ballsContainer.innerHTML = '';
+        for (let i = 1; i <= drawTotal; i++) {
+            const d = document.createElement('div');
+            d.className = 'draw-ball'; d.id = 'ball-' + i; d.textContent = i;
+            if (drawnNumbers.has(i)) d.classList.add('drawn');
+            ballsContainer.appendChild(d);
+        }
+    }
+    if (drawInput) {
+        drawInput.addEventListener('change', (e) => {
+            let v = parseInt(e.target.value);
+            if (v < 1) v = 1; if (v > 100) v = 100; drawTotal = v;
+            drawnNumbers.clear(); initBalls();
+        });
+    }
+    if (btnCloseDraw) {
+        btnCloseDraw.addEventListener('click', () => {
+            if (rdModal) rdModal.style.display = 'none';
+        });
+    }
+    if (btnDoDraw) {
+        btnDoDraw.addEventListener('click', () => {
+            if (drawnNumbers.size >= drawTotal) { drawnNumbers.clear(); initBalls(); }
+            const avail = []; for (let i = 1; i <= drawTotal; i++) { if (!drawnNumbers.has(i)) avail.push(i); }
+            if (avail.length === 0) return;
+            btnDoDraw.disabled = true;
+            const winner = avail[Math.floor(Math.random() * avail.length)];
+            let ticks = 0, lastFlicker = null;
+            const interval = setInterval(() => {
+                if (lastFlicker) lastFlicker.classList.remove('flicker');
+                const rnd = avail[Math.floor(Math.random() * avail.length)];
+                const b = document.getElementById('ball-' + rnd);
+                if (b) { b.classList.add('flicker'); lastFlicker = b; }
+                ticks++;
+                if (ticks > 20) {
+                    clearInterval(interval);
+                    if (lastFlicker) lastFlicker.classList.remove('flicker');
+                    const wb = document.getElementById('ball-' + winner);
+                    if (wb) {
+                        wb.classList.add('winner');
+                        setTimeout(() => { wb.classList.remove('winner'); wb.classList.add('drawn'); drawnNumbers.add(winner); btnDoDraw.disabled = false; }, 2000);
+                    } else { btnDoDraw.disabled = false; }
+                }
+            }, 100);
+        });
+    }
 </script>
 </body>
 </html>

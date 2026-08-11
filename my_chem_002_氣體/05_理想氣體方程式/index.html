@@ -23,72 +23,104 @@
             --accent-purple: #a855f7;
             --accent-cyan: #22d3ee;
         }
-        
+
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
-        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
-        
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0.5rem 6rem 1rem 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-        @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
-        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
-        
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
+
+        /* slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 4rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4rem 1.5rem 1.5rem; } }
+
         .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
         .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
         .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
-        
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-purple { color: var(--accent-purple); }
+
         .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
         .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
         .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
         .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+
+        /* Drawing layer – matches whole scrollable document */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Toolbar */
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; margin-bottom: 5px; }
         
-        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
-        #drawing-layer.drawing-active { pointer-events: auto; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
         
-        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 10px 5px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 2000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 45px; }
-        .btn-tool { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
-        .btn-tool:hover { background: rgba(255,255,255,0.1); }
-        .btn-tool.active-tool, .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
-        .btn-tool svg { width: 20px; height: 20px; fill: currentColor; }
-        
-        .color-picker { display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px; }
-        .color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; margin: 0 auto; }
-        .color-swatch.selected { border-color: white; transform: scale(1.2); }
-        
-        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; margin-bottom: 5px; margin-top: -5px; user-select: none; font-size: 1.2rem; line-height: 0.5; }
-        
-        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
-        
+        #btn-top { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Tables */
         .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
         .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
 
-        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        /* Example question layout: left 1.3 / right 1 */
+        .ex-split-row { display: flex; gap: 2rem; margin-top: 1rem; align-items: stretch; min-height: 67vh; }
+        .ex-left  { flex: 1.3; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ex-right { flex: 1;   background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 67vh; position: relative; }
+        .ex-options { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .ex-options li { padding: 0.35rem 0; font-size: clamp(1rem, 1.4vw, 1.3rem); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ex-options li:last-child { border-bottom: none; }
+        .ex-answer-box { background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1rem 1.5rem; margin: 0.8rem 0; width: 100%; display: none; }
+        .ex-answer-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .ans-body  { color: white; font-size: 1.1rem; line-height: 1.8; }
+        .btn-show-ans { margin-top: auto; align-self: flex-start; padding: 8px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+
+        /* Game items */
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; cursor: pointer; }
         #left-column .game-item { justify-content: flex-start; text-align: left; }
         #right-column .game-item { justify-content: flex-end; text-align: right; }
-        .dot { width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .game-item.connected { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); cursor: default; }
+        .game-item span { pointer-events: none; }
+        .dot { width: 22px; height: 22px; background: #fff; border-radius: 50%; cursor: crosshair; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
         .left-dot { margin-left: auto; }
         .right-dot { margin-right: auto; }
-        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent-blue); }
+        .dot:hover { transform: scale(1.3); background: var(--accent-blue); }
         .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
-        .text-red { color: var(--accent-red); }
-        .text-cyan { color: var(--accent-cyan); }
+
+        /* Random Draw styles */
+        .draw-ball { width: 100%; aspect-ratio: 1/1; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="start-overlay">
-            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">理想氣體方程式</h1>
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">亞佛加厥定律</h1>
             <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">$PV = nRT$ 的應用與探討</p>
-            <button id="btn-start" class="btn primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px;">▶ 點擊進入全螢幕教學</button>
+            <button id="btn-start" class="btn-tool primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px; width: auto; border-radius: 50px;">▶ 進入教學</button>
         </div>
 
         <div id="presentation-area">
             <div id="slides-container">
                 <!-- Slide 1: Equation -->
-                <div class="slide active">
+                <div class="slide">
                     <h1>理想氣體方程式</h1>
                     <div class="flex-row">
                         <div class="flex-col">
@@ -101,12 +133,12 @@
                         </div>
                         <div class="flex-col">
                             <h2 class="text-yellow">氣體常數 $R$ 的數值</h2>
-                            <ul style="margin-left: 1.5rem;">
-                                <li>$0.082 \text{ atm}\cdot\text{L} / \text{mol}\cdot\text{K}$</li>
-                                <li>$8.314 \text{ J} / \text{mol}\cdot\text{K} \text{ (SI 單位)}$</li>
-                                <li>$62.4 \text{ mmHg}\cdot\text{L} / \text{mol}\cdot\text{K}$</li>
+                            <ul class="rule-card" style="list-style: none; margin-left: 0;">
+                                <li>✅ $0.082 \text{ atm}\cdot\text{L} / \text{mol}\cdot\text{K}$</li>
+                                <li>✅ $8.314 \text{ J} / \text{mol}\cdot\text{K} \text{ (SI 單位)}$</li>
+                                <li>✅ $62.4 \text{ mmHg}\cdot\text{L} / \text{mol}\cdot\text{K}$</li>
                             </ul>
-                            <div class="rule-card" style="margin-top: 1.5rem;">
+                            <div class="rule-card" style="margin-top: 1.5rem; border-color: var(--accent-cyan);">
                                 <p><strong class="text-cyan">注意單位匹配：</strong></p>
                                 <p>若 $R=0.082$，則 $P$ 必為 atm，$V$ 必為 L，$T$ 必為 K。</p>
                             </div>
@@ -114,7 +146,7 @@
                     </div>
                 </div>
 
-                <!-- Slide 2: Molecular Weight -->
+                <!-- Slide 2: Molecular Weight & Density -->
                 <div class="slide">
                     <h1>分子量與密度的求法</h1>
                     <div class="flex-row">
@@ -141,7 +173,7 @@
                     <div class="flex-row">
                         <div class="flex-col">
                             <h2 class="text-yellow">理想氣體假說</h2>
-                            <ul style="margin-left: 1.5rem;">
+                            <ul class="rule-card" style="margin-left: 1.5rem;">
                                 <li>分子本身 <strong class="text-red">無體積</strong>。</li>
                                 <li>分子間 <strong class="text-red">無作用力</strong>。</li>
                                 <li>碰撞為 <strong class="text-cyan">完全彈性碰撞</strong>。</li>
@@ -151,308 +183,327 @@
                         <div class="flex-col">
                             <h2 class="text-green">真實氣體趨近理想的條件</h2>
                             <div class="rule-card" style="background: rgba(52, 211, 153, 0.1); border-color: var(--accent-green);">
-                                <h3 style="text-align: center; margin-bottom: 1rem;">高溫、低壓</h3>
+                                <h3 style="text-align: center; margin-bottom: 1rem;" class="text-green">高溫、低壓</h3>
                                 <p>此時分子動能大、距離遠，作用力與體積影響最小。</p>
                             </div>
-                            <p style="font-size: 1rem; margin-top: 1rem;">* 極低溫或極高壓時，真實氣體會液化或固化，不再符合方程式。</p>
+                            <p style="font-size: 1rem; margin-top: 1rem; opacity: 0.8;">* 極低溫或極高壓時，真實氣體會液化或固化，不再符合方程式。</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slide 4: Practice -->
+                <!-- Slide 4: Examples -->
                 <div class="slide">
-                    <h1>觀念練習</h1>
-                    <div class="flex-row">
-                        <div class="flex-col" style="position: relative;">
-                            <div id="overlay-ans-1" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red);">
-                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：32 g/mol</div>
-                                <div style="color: white; font-size: 1.1rem; margin-top: 15px;">
+                    <h1>範例題</h1>
+
+                    <!-- Ex 1 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 1</h2>
+                            <p>某氣體在 STP 下的密度為 $1.43 \text{ g/L}$，請問其分子量約為多少？</p>
+                            <button class="btn-show-ans" data-ans="ex-ans-1">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-1" class="ex-answer-box">
+                                <div class="ans-label">解答：32 g/mol</div>
+                                <div class="ans-body">
                                     $M = dRT/P$<br>
                                     STP 下 $d = 1.43 \text{ g/L}$<br>
                                     $M = 1.43 \times 22.4 \approx 32$<br>
                                     (此氣體為氧氣 $O_2$)
                                 </div>
-                                <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-1')">關閉</button>
-                            </div>
-                            <h2 class="text-yellow">例題 1</h2>
-                            <p>某氣體在 STP 下的密度為 $1.43 \text{ g/L}$，請問其分子量約為多少？</p>
-                            <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                                <button class="btn" onclick="toggleOverlay('overlay-ans-1')">顯示解答</button>
                             </div>
                         </div>
-                        <div class="flex-col" style="position: relative;">
-                            <div id="overlay-ans-2" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red);">
-                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：低壓高溫</div>
-                                <div style="color: white; font-size: 1.1rem; margin-top: 15px;">
+                    </div>
+
+                    <!-- Ex 2 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 2</h2>
+                            <p>真實氣體在何種環境條件下，其性質最接近理想氣體？</p>
+                            <button class="btn-show-ans" data-ans="ex-ans-2">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-2" class="ex-answer-box">
+                                <div class="ans-label">解答：低壓高溫</div>
+                                <div class="ans-body">
                                     低壓：分子距離遠，引力忽略。<br>
                                     高溫：分子運動快，引力忽略。
                                 </div>
-                                <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-2')">關閉</button>
-                            </div>
-                            <h2 class="text-yellow">例題 2</h2>
-                            <p>真實氣體在何種環境條件下，其性質最接近理想氣體？</p>
-                            <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                                <button class="btn" onclick="toggleOverlay('overlay-ans-2')">顯示解答</button>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Slide 5: Example 3 -->
-                <div class="slide">
-                    <h1>例題 3</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-3" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(B)</div>
-                            <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.8;">
-                                1. 容器內原來有 1 大氣壓的空氣。<br>
-                                2. 加熱至 $127^\circ\text{C}$ (400 K) 時，空氣的壓力 $P_{\text{air}} = 1 \times \frac{400}{300} = 1.33 \text{ atm}$<br>
-                                3. 該液體完全汽化後的總壓為 $9.53 \text{ atm}$，故氣體蒸氣壓 $P_{\text{gas}} = 9.53 - 1.33 = 8.20 \text{ atm}$<br>
-                                4. 由 $PV = \frac{W}{M}RT$：<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;$8.20 \times 10.0 = \frac{80}{M} \times 0.082 \times 400$<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;$82 = \frac{80}{M} \times 32.8 \Rightarrow M = \frac{80 \times 32.8}{82} = 32 \text{ g/mol}$
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-3')">關閉</button>
-                        </div>
-                        <div style="font-size: 1.3rem; line-height: 1.6;">
-                            當 $1$ 大氣壓、$27^\circ\text{C}$ 下，將 $80$ 克某液體放入一個 $10.0$ 升的容器後密封。當加熱至 $127^\circ\text{C}$ 時，該密封容器內的壓力為 $9.53$ 大氣壓，假設在 $27^\circ\text{C}$ 時該液體之蒸氣可忽略，在 $127^\circ\text{C}$ 時該液體完全汽化；則該液體分子量為何？<br>
-                            (A) 28 &nbsp;&nbsp; (B) 32 &nbsp;&nbsp; (C) 46 &nbsp;&nbsp; (D) 64
-                        </div>
-                        <div style="display: flex; justify-content: flex-start; gap: 2rem; margin-top: 1.5rem; padding-left: 2rem;">
-                            <svg width="160" height="224" viewBox="0 0 100 140">
-                                <rect x="10" y="10" width="80" height="100" rx="15" fill="transparent" stroke="var(--accent-blue)" stroke-width="3"/>
-                                <path d="M 12 100 Q 20 90, 30 95 T 50 95 T 70 95 T 88 100 L 88 105 A 15 15 0 0 1 73 110 L 27 110 A 15 15 0 0 1 12 105 Z" fill="var(--accent-red)"/>
-                                <text x="50" y="102" fill="white" font-size="10" text-anchor="middle">液體</text>
-                                <text x="50" y="130" fill="var(--text-main)" font-size="14" text-anchor="middle">27°C</text>
-                            </svg>
-                            <svg width="160" height="224" viewBox="0 0 100 140">
-                                <rect x="10" y="10" width="80" height="100" rx="15" fill="transparent" stroke="var(--accent-blue)" stroke-width="3"/>
-                                <circle cx="20" cy="30" r="1.5" fill="var(--accent-red)"/><circle cx="40" cy="20" r="1.5" fill="var(--accent-red)"/><circle cx="70" cy="40" r="1.5" fill="var(--accent-red)"/><circle cx="80" cy="25" r="1.5" fill="var(--accent-red)"/><circle cx="30" cy="60" r="1.5" fill="var(--accent-red)"/><circle cx="60" cy="70" r="1.5" fill="var(--accent-red)"/><circle cx="40" cy="90" r="1.5" fill="var(--accent-red)"/><circle cx="25" cy="80" r="1.5" fill="var(--accent-red)"/><circle cx="75" cy="85" r="1.5" fill="var(--accent-red)"/><circle cx="50" cy="50" r="1.5" fill="var(--accent-red)"/><circle cx="80" cy="60" r="1.5" fill="var(--accent-red)"/>
-                                <text x="50" y="130" fill="var(--text-main)" font-size="14" text-anchor="middle">127°C 完全汽化</text>
-                            </svg>
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-3')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 6: Example 4 -->
-                <div class="slide">
-                    <h1>例題 4</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-4" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(A)</div>
-                            <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.8;">
-                                利用莫耳數守恆：$n_{\text{初}} = n_{\text{末}} \Rightarrow \frac{P_{\text{甲初}}V_{\text{甲}}}{T_{\text{甲}}} + 0 = \frac{P_{\text{末}}V_{\text{甲}}}{T_{\text{甲}}} + \frac{P_{\text{末}}V_{\text{乙}}}{T_{\text{乙}}}$<br>
-                                代入數值：$\frac{108 \times 50}{300} = \frac{36 \times 50}{300} + \frac{36 \times V_{\text{乙}}}{600}$<br>
-                                $18 = 6 + \frac{36 V_{\text{乙}}}{600}$<br>
-                                $12 = \frac{36 V_{\text{乙}}}{600} \Rightarrow V_{\text{乙}} = \frac{12 \times 600}{36} = 200 \text{ mL}$
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-4')">關閉</button>
-                        </div>
-                        <div style="font-size: 1.2rem; line-height: 1.6;">
-                            甲、乙兩容器以活門連接，甲容積 $50\text{ mL}$ 充入 $\text{He}_{(g)}$ 壓力為 $108\text{ mmHg}$，溫度 $27^\circ\text{C}$，乙為真空容器維持 $327^\circ\text{C}$，打開活門使 $\text{He}_{(g)}$ 擴散至乙而二容器溫度各保持不變，達壓力平衡時關閉活門，測得甲中壓力 $36\text{ mmHg}$，則乙容器的容積為：<br>
-                            (A) $200\text{ mL}$ &nbsp;&nbsp; (B) $150\text{ mL}$ &nbsp;&nbsp; (C) $100\text{ mL}$ &nbsp;&nbsp; (D) $80\text{ mL}$
-                        </div>
-                        <div style="display: flex; justify-content: flex-start; gap: 2rem; margin-top: 1.5rem; padding-left: 2rem;">
-                            <div style="text-align: center;">
-                                <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;">前</div>
-                                <svg width="200" height="136" viewBox="0 0 250 170">
-                                    <circle cx="50" cy="75" r="40" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                    <text x="50" y="55" fill="var(--text-main)" font-size="12" text-anchor="middle">50 mL</text>
-                                    <text x="50" y="75" fill="var(--text-main)" font-size="12" text-anchor="middle">27°C</text>
-                                    <text x="50" y="95" fill="var(--text-main)" font-size="12" text-anchor="middle">108 mmHg</text>
-                                    <text x="50" y="130" fill="var(--accent-purple)" font-size="14" text-anchor="middle">甲</text>
-                                    
-                                    <rect x="90" y="70" width="30" height="10" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                    <line x1="105" y1="65" x2="105" y2="85" stroke="var(--accent-blue)" stroke-width="3"/>
-                                    
-                                    <circle cx="180" cy="75" r="60" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                    <text x="180" y="65" fill="var(--text-main)" font-size="12" text-anchor="middle">V₂ mL</text>
-                                    <text x="180" y="85" fill="var(--text-main)" font-size="12" text-anchor="middle">327°C</text>
-                                    <text x="180" y="105" fill="var(--text-main)" font-size="12" text-anchor="middle">真空</text>
-                                    <text x="180" y="150" fill="var(--accent-purple)" font-size="14" text-anchor="middle">乙</text>
+                    <!-- Ex 3 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 3</h2>
+                            <p>當 $1$ 大氣壓、$27^\circ\text{C}$ 下，將 $80$ 克某液體放入一個 $10.0$ 升的容器後密封。當加熱至 $127^\circ\text{C}$ 時，該密封容器內的壓力為 $9.53$ 大氣壓，假設在 $27^\circ\text{C}$ 時該液體之蒸氣可忽略，在 $127^\circ\text{C}$ 時該液體完全汽化；則該液體分子量為何？</p>
+                            <ul class="ex-options">
+                                <li>(A) 28</li>
+                                <li>(B) 32</li>
+                                <li>(C) 46</li>
+                                <li>(D) 64</li>
+                            </ul>
+                            <div style="display: flex; justify-content: flex-start; gap: 2rem; margin-top: 1.5rem;">
+                                <svg width="160" height="224" viewBox="0 0 100 140">
+                                    <rect x="10" y="10" width="80" height="100" rx="15" fill="transparent" stroke="var(--accent-blue)" stroke-width="3"/>
+                                    <path d="M 12 100 Q 20 90, 30 95 T 50 95 T 70 95 T 88 100 L 88 105 A 15 15 0 0 1 73 110 L 27 110 A 15 15 0 0 1 12 105 Z" fill="var(--accent-red)"/>
+                                    <text x="50" y="102" fill="white" font-size="10" text-anchor="middle">液體</text>
+                                    <text x="50" y="130" fill="var(--text-main)" font-size="14" text-anchor="middle">27°C</text>
+                                </svg>
+                                <svg width="160" height="224" viewBox="0 0 100 140">
+                                    <rect x="10" y="10" width="80" height="100" rx="15" fill="transparent" stroke="var(--accent-blue)" stroke-width="3"/>
+                                    <circle cx="20" cy="30" r="1.5" fill="var(--accent-red)"/><circle cx="40" cy="20" r="1.5" fill="var(--accent-red)"/><circle cx="70" cy="40" r="1.5" fill="var(--accent-red)"/><circle cx="80" cy="25" r="1.5" fill="var(--accent-red)"/><circle cx="30" cy="60" r="1.5" fill="var(--accent-red)"/><circle cx="60" cy="70" r="1.5" fill="var(--accent-red)"/><circle cx="40" cy="90" r="1.5" fill="var(--accent-red)"/><circle cx="25" cy="80" r="1.5" fill="var(--accent-red)"/><circle cx="75" cy="85" r="1.5" fill="var(--accent-red)"/><circle cx="50" cy="50" r="1.5" fill="var(--accent-red)"/><circle cx="80" cy="60" r="1.5" fill="var(--accent-red)"/>
+                                    <text x="50" y="130" fill="var(--text-main)" font-size="14" text-anchor="middle">127°C 完全汽化</text>
                                 </svg>
                             </div>
-                            <div style="text-align: center;">
-                                <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px; font-size: 1.1rem;">後</div>
-                                <svg width="200" height="136" viewBox="0 0 250 170">
-                                    <circle cx="50" cy="75" r="40" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                    <circle cx="30" cy="70" r="1.5" fill="var(--accent-green)"/><circle cx="45" cy="55" r="1.5" fill="var(--accent-green)"/><circle cx="60" cy="80" r="1.5" fill="var(--accent-green)"/><circle cx="50" cy="95" r="1.5" fill="var(--accent-green)"/><circle cx="70" cy="65" r="1.5" fill="var(--accent-green)"/>
-                                    <text x="50" y="130" fill="var(--accent-purple)" font-size="14" text-anchor="middle">甲 (36 mmHg)</text>
+                            <button class="btn-show-ans" data-ans="ex-ans-3">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-3" class="ex-answer-box">
+                                <div class="ans-label">解答：(B)</div>
+                                <div class="ans-body">
+                                    1. 容器內原來有 1 大氣壓的空氣。<br>
+                                    2. 加熱至 $127^\circ\text{C}$ (400 K) 時，空氣的壓力 $P_{\text{air}} = 1 \times \frac{400}{300} = 1.33 \text{ atm}$<br>
+                                    3. 該液體完全汽化後的總壓為 $9.53 \text{ atm}$，故氣體蒸氣壓 $P_{\text{gas}} = 9.53 - 1.33 = 8.20 \text{ atm}$<br>
+                                    4. 由 $PV = \frac{W}{M}RT$：<br>
+                                    $8.20 \times 10.0 = \frac{80}{M} \times 0.082 \times 400$<br>
+                                    $82 = \frac{80}{M} \times 32.8 \Rightarrow M = \frac{80 \times 32.8}{82} = \boxed{32 \text{ g/mol}}$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 4 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 4</h2>
+                            <p>甲、乙兩容器以活門連接，甲容積 $50\text{ mL}$ 充入 $\text{He}_{(g)}$ 壓力為 $108\text{ mmHg}$，溫度 $27^\circ\text{C}$，乙為真空容器維持 $327^\circ\text{C}$，打開活門使 $\text{He}_{(g)}$ 擴散至乙而二容器溫度各保持不變，達壓力平衡時關閉活門，測得甲中壓力 $36\text{ mmHg}$，則乙容器的容積為：</p>
+                            <ul class="ex-options">
+                                <li>(A) $200\text{ mL}$</li>
+                                <li>(B) $150\text{ mL}$</li>
+                                <li>(C) $100\text{ mL}$</li>
+                                <li>(D) $80\text{ mL}$</li>
+                            </ul>
+                            <div style="display: flex; justify-content: flex-start; gap: 2rem; margin-top: 1.5rem;">
+                                <div style="text-align: center;">
+                                    <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px; font-size: 1.5rem;">前</div>
+                                    <svg width="200" height="140" viewBox="0 0 250 170">
+                                        <circle cx="50" cy="75" r="40" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        <text x="50" y="50" fill="var(--text-main)" font-size="16" text-anchor="middle">50 mL</text>
+                                        <text x="50" y="75" fill="var(--text-main)" font-size="16" text-anchor="middle">27°C</text>
+                                        <text x="50" y="100" fill="var(--text-main)" font-size="16" text-anchor="middle">108 mmHg</text>
+                                        <text x="50" y="135" fill="var(--accent-purple)" font-size="20" text-anchor="middle">甲</text>
+                                        
+                                        <rect x="90" y="70" width="30" height="10" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        <line x1="105" y1="65" x2="105" y2="85" stroke="var(--accent-blue)" stroke-width="3"/>
+                                        
+                                        <circle cx="180" cy="75" r="60" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        <text x="180" y="50" fill="var(--text-main)" font-size="16" text-anchor="middle">V₂ mL</text>
+                                        <text x="180" y="75" fill="var(--text-main)" font-size="16" text-anchor="middle">327°C</text>
+                                        <text x="180" y="100" fill="var(--text-main)" font-size="16" text-anchor="middle">真空</text>
+                                        <text x="180" y="155" fill="var(--accent-purple)" font-size="20" text-anchor="middle">乙</text>
+                                    </svg>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="color: var(--accent-purple); font-weight: bold; margin-bottom: 5px; font-size: 1.5rem;">後</div>
+                                    <svg width="200" height="140" viewBox="0 0 250 170">
+                                        <circle cx="50" cy="75" r="40" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        <circle cx="30" cy="70" r="1.5" fill="var(--accent-green)"/><circle cx="45" cy="55" r="1.5" fill="var(--accent-green)"/><circle cx="60" cy="80" r="1.5" fill="var(--accent-green)"/><circle cx="50" cy="95" r="1.5" fill="var(--accent-green)"/><circle cx="70" cy="65" r="1.5" fill="var(--accent-green)"/>
+                                        <text x="50" y="135" fill="var(--accent-purple)" font-size="18" text-anchor="middle">甲 (36 mmHg)</text>
+                                        
+                                        <rect x="90" y="70" width="30" height="10" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        
+                                        <circle cx="180" cy="75" r="60" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        <circle cx="150" cy="60" r="1.5" fill="var(--accent-green)"/><circle cx="170" cy="50" r="1.5" fill="var(--accent-green)"/><circle cx="200" cy="70" r="1.5" fill="var(--accent-green)"/><circle cx="180" cy="100" r="1.5" fill="var(--accent-green)"/><circle cx="160" cy="90" r="1.5" fill="var(--accent-green)"/><circle cx="210" cy="90" r="1.5" fill="var(--accent-green)"/>
+                                        <text x="180" y="155" fill="var(--accent-purple)" font-size="18" text-anchor="middle">乙 (36 mmHg)</text>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button class="btn-show-ans" data-ans="ex-ans-4">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-4" class="ex-answer-box">
+                                <div class="ans-label">解答：(A)</div>
+                                <div class="ans-body">
+                                    利用莫耳數守恆：$n_{\text{初}} = n_{\text{末}} \Rightarrow \frac{P_{\text{甲初}}V_{\text{甲}}}{T_{\text{甲}}} + 0 = \frac{P_{\text{末}}V_{\text{甲}}}{T_{\text{甲}}} + \frac{P_{\text{末}}V_{\text{乙}}}{T_{\text{乙}}}$<br>
+                                    代入數值：$\frac{108 \times 50}{300} = \frac{36 \times 50}{300} + \frac{36 \times V_{\text{乙}}}{600}$<br>
+                                    $18 = 6 + \frac{36 V_{\text{乙}}}{600}$<br>
+                                    $12 = \frac{36 V_{\text{乙}}}{600} \Rightarrow V_{\text{乙}} = \frac{12 \times 600}{36} = \boxed{200 \text{ mL}}$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 5 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 5</h2>
+                            <p>兩個等體積燒瓶用細管相連接（體積省略）初在 $27^\circ\text{C}$ 下置入 $0.70\text{ mol } \text{H}_2$ 壓力為 $0.5\text{ atm}$。今 $V_1$ 改置入 $127^\circ\text{C}$ 沸油中，而 $V_2$ 仍然 $27^\circ\text{C}$ 而最後達至平衡，求最後壓力為若干？</p>
+                            <ul class="ex-options">
+                                <li>(A) $0.3\text{ atm}$</li>
+                                <li>(B) $0.4\text{ atm}$</li>
+                                <li>(C) $0.5\text{ atm}$</li>
+                                <li>(D) $0.57\text{ atm}$</li>
+                            </ul>
+                            <div style="display: flex; justify-content: flex-start; margin-top: 1.5rem;">
+                                <svg width="240" height="120" viewBox="0 0 300 150">
+                                    <rect x="20" y="40" width="100" height="80" fill="rgba(255,255,255,0.1)" stroke="var(--text-main)" stroke-width="2"/>
+                                    <text x="70" y="140" fill="var(--text-main)" font-size="14" text-anchor="middle">127°C 沸油</text>
                                     
-                                    <rect x="90" y="70" width="30" height="10" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                    <circle cx="70" cy="80" r="30" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                    <text x="70" y="85" fill="var(--text-main)" font-size="16" text-anchor="middle">V₁</text>
                                     
-                                    <circle cx="180" cy="75" r="60" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                    <circle cx="150" cy="60" r="1.5" fill="var(--accent-green)"/><circle cx="170" cy="50" r="1.5" fill="var(--accent-green)"/><circle cx="200" cy="70" r="1.5" fill="var(--accent-green)"/><circle cx="180" cy="100" r="1.5" fill="var(--accent-green)"/><circle cx="160" cy="90" r="1.5" fill="var(--accent-green)"/><circle cx="210" cy="90" r="1.5" fill="var(--accent-green)"/>
-                                    <text x="180" y="150" fill="var(--accent-purple)" font-size="14" text-anchor="middle">乙 (36 mmHg)</text>
+                                    <path d="M 70 50 L 70 20 L 220 20 L 220 50" fill="transparent" stroke="var(--accent-blue)" stroke-width="6"/>
+                                    <path d="M 70 50 L 70 20 L 220 20 L 220 50" fill="transparent" stroke="var(--bg-dark)" stroke-width="2"/>
+                                    
+                                    <circle cx="220" cy="80" r="30" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
+                                    <text x="220" y="85" fill="var(--text-main)" font-size="16" text-anchor="middle">V₂</text>
+                                    <text x="220" y="140" fill="var(--text-main)" font-size="14" text-anchor="middle">27°C</text>
                                 </svg>
                             </div>
+                            <button class="btn-show-ans" data-ans="ex-ans-5">顯示解答</button>
                         </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-4')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 7: Example 5 -->
-                <div class="slide">
-                    <h1>例題 5</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-5" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(D)</div>
-                            <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.8;">
-                                1. 原本總莫耳數：$n = \frac{0.5 \times (2V)}{R \times 300} = 0.70$<br>
-                                2. 後來：兩邊莫耳數相加等於總莫耳數 $n = n_1 + n_2$<br>
-                                $\frac{0.5 \times 2V}{R \times 300} = \frac{P' \times V}{R \times 400} + \frac{P' \times V}{R \times 300}$<br>
-                                約去 $\frac{V}{R}$：$\frac{1}{300} = P'(\frac{1}{400} + \frac{1}{300}) = P'(\frac{3+4}{1200}) = P' \times \frac{7}{1200}$<br>
-                                $P' = \frac{1}{300} \times \frac{1200}{7} = \frac{4}{7} \approx 0.57 \text{ atm}$
+                        <div class="ex-right">
+                            <div id="ex-ans-5" class="ex-answer-box">
+                                <div class="ans-label">解答：(D)</div>
+                                <div class="ans-body">
+                                    1. 原本總莫耳數：$n = \frac{0.5 \times (2V)}{R \times 300} = 0.70$<br>
+                                    2. 後來：兩邊莫耳數相加等於總莫耳數 $n = n_1 + n_2$<br>
+                                    $\frac{0.5 \times 2V}{R \times 300} = \frac{P' \times V}{R \times 400} + \frac{P' \times V}{R \times 300}$<br>
+                                    約去 $\frac{V}{R}$：$\frac{1}{300} = P'(\frac{1}{400} + \frac{1}{300}) = P'(\frac{3+4}{1200}) = P' \times \frac{7}{1200}$<br>
+                                    $P' = \frac{1}{300} \times \frac{1200}{7} = \frac{4}{7} \approx \boxed{0.57 \text{ atm}}$
+                                </div>
                             </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-5')">關閉</button>
-                        </div>
-                        <div style="font-size: 1.2rem; line-height: 1.6;">
-                            兩個等體積燒瓶用細管相連接（體積省略）初在 $27^\circ\text{C}$ 下置入 $0.70\text{ mol } \text{H}_2$ 壓力為 $0.5\text{ atm}$。今 $V_1$ 改置入 $127^\circ\text{C}$ 沸油中，而 $V_2$ 仍然 $27^\circ\text{C}$ 而最後達至平衡，求最後壓力為若干？<br>
-                            (A) $0.3\text{ atm}$ &nbsp;&nbsp; (B) $0.4\text{ atm}$ &nbsp;&nbsp; (C) $0.5\text{ atm}$ &nbsp;&nbsp; (D) $0.57\text{ atm}$
-                        </div>
-                        <div style="display: flex; justify-content: flex-start; margin-top: 1.5rem; padding-left: 2rem;">
-                            <svg width="240" height="120" viewBox="0 0 300 150">
-                                <rect x="20" y="40" width="100" height="80" fill="rgba(255,255,255,0.1)" stroke="var(--text-main)" stroke-width="2"/>
-                                <text x="70" y="140" fill="var(--text-main)" font-size="14" text-anchor="middle">127°C 沸油</text>
-                                
-                                <circle cx="70" cy="80" r="30" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                <text x="70" y="85" fill="var(--text-main)" font-size="16" text-anchor="middle">V₁</text>
-                                
-                                <path d="M 70 50 L 70 20 L 220 20 L 220 50" fill="transparent" stroke="var(--accent-blue)" stroke-width="6"/>
-                                <path d="M 70 50 L 70 20 L 220 20 L 220 50" fill="transparent" stroke="var(--bg-dark)" stroke-width="2"/>
-                                
-                                <circle cx="220" cy="80" r="30" fill="transparent" stroke="var(--accent-blue)" stroke-width="2"/>
-                                <text x="220" y="85" fill="var(--text-main)" font-size="16" text-anchor="middle">V₂</text>
-                                <text x="220" y="140" fill="var(--text-main)" font-size="14" text-anchor="middle">27°C</text>
-                            </svg>
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-5')">顯示解答</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Slide 8: Example 6 -->
-                <div class="slide">
-                    <h1>例題 6</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-6" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(A)</div>
-                            <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.8;">
-                                1. 混合氣體的平均分子量 $\bar{M} = \frac{dRT}{P} = \frac{3.13 \times 0.082 \times 298}{1} = 76.5$<br>
-                                2. $\text{N}_2\text{O}_4$ 的分子量為 $92$。<br>
-                                3. 設分解率為 $\alpha$，則：<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;$\text{N}_2\text{O}_4 \rightleftharpoons 2\text{NO}_2$<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;$1-\alpha \quad\quad 2\alpha$<br>
-                                總莫耳數 $= 1 + \alpha$<br>
-                                4. 質量守恆，平均分子量 $\bar{M} = \frac{\text{總質量}}{\text{總莫耳數}} = \frac{92}{1+\alpha}$<br>
-                                $76.5 = \frac{92}{1+\alpha} \Rightarrow 1+\alpha = \frac{92}{76.5} \approx 1.20$<br>
-                                $\alpha = 0.20 = 20\%$
+                    <!-- Ex 6 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 6</h2>
+                            <p>$\text{N}_2\text{O}_4$ 分解之反應為 $\text{N}_2\text{O}_{4(g)} \rightleftharpoons 2\text{NO}_{2(g)}$ 在 $25^\circ\text{C}$ 及 $1\text{ atm}$ 下，平衡系中混合氣體之密度為 $3.13\text{ g/L}$，則 $\text{N}_2\text{O}_4$ 之分解百分率約為：</p>
+                            <ul class="ex-options">
+                                <li>(A) 20%</li>
+                                <li>(B) 30%</li>
+                                <li>(C) 40%</li>
+                                <li>(D) 50%</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-6">顯示解答</button>
+                        </div>
+                        <div class="ex-right" style="justify-content: flex-start;">
+                            <div style="width: 100%; text-align: center; margin-bottom: 2rem; color: var(--accent-yellow); font-size: 1.8rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--accent-blue);">
+                                $\text{N}_2\text{O}_{4(g)} \rightleftharpoons 2\text{NO}_{2(g)}$
                             </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-6')">關閉</button>
-                        </div>
-                        <div style="font-size: 1.3rem; line-height: 1.8;">
-                            $\text{N}_2\text{O}_4$ 分解之反應為 $\text{N}_2\text{O}_{4(g)} \rightleftharpoons 2\text{NO}_{2(g)}$ 在 $25^\circ\text{C}$ 及 $1\text{ atm}$ 下，平衡系中混合氣體之密度為 $3.13\text{ g/L}$，則 $\text{N}_2\text{O}_4$ 之分解百分率約為：<br>
-                            (A) 20% &nbsp;&nbsp; (B) 30% &nbsp;&nbsp; (C) 40% &nbsp;&nbsp; (D) 50%
-                        </div>
-                        <div style="text-align: center; margin-top: 1.5rem; color: var(--accent-yellow); font-size: 1.8rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 10px; border: 1px solid var(--accent-blue);">
-                            $\text{N}_2\text{O}_{4(g)} \rightleftharpoons 2\text{NO}_{2(g)}$
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-6')">顯示解答</button>
+                            <div id="ex-ans-6" class="ex-answer-box">
+                                <div class="ans-label">解答：(A)</div>
+                                <div class="ans-body">
+                                    1. 混合氣體的平均分子量 $\bar{M} = \frac{dRT}{P} = \frac{3.13 \times 0.082 \times 298}{1} = 76.5$<br>
+                                    2. $\text{N}_2\text{O}_4$ 的分子量為 $92$。<br>
+                                    3. 設分解率為 $\alpha$，則：<br>
+                                    $\text{N}_2\text{O}_4 \rightleftharpoons 2\text{NO}_2$<br>
+                                    $1-\alpha \quad\quad 2\alpha$<br>
+                                    總莫耳數 $= 1 + \alpha$<br>
+                                    4. 質量守恆，平均分子量 $\bar{M} = \frac{\text{總質量}}{\text{總莫耳數}} = \frac{92}{1+\alpha}$<br>
+                                    $76.5 = \frac{92}{1+\alpha} \Rightarrow 1+\alpha = \frac{92}{76.5} \approx 1.20$<br>
+                                    $\alpha = 0.20 = \boxed{20\%}$
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slide 9: Game -->
+                <!-- Game -->
                 <div class="slide" id="slide-game">
                     <h1>單元挑戰：理想氣體連連看</h1>
-                    <p style="text-align: center; color: var(--accent-green); margin-top: -10px;">請連接正確的對應關係。</p>
-                    <div id="game-container" style="position: relative; flex: 1; display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden;">
+                    <p style="text-align: center; color: var(--accent-green); margin-bottom: 1rem;">請連接正確的描述與數值。</p>
+                    <div id="game-container" style="position: relative; flex: 1; display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(0,0,0,0.2); border-radius: 20px; min-height: 400px; touch-action: none;">
                         <svg id="game-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></svg>
                         <div id="left-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 8px; z-index: 10; width: 40%;"></div>
                         <div id="right-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 8px; z-index: 10; width: 40%;"></div>
                         <div id="game-feedback" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.95); padding: 2rem 4rem; border-radius: 20px; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); z-index: 100; text-align: center;">🎉 太棒了！</div>
                     </div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <button class="btn" style="width: auto; display: inline-block;" onclick="resetGame()">再玩一次</button>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button class="btn-tool primary" style="width: auto; padding: 8px 30px;" onclick="resetGame()">再玩一次</button>
                     </div>
                 </div>
             </div>
-
             <canvas id="drawing-layer"></canvas>
         </div>
 
-        <div id="slide-info">1 / 5</div>
-
         <!-- Controls Toolbar -->
         <div id="toolbar">
-            <div id="drag-handle" title="拖曳移動工具列">≡</div>
-            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
-            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            
-            <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
-            
-            <div class="color-picker" id="color-picker">
-                <div class="color-swatch selected" style="background: #f8fafc;" data-color="#f8fafc"></div>
-                <div class="color-swatch" style="background: #f87171;" data-color="#f87171"></div>
-                <div class="color-swatch" style="background: #38bdf8;" data-color="#38bdf8"></div>
-                <div class="color-swatch" style="background: #fbbf24;" data-color="#fbbf24"></div>
-                <div class="color-swatch" style="background: #34d399;" data-color="#34d399"></div>
+            <div id="drag-handle" title="拖曳移動工具列" style="cursor:grab; font-size:1.5rem; color:rgba(255,255,255,0.4); margin-bottom:5px;">≡</div>
+            <button type="button" class="btn-tool" id="btn-draw" title="畫筆">✎</button>
+            <div id="color-picker" style="display:none; flex-direction:column; gap:4px; margin:4px 0;">
+                <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
             </div>
-
-            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
-                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 100%; height: 4px; cursor: pointer;">
-            </div>
-
-            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
-                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
-                    <svg viewBox="0 0 24 24"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
                 </button>
-                <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
+                <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
             </div>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            <button class="btn-tool" id="btn-exit-fs" title="回到目錄">🏠</button>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+        </div>
+    </div><!-- end app -->
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
         </div>
     </div>
 
     <script>
-        let currentSlide = 0;
+        // ── Start overlay ──
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        btnStart.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // ── Drawing layer ──
         let isDrawingMode = false;
         let drawMode = 'pen';
         let penColor = '#f8fafc';
         let penSize = 3;
-        let slideDrawings = {}; 
-        let lastX = 0;
-        let lastY = 0;
+        let savedDrawing = null;
+        let lastX = 0, lastY = 0, isDrawing = false;
 
-        function toggleOverlay(id) {
-            const overlay = document.getElementById(id);
-            if (overlay) overlay.style.display = (overlay.style.display === 'none' || overlay.style.display === '') ? 'flex' : 'none';
-        }
-
-        const slides = document.querySelectorAll('.slide');
-        const slideInfo = document.getElementById('slide-info');
         const canvas = document.getElementById('drawing-layer');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            if (!canvas) return;
+            const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.width  = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
             restoreDrawing();
-            if (typeof drawConnections === 'function' && slides[currentSlide] && slides[currentSlide].id === 'slide-game') {
-                drawConnections();
-            }
         }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // observe document height changes to resize canvas
+        const resizeObserver = new ResizeObserver(() => { resizeCanvas(); });
+        resizeObserver.observe(document.body);
+        setTimeout(resizeCanvas, 500);
 
         function getCoords(e) {
             const rect = canvas.getBoundingClientRect();
@@ -460,232 +511,336 @@
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return [clientX - rect.left, clientY - rect.top];
         }
-
         function startDrawing(e) {
             if (!isDrawingMode) return;
-            isDrawing = true;
-            [lastX, lastY] = getCoords(e);
+            isDrawing = true; [lastX, lastY] = getCoords(e);
         }
-
         function draw(e) {
             if (!isDrawing) return;
             const [x, y] = getCoords(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = drawMode === 'eraser' ? '#0b1120' : penColor;
-            ctx.lineWidth = drawMode === 'eraser' ? penSize * 10 : penSize;
-            ctx.lineCap = 'round';
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = Math.max(20, penSize * 10); }
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; ctx.lineWidth = Math.max(2, penSize); }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
             [lastX, lastY] = [x, y];
         }
-
         function stopDrawing() {
-            if (isDrawing) {
-                isDrawing = false;
-                slideDrawings[currentSlide] = canvas.toDataURL();
-            }
+            if (isDrawing) { isDrawing = false; savedDrawing = canvas.toDataURL(); }
         }
-
         function restoreDrawing() {
+            if (!ctx) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (slideDrawings[currentSlide]) {
-                const img = new Image();
-                img.onload = () => ctx.drawImage(img, 0, 0);
-                img.src = slideDrawings[currentSlide];
-            }
+            if (savedDrawing) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = savedDrawing; }
         }
 
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+        canvas.addEventListener('touchstart', (e) => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
         canvas.addEventListener('touchend', stopDrawing);
 
-        function updateSlides() {
-            slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
-            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
-            restoreDrawing();
-            if (slides[currentSlide].id === 'slide-game') initGame();
-        }
-
-        document.getElementById('btn-next').addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
-        document.getElementById('btn-prev').addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
-
-        document.getElementById('btn-draw').addEventListener('click', (e) => {
+        // ── Toolbar interactions ──
+        const btnDraw = document.getElementById('btn-draw');
+        btnDraw.addEventListener('click', () => {
             isDrawingMode = !isDrawingMode;
             if (isDrawingMode) drawMode = 'pen';
-            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            btnDraw.classList.toggle('active-tool', isDrawingMode);
             canvas.classList.toggle('drawing-active', isDrawingMode);
-            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
-            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
-            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+            const cp = document.getElementById('color-picker');
+            const et = document.getElementById('eraser-tools');
+            if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+            if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
         });
 
-        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+        const btnEraser = document.getElementById('btn-eraser');
+        if (btnEraser) btnEraser.addEventListener('click', () => {
             drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
-            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+            btnEraser.classList.toggle('active-tool', drawMode === 'eraser');
         });
 
-        document.querySelectorAll('.color-swatch').forEach(sw => {
-            sw.addEventListener('click', () => {
-                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-                sw.classList.add('selected');
-                penColor = sw.dataset.color;
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
                 drawMode = 'pen';
-                document.getElementById('btn-draw').classList.add('active-tool');
-                document.getElementById('btn-eraser').classList.remove('active-tool');
+                btnEraser && btnEraser.classList.remove('active-tool');
             });
         });
 
-        document.getElementById('pen-size').addEventListener('input', (e) => { penSize = parseInt(e.target.value); });
         document.getElementById('btn-clear').addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            slideDrawings[currentSlide] = null;
+            savedDrawing = null;
         });
 
-        document.getElementById('btn-start').addEventListener('click', () => {
-            document.getElementById('start-overlay').style.display = 'none';
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            updateSlides();
+        document.getElementById('btn-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        document.getElementById('btn-exit-fs').addEventListener('click', () => {
-            window.location.href = '../../index.html';
-        });
-
-        const gameData = [
-            { left: '理想氣體方程式', right: '$PV = nRT$', match: 0 },
-            { left: '氣體常數 $R$ (atm)', right: '0.082', match: 1 },
-            { left: '氣體常數 $R$ (SI)', right: '8.314', match: 2 },
-            { left: '理想氣體條件', right: '分子無體積、無引力', match: 3 },
-            { left: '最接近理想狀態', right: '高溫、低壓', match: 4 },
-            { left: '分子量求法公式', right: '$M = dRT/P$', match: 5 },
-            { left: '真實氣體體積', right: '大於容器體積（分子有體積）', match: 6 },
-            { left: '真實氣體壓力', right: '小於理想氣體壓力（有引力）', match: 7 },
-            { left: '同溫同壓同體積', right: '莫耳數相同（亞佛加厥）', match: 8 }
-        ];
-
-        let connections = [];
-        let isDraggingGame = false;
-        let startDot = null;
-        let currentLine = null;
-
-        function initGame() {
-            const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
-            leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
-            const selectedData = [...gameData].sort(() => Math.random() - 0.5).slice(0, 5).map((item, i) => ({ ...item, currentMatch: i }));
-            const shuffledRight = [...selectedData].sort(() => Math.random() - 0.5);
-            selectedData.forEach(item => { const div = document.createElement('div'); div.className = 'game-item'; div.innerHTML = `<span>${item.left}</span><div class="dot left-dot" data-index="${item.currentMatch}"></div>`; leftCol.appendChild(div); });
-            shuffledRight.forEach(item => { const div = document.createElement('div'); div.className = 'game-item'; div.innerHTML = `<div class="dot right-dot" data-index="${item.currentMatch}"></div><span>${item.right}</span>`; rightCol.appendChild(div); });
-            MathJax.typesetPromise(); 
-            
-            document.querySelectorAll('.dot').forEach(dot => {
-                dot.addEventListener('mousedown', gameDragStart);
-                dot.addEventListener('touchstart', gameDragStart, {passive: false});
-            });
-            document.addEventListener('mousemove', gameDragMove);
-            document.addEventListener('mouseup', gameDragEnd);
-            document.addEventListener('touchmove', gameDragMove, {passive: false});
-            document.addEventListener('touchend', gameDragEnd);
-        }
-
-        function gameDragStart(e) {
-            const dot = e.currentTarget;
-            if (dot.classList.contains('active')) return;
-            if(e.type === 'touchstart') e.preventDefault();
-            
-            isDraggingGame = true;
-            startDot = dot;
-            const svg = document.getElementById('game-svg');
-            const rect = svg.getBoundingClientRect();
-            const dotRect = dot.getBoundingClientRect();
-            currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            const x = dotRect.left + dotRect.width/2 - rect.left;
-            const y = dotRect.top + dotRect.height/2 - rect.top;
-            currentLine.setAttribute('x1', x);
-            currentLine.setAttribute('y1', y);
-            currentLine.setAttribute('x2', x);
-            currentLine.setAttribute('y2', y);
-            currentLine.setAttribute('stroke', 'var(--accent-blue)');
-            currentLine.setAttribute('stroke-width', '4');
-            svg.appendChild(currentLine);
-        }
-
-        function gameDragMove(e) {
-            if (!isDraggingGame || !currentLine) return;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const svg = document.getElementById('game-svg');
-            const rect = svg.getBoundingClientRect();
-            currentLine.setAttribute('x2', clientX - rect.left);
-            currentLine.setAttribute('y2', clientY - rect.top);
-        }
-
-        function gameDragEnd(e) {
-            if (!isDraggingGame) return;
-            isDraggingGame = false;
-            const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-            const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-            
-            let targetDot = null;
-            document.querySelectorAll('.dot').forEach(dot => {
-                const rect = dot.getBoundingClientRect();
-                if (clientX >= rect.left - 10 && clientX <= rect.right + 10 && clientY >= rect.top - 10 && clientY <= rect.bottom + 10) {
-                    targetDot = dot;
-                }
-            });
-
-            if (targetDot && targetDot !== startDot && startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') && !targetDot.classList.contains('active')) {
-                if (startDot.dataset.index === targetDot.dataset.index) {
-                    startDot.classList.add('active');
-                    targetDot.classList.add('active');
-                    connections.push({from: startDot, to: targetDot});
-                    currentLine.setAttribute('stroke', 'var(--accent-green)');
-                    const rect = document.getElementById('game-svg').getBoundingClientRect();
-                    const r2 = targetDot.getBoundingClientRect();
-                    currentLine.setAttribute('x2', r2.left + r2.width/2 - rect.left);
-                    currentLine.setAttribute('y2', r2.top + r2.height/2 - rect.top);
-                    currentLine = null;
-                    if (connections.length === 5) document.getElementById('game-feedback').style.display = 'block';
-                } else {
-                    currentLine.setAttribute('stroke', 'var(--accent-red)');
-                    const rect = document.getElementById('game-svg').getBoundingClientRect();
-                    const r2 = targetDot.getBoundingClientRect();
-                    currentLine.setAttribute('x2', r2.left + r2.width/2 - rect.left);
-                    currentLine.setAttribute('y2', r2.top + r2.height/2 - rect.top);
-                    const lineToRemove = currentLine;
-                    currentLine = null;
-                    setTimeout(() => { if(lineToRemove) lineToRemove.remove(); }, 500);
-                }
-            } else {
-                if (currentLine) currentLine.remove();
-                currentLine = null;
-            }
-            startDot = null;
-        }
-
-        function drawConnections() {
-            const svg = document.getElementById('game-svg');
-            svg.innerHTML = '';
-            const rect = svg.getBoundingClientRect();
-            connections.forEach(conn => {
-                const r1 = conn.from.getBoundingClientRect(), r2 = conn.to.getBoundingClientRect();
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', r1.left + r1.width/2 - rect.left); line.setAttribute('y1', r1.top + r1.height/2 - rect.top);
-                line.setAttribute('x2', r2.left + r2.width/2 - rect.left); line.setAttribute('y2', r2.top + r2.height/2 - rect.top);
-                line.setAttribute('stroke', 'var(--accent-green)'); line.setAttribute('stroke-width', '4'); svg.appendChild(line);
-            });
-        }
-        function resetGame() { document.getElementById('game-feedback').style.display = 'none'; document.getElementById('game-svg').innerHTML = ''; initGame(); }
-
-        const toolbar = document.getElementById('toolbar'), dragHandle = document.getElementById('drag-handle');
+        // ── Toolbar drag ──
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
         let isDraggingToolbar = false, dragOffY = 0;
-        const startDrag = (y) => { isDraggingToolbar = true; dragOffY = y - toolbar.offsetTop; };
-        const moveDrag = (y) => { if (isDraggingToolbar) { toolbar.style.top = (y - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } };
-        dragHandle.addEventListener('mousedown', (e) => startDrag(e.clientY)); window.addEventListener('mousemove', (e) => moveDrag(e.clientY)); window.addEventListener('mouseup', () => isDraggingToolbar = false);
-        dragHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY)); window.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY)); window.addEventListener('touchend', () => isDraggingToolbar = false);
+        dragHandle.addEventListener('mousedown', (e) => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+        window.addEventListener('mousemove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('mouseup', () => isDraggingToolbar = false);
+        dragHandle.addEventListener('touchstart', (e) => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; }, {passive:true});
+        window.addEventListener('touchmove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } }, {passive:true});
+        window.addEventListener('touchend', () => isDraggingToolbar = false);
+
+        // ── Random Draw ──
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const btnDoDraw = document.getElementById('btn-do-draw');
+            const drawTotalInput = document.getElementById('draw-total-input');
+            let totalBalls = 40, drawBalls = [];
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = ''; drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball'; ball.textContent = i; ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball); drawBalls.push(ball);
+                }
+            }
+
+            btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+                if (!drawModal) return;
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none'; btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block'; btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+                }
+            });
+            btnCloseDraw && btnCloseDraw.addEventListener('click', () => {
+                if (drawModal) drawModal.style.display = 'none';
+                btnRandomDraw && btnRandomDraw.classList.remove('active-tool');
+            });
+            drawTotalInput && drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1;
+                drawTotalInput.value = val; totalBalls = val; renderBalls();
+            });
+
+            let drawInterval, drawTimeout;
+            btnDoDraw && btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+                const available = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (available.length === 0) { alert('所有號碼都已抽出！'); return; }
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+                const cur = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (cur.length === 0) { alert('所有號碼都已抽出！'); return; }
+                btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+                drawInterval = setInterval(() => { cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('flicker'); }, 50);
+                drawTimeout = setTimeout(() => { clearInterval(drawInterval); cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, 2000);
+            });
+        })();
+
+        // ── Show/Hide Answer buttons ──
+        document.querySelectorAll('.btn-show-ans').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ansId = btn.dataset.ans;
+                const ansBox = document.getElementById(ansId);
+                const isVisible = ansBox.classList.contains('visible');
+                if (isVisible) {
+                    ansBox.classList.remove('visible');
+                    btn.textContent = '顯示解答';
+                    btn.classList.remove('shown');
+                } else {
+                    ansBox.classList.add('visible');
+                    btn.textContent = '隱藏解答';
+                    btn.classList.add('shown');
+                    if (window.MathJax) MathJax.typesetPromise([ansBox]);
+                }
+            });
+        });
+
+        // ── Matching Game ──
+        (function() {
+            const gameDataPool = [
+                { left: '理想氣體方程式', right: '$PV = nRT$', match: 0 },
+                { left: '氣體常數 $R$ (atm)', right: '0.082', match: 1 },
+                { left: '氣體常數 $R$ (SI)', right: '8.314', match: 2 },
+                { left: '理想氣體條件', right: '分子無體積、無引力', match: 3 },
+                { left: '最接近理想狀態', right: '高溫、低壓', match: 4 },
+                { left: '分子量求法公式', right: '$M = dRT/P$', match: 5 },
+                { left: '真實氣體體積', right: '大於容器體積（分子有體積）', match: 6 },
+                { left: '真實氣體壓力', right: '小於理想氣體壓力（有引力）', match: 7 },
+                { left: '同溫同壓同體積', right: '莫耳數相同（亞佛加厥）', match: 8 }
+            ];
+
+            const ITEMS_PER_GAME = 5;
+            let connections = [], isDraggingGame = false, startDotInfo = null, tempLine = null, allDots = [];
+
+            const container = document.getElementById('game-container');
+            const svgEl = document.getElementById('game-svg');
+
+            function getDotCenter(dotEl) {
+                const cr = container.getBoundingClientRect();
+                const dr = dotEl.getBoundingClientRect();
+                return {
+                    x: dr.left + dr.width/2 - cr.left,
+                    y: dr.top  + dr.height/2 - cr.top,
+                    el: dotEl
+                };
+            }
+
+            function findDotAt(clientX, clientY, excludeEl, requireOtherSide) {
+                let best = null, bestDist = 38;
+                allDots.forEach(d => {
+                    if (d.el === excludeEl) return;
+                    if (requireOtherSide !== null && d.isLeft === requireOtherSide) return;
+                    if (d.el.classList.contains('active')) return;
+                    const dr = d.el.getBoundingClientRect();
+                    const cx = dr.left + dr.width/2;
+                    const cy = dr.top  + dr.height/2;
+                    const dist = Math.sqrt((clientX-cx)**2 + (clientY-cy)**2);
+                    if (dist < bestDist) { bestDist = dist; best = d; }
+                });
+                return best;
+            }
+
+            function initGame() {
+                const leftCol  = document.getElementById('left-column');
+                const rightCol = document.getElementById('right-column');
+                if (!leftCol) return;
+                leftCol.innerHTML = ''; rightCol.innerHTML = '';
+                connections = []; allDots = [];
+                const feedback = document.getElementById('game-feedback');
+                if (feedback) feedback.style.display = 'none';
+                svgEl.innerHTML = '';
+
+                const shuffled = [...gameDataPool].sort(() => Math.random()-0.5).slice(0, ITEMS_PER_GAME);
+                const current  = shuffled.map((item, i) => ({...item, matchId: i}));
+                const shuffledRight = [...current].sort(() => Math.random()-0.5);
+
+                current.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'game-item';
+                    div.innerHTML = `<span style="flex:1">${item.left}</span><div class="dot left-dot" data-mid="${item.matchId}" data-side="left"></div>`;
+                    leftCol.appendChild(div);
+                });
+                shuffledRight.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'game-item';
+                    div.innerHTML = `<div class="dot right-dot" data-mid="${item.matchId}" data-side="right"></div><span style="flex:1">${item.right}</span>`;
+                    rightCol.appendChild(div);
+                });
+
+                if (window.MathJax) MathJax.typesetPromise().catch(()=>{});
+
+                document.querySelectorAll('#game-container .dot').forEach(el => {
+                    allDots.push({ el, matchId: el.dataset.mid, isLeft: el.dataset.side === 'left' });
+                });
+            }
+
+            function getEventPos(e) {
+                if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+                return { x: e.clientX, y: e.clientY };
+            }
+
+            function onPointerDown(e) {
+                if (isDrawingMode) return; 
+                const pos = getEventPos(e);
+                const dot = findDotAt(pos.x, pos.y, null, null);
+                if (!dot) return;
+                e.preventDefault(); e.stopPropagation();
+                isDraggingGame = true;
+                startDotInfo = dot;
+                const c = getDotCenter(dot.el);
+                tempLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+                tempLine.setAttribute('x1', c.x); tempLine.setAttribute('y1', c.y);
+                tempLine.setAttribute('x2', c.x); tempLine.setAttribute('y2', c.y);
+                tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+                tempLine.setAttribute('stroke-width', '4');
+                tempLine.setAttribute('stroke-dasharray', '6,4');
+                tempLine.setAttribute('stroke-linecap', 'round');
+                svgEl.appendChild(tempLine);
+            }
+
+            function onPointerMove(e) {
+                if (!isDraggingGame || !tempLine || !startDotInfo) return;
+                if (e.cancelable) e.preventDefault();
+                const pos = getEventPos(e);
+                const cr  = container.getBoundingClientRect();
+                let tx = pos.x - cr.left;
+                let ty = pos.y - cr.top;
+
+                const requireOtherSide = startDotInfo.isLeft;
+                const hover = findDotAt(pos.x, pos.y, startDotInfo.el, requireOtherSide);
+
+                if (hover) {
+                    const hc = getDotCenter(hover.el);
+                    tx = hc.x; ty = hc.y;
+                    const isCorrect = hover.matchId === startDotInfo.matchId;
+                    tempLine.setAttribute('stroke', isCorrect ? '#34d399' : '#f87171');
+                    tempLine.setAttribute('stroke-dasharray', 'none');
+                } else {
+                    tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+                    tempLine.setAttribute('stroke-dasharray', '6,4');
+                }
+                tempLine.setAttribute('x2', tx);
+                tempLine.setAttribute('y2', ty);
+            }
+
+            function onPointerUp(e) {
+                if (!isDraggingGame) return;
+                isDraggingGame = false;
+                const pos = getEventPos(e);
+
+                if (tempLine && tempLine.parentNode) tempLine.parentNode.removeChild(tempLine);
+                tempLine = null;
+
+                if (!startDotInfo) return;
+                const requireOtherSide = startDotInfo.isLeft;
+                const target = findDotAt(pos.x, pos.y, startDotInfo.el, requireOtherSide);
+
+                if (target && target.matchId === startDotInfo.matchId) {
+                    startDotInfo.el.classList.add('active');
+                    target.el.classList.add('active');
+                    startDotInfo.el.closest('.game-item').classList.add('connected');
+                    target.el.closest('.game-item').classList.add('connected');
+                    connections.push({ from: startDotInfo, to: target });
+                    redrawLines();
+                    if (connections.length === ITEMS_PER_GAME) {
+                        setTimeout(() => document.getElementById('game-feedback').style.display = 'block', 300);
+                    }
+                }
+                startDotInfo = null;
+            }
+
+            function redrawLines() {
+                svgEl.innerHTML = '';
+                connections.forEach(conn => {
+                    const c1 = getDotCenter(conn.from.el);
+                    const c2 = getDotCenter(conn.to.el);
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', c1.x); line.setAttribute('y1', c1.y);
+                    line.setAttribute('x2', c2.x); line.setAttribute('y2', c2.y);
+                    line.setAttribute('stroke', '#34d399');
+                    line.setAttribute('stroke-width', '4');
+                    line.setAttribute('stroke-linecap', 'round');
+                    svgEl.appendChild(line);
+                });
+            }
+
+            container.addEventListener('mousedown',  onPointerDown, {capture: true});
+            container.addEventListener('touchstart', onPointerDown, {capture: true, passive: false});
+            window.addEventListener('mousemove',  onPointerMove);
+            window.addEventListener('touchmove',  onPointerMove, {passive: false});
+            window.addEventListener('mouseup',    onPointerUp);
+            window.addEventListener('touchend',   onPointerUp);
+            window.addEventListener('resize', redrawLines);
+
+            window.resetGame = function() { initGame(); };
+            initGame();
+        })();
     </script>
 </body>
 </html>

@@ -643,8 +643,27 @@
         <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
     </div>
     <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
+    <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
     <button type="button" class="btn-tool" id="btn-home" title="回到 my_化學網 首頁">🏠</button>
 </div>
+
+<!-- RANDOM DRAW MODAL -->
+<div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 99999; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+    <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+    <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+    <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+        <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+        <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+    </div>
+</div>
+
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
 
 <div id="start-overlay">
     <div class="start-badge">選修化學二 · 第二章 · 物質結構與化學鍵</div>
@@ -727,9 +746,16 @@
         if (!isDrawing || !ctx) return;
         const [x, y] = getCoords(e);
         ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
-        ctx.strokeStyle = drawMode === 'eraser' ? '#0f172a' : penColor;
-        ctx.lineWidth = drawMode === 'eraser' ? 38 : 3.5;
-        ctx.lineCap = 'round'; ctx.stroke();
+        if (drawMode === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 38;
+            ctx.strokeStyle = 'rgba(0,0,0,1)';
+        } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = penColor;
+        }
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
         [lastX, lastY] = [x, y];
     }
     function stopDrawing() {
@@ -796,6 +822,9 @@
                 btn.classList.toggle('active-tool', drawMode === 'eraser');
             } else if (id === 'btn-clear') {
                 if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+            } else if (id === 'btn-random-draw') {
+                const rdModal = document.getElementById('random-draw-modal');
+                if (rdModal) { rdModal.style.display = 'block'; initBalls(); }
             } else if (id === 'btn-home') {
                 window.location.href = '../../index.html';
             }
@@ -831,6 +860,74 @@
         if (e.key === 'ArrowDown' || e.key === 'PageDown') { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } }
         if (e.key === 'ArrowUp' || e.key === 'PageUp') { if (currentSlide > 0) { currentSlide--; updateSlides(); } }
     });
+
+    // ── 抽號工具 ──
+    let drawnNumbers = new Set();
+    let drawTotal = 40;
+    let drawAnimTimer = null;
+
+    function initBalls() {
+        const totalInput = document.getElementById('draw-total-input');
+        const newTotal = parseInt(totalInput ? totalInput.value : 40) || 40;
+        if (newTotal !== drawTotal) {
+            drawTotal = newTotal;
+            drawnNumbers.clear();
+        }
+        const container = document.getElementById('random-draw-balls');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 1; i <= drawTotal; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball' + (drawnNumbers.has(i) ? ' drawn' : '');
+            ball.textContent = i;
+            ball.id = 'ball-' + i;
+            container.appendChild(ball);
+        }
+    }
+
+    function doRandomDraw() {
+        const totalInput = document.getElementById('draw-total-input');
+        const newTotal = parseInt(totalInput ? totalInput.value : 40) || 40;
+        if (newTotal !== drawTotal) {
+            drawTotal = newTotal;
+            drawnNumbers.clear();
+            initBalls();
+        }
+        const available = [];
+        for (let i = 1; i <= drawTotal; i++) { if (!drawnNumbers.has(i)) available.push(i); }
+        if (available.length === 0) { drawnNumbers.clear(); initBalls(); return; }
+        const winner = available[Math.floor(Math.random() * available.length)];
+        if (drawAnimTimer) clearInterval(drawAnimTimer);
+        let ticks = 0;
+        const maxTicks = 20;
+        const allBalls = document.querySelectorAll('.draw-ball:not(.drawn)');
+        drawAnimTimer = setInterval(() => {
+            allBalls.forEach(b => b.classList.remove('flicker'));
+            const randBall = allBalls[Math.floor(Math.random() * allBalls.length)];
+            if (randBall) randBall.classList.add('flicker');
+            ticks++;
+            if (ticks >= maxTicks) {
+                clearInterval(drawAnimTimer);
+                drawAnimTimer = null;
+                allBalls.forEach(b => b.classList.remove('flicker'));
+                const winBall = document.getElementById('ball-' + winner);
+                if (winBall) { winBall.classList.add('winner'); }
+                setTimeout(() => {
+                    if (winBall) { winBall.classList.remove('winner'); winBall.classList.add('drawn'); }
+                    drawnNumbers.add(winner);
+                }, 1200);
+            }
+        }, 80);
+    }
+
+    const rdModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    if (btnCloseDraw) btnCloseDraw.addEventListener('click', () => { if (rdModal) rdModal.style.display = 'none'; });
+    if (btnDoDraw) btnDoDraw.addEventListener('click', doRandomDraw);
+    if (drawTotalInput) drawTotalInput.addEventListener('change', () => { drawTotal = parseInt(drawTotalInput.value) || 40; drawnNumbers.clear(); initBalls(); });
+    if (rdModal) rdModal.addEventListener('click', e => { if (e.target === rdModal) rdModal.style.display = 'none'; });
 </script>
 <script type="module">
 import * as THREE from 'three';

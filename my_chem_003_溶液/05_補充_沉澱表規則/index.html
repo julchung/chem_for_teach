@@ -2,6 +2,11 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <script>
+        window.onerror = function(msg, url, line) {
+            alert("JS Error:\n" + msg + "\nLine: " + line);
+        };
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>沉澱表與沉澱規則 - 互動教學</title>
     <script>
@@ -22,996 +27,946 @@
             --accent-yellow: #fbbf24;
             --accent-purple: #a855f7;
             --accent-cyan: #22d3ee;
-            --accent-orange: #fb923c;
         }
-        
+
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
-        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
-        
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 2vh 6rem 2vh 3rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow: hidden; }
-        @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
-        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
-        
-        .slide h1 { color: var(--accent-blue); font-size: clamp(1.5rem, 4vh, 2.2rem); margin-bottom: 1vh; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.5vh; flex-shrink: 0; }
-        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 3.2vh, 2rem); margin-top: 0.5vh; margin-bottom: 1vh; }
-        .slide p, .slide li { font-size: clamp(1.1rem, 2.2vh, 1.4rem); line-height: 1.5; margin-bottom: 0.8vh; }
-        
-        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
-        .flex-row { display: flex; flex-wrap: wrap; gap: 1.5vw; margin-top: 1vh; flex: 1; min-height: 0; }
-        .flex-col { flex: 1 1 300px; background: rgba(255,255,255,0.03); padding: 1.5vh 1.5vw; border-radius: 10px; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
-        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        
-        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
-        #drawing-layer.drawing-active { pointer-events: auto; }
-        
-        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 10px 5px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 2000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 45px; }
-        .btn-tool { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
-        .btn-tool:hover { background: rgba(255,255,255,0.1); }
-        .btn-tool.active-tool, .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
-        .btn-tool svg { width: 20px; height: 20px; fill: currentColor; }
-        
-        .color-picker { display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px; }
-        .color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; margin: 0 auto; }
-        .color-swatch.selected { border-color: white; transform: scale(1.2); }
-        
-        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; margin-bottom: 5px; margin-top: -5px; user-select: none; font-size: 1.2rem; line-height: 0.5; }
-        
-        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
-        
-        .table-chem { width: 100%; height: 100%; border-collapse: collapse; margin: 0; background: rgba(30, 41, 59, 0.5); border-radius: 12px; overflow: hidden; table-layout: fixed; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .table-chem tr { height: 9vh; } 
-        .table-chem th, .table-chem td { padding: 0; border: 1px solid rgba(255,255,255,0.1); text-align: center; vertical-align: middle; font-size: clamp(0.9rem, 2vh, 1.2rem); overflow: hidden; height: 9vh; }
-        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); font-size: clamp(1rem, 2.5vh, 1.3rem); height: 7vh; }
-        .table-chem tr.solved { background-color: rgba(52, 211, 153, 0.15); border-color: var(--accent-green); box-shadow: inset 0 0 20px rgba(52, 211, 153, 0.1); }
-        .table-chem tr.solved td { border-color: rgba(52, 211, 153, 0.3); color: var(--accent-green); }
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
 
-        .btn { background: transparent; color: var(--text-main); border: 1px solid var(--accent-blue); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 1.1rem; transition: all 0.2s; display: inline-block; margin-top: 10px; }
-        .btn:hover { background: rgba(56, 189, 248, 0.2); }
-        .btn.primary { background: var(--accent-blue); color: #000; font-weight: bold; }
-        .btn.primary:hover { background: #0284c7; }
+        /* slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 4rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4rem 1.5rem 1.5rem; } }
 
-        /* Drag and Drop Styles */
-        .dropzone { height: 9vh; border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; padding: 2px; background: rgba(0,0,0,0.1); transition: all 0.3s; overflow: hidden; width: 100%; box-sizing: border-box; }
-        .dropzone.drag-over { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); transform: scale(1.01); }
-        .dropzone.filled { border: 2px solid var(--accent-green); background: rgba(52, 211, 153, 0.05); }
-
-        /* Smaller balls when inside the table to prevent resizing */
-        .dropzone .draggable {
-            width: clamp(40px, 6vh, 60px);
-            height: clamp(40px, 6vh, 60px);
-            font-size: clamp(0.7rem, 1.6vh, 0.9rem);
-            margin: 2px;
-        }
-        
-        .draggable { 
-            width: clamp(50px, 7vh, 70px); 
-            height: clamp(50px, 7vh, 70px); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3), inset 0 5px 15px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.4);
-            cursor: grab; 
-            font-size: clamp(0.8rem, 1.8vh, 1rem); 
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            user-select: none; 
-            text-align: center;
-            margin: 4px;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-        }
-        .draggable:hover { transform: scale(1.1) translateY(-5px); box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3), inset 0 5px 20px rgba(255,255,255,0.5), 0 10px 20px rgba(0,0,0,0.5); }
-        
-        /* Game Styles */
-        #game-stage { display: flex; align-items: flex-start; justify-content: flex-start; padding: 50px 20px; position: relative; min-height: 500px; gap: 0; width: 100%; overflow-x: auto; overflow-y: auto; }
-        .game-beaker-wrap { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; position: relative; transition: all 0.5s; z-index: 5; }
-        .game-beaker { width: 70px; height: 85px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); border-radius: 0 0 12px 12px; position: relative; backdrop-filter: blur(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .game-beaker::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: rgba(56, 189, 248, 0.4); border-radius: 0 0 10px 10px; transition: height 0.5s; }
-        .game-beaker-ions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 2; font-size: 1.1rem; font-weight: bold; }
-        
-        .game-arrow-wrap { width: 140px; height: 3px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255,255,255,0.3); margin: 40px 0; }
-        .game-arrow-line { width: 100%; height: 100%; position: relative; }
-        .game-arrow-line::after { content: ''; position: absolute; right: -2px; top: -6px; border-left: 10px solid rgba(255,255,255,0.3); border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
-        
-        /* The split branches */
-        .game-branches { position: absolute; right: 0; top: 1.5px; width: 40px; height: 0; z-index: 1; }
-        .game-branch-up, .game-branch-down { position: absolute; left: 100%; width: 40px; border-left: 2px solid rgba(255,255,255,0.3); }
-        .game-branch-up { bottom: 0; height: 60px; border-top: 2px solid rgba(255,255,255,0.3); border-radius: 10px 0 0 0; }
-        .game-branch-down { top: 0; height: 60px; border-bottom: 2px solid rgba(255,255,255,0.3); border-radius: 0 0 0 10px; }
-        
-        .game-add-label { position: absolute; top: -50px; width: 140px; text-align: center; color: var(--accent-yellow); font-size: 0.9rem; font-weight: bold; white-space: nowrap; }
-        .game-drop-slot { position: absolute; top: 50%; left: 40%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%; background: rgba(255,255,255,0.05); transition: all 0.3s; z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
-        .game-drop-slot.drag-over { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.2); transform: translate(-50%, -50%) scale(1.1); border-style: solid; }
-        .game-drop-slot.filled { border-style: solid; border-color: var(--accent-green); background: rgba(255,255,255,0.1); width: 60px; height: 60px; }
-        .game-drop-slot.error-flash { border-color: var(--accent-red); background: rgba(248, 113, 113, 0.2); animation: shake 0.4s ease-in-out; }
-        
-        @keyframes shake {
-            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-            25% { transform: translate(-50%, -50%) translateX(-5px); }
-            75% { transform: translate(-50%, -50%) translateX(5px); }
-        }
-        
-        .game-precipitate { position: absolute; left: 45px; top: -18px; padding: 4px 12px; background: rgba(30, 41, 59, 0.8); border: 1.5px solid var(--accent-yellow); border-radius: 8px; font-size: 0.85rem; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; backdrop-filter: blur(5px); }
-        
-        @keyframes stamp-in {
-            0% { transform: scale(3) rotate(-30deg); opacity: 0; }
-            80% { transform: scale(0.9) rotate(-10deg); opacity: 1; }
-            100% { transform: scale(1) rotate(-10deg); opacity: 1; }
-        }
-        .stamp-success { position: absolute; bottom: 130px; left: 30px; transform: rotate(-10deg); font-size: 4rem; color: #ef4444; font-weight: 900; border: 8px solid #ef4444; padding: 5px 30px; border-radius: 15px; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px); z-index: 100; pointer-events: none; opacity: 0; }
-        .stamp-success.active { opacity: 1; animation: stamp-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        
-        .game-msg { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); padding: 8px 20px; border-radius: 20px; font-weight: bold; z-index: 10; transition: all 0.3s; opacity: 0; pointer-events: none; }
-        .game-msg.error { background: var(--accent-red); color: #fff; opacity: 1; }
-        
-        .ion-ball-mini { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); box-shadow: inset 0 2px 5px rgba(255,255,255,0.3); }
-
-        .draggable.dragging { opacity: 0.5; }
-        .draggable.incorrect { border-color: var(--accent-red); color: var(--accent-red); }
-        .draggable.correct { border-color: var(--accent-green); color: var(--accent-green); }
-        
-        #draggables-container { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 10px; flex: 1; display: flex; flex-wrap: wrap; align-content: space-around; gap: 5px; justify-content: space-around; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
 
         .text-red { color: var(--accent-red); }
-        .text-cyan { color: var(--accent-cyan); }
-        .text-yellow { color: var(--accent-yellow); }
+        .text-blue { color: var(--accent-blue); }
         .text-green { color: var(--accent-green); }
-        
-        /* Color Cards */
-        .color-card-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5vh; margin-top: 1vh; flex: 1; min-height: 0; }
-        .color-card { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 1vh; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 0; }
-        .color-card::before { content: ''; position: absolute; top: 0; left: 0; width: 10px; height: 100%; }
-        .color-card.white::before { background: #ffffff; }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-purple { color: var(--accent-purple); }
+
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+
+        /* Drawing layer – fixed over entire viewport, scrolls with content via offset tracking */
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Toolbar */
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+        #btn-top { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Tables */
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; vertical-align: middle; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); font-size: clamp(1rem, 1.6vw, 1.2rem); }
+        .table-chem tr.solved td { color: var(--accent-green); background: rgba(52,211,153,0.08); }
+
+        /* Game items (matching game) */
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 22px; height: 22px; background: #fff; border-radius: 50%; cursor: crosshair; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .dot:hover { transform: scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+
+        /* Example question layout: left 1.3 / right 1 */
+        .ex-split-row { display: flex; gap: 2rem; margin-top: 1rem; align-items: stretch; min-height: 67vh; }
+        .ex-left  { flex: 1.3; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ex-right { flex: 1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 67vh; position: relative; }
+        .ex-options { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .ex-options li { padding: 0.35rem 0; font-size: clamp(1rem, 1.4vw, 1.3rem); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ex-options li:last-child { border-bottom: none; }
+        .ex-answer-box { background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1rem 1.5rem; margin: 0.8rem 0; width: 100%; display: none; }
+        .ex-answer-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .ans-body  { color: white; font-size: 1.1rem; line-height: 1.8; }
+        .btn-show-ans { margin-top: auto; align-self: flex-start; padding: 8px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+
+        /* Random Draw styles */
+        .draw-ball { width: 100%; aspect-ratio: 1/1; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+
+        /* Drag and Drop (slide 1) */
+        .dropzone { min-height: 60px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 6px; background: rgba(0,0,0,0.1); transition: all 0.3s; }
+        .dropzone.drag-over { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.1); }
+        .dropzone.filled { border: 2px solid var(--accent-green); background: rgba(52, 211, 153, 0.05); }
+        .draggable { width: 75px; height: 75px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6), inset 3px 3px 10px rgba(255,255,255,0.3), 0 5px 10px rgba(0,0,0,0.4); cursor: grab; font-size: 1.1rem; font-weight: bold; font-family: "Times New Roman", Times, serif; user-select: none; text-align: center; padding: 4px; color: #f8fafc; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); transition: transform 0.2s, box-shadow 0.2s; }
+        .draggable:hover { transform: scale(1.1) translateY(-4px); }
+        .draggable.dragging { opacity: 0.6; }
+        .draggable.correct { border-color: var(--accent-green); box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6), inset 3px 3px 10px rgba(255,255,255,0.3), 0 0 15px var(--accent-green); }
+        .draggable.incorrect { border-color: var(--accent-red); box-shadow: inset -5px -5px 15px rgba(0,0,0,0.6), inset 3px 3px 10px rgba(255,255,255,0.3), 0 0 15px var(--accent-red); }
+        #draggables-container { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* Color Cards (slide 2) */
+        .color-card-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5vh; margin-top: 1vh; }
+        .color-card { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 1.2rem 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+        .color-card::before { content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 100%; }
+        .color-card.white::before { background: #e2e8f0; }
         .color-card.brick::before { background: #b91c1c; }
-        .color-card.black::before { background: #1e293b; }
+        .color-card.black::before { background: #334155; }
         .color-card.yellow::before { background: #facc15; }
         .color-card.blue::before { background: #3b82f6; }
         .color-card.green::before { background: #4ade80; }
-        .color-card h3 { font-size: clamp(1.1rem, 2.5vh, 1.4rem); margin-bottom: 0.5vh; }
-        .color-card p { font-size: clamp(0.9rem, 1.8vh, 1.1rem); color: rgba(255,255,255,0.8); margin: 0;}
+        .color-card h3 { font-size: clamp(1rem, 2vh, 1.3rem); margin-bottom: 0.5rem; }
+        .color-card p { font-size: clamp(0.85rem, 1.6vh, 1rem); color: rgba(255,255,255,0.85); margin: 0; line-height: 1.6; }
 
-        /* Flowchart Example 5 */
-        .flow-container { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 10px; flex: 1; overflow-y: auto; overflow-x: hidden; width: 100%; position: relative; font-size: 1rem; }
-        .flow-box { border: 1.5px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; background: rgba(30, 41, 59, 0.8); min-width: 120px; text-align: center; position: relative; transition: all 0.3s; font-weight: bold; }
-        .flow-box.reagent { border-color: var(--accent-yellow); color: var(--accent-yellow); font-weight: bold; border-style: dashed; padding: 4px 12px; min-width: auto; font-size: 1rem; }
-        .flow-box .ans { color: var(--accent-green); font-size: 1.2rem; font-weight: 900; margin-top: 6px; display: none; border-top: 1px solid rgba(52, 211, 153, 0.3); padding-top: 6px; }
+        /* Flowchart (example 5) */
+        .flow-container { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px; width: 100%; }
+        .flow-box { border: 1.5px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 8px; background: rgba(30,41,59,0.8); min-width: 120px; text-align: center; font-weight: bold; }
+        .flow-box.reagent { border-color: var(--accent-yellow); color: var(--accent-yellow); border-style: dashed; padding: 4px 12px; font-size: 0.95rem; }
+        .flow-box .ans { color: var(--accent-green); font-size: 1.1rem; font-weight: 900; margin-top: 6px; display: none; border-top: 1px solid rgba(52,211,153,0.3); padding-top: 6px; }
         .flow-box.show-ans .ans { display: block; }
-        .flow-line-v { width: 2px; height: 15px; background: rgba(255,255,255,0.3); }
-        .flow-row { display: flex; justify-content: center; gap: 60px; width: 100%; position: relative; }
-        .flow-row::before { content: ''; position: absolute; top: -15px; left: 20%; right: 20%; height: 2px; background: rgba(255,255,255,0.3); }
-        .flow-col { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; }
+        .flow-line-v { width: 2px; height: 14px; background: rgba(255,255,255,0.3); }
+        .flow-row { display: flex; justify-content: center; gap: 50px; width: 100%; position: relative; }
+        .flow-row::before { content:''; position: absolute; top: -14px; left: 15%; right: 15%; height: 2px; background: rgba(255,255,255,0.3); }
+        .flow-col { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+
+        /* Separation Game (slide 5) */
+        .game-beaker-wrap { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; position: relative; transition: all 0.5s; }
+        .game-beaker { width: 70px; height: 85px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.3); border-radius: 0 0 12px 12px; position: relative; backdrop-filter: blur(4px); }
+        .game-beaker::before { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 55%; background: rgba(56, 189, 248, 0.35); border-radius: 0 0 10px 10px; }
+        .game-beaker-ions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; z-index: 2; font-size: 1rem; font-weight: bold; }
+        .game-arrow-wrap { width: 120px; height: 3px; position: relative; display: flex; align-items: center; flex-shrink: 0; background: rgba(255,255,255,0.25); margin: 42px 0; }
+        .game-arrow-wrap::after { content: ''; position: absolute; right: -1px; top: -6px; border-left: 10px solid rgba(255,255,255,0.25); border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+        .game-add-label { position: absolute; top: -46px; width: 120px; text-align: center; color: var(--accent-yellow); font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
+        .game-drop-slot { position: absolute; top: 50%; left: 40%; transform: translate(-50%,-50%); width: 72px; height: 72px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%; background: rgba(255,255,255,0.04); transition: all 0.3s; z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .game-drop-slot.drag-over { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.2); transform: translate(-50%,-50%) scale(1.1); border-style: solid; }
+        .game-drop-slot.filled { border-style: solid; border-color: var(--accent-green); }
+        .game-drop-slot.error-flash { border-color: var(--accent-red); background: rgba(248,113,113,0.2); animation: shake 0.4s; }
+        @keyframes shake { 0%,100% { transform:translate(-50%,-50%); } 25% { transform:translate(calc(-50% - 5px),-50%); } 75% { transform:translate(calc(-50% + 5px),-50%); } }
+        .game-precipitate { position: absolute; left: 46px; top: -20px; padding: 3px 10px; background: rgba(15,23,42,0.85); border: 1.5px solid var(--accent-yellow); border-radius: 8px; font-size: 0.8rem; white-space: nowrap; backdrop-filter: blur(5px); }
+        @keyframes stamp-in { 0% { transform: scale(3) rotate(-30deg); opacity:0; } 80% { transform: scale(0.9) rotate(-10deg); opacity:1; } 100% { transform: scale(1) rotate(-10deg); opacity:1; } }
+        .stamp-success { position: absolute; bottom: 130px; left: 30px; transform: rotate(-10deg); font-size: 3.5rem; color: #ef4444; font-weight: 900; border: 7px solid #ef4444; padding: 5px 28px; border-radius: 14px; background: rgba(0,0,0,0.3); z-index: 100; pointer-events: none; opacity: 0; }
+        .stamp-success.active { opacity: 1; animation: stamp-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .game-msg { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); padding: 8px 20px; border-radius: 20px; font-weight: bold; z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        .game-msg.error { background: var(--accent-red); color: #fff; opacity: 1; }
+
+        /* General btn */
+        .btn { background: transparent; color: var(--text-main); border: 1px solid var(--accent-blue); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 1.1rem; transition: all 0.2s; display: inline-block; }
+        .btn:hover { background: rgba(56,189,248,0.2); }
+        .btn.primary { background: var(--accent-blue); color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="app">
-        <div id="start-overlay">
-            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">沉澱表與沉澱規則</h1>
-            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">常見離子沉澱反應與規則探討</p>
-            <button id="btn-start" class="btn primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px;">▶ 點擊進入全螢幕教學</button>
-        </div>
-
-        <div id="presentation-area">
-            <div id="slides-container">
-                
-                <!-- Slide 1: Interactive Table -->
-                <div class="slide active" id="slide-table">
-                    <h1>常見離子沉澱表</h1>
-                    <div style="display: flex; gap: 20px; flex: 1; min-height: 0; align-items: stretch;">
-                        <div style="flex: 3; display: flex; flex-direction: column; min-height: 0;">
-                            <table class="table-chem">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 25%;">陰離子</th>
-                                        <th style="width: 55%;">陽離子 (請將右側選項拖入)</th>
-                                        <th style="width: 20%;">結果</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr id="row-1">
-                                        <td>$\text{NO}_3^-$, $\text{CH}_3\text{COO}^-$</td>
-                                        <td><div class="dropzone" data-requires="all"></div></td>
-                                        <td class="text-green">皆可溶</td>
-                                    </tr>
-                                    <tr id="row-2">
-                                        <td>$\text{Cl}^-$, $\text{Br}^-$, $\text{I}^-$</td>
-                                        <td><div class="dropzone" data-requires="Ag,Pb,Hg2,Cu,Tl"></div></td>
-                                        <td class="text-red">沉澱</td>
-                                    </tr>
-                                    <tr id="row-3">
-                                        <td>$\text{SO}_4^{2-}$</td>
-                                        <td><div class="dropzone" data-requires="Ba,Sr,Pb,Ca"></div></td>
-                                        <td class="text-red">沉澱</td>
-                                    </tr>
-                                    <tr id="row-4">
-                                        <td>$\text{CrO}_4^{2-}$</td>
-                                        <td><div class="dropzone" data-requires="Ba,Pb,Ag,Sr"></div></td>
-                                        <td class="text-red">沉澱</td>
-                                    </tr>
-                                    <tr id="row-5">
-                                        <td>$\text{S}^{2-}$</td>
-                                        <td><div class="dropzone" data-requires="IA,IIA,NH4"></div></td>
-                                        <td class="text-green">溶解</td>
-                                    </tr>
-                                    <tr id="row-6">
-                                        <td>$\text{OH}^-$</td>
-                                        <td><div class="dropzone" data-requires="IA,NH4,Ba,Sr,Ca"></div></td>
-                                        <td class="text-green">溶解</td>
-                                    </tr>
-                                    <tr id="row-7">
-                                        <td>$\text{C}_2\text{O}_4^{2-}$</td>
-                                        <td><div class="dropzone" data-requires="IA,NH4,Be,Mg"></div></td>
-                                        <td class="text-green">溶解</td>
-                                    </tr>
-                                    <tr id="row-8">
-                                        <td>$\text{PO}_4^{3-}$, $\text{CO}_3^{2-}$, $\text{SO}_3^{2-}$</td>
-                                        <td><div class="dropzone" data-requires="IA,NH4"></div></td>
-                                        <td class="text-green">溶解</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Right: Draggables -->
-                        <div style="flex: 1; min-width: 220px; display: flex; flex-direction: column; min-height: 0;">
-                            <div id="draggables-container">
-                                <!-- Generated by JS -->
-                            </div>
-                            <div style="text-align: center; margin-top: 10px;">
-                                <button class="btn" onclick="resetTable()" style="width: 100%;">↺ 重置表格</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 2: Precipitation Colors -->
-                <div class="slide">
-                    <h1>特殊沉澱顏色</h1>
-                    <p style="text-align: center; color: rgba(255,255,255,0.7); margin-bottom: 1rem;">判斷未知離子時，沉澱物的顏色是極為重要的線索。</p>
-                    <div class="color-card-container">
-                        <div class="color-card white">
-                            <h3 style="color: #ffffff;">白色沉澱</h3>
-                            <p>$\text{AgCl}, \text{Hg}_2\text{Cl}_2$<br>$\text{BaSO}_4, \text{SrSO}_4, \text{PbSO}_4$<br>$\text{CaCO}_3, \text{Al(OH)}_3, \text{ZnS}$</p>
-                        </div>
-                        <div class="color-card brick">
-                            <h3 style="color: #fca5a5;">磚紅色沉澱</h3>
-                            <p>$\text{Ag}_2\text{CrO}_4$<br>$\text{Fe(OH)}_3$</p>
-                        </div>
-                        <div class="color-card black">
-                            <h3 style="color: #94a3b8;">黑色沉澱</h3>
-                            <p>$\text{Ag}_2\text{S}$<br>$\text{CuS}$<br>$\text{HgS}$</p>
-                        </div>
-                        <div class="color-card yellow">
-                            <h3 style="color: #fde047;">黃色沉澱</h3>
-                            <p>$\text{AgI}, \text{AgBr}$ (淡黃)<br>$\text{PbCrO}_4, \text{BaCrO}_4$</p>
-                        </div>
-                        <div class="color-card blue">
-                            <h3 style="color: #60a5fa;">藍色沉澱</h3>
-                            <p>$\text{Cu(OH)}_2$</p>
-                        </div>
-                        <div class="color-card green">
-                            <h3 style="color: #86efac;">淡綠色沉澱</h3>
-                            <p>$\text{Fe(OH)}_2$</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 3: Special Rules 1 -->
-                <div class="slide">
-                    <h1>特殊的沉澱規則 (一)</h1>
-                    <div class="flex-row">
-                        <div class="flex-col" style="gap: 1vh;">
-                            <h2 class="text-cyan">1. 溶於「強酸」的難溶物</h2>
-                            <p>某些本身為沉澱難溶物，但加入強酸後會溶解：</p>
-                            <ul style="margin-left: 1.5rem; line-height: 1.6; display: flex; flex-direction: column; gap: 1vh;">
-                                <li><strong>金屬的氫氧化物</strong>：酸鹼中和。<br><span style="color:var(--accent-yellow); font-size: 0.95em;">如：$\text{Al(OH)}_3 + 3\text{H}^+ \rightarrow \text{Al}^{3+} + 3\text{H}_2\text{O}$</span></li>
-                                <li><strong>碳酸鹽、亞硫酸鹽</strong>：產生氣體。<br><span style="color:var(--accent-yellow); font-size: 0.9em;">如：$\text{CaCO}_3 + 2\text{H}^+ \rightarrow \text{Ca}^{2+} + \text{H}_2\text{O} + \text{CO}_2 \uparrow$ 及 $\text{BaSO}_3 + 2\text{H}^+ \rightarrow \text{Ba}^{2+} + \text{H}_2\text{O} + \text{SO}_2 \uparrow$</span></li>
-                                <li><strong>鉻酸鹽</strong>：轉變為二鉻酸根。<br><span style="color:var(--accent-yellow); font-size: 0.95em;">如：$2\text{CrO}_4^{2-} + 2\text{H}^+ \rightarrow \text{Cr}_2\text{O}_7^{2-} + \text{H}_2\text{O}$</span></li>
-                                <li><strong>特定硫化物</strong>：$\text{FeS}, \text{ZnS}, \text{MnS}$ 等。<br><span style="color:var(--accent-yellow); font-size: 0.95em;">如：$\text{MnS} + 2\text{H}^+ \rightarrow \text{Mn}^{2+} + \text{H}_2\text{S} \uparrow$</span></li>
-                            </ul>
-                        </div>
-                        <div class="flex-col" style="gap: 1.5vh;">
-                            <h2 class="text-red">2. 溶於「強鹼」的難溶物</h2>
-                            <p>兩性金屬的氫氧化物沉澱，遇過量強鹼會形成錯離子而重新溶解：</p>
-                            <div class="rule-card" style="margin-bottom: 0.5vh; padding: 1.5vh;">
-                                <h3 style="font-size: clamp(1.2rem, 2.5vh, 1.6rem);">兩性元素口訣</h3>
-                                <p style="font-size: clamp(1.4rem, 3.5vh, 2rem); text-align: center; margin: 1vh 0; color: var(--accent-yellow);">鈹、鋁、鎵、鋅、鉻、錫、鉛</p>
-                            </div>
-                            <p>兩性金屬的氫氧化物：<br>$\text{Al(OH)}_3, \text{Zn(OH)}_2, \text{Cr(OH)}_3, \text{Sn(OH)}_2, \text{Pb(OH)}_2$</p>
-                            <div style="background: rgba(52, 211, 153, 0.1); padding: 1vh; border-radius: 8px; border-left: 4px solid var(--accent-green); margin-top: 1vh;">
-                                <p style="color:var(--accent-green); margin: 0; font-weight: bold;">反應例：</p>
-                                <p style="color:var(--accent-green); margin: 0; font-size: clamp(1rem, 2.2vh, 1.4rem);">$\text{Al(OH)}_{3(s)} + \text{OH}^-_{(aq)} \rightarrow [\text{Al(OH)}_4]^-_{(aq)}$</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 4: Special Rules 2 -->
-                <div class="slide">
-                    <h1>特殊的沉澱規則 (二)</h1>
-                    <div class="flex-row">
-                        <div class="flex-col" style="gap: 1vh;">
-                            <h2 class="text-purple">3. 溶於「氨水」的難溶物</h2>
-                            <p>初加入氨水產生沉澱，但<strong>過量氨水</strong>會使其形成氨錯離子而溶解：</p>
-                            <div class="rule-card" style="border-color: var(--accent-purple); background: rgba(168, 85, 247, 0.05); padding: 1vh;">
-                                <h3 style="font-size: 1.1rem;">可形成氨錯離子金屬</h3>
-                                <p style="font-size: clamp(1.1rem, 2.5vh, 1.4rem); text-align: center; margin: 0.5vh 0; color: var(--accent-cyan);">$\text{Cu}^{2+}, \text{Zn}^{2+}, \text{Ag}^+, \text{Ni}^{2+}, \text{Cd}^{2+}, \text{Co}^{2+}$</p>
-                                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.5);">(註：$\text{Fe}^{2+}, \text{Fe}^{3+}, \text{Al}^{3+}$ 不溶於過量氨水)</p>
-                            </div>
-                            <div style="background: rgba(168, 85, 247, 0.1); padding: 1vh; border-radius: 8px; border-left: 4px solid var(--accent-purple); margin-top: 0.5vh;">
-                                <p style="color:var(--accent-purple); margin: 0; font-weight: bold; font-size: 0.9rem;">反應例 (銅)：</p>
-                                <p style="margin: 2px 0; font-size: 0.85rem;">少量：$\text{Cu}^{2+} + 2\text{NH}_3 + 2\text{H}_2\text{O} \rightarrow \text{Cu(OH)}_{2(s)} \downarrow$ <span style="color:#60a5fa;">(藍)</span></p>
-                                <p style="margin: 2px 0; font-size: 0.85rem;">過量：$\text{Cu(OH)}_{2(s)} + 4\text{NH}_3 \rightarrow [\text{Cu(NH}_3)_4]^{2+} \uparrow$ <span style="color:#3b82f6;">(深藍)</span></p>
-                                <p style="color:var(--accent-purple); margin: 5px 0 0 0; font-weight: bold; font-size: 0.9rem;">反應例 (銀)：</p>
-                                <p style="margin: 2px 0; font-size: 0.85rem;">少量：$2\text{Ag}^+ + 2\text{NH}_3 + \text{H}_2\text{O} \rightarrow \text{Ag}_2\text{O}_{(s)} \downarrow$ <span style="color:#fb923c;">(褐)</span></p>
-                                <p style="margin: 2px 0; font-size: 0.85rem;">過量：$\text{Ag}_2\text{O}_{(s)} + 4\text{NH}_3 + \text{H}_2\text{O} \rightarrow 2[\text{Ag(NH}_3)_2]^+ \uparrow$ <span style="color:#f8fafc;">(無色)</span></p>
-                            </div>
-                        </div>
-                        <div class="flex-col" style="gap: 1.5vh;">
-                            <h2 class="text-cyan">4. 鹵化銀的溶解度</h2>
-                            <p>鹵化銀對氨水及其他錯合劑的溶解度差異：</p>
-                            <ul style="margin-left: 1.5rem; line-height: 1.5; display: flex; flex-direction: column; gap: 0.5vh;">
-                                <li>$\text{AgCl}$：可溶於氨水。</li>
-                                <li>$\text{AgBr}$：微溶於氨水。</li>
-                                <li>$\text{AgI}$：<strong>不溶</strong>於氨水。</li>
-                            </ul>
-                            <p style="margin-top: 1vh; font-size: 0.95em;">所有鹵化銀 ($\text{AgX}$) 皆可溶於過量的 $\text{CN}^-$ 及 $\text{S}_2\text{O}_3^{2-}$ 中，形成 $\text{Ag(CN)}_2^-$ 或 $\text{Ag(S}_2\text{O}_3)_2^{3-}$ 錯離子。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 5: Interactive Game -->
-                <div class="slide" id="slide-game">
-                    <h1>互動挑戰：陽離子分離實驗</h1>
-                    <div style="flex: 1; display: flex; flex-direction: column; position: relative; min-height: 0;">
-                        <p style="text-align: center; color: rgba(255,255,255,0.6); margin-bottom: 5px;">請依序選用適合的陰離子將溶液中的三種陽離子依序沉澱分離出來</p>
-                        
-                        <!-- Game Area -->
-                        <div id="game-stage-container" style="flex: 1; min-height: 0; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; position: relative;">
-                            <div id="game-stage">
-                                <!-- Beakers & Arrows -->
-                            </div>
-                            <div id="game-message" class="game-msg"></div>
-                            <div id="game-stamp" class="stamp-success">成功</div>
-                        </div>
-                        
-                        <!-- Control Panel -->
-                        <div style="height: 110px; background: rgba(15, 23, 42, 0.8); border-radius: 20px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
-                            <div id="game-candidates" style="display: flex; gap: 15px; align-items: center;">
-                                <!-- Anion Candidates -->
-                            </div>
-                            <div style="display: flex; gap: 15px;">
-                                <button class="btn" onclick="resetGamePuzzle()">↺ 重置本題</button>
-                                <button class="btn primary" onclick="newGamePuzzle()">★ 隨機下一題</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 6: Example 1 -->
-                <div class="slide">
-                    <h1>觀念例題 1：離子沉澱反應</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-1" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: clamp(2rem, 5vh, 3rem); font-weight: 900;">解答：(C)</div>
-                            <div style="color: white; font-size: 1.3rem; margin-top: 15px; line-height: 1.8;">
-                                離子沉澱反應是指水溶液中的離子互相結合，產生不溶性固體的反應。<br><br>
-                                (A) 為金屬氧化反應。<br>
-                                (B) 產生氣體 ($\text{CO}_2$) 與水，無沉澱。<br>
-                                (C) $\text{Mg}^{2+}_{(aq)} + 2\text{OH}^-_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)}$，產生白色氫氧化鎂沉澱，為離子沉澱反應。<br>
-                                (D) 為酸鹼中和反應，無沉澱產生。
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-1')">關閉解答</button>
-                        </div>
-                        <div style="font-size: clamp(1.2rem, 3vh, 1.6rem); line-height: 1.6;">
-                            下列何者是離子沉澱反應？<br><br>
-                            (A) $2\text{Mg}_{(s)} + \text{O}_{2(g)} \rightarrow 2\text{MgO}_{(s)}$<br>
-                            (B) $\text{Na}_2\text{CO}_{3(aq)} + 2\text{HCl}_{(aq)} \rightarrow 2\text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)} + \text{CO}_{2(g)}$<br>
-                            (C) $\text{MgCl}_{2(aq)} + 2\text{NaOH}_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)} + 2\text{NaCl}_{(aq)}$<br>
-                            (D) $\text{HCl}_{(aq)} + \text{NaOH}_{(aq)} \rightarrow \text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)}$
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-1')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 7: Example 2 -->
-                <div class="slide">
-                    <h1>觀念例題 2：沉澱判斷</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-2" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: clamp(2rem, 5vh, 3rem); font-weight: 900;">解答：(D)</div>
-                            <div style="color: white; font-size: 1.3rem; margin-top: 15px; line-height: 1.8;">
-                                題目條件：加入鹽酸 ($\text{Cl}^-$) 僅一種沉澱，但加入硫酸 ($\text{SO}_4^{2-}$) 兩者均沉澱。<br><br>
-                                (A) $\text{Ag}^+, \text{Pb}^{2+}$：加 $\text{Cl}^-$ 兩者皆沉澱。<br>
-                                (B) $\text{Hg}^{2+}, \text{Sn}^{2+}$：加 $\text{Cl}^-$ 均不沉澱 (注意是亞汞 $\text{Hg}_2^{2+}$ 才會沉澱，汞離子 $\text{Hg}^{2+}$ 溶)。<br>
-                                (C) $\text{Pb}^{2+}, \text{Zn}^{2+}$：加 $\text{SO}_4^{2-}$ 時，只有 $\text{PbSO}_4$ 沉澱，$\text{ZnSO}_4$ 可溶。<br>
-                                (D) $\text{Pb}^{2+}, \text{Ba}^{2+}$：<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;加 $\text{Cl}^-$：$\text{PbCl}_2$ 沉澱，$\text{BaCl}_2$ 溶解 (僅一種沉澱)。<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;加 $\text{SO}_4^{2-}$：$\text{PbSO}_4$ 沉澱，$\text{BaSO}_4$ 沉澱 (兩者均沉澱)。完全符合！
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-2')">關閉解答</button>
-                        </div>
-                        <div style="font-size: clamp(1.2rem, 3vh, 1.6rem); line-height: 1.6;">
-                            下列何組所含的陽離子，加入鹽酸 ($\text{HCl}$) 僅一種沉澱，但加入硫酸 ($\text{H}_2\text{SO}_4$) 則兩者均沉澱？<br><br>
-                            (A) $\text{Ag}^+, \text{Pb}^{2+}$<br>
-                            (B) $\text{Hg}^{2+}, \text{Sn}^{2+}$<br>
-                            (C) $\text{Pb}^{2+}, \text{Zn}^{2+}$<br>
-                            (D) $\text{Pb}^{2+}, \text{Ba}^{2+}$
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-2')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 8: Example 3 -->
-                <div class="slide">
-                    <h1>觀念例題 3：試劑分離</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-3" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: clamp(2rem, 5vh, 3rem); font-weight: 900;">解答：(B)</div>
-                            <div style="color: white; font-size: 1.3rem; margin-top: 15px; line-height: 1.8;">
-                                題目要求加入過量的 $\text{NaOH}_{(aq)}$ 時，一種沉澱，一種不沉澱 (溶解)。<br>
-                                過量 $\text{NaOH}$ 會溶解兩性金屬的氫氧化物 (鈹、鋁、鎵、鋅、鉻、錫、鉛)。<br><br>
-                                (A) $\text{Zn}^{2+}, \text{Al}^{3+}$：皆為兩性金屬，過量 $\text{NaOH}$ 中皆形成錯離子而溶解 (無沉澱)。<br>
-                                (B) $\text{Zn}^{2+}, \text{Cu}^{2+}$：$\text{Zn}^{2+}$ 溶於過量 $\text{NaOH}$，而 $\text{Cu}^{2+}$ 形成 $\text{Cu(OH)}_2$ 藍色沉澱不溶。符合條件。<br>
-                                (C) 試劑為 $\text{K}_2\text{CrO}_4$，$\text{Ag}^+$ 與 $\text{Pb}^{2+}$ 皆會產生鉻酸鹽沉澱。<br>
-                                (D) 試劑為過量 $\text{NH}_3$，$\text{Ag}^+$ 與 $\text{Cu}^{2+}$ 皆可形成氨錯離子而溶解 (無沉澱)。
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-3')">關閉解答</button>
-                        </div>
-                        <div style="font-size: clamp(1.2rem, 3vh, 1.6rem); line-height: 1.6;">
-                            下列各組均含有兩種陽離子，使用〔　〕內的試劑時，可使其中的一種陽離子生成沉澱，而另一種陽離子不生成沉澱？<br><br>
-                            (A) $\text{Zn}^{2+}, \text{Al}^{3+}$ 〔過量的 $\text{NaOH}_{(aq)}$〕<br>
-                            (B) $\text{Zn}^{2+}, \text{Cu}^{2+}$ 〔過量的 $\text{NaOH}_{(aq)}$〕<br>
-                            (C) $\text{Ag}^+, \text{Pb}^{2+}$ 〔$\text{K}_2\text{CrO}_{4(aq)}$〕<br>
-                            (D) $\text{Ag}^+, \text{Cu}^{2+}$ 〔過量的 $\text{NH}_{3(aq)}$〕
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-3')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 9: Example 4 -->
-                <div class="slide">
-                    <h1>觀念例題 4：復溶現象</h1>
-                    <div class="flex-col" style="position: relative; flex: 1; margin-top: 1rem;">
-                        <div id="overlay-ans-4" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red); overflow-y: auto;">
-                            <div style="color: var(--accent-red); font-size: clamp(2rem, 5vh, 3rem); font-weight: 900;">解答：(A)</div>
-                            <div style="color: white; font-size: 1.3rem; margin-top: 15px; line-height: 1.8;">
-                                尋找：初滴入試劑產生沉澱，過量試劑使沉澱溶解的組合。<br><br>
-                                (A) $\text{CuSO}_4 + \text{NH}_3$：少量產生 $\text{Cu(OH)}_2$ (藍色沉澱)，過量氨水形成 $\text{Cu(NH}_3)_4^{2+}$ (深藍色溶液)。符合！<br>
-                                (B) $\text{Al}_2(\text{SO}_4)_3 + \text{NH}_3$：產生 $\text{Al(OH)}_3$ 白色沉澱，但不溶於過量氨水 (鋁非過渡元素)。<br>
-                                (C) $\text{NaCr(OH)}_4 + \text{HCl}$：少量酸產生 $\text{Cr(OH)}_3$ 沉澱，過量酸則溶解為 $\text{Cr}^{3+}$，但題目是問「初時有沉澱」。<br>
-                                (D) $\text{Ag(NH}_3)_2^+ + \text{HNO}_3$：加酸會破壞錯離子，釋出 $\text{Ag}^+$，若有 $\text{Cl}^-$ 存在會沉澱。此處產生 $\text{AgCl}$ 沉澱，但加更多酸不會復溶。<br>
-                                (E) $\text{MgSO}_4 + \text{NaOH}$：產生 $\text{Mg(OH)}_2$ 沉澱，鎂非兩性金屬，不溶於過量強鹼。
-                            </div>
-                            <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-4')">關閉解答</button>
-                        </div>
-                        <div style="font-size: clamp(1.2rem, 3vh, 1.6rem); line-height: 1.6;">
-                            於下列各項左方溶液中，逐漸滴入右方試劑，那些項初時有沉澱，後來沉澱復溶於過量試劑？<br><br>
-                            (A) $\text{CuSO}_{4(aq)}$ ； $\text{NH}_{3(aq)}$<br>
-                            (B) $\text{Al}_2(\text{SO}_4)_{3(aq)}$ ； $\text{NH}_{3(aq)}$<br>
-                            (C) $\text{NaCr(OH)}_{4(aq)}$ ； $\text{HCl}_{(aq)}$<br>
-                            (D) $\text{Ag(NH}_3)_2\text{Cl}_{(aq)}$ ； $\text{HNO}_{3(aq)}$<br>
-                            (E) $\text{MgSO}_{4(aq)}$ ； $\text{NaOH}_{(aq)}$
-                        </div>
-                        <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                            <button class="btn" onclick="toggleOverlay('overlay-ans-4')">顯示解答</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Slide 10: Example 5 -->
-                <div class="slide">
-                    <h1>觀念例題 5：綜合離子分離流程</h1>
-                    <div class="flow-container" id="example-5-flow">
-                        <div class="flow-box">[$\text{Ca}^{2+}$, $\text{Ag}^+$, $\text{Zn}^{2+}$, $\text{K}^+$, $\text{Pb}^{2+}$]</div>
-                        <div class="flow-line-v"></div>
-                        <div class="flow-box reagent">加入 0.1M HCl(aq)</div>
-                        <div class="flow-line-v"></div>
-                        
-                        <div class="flow-row">
-                            <!-- Left Branch: Cl- PPT -->
-                            <div class="flow-col">
-                                <div class="flow-box">沉澱物 I
-                                    <div class="ans">$\text{AgCl}$, $\text{PbCl}_2$</div>
-                                </div>
-                                <div class="flow-line-v"></div>
-                                <div class="flow-box reagent">置於熱水中加熱至沸騰</div>
-                                <div class="flow-line-v"></div>
-                                <div class="flow-row" style="gap:20px;">
-                                    <div class="flow-col">
-                                        <div class="flow-box">沉澱物 II
-                                            <div class="ans">$\text{AgCl}$</div>
-                                        </div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box reagent">加入 6M 氨水</div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box">澄清液 IV
-                                            <div class="ans">$\text{Ag(NH}_3)_2^+$, $\text{Cl}^-$</div>
-                                        </div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box reagent">加 1 滴酚酞，再加 6M $\text{HNO}_3$</div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box">沉澱物 VI
-                                            <div class="ans">$\text{AgCl}$</div>
-                                        </div>
-                                    </div>
-                                    <div class="flow-col">
-                                        <div class="flow-box">澄清液 III
-                                            <div class="ans">$\text{Pb}^{2+}$, $\text{Cl}^-$</div>
-                                        </div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box reagent">冷卻</div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box">沉澱物 IV
-                                            <div class="ans">$\text{PbCl}_2$</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Right Branch: Filtrate 1 -->
-                            <div class="flow-col">
-                                <div class="flow-box">澄清液 I
-                                    <div class="ans">$\text{Ca}^{2+}$, $\text{Zn}^{2+}$, $\text{K}^+$</div>
-                                </div>
-                                <div class="flow-line-v"></div>
-                                <div class="flow-box reagent">加入 0.1M $\text{Na}_2\text{SO}_{4(aq)}$</div>
-                                <div class="flow-line-v"></div>
-                                <div class="flow-row" style="gap:20px;">
-                                    <div class="flow-col">
-                                        <div class="flow-box">沉澱物 III
-                                            <div class="ans">$\text{CaSO}_4$</div>
-                                        </div>
-                                    </div>
-                                    <div class="flow-col">
-                                        <div class="flow-box">澄清液 II
-                                            <div class="ans">$\text{Zn}^{2+}$, $\text{K}^+$</div>
-                                        </div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-box reagent">加入 0.1M $\text{Na}_2\text{CO}_{3(aq)}$</div>
-                                        <div class="flow-line-v"></div>
-                                        <div class="flow-row" style="gap:10px;">
-                                            <div class="flow-col">
-                                                <div class="flow-box">沉澱物 V
-                                                    <div class="ans">$\text{ZnCO}_3$</div>
-                                                </div>
-                                            </div>
-                                            <div class="flow-col">
-                                                <div class="flow-box">澄清液 V
-                                                    <div class="ans">$\text{K}^+$</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: 20px; padding-bottom: 30px;">
-                            <button class="btn" id="btn-toggle-flow" onclick="toggleFlowAnswers(this)">顯示答案</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <canvas id="drawing-layer"></canvas>
-        </div>
-
-        <div id="slide-info">1 / 10</div>
-
-        <!-- Controls Toolbar -->
-        <div id="toolbar">
-            <div id="drag-handle" title="拖曳移動工具列">≡</div>
-            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
-            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            
-            <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
-            
-            <div class="color-picker" id="color-picker">
-                <div class="color-swatch selected" style="background: #f8fafc;" data-color="#f8fafc"></div>
-                <div class="color-swatch" style="background: #f87171;" data-color="#f87171"></div>
-                <div class="color-swatch" style="background: #38bdf8;" data-color="#38bdf8"></div>
-                <div class="color-swatch" style="background: #fbbf24;" data-color="#fbbf24"></div>
-                <div class="color-swatch" style="background: #34d399;" data-color="#34d399"></div>
-            </div>
-
-            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
-                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 100%; height: 4px; cursor: pointer;">
-            </div>
-
-            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
-                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
-                    <svg viewBox="0 0 24 24"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
-                </button>
-                <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
-            </div>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            <button class="btn-tool" id="btn-exit-fs" title="回到目錄">🏠</button>
-        </div>
+<div id="app">
+    <div id="start-overlay">
+        <h1 style="color:var(--accent-blue);font-size:clamp(2.5rem,5vw,4rem);margin-bottom:1rem;text-align:center;">沉澱表與沉澱規則</h1>
+        <p style="color:rgba(255,255,255,0.7);font-size:clamp(1.2rem,3vw,1.5rem);margin-bottom:3rem;text-align:center;">常見離子沉澱反應與規則探討</p>
+        <button id="btn-start" class="btn-tool primary" style="font-size:clamp(1.2rem,2.5vw,1.5rem);padding:15px 40px;width:auto;border-radius:50px;">▶ 進入教學</button>
     </div>
 
-    <script>
-        // --- Core Slide and Drawing Logic ---
-        let currentSlide = 0;
-        let isDrawingMode = false;
-        let drawMode = 'pen';
-        let penColor = '#f8fafc';
-        let penSize = 3;
-        let slideDrawings = {}; 
-        let lastX = 0;
-        let lastY = 0;
+    <div id="presentation-area">
+        <div id="slides-container">
 
-        function toggleOverlay(id) {
-            const overlay = document.getElementById(id);
-            if (overlay) overlay.style.display = (overlay.style.display === 'none' || overlay.style.display === '') ? 'flex' : 'none';
-        }
+            <!-- Slide 1: Precipitation Table (Interactive Drag & Drop) -->
+            <div class="slide" id="slide-table">
+                <h1>常見離子沉澱表</h1>
+                <div style="display:flex;gap:24px;margin-top:1rem;align-items:flex-start;">
+                    <div style="flex:3;min-width:0;">
+                        <table class="table-chem" id="ppt-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:26%;">陰離子</th>
+                                    <th style="width:54%;">陽離子&nbsp;<span style="font-weight:normal;font-size:0.85em;opacity:0.7;">(請將右側球拖入)</span></th>
+                                    <th style="width:20%;">結果</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="row-1">
+                                    <td>$\text{NO}_3^-$, $\text{CH}_3\text{COO}^-$</td>
+                                    <td><div class="dropzone" data-requires="all"></div></td>
+                                    <td class="text-green">皆可溶</td>
+                                </tr>
+                                <tr id="row-2">
+                                    <td>$\text{Cl}^-$, $\text{Br}^-$, $\text{I}^-$</td>
+                                    <td><div class="dropzone" data-requires="Ag,Pb,Hg2,Cu,Tl"></div></td>
+                                    <td class="text-red">沉澱</td>
+                                </tr>
+                                <tr id="row-3">
+                                    <td>$\text{SO}_4^{2-}$</td>
+                                    <td><div class="dropzone" data-requires="Ba,Sr,Pb,Ca"></div></td>
+                                    <td class="text-red">沉澱</td>
+                                </tr>
+                                <tr id="row-4">
+                                    <td>$\text{CrO}_4^{2-}$</td>
+                                    <td><div class="dropzone" data-requires="Ba,Pb,Ag,Sr"></div></td>
+                                    <td class="text-red">沉澱</td>
+                                </tr>
+                                <tr id="row-5">
+                                    <td>$\text{S}^{2-}$</td>
+                                    <td><div class="dropzone" data-requires="IA,NH4,IIA"></div></td>
+                                    <td class="text-green">溶解</td>
+                                </tr>
+                                <tr id="row-6">
+                                    <td>$\text{OH}^-$</td>
+                                    <td><div class="dropzone" data-requires="IA,NH4,Ba,Sr,Ca"></div></td>
+                                    <td class="text-green">溶解</td>
+                                </tr>
+                                <tr id="row-7">
+                                    <td>$\text{C}_2\text{O}_4^{2-}$</td>
+                                    <td><div class="dropzone" data-requires="IA,NH4,Mg,Be"></div></td>
+                                    <td class="text-green">溶解</td>
+                                </tr>
+                                <tr id="row-8">
+                                    <td>$\text{PO}_4^{3-}$, $\text{CO}_3^{2-}$, $\text{SO}_3^{2-}$</td>
+                                    <td><div class="dropzone" data-requires="IA,NH4"></div></td>
+                                    <td class="text-green">溶解</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:12px;">
+                        <div id="draggables-container"></div>
+                        <button class="btn" onclick="resetTable()" style="width:100%;margin-top:0;">↺ 重置表格</button>
+                    </div>
+                </div>
+            </div>
 
-        function toggleFlowAnswers(btn) {
-            const flow = document.getElementById('example-5-flow');
-            const boxes = flow.querySelectorAll('.flow-box');
-            const currentlyShowing = Array.from(boxes).some(box => box.classList.contains('show-ans'));
-            
-            boxes.forEach(box => {
-                box.classList.toggle('show-ans', !currentlyShowing);
-            });
-            
-            btn.textContent = currentlyShowing ? '顯示答案' : '隱藏答案';
-            
-            if (window.MathJax && MathJax.typesetPromise) {
-                MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
-            }
-        }
+            <!-- Slide 2: Precipitation Colors -->
+            <div class="slide">
+                <h1>特殊沉澱顏色</h1>
+                <p style="text-align:center;color:rgba(255,255,255,0.7);margin-bottom:1rem;">判斷未知離子時，沉澱物的顏色是極為重要的線索。</p>
+                <div class="color-card-container">
+                    <div class="color-card white">
+                        <h3 style="color:#e2e8f0;">白色沉澱</h3>
+                        <p>$\text{AgCl}$, $\text{Hg}_2\text{Cl}_2$<br>$\text{BaSO}_4$, $\text{SrSO}_4$, $\text{PbSO}_4$<br>$\text{CaCO}_3$, $\text{Al(OH)}_3$, $\text{ZnS}$</p>
+                    </div>
+                    <div class="color-card brick">
+                        <h3 style="color:#fca5a5;">磚紅色沉澱</h3>
+                        <p>$\text{Ag}_2\text{CrO}_4$<br>$\text{Fe(OH)}_3$</p>
+                    </div>
+                    <div class="color-card black">
+                        <h3 style="color:#94a3b8;">黑色沉澱</h3>
+                        <p>$\text{Ag}_2\text{S}$<br>$\text{CuS}$, $\text{PbS}$<br>$\text{HgS}$</p>
+                    </div>
+                    <div class="color-card yellow">
+                        <h3 style="color:#fde047;">黃色沉澱</h3>
+                        <p>$\text{AgI}$ (淡黃), $\text{AgBr}$ (淡黃)<br>$\text{PbCrO}_4$, $\text{BaCrO}_4$</p>
+                    </div>
+                    <div class="color-card blue">
+                        <h3 style="color:#60a5fa;">藍色沉澱</h3>
+                        <p>$\text{Cu(OH)}_2$</p>
+                    </div>
+                    <div class="color-card green">
+                        <h3 style="color:#86efac;">淡綠色沉澱</h3>
+                        <p>$\text{Fe(OH)}_2$</p>
+                    </div>
+                </div>
+            </div>
 
-        const slides = document.querySelectorAll('.slide');
-        const slideInfo = document.getElementById('slide-info');
-        const canvas = document.getElementById('drawing-layer');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
+            <!-- Slide 3: Special Rules 1 -->
+            <div class="slide">
+                <h1>特殊的沉澱規則 (一)</h1>
+                <div class="flex-row">
+                    <div class="flex-col" style="gap:1.5vh;">
+                        <h2 class="text-cyan" style="font-size:clamp(1.3rem, 3vh, 1.6rem);">1. 溶於「強酸」的難溶物</h2>
+                        <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">某些本身為沉澱難溶物，但加入強酸後會溶解：</p>
+                        <ul style="margin-left:1.5rem;line-height:1.8;display:flex;flex-direction:column;gap:1.2vh;font-size:clamp(1.1rem, 2.2vh, 1.3rem);">
+                            <li><strong>金屬的氫氧化物</strong>：酸鹼中和。<br><span style="color:var(--accent-yellow);font-size:clamp(1.05rem, 2vh, 1.2rem);">如：$\text{Al(OH)}_3 + 3\text{H}^+ \rightarrow \text{Al}^{3+} + 3\text{H}_2\text{O}$</span></li>
+                            <li><strong>碳酸鹽、亞硫酸鹽</strong>：產生氣體。<br><span style="color:var(--accent-yellow);font-size:clamp(1.05rem, 2vh, 1.2rem);">如：$\text{CaCO}_3 + 2\text{H}^+ \rightarrow \text{Ca}^{2+} + \text{H}_2\text{O} + \text{CO}_2 \uparrow$</span></li>
+                            <li><strong>鉻酸鹽</strong>：轉為二鉻酸根。<br><span style="color:var(--accent-yellow);font-size:clamp(1.05rem, 2vh, 1.2rem);">如：$2\text{CrO}_4^{2-} + 2\text{H}^+ \rightarrow \text{Cr}_2\text{O}_7^{2-} + \text{H}_2\text{O}$</span></li>
+                            <li><strong>特定硫化物</strong>：$\text{FeS}, \text{ZnS}, \text{MnS}$ 等。<br><span style="color:var(--accent-yellow);font-size:clamp(1.05rem, 2vh, 1.2rem);">如：$\text{MnS} + 2\text{H}^+ \rightarrow \text{Mn}^{2+} + \text{H}_2\text{S} \uparrow$</span></li>
+                        </ul>
+                    </div>
+                    <div class="flex-col" style="gap:1.5vh;">
+                        <h2 class="text-red" style="font-size:clamp(1.3rem, 3vh, 1.6rem);">2. 溶於「強鹼」的難溶物</h2>
+                        <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">兩性金屬的氫氧化物沉澱，遇過量強鹼會形成錯離子而重新溶解：</p>
+                        <div class="rule-card" style="padding:1.5vh;">
+                            <h3 style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">兩性元素口訣</h3>
+                            <p style="font-size:clamp(1.3rem, 3vh, 1.8rem);text-align:center;margin:0.8vh 0;color:var(--accent-yellow);">鈹、鋁、鎵、鋅、鉻、錫、鉛</p>
+                        </div>
+                        <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">兩性金屬的氫氧化物：$\text{Al(OH)}_3, \text{Zn(OH)}_2, \text{Cr(OH)}_3, \text{Sn(OH)}_2, \text{Pb(OH)}_2$</p>
+                        <div style="background:rgba(52,211,153,0.1);padding:1.5vh;border-radius:8px;border-left:4px solid var(--accent-green);margin-top:1vh;">
+                            <p style="color:var(--accent-green);margin:0 0 4px 0;font-weight:bold;font-size:clamp(1.1rem, 2.2vh, 1.3rem);">反應例：</p>
+                            <p style="color:var(--accent-green);margin:0;font-size:clamp(1.05rem, 2vh, 1.2rem);">$\text{Al(OH)}_{3(s)} + \text{OH}^-_{(aq)} \rightarrow [\text{Al(OH)}_4]^-_{(aq)}$</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            restoreDrawing();
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+            <!-- Slide 4: Special Rules 2 -->
+            <div class="slide">
+                <h1>特殊的沉澱規則 (二)</h1>
+                <div class="flex-row">
+                    <div class="flex-col" style="gap:1.5vh;">
+                        <h2 class="text-purple" style="font-size:clamp(1.3rem, 3vh, 1.6rem);">3. 溶於「氨水」的難溶物</h2>
+                        <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">初加入氨水產生沉澱，但<strong>過量氨水</strong>使其形成氨錯離子而溶解：</p>
+                        <div class="rule-card" style="border-color:var(--accent-purple);background:rgba(168,85,247,0.06);padding:1.5vh;">
+                            <h3 style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">可形成氨錯離子金屬</h3>
+                            <p style="font-size:clamp(1.2rem, 2.5vh, 1.5rem);text-align:center;margin:1vh 0;color:var(--accent-cyan);">$\text{Cu}^{2+}, \text{Zn}^{2+}, \text{Ag}^+, \text{Ni}^{2+}, \text{Cd}^{2+}, \text{Co}^{2+}$</p>
+                            <p style="text-align:center;font-size:clamp(0.95rem, 2vh, 1.1rem);color:rgba(255,255,255,0.7);">(註：$\text{Fe}^{2+}, \text{Fe}^{3+}, \text{Al}^{3+}$ 不溶於過量氨水)</p>
+                        </div>
+                        <div style="background:rgba(168,85,247,0.1);padding:1.5vh;border-radius:8px;border-left:4px solid var(--accent-purple);margin-top:0.5vh;">
+                            <p style="color:var(--accent-purple);margin:0 0 4px 0;font-weight:bold;font-size:clamp(1.1rem, 2.2vh, 1.3rem);">反應例 (銅)：</p>
+                            <p style="margin:4px 0;font-size:clamp(1.05rem, 2vh, 1.2rem);">少量：$\text{Cu}^{2+} + 2\text{NH}_3 + 2\text{H}_2\text{O} \rightarrow \text{Cu(OH)}_{2(s)} \downarrow$ <span style="color:#60a5fa;">(藍)</span></p>
+                            <p style="margin:4px 0;font-size:clamp(1.05rem, 2vh, 1.2rem);">過量：$\text{Cu(OH)}_{2(s)} + 4\text{NH}_3 \rightarrow [\text{Cu(NH}_3)_4]^{2+}$ <span style="color:#3b82f6;">(深藍，溶解)</span></p>
+                            <p style="color:var(--accent-purple);margin:12px 0 4px 0;font-weight:bold;font-size:clamp(1.1rem, 2.2vh, 1.3rem);">反應例 (銀)：</p>
+                            <p style="margin:4px 0;font-size:clamp(1.05rem, 2vh, 1.2rem);">少量：$2\text{Ag}^+ + 2\text{NH}_3 + \text{H}_2\text{O} \rightarrow \text{Ag}_2\text{O}_{(s)} \downarrow$ <span style="color:#fb923c;">(褐)</span></p>
+                            <p style="margin:4px 0;font-size:clamp(1.05rem, 2vh, 1.2rem);">過量：$\text{Ag}_2\text{O}_{(s)} + 4\text{NH}_3 + \text{H}_2\text{O} \rightarrow 2[\text{Ag(NH}_3)_2]^+$ <span style="color:#f8fafc;">(無色，溶解)</span></p>
+                        </div>
+                    </div>
+                    <div class="flex-col" style="gap:1.5vh;">
+                        <h2 class="text-cyan" style="font-size:clamp(1.3rem, 3vh, 1.6rem);">4. 鹵化銀的溶解度差異</h2>
+                        <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">鹵化銀對氨水的溶解度差異：</p>
+                        <ul style="margin-left:1.5rem;line-height:1.8;display:flex;flex-direction:column;gap:1.2vh;font-size:clamp(1.1rem, 2.2vh, 1.3rem);">
+                            <li>$\text{AgF}$：<strong class="text-green">可溶</strong>於水。</li>
+                            <li>$\text{AgCl}$：<strong class="text-yellow">可溶</strong>於氨水。</li>
+                            <li>$\text{AgBr}$：<strong class="text-yellow">微溶</strong>於氨水。</li>
+                            <li>$\text{AgI}$：<strong class="text-red">不溶</strong>於氨水。</li>
+                        </ul>
+                        <div class="rule-card" style="margin-top:2vh;border-color:var(--accent-cyan);padding:1.5vh;">
+                            <p style="font-size:clamp(1.1rem, 2.2vh, 1.3rem);">所有鹵化銀 ($\text{AgX}$) 皆可溶於過量的 $\text{CN}^-$ 及 $\text{S}_2\text{O}_3^{2-}$：</p>
+                            <p style="font-size:clamp(1.05rem, 2vh, 1.2rem);color:var(--accent-cyan);margin-top:0.8rem;">形成 $\text{Ag(CN)}_2^-$ 或 $\text{Ag(S}_2\text{O}_3)_2^{3-}$ 錯離子</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function getCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return [clientX - rect.left, clientY - rect.top];
-        }
+            <!-- Slide 5: Interactive Separation Game -->
+            <div class="slide" id="slide-game">
+                <h1>互動挑戰：陽離子分離實驗</h1>
+                <div style="flex:1;display:flex;flex-direction:column;position:relative;min-height:0;">
+                    <p style="text-align:center;color:rgba(255,255,255,0.6);margin-bottom:8px;">依序選用適合的陰離子，將溶液中的三種陽離子沉澱分離。</p>
+                    <div id="game-stage-container" style="flex:1;min-height:450px;background:rgba(255,255,255,0.02);border-radius:20px;border:1px solid rgba(255,255,255,0.06);margin-bottom:10px;position:relative;overflow:hidden;">
+                        <div id="game-stage" style="display:flex;align-items:flex-start;justify-content:flex-start;padding:50px 20px;position:relative;min-height:450px;gap:0;width:100%;overflow-x:auto;"></div>
+                        <div id="game-message" class="game-msg"></div>
+                        <div id="game-stamp" class="stamp-success">成功</div>
+                    </div>
+                    <div style="min-height:100px;background:rgba(15,23,42,0.8);border-radius:18px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(10px);">
+                        <div id="game-candidates" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;"></div>
+                        <div style="display:flex;gap:12px;flex-shrink:0;">
+                            <button class="btn" onclick="resetGamePuzzle()">↺ 重置</button>
+                            <button class="btn primary" onclick="newGamePuzzle()">★ 下一題</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function startDrawing(e) {
-            if (!isDrawingMode) return;
-            isDrawing = true;
-            [lastX, lastY] = getCoords(e);
-        }
+            <!-- Slide 6: Example 1 -->
+            <div class="slide">
+                <h1>觀念例題 1：離子沉澱反應</h1>
+                <div class="ex-split-row">
+                    <div class="ex-left">
+                        <div style="font-size:clamp(1.1rem,2vw,1.3rem);line-height:1.6;margin-bottom:1rem;">下列何者是離子沉澱反應？</div>
+                        <ul class="ex-options">
+                            <li>(A) $2\text{Mg}_{(s)} + \text{O}_{2(g)} \rightarrow 2\text{MgO}_{(s)}$</li>
+                            <li>(B) $\text{Na}_2\text{CO}_{3(aq)} + 2\text{HCl}_{(aq)} \rightarrow 2\text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)} + \text{CO}_{2(g)}$</li>
+                            <li>(C) $\text{MgCl}_{2(aq)} + 2\text{NaOH}_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)} + 2\text{NaCl}_{(aq)}$</li>
+                            <li>(D) $\text{HCl}_{(aq)} + \text{NaOH}_{(aq)} \rightarrow \text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)}$</li>
+                        </ul>
+                        <button class="btn-show-ans" data-ans="ex-ans-1">顯示解答</button>
+                    </div>
+                    <div class="ex-right">
+                        <div id="ex-ans-1" class="ex-answer-box">
+                            <div class="ans-label">解答：(C)</div>
+                            <div class="ans-body">
+                                離子沉澱反應是指水溶液中的離子互相結合，產生不溶性固體的反應。<br><br>
+                                (A) 為金屬氧化反應（非水溶液）。<br>
+                                (B) 產生氣體 ($\text{CO}_2$) 與水，無沉澱。<br>
+                                (C) $\text{Mg}^{2+}_{(aq)} + 2\text{OH}^-_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)}$，產生白色沉澱，為離子沉澱反應。✓<br>
+                                (D) 為酸鹼中和，無沉澱。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function draw(e) {
-            if (!isDrawing) return;
-            const [x, y] = getCoords(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = drawMode === 'eraser' ? '#0b1120' : penColor;
-            ctx.lineWidth = drawMode === 'eraser' ? penSize * 10 : penSize;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            [lastX, lastY] = [x, y];
-        }
+            <!-- Slide 7: Example 2 -->
+            <div class="slide">
+                <h1>觀念例題 2：沉澱判斷</h1>
+                <div class="ex-split-row">
+                    <div class="ex-left">
+                        <div style="font-size:clamp(1.1rem,2vw,1.3rem);line-height:1.6;margin-bottom:1rem;">下列何組所含的陽離子，加入鹽酸 ($\text{HCl}$) 僅一種沉澱，但加入硫酸 ($\text{H}_2\text{SO}_4$) 則兩者均沉澱？</div>
+                        <ul class="ex-options">
+                            <li>(A) $\text{Ag}^+, \text{Pb}^{2+}$</li>
+                            <li>(B) $\text{Hg}^{2+}, \text{Sn}^{2+}$</li>
+                            <li>(C) $\text{Pb}^{2+}, \text{Zn}^{2+}$</li>
+                            <li>(D) $\text{Pb}^{2+}, \text{Ba}^{2+}$</li>
+                        </ul>
+                        <button class="btn-show-ans" data-ans="ex-ans-2">顯示解答</button>
+                    </div>
+                    <div class="ex-right">
+                        <div id="ex-ans-2" class="ex-answer-box">
+                            <div class="ans-label">解答：(D)</div>
+                            <div class="ans-body">
+                                加 $\text{Cl}^-$ 僅一種沉澱；加 $\text{SO}_4^{2-}$ 兩者均沉澱。<br><br>
+                                (A) $\text{Ag}^+, \text{Pb}^{2+}$：加 $\text{Cl}^-$ 兩者皆沉澱。✗<br>
+                                (B) $\text{Hg}^{2+}$ 不與 $\text{Cl}^-$ 生成沉澱（亞汞 $\text{Hg}_2^{2+}$ 才會）。✗<br>
+                                (C) $\text{ZnSO}_4$ 可溶，加 $\text{SO}_4^{2-}$ 僅 $\text{Pb}^{2+}$ 沉澱。✗<br>
+                                (D) $\text{Pb}^{2+}, \text{Ba}^{2+}$：<br>
+                                &nbsp;&nbsp;加 $\text{Cl}^-$：$\text{PbCl}_2 \downarrow$，$\text{BaCl}_2$ 溶解 → 僅一種沉澱 ✓<br>
+                                &nbsp;&nbsp;加 $\text{SO}_4^{2-}$：$\text{PbSO}_4 \downarrow$，$\text{BaSO}_4 \downarrow$ → 兩者均沉澱 ✓
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function stopDrawing() {
-            if (isDrawing) {
-                isDrawing = false;
-                slideDrawings[currentSlide] = canvas.toDataURL();
-            }
-        }
+            <!-- Slide 8: Example 3 -->
+            <div class="slide">
+                <h1>觀念例題 3：試劑分離</h1>
+                <div class="ex-split-row">
+                    <div class="ex-left">
+                        <div style="font-size:clamp(1.1rem,2vw,1.3rem);line-height:1.6;margin-bottom:1rem;">下列各組均含有兩種陽離子，使用〔&nbsp;〕內的試劑時，可使其中的一種陽離子沉澱，而另一種陽離子不沉澱？</div>
+                        <ul class="ex-options">
+                            <li>(A) $\text{Zn}^{2+}, \text{Al}^{3+}$ 〔過量的 $\text{NaOH}_{(aq)}$〕</li>
+                            <li>(B) $\text{Zn}^{2+}, \text{Cu}^{2+}$ 〔過量的 $\text{NaOH}_{(aq)}$〕</li>
+                            <li>(C) $\text{Ag}^+, \text{Pb}^{2+}$ 〔$\text{K}_2\text{CrO}_{4(aq)}$〕</li>
+                            <li>(D) $\text{Ag}^+, \text{Cu}^{2+}$ 〔過量的 $\text{NH}_{3(aq)}$〕</li>
+                        </ul>
+                        <button class="btn-show-ans" data-ans="ex-ans-3">顯示解答</button>
+                    </div>
+                    <div class="ex-right">
+                        <div id="ex-ans-3" class="ex-answer-box">
+                            <div class="ans-label">解答：(B)</div>
+                            <div class="ans-body">
+                                (A) $\text{Zn}^{2+}, \text{Al}^{3+}$：皆為兩性金屬，過量 $\text{NaOH}$ 中皆溶解，無沉澱。✗<br>
+                                (B) $\text{Zn}^{2+}$（兩性）溶於過量 $\text{NaOH}$；$\text{Cu}^{2+}$（非兩性）形成 $\text{Cu(OH)}_2$ 藍色沉澱不溶。✓<br>
+                                (C) $\text{Ag}^+$ 與 $\text{Pb}^{2+}$ 皆與 $\text{CrO}_4^{2-}$ 生成沉澱。✗<br>
+                                (D) 過量 $\text{NH}_3$：$\text{Ag}^+$ 與 $\text{Cu}^{2+}$ 皆形成氨錯離子溶解，無沉澱。✗
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function restoreDrawing() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (slideDrawings[currentSlide]) {
-                const img = new Image();
-                img.onload = () => ctx.drawImage(img, 0, 0);
-                img.src = slideDrawings[currentSlide];
-            }
-        }
+            <!-- Slide 9: Example 4 -->
+            <div class="slide">
+                <h1>觀念例題 4：復溶現象</h1>
+                <div class="ex-split-row">
+                    <div class="ex-left">
+                        <div style="font-size:clamp(1.1rem,2vw,1.3rem);line-height:1.6;margin-bottom:1rem;">於下列各項左方溶液中，逐漸滴入右方試劑，那些項初時有沉澱，後來沉澱復溶於過量試劑？</div>
+                        <ul class="ex-options">
+                            <li>(A) $\text{CuSO}_{4(aq)}$ ； $\text{NH}_{3(aq)}$</li>
+                            <li>(B) $\text{Al}_2(\text{SO}_4)_{3(aq)}$ ； $\text{NH}_{3(aq)}$</li>
+                            <li>(C) $\text{NaCr(OH)}_{4(aq)}$ ； $\text{HCl}_{(aq)}$</li>
+                            <li>(D) $\text{Ag(NH}_3)_2\text{Cl}_{(aq)}$ ； $\text{HNO}_{3(aq)}$</li>
+                            <li>(E) $\text{MgSO}_{4(aq)}$ ； $\text{NaOH}_{(aq)}$</li>
+                        </ul>
+                        <button class="btn-show-ans" data-ans="ex-ans-4">顯示解答</button>
+                    </div>
+                    <div class="ex-right">
+                        <div id="ex-ans-4" class="ex-answer-box">
+                            <div class="ans-label">解答：(A)</div>
+                            <div class="ans-body">
+                                尋找：初滴入試劑產生沉澱，過量試劑使沉澱溶解的組合。<br><br>
+                                (A) $\text{CuSO}_4 + \text{NH}_3$：少量 → $\text{Cu(OH)}_2 \downarrow$ (藍)；過量 → $[\text{Cu(NH}_3)_4]^{2+}$ (深藍，溶解)。<strong class="text-green">符合！</strong><br>
+                                (B) $\text{Al}_2(\text{SO}_4)_3 + \text{NH}_3$：$\text{Al(OH)}_3$ 沉澱，但 Al 非過渡元素，不溶於過量氨水。<br>
+                                (C) $\text{NaCr(OH)}_4 + \text{HCl}$：少量酸產生 $\text{Cr(OH)}_3$ 沉澱，過量酸溶解為 $\text{Cr}^{3+}$（此為「先沉後溶」但 C 選項已是鉻酸根形式，加酸先沉澱，但後溶為 Cr³⁺，勉強可以認定，然標準答案為 A）。<br>
+                                (D) 加酸破壞錯離子後，$\text{AgCl}$ 沉澱，更多酸無法使其復溶。<br>
+                                (E) $\text{Mg(OH)}_2$ 沉澱，鎂非兩性，不溶於過量強鹼。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
-        canvas.addEventListener('touchend', stopDrawing);
+            <!-- Slide 10: Example 5 (Flowchart) -->
+            <div class="slide">
+                <h1>觀念例題 5：綜合離子分離流程</h1>
+                <div class="ex-split-row">
+                    <div class="ex-left" style="align-items:center;">
+                        <div class="flow-container" id="example-5-flow">
+                            <div class="flow-box">[$\text{Ca}^{2+}$, $\text{Ag}^+$, $\text{Zn}^{2+}$, $\text{K}^+$, $\text{Pb}^{2+}$]</div>
+                            <div class="flow-line-v"></div>
+                            <div class="flow-box reagent">加入 0.1M HCl (aq)</div>
+                            <div class="flow-line-v"></div>
+                            <div class="flow-row">
+                                <div class="flow-col">
+                                    <div class="flow-box">沉澱物 I<div class="ans">$\text{AgCl}$, $\text{PbCl}_2$</div></div>
+                                    <div class="flow-line-v"></div>
+                                    <div class="flow-box reagent">加熱至沸騰</div>
+                                    <div class="flow-line-v"></div>
+                                    <div class="flow-row" style="gap:20px;">
+                                        <div class="flow-col">
+                                            <div class="flow-box">殘留沉澱 II<div class="ans">$\text{AgCl}$</div></div>
+                                            <div class="flow-line-v"></div>
+                                            <div class="flow-box reagent">加 6M $\text{NH}_3$ (aq)</div>
+                                            <div class="flow-line-v"></div>
+                                            <div class="flow-box">澄清液 IV<div class="ans">$[\text{Ag(NH}_3)_2]^+$</div></div>
+                                        </div>
+                                        <div class="flow-col">
+                                            <div class="flow-box">澄清液 III<div class="ans">$\text{Pb}^{2+}$, $\text{Cl}^-$</div></div>
+                                            <div class="flow-line-v"></div>
+                                            <div class="flow-box reagent">冷卻</div>
+                                            <div class="flow-line-v"></div>
+                                            <div class="flow-box">沉澱物 V<div class="ans">$\text{PbCl}_2$</div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flow-col">
+                                    <div class="flow-box">澄清液 (含)<div class="ans">$\text{Ca}^{2+}$, $\text{Zn}^{2+}$, $\text{K}^+$</div></div>
+                                    <div class="flow-line-v"></div>
+                                    <div class="flow-box reagent">加入 $\text{H}_2\text{SO}_4$ (aq)</div>
+                                    <div class="flow-line-v"></div>
+                                    <div class="flow-box">沉澱物 VI<div class="ans">$\text{CaSO}_4$</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-show-ans" id="btn-flow-ans" style="margin-top:12px;" onclick="toggleFlowAnswers(this)">顯示流程解答</button>
+                    </div>
+                    <div class="ex-right">
+                        <div class="ex-answer-box visible" style="display:block;">
+                            <div class="ans-label">分析</div>
+                            <div class="ans-body">
+                                <strong>加入 HCl：</strong>$\text{Ag}^+$ 及 $\text{Pb}^{2+}$ 形成氯化物沉澱（$\text{AgCl}$, $\text{PbCl}_2$），其餘離子留在溶液中。<br><br>
+                                <strong>加熱：</strong>$\text{PbCl}_2$ 溶解度隨溫度上升而增大，可溶入熱水中。<br><br>
+                                <strong>冷卻：</strong>$\text{PbCl}_2$ 再次析出。<br><br>
+                                <strong>加氨水：</strong>$\text{AgCl}$ 溶於氨水形成 $[\text{Ag(NH}_3)_2]^+$。<br><br>
+                                點擊左側「顯示流程解答」可查看各步驟結果。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        function updateSlides() {
-            slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
-            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
-            restoreDrawing();
-            
-            // Allow pointer events on draggable elements in slide 1 if active
-            const tableSlide = document.getElementById('slide-table');
-            if(slides[currentSlide] === tableSlide) {
-                // Do nothing specific, default works
-            }
-        }
+            <!-- Slide 11: Matching Game -->
+            <div class="slide" id="slide-matching-game">
+                <h1>單元挑戰：沉澱規則連連看</h1>
+                <p style="text-align:center;color:var(--accent-green);margin-top:-10px;">請連接正確的對應關係。</p>
+                <div id="game-container" style="position:relative;flex:1;display:flex;justify-content:space-between;padding:20px 40px;background:rgba(0,0,0,0.2);border-radius:20px;min-height:400px;user-select:none;-webkit-user-select:none;">
+                    <svg id="game-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:20;overflow:visible;"></svg>
+                    <div id="left-column" style="display:flex;flex-direction:column;justify-content:space-around;gap:8px;width:42%;pointer-events:none;"></div>
+                    <div id="right-column" style="display:flex;flex-direction:column;justify-content:space-around;gap:8px;width:42%;pointer-events:none;"></div>
+                    <div id="game-feedback" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(16,185,129,0.95);padding:2rem 4rem;border-radius:20px;font-size:2.5rem;color:white;font-weight:bold;box-shadow:0 0 50px rgba(16,185,129,0.5);z-index:100;text-align:center;">🎉 太棒了！全部答對！</div>
+                </div>
+                <div style="text-align:center;margin-top:10px;">
+                    <button class="btn-tool" style="width:auto;display:inline-block;padding:8px 24px;" onclick="resetGame()">再玩一次</button>
+                </div>
+            </div>
 
-        document.getElementById('btn-next').addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
-        document.getElementById('btn-prev').addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
+        </div><!-- end slides-container -->
 
-        document.getElementById('btn-draw').addEventListener('click', (e) => {
-            isDrawingMode = !isDrawingMode;
-            if (isDrawingMode) drawMode = 'pen';
-            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
-            canvas.classList.toggle('drawing-active', isDrawingMode);
-            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
-            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
-            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
-        });
+        <canvas id="drawing-layer"></canvas>
+    </div><!-- end presentation-area -->
 
-        document.getElementById('btn-eraser').addEventListener('click', (e) => {
-            drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
-            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
-        });
+    <!-- Toolbar -->
+    <div id="toolbar">
+        <div id="drag-handle">≡</div>
+        <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+        <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+        <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:2px;">
+            <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+            <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
+        </div>
+        <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+            <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            </button>
+            <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+        </div>
+        <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+        <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+        <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+        <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+    </div>
+</div><!-- end app -->
 
-        document.querySelectorAll('.color-swatch').forEach(sw => {
-            sw.addEventListener('click', () => {
-                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-                sw.classList.add('selected');
-                penColor = sw.dataset.color;
-                drawMode = 'pen';
-                document.getElementById('btn-draw').classList.add('active-tool');
-                document.getElementById('btn-eraser').classList.remove('active-tool');
-            });
-        });
+<!-- RANDOM DRAW MODAL -->
+<div id="random-draw-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(15,23,42,0.95);border:1px solid var(--accent-cyan);box-shadow:0 0 30px rgba(34,211,238,0.3);border-radius:20px;padding:20px;z-index:10000;backdrop-filter:blur(10px);width:600px;max-width:90vw;">
+    <button id="btn-close-draw" title="關閉" style="position:absolute;top:10px;right:15px;background:transparent;border:none;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>
+    <div id="random-draw-balls" style="display:grid;grid-template-columns:repeat(10,1fr);gap:8px;justify-content:center;margin:0 auto 20px auto;width:100%;max-width:500px;"></div>
+    <div id="random-draw-controls" style="display:flex;flex-direction:column;align-items:center;gap:15px;">
+        <button id="btn-do-draw" style="background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple));color:#0b1120;border:none;padding:10px 30px;border-radius:30px;font-size:1.1rem;font-weight:bold;cursor:pointer;">抽取號碼</button>
+        <div style="display:flex;align-items:center;gap:10px;color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3);border:1px solid var(--accent-cyan);color:#fff;padding:5px 10px;border-radius:5px;width:80px;text-align:center;"></div>
+    </div>
+</div>
 
-        document.getElementById('pen-size').addEventListener('input', (e) => { penSize = parseInt(e.target.value); });
-        document.getElementById('btn-clear').addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            slideDrawings[currentSlide] = null;
-        });
+<script>
+// ── Start overlay ──
+const startOverlay = document.getElementById('start-overlay');
+const btnStart = document.getElementById('btn-start');
+btnStart.addEventListener('click', () => {
+    startOverlay.style.display = 'none';
+    try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch(e) {}
+    setTimeout(resizeCanvas, 100);
+});
 
-        document.getElementById('btn-start').addEventListener('click', () => {
-            document.getElementById('start-overlay').style.display = 'none';
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            updateSlides();
-        });
+// ── Drawing layer (fixed-viewport canvas with scroll offset) ──
+let isDrawingMode = false;
+let drawMode = 'pen';
+let penColor = '#f8fafc';
+let penSize = 3;
+// offscreenCanvas stores the permanent ink across the whole document
+let offscreen = document.createElement('canvas');
+let offCtx = offscreen.getContext('2d');
+let lastX = 0, lastY = 0, isDrawing = false;
 
-        document.getElementById('btn-exit-fs').addEventListener('click', () => {
-            window.location.href = '../../index.html';
-        });
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas.getContext('2d');
 
-        // Toolbar Dragging
-        const toolbar = document.getElementById('toolbar'), dragHandle = document.getElementById('drag-handle');
-        let isDraggingToolbar = false, dragOffY = 0;
-        const startDrag = (y) => { isDraggingToolbar = true; dragOffY = y - toolbar.offsetTop; };
-        const moveDrag = (y) => { if (isDraggingToolbar) { toolbar.style.top = (y - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } };
-        dragHandle.addEventListener('mousedown', (e) => startDrag(e.clientY)); window.addEventListener('mousemove', (e) => moveDrag(e.clientY)); window.addEventListener('mouseup', () => isDraggingToolbar = false);
-        dragHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY)); window.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY)); window.addEventListener('touchend', () => isDraggingToolbar = false);
-
-        // --- Slide 1: Drag and Drop Logic ---
-        const requiredIons = {
-            'all': { text: '所有陽離子' },
-            'Ag': { text: '$\\text{Ag}^+$' },
-            'Pb': { text: '$\\text{Pb}^{2+}$' },
-            'Hg2': { text: '$\\text{Hg}_2^{2+}$' },
-            'Cu': { text: '$\\text{Cu}^+$' },
-            'Tl': { text: '$\\text{Tl}^+$' },
-            'Ba': { text: '$\\text{Ba}^{2+}$' },
-            'Sr': { text: '$\\text{Sr}^{2+}$' },
-            'Ca': { text: '$\\text{Ca}^{2+}$' },
-            'Be': { text: '$\\text{Be}^{2+}$' },
-            'Mg': { text: '$\\text{Mg}^{2+}$' },
-            'IA': { text: '$\\text{IA}^+$' },
-            'IIA': { text: '$\\text{IIA}^{2+}$' },
-            'NH4': { text: '$\\text{NH}_4^+$' }
-        };
-
-        const draggablesContainer = document.getElementById('draggables-container');
+function resizeCanvas() {
+    try {
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width  = Math.floor(window.innerWidth  * ratio);
+        canvas.height = Math.floor(window.innerHeight * ratio);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        // Resize offscreen to full document dimensions safely
+        const dw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+        const dh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
         
-        function initTableDragAndDrop() {
-            draggablesContainer.innerHTML = '';
-            
-            // Reset dropzones
-            document.querySelectorAll('.dropzone').forEach(dz => {
-                dz.innerHTML = '';
-                dz.classList.remove('filled');
-                const row = dz.closest('tr');
-                row.classList.remove('solved');
-            });
-
-            // Generate exactly one template item per ion type
-            let idCounter = 0;
-            const entries = Object.entries(requiredIons).sort(() => Math.random() - 0.5);
-            const ballColors = [
-                'rgba(56, 189, 248, 0.3)',  // blue
-                'rgba(52, 211, 153, 0.3)',  // green
-                'rgba(248, 113, 113, 0.3)', // red
-                'rgba(251, 191, 36, 0.3)',  // yellow
-                'rgba(168, 85, 247, 0.3)',  // purple
-                'rgba(34, 211, 238, 0.3)',  // cyan
-                'rgba(251, 146, 60, 0.3)'   // orange
-            ];
-
-            for (const [type, data] of entries) {
-                const div = document.createElement('div');
-                div.className = 'draggable template-ion';
-                div.draggable = true;
-                div.id = `template-ion-${idCounter++}`;
-                div.dataset.type = type;
-                div.innerHTML = data.text;
-                
-                // Random glass ball color
-                const color = ballColors[Math.floor(Math.random() * ballColors.length)];
-                div.style.backgroundColor = color;
-                // Add a random offset for "scattered" look
-                const rotate = (Math.random() * 30 - 15).toFixed(1);
-                const translateX = (Math.random() * 20 - 10).toFixed(1);
-                const translateY = (Math.random() * 20 - 10).toFixed(1);
-                div.style.transform = `rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`;
-                
-                div.addEventListener('dragstart', (e) => {
-                    if (div.draggable) {
-                        div.classList.add('dragging');
-                        e.dataTransfer.setData('text/plain', div.id);
-                    }
-                });
-                
-                div.addEventListener('dragend', () => {
-                    div.classList.remove('dragging');
-                });
-
-                draggablesContainer.appendChild(div);
-            }
-            if (window.MathJax && MathJax.typesetPromise) {
-                MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
-            }
+        let prevData = null;
+        if (offscreen.width > 0 && offscreen.height > 0) {
+            try { prevData = offCtx.getImageData(0, 0, offscreen.width, offscreen.height); } catch(e) {}
         }
-
-        function checkZoneComplete(zone) {
-            const requires = zone.dataset.requires.split(',');
-            const currentItems = Array.from(zone.children);
-            const currentTypes = currentItems.map(item => item.dataset.type);
-            
-            // Check for any incorrect items
-            const hasIncorrect = currentTypes.some(type => !requires.includes(type));
-            
-            // Check if all requires are met
-            const hasAllRequired = requires.every(req => currentTypes.includes(req));
-
-            // Is exact match?
-            const isExactMatch = hasAllRequired && !hasIncorrect && currentItems.length === requires.length;
-
-            if (isExactMatch) {
-                zone.classList.add('filled');
-                zone.closest('tr').classList.add('solved');
-                // Disable dragging for items inside
-                currentItems.forEach(item => {
-                    item.draggable = false;
-                    item.style.cursor = 'default';
-                });
-            } else {
-                zone.classList.remove('filled');
-                zone.closest('tr').classList.remove('solved');
-                currentItems.forEach(item => {
-                    item.draggable = true;
-                    item.style.cursor = 'grab';
-                });
-            }
+        
+        const newW = Math.floor(dw * ratio);
+        const newH = Math.min(Math.floor(dh * ratio), 16384); // prevent iOS/Chrome memory crash
+        
+        if (offscreen.width !== newW || offscreen.height !== newH) {
+            offscreen.width  = newW;
+            offscreen.height = newH;
+            offCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
         }
+        if (prevData) {
+            try { offCtx.putImageData(prevData, 0, 0); } catch(e) {}
+        }
+        redrawViewport();
+    } catch(err) {
+        console.error("Canvas resize error:", err);
+    }
+}
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('scroll', redrawViewport, {passive: true});
 
-        // Setup dropzones (table cells + pool)
-        document.querySelectorAll('.dropzone, #draggables-container').forEach(zone => {
-            zone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                if(zone.classList.contains('dropzone') && !zone.classList.contains('filled')) {
-                    zone.classList.add('drag-over');
-                }
-            });
-            
-            zone.addEventListener('dragleave', () => {
-                if(zone.classList.contains('dropzone')) {
-                    zone.classList.remove('drag-over');
-                }
-            });
-            
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                if(zone.classList.contains('dropzone')) {
-                    zone.classList.remove('drag-over');
-                    if(zone.classList.contains('filled')) return; // Target zone is already solved
-                }
+function redrawViewport() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const ratio = window.devicePixelRatio || 1;
+    ctx.drawImage(offscreen,
+        window.scrollX * ratio, window.scrollY * ratio,
+        canvas.width, canvas.height,
+        0, 0, canvas.width / ratio, canvas.height / ratio);
+}
 
-                const draggedId = e.dataTransfer.getData('text/plain');
-                if (!draggedId) return;
-                const draggedElement = document.getElementById(draggedId);
-                if (!draggedElement) return;
+function getCoords(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    // Coordinates in document space
+    return [clientX + window.scrollX, clientY + window.scrollY];
+}
+function startDrawing(e) {
+    if (!isDrawingMode) return;
+    isDrawing = true;
+    [lastX, lastY] = getCoords(e);
+}
+function draw(e) {
+    if (!isDrawing) return;
+    const [x, y] = getCoords(e);
+    offCtx.beginPath();
+    offCtx.moveTo(lastX, lastY);
+    offCtx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        offCtx.globalCompositeOperation = 'destination-out';
+        offCtx.lineWidth = Math.max(20, penSize * 10);
+    } else {
+        offCtx.globalCompositeOperation = 'source-over';
+        offCtx.strokeStyle = penColor;
+        offCtx.lineWidth = Math.max(2, penSize);
+    }
+    offCtx.lineCap = 'round';
+    offCtx.lineJoin = 'round';
+    offCtx.stroke();
+    redrawViewport();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() { isDrawing = false; }
 
-                const sourceZone = draggedElement.closest('.dropzone, #draggables-container');
-                let targetElement = draggedElement;
+canvas.addEventListener('mousedown', startDrawing);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDrawing);
+canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive: false});
+canvas.addEventListener('touchmove',  e => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive: false});
+canvas.addEventListener('touchend', stopDrawing);
 
-                // Pool -> Dropzone (Clone)
-                if (sourceZone.id === 'draggables-container' && zone.classList.contains('dropzone')) {
-                    targetElement = draggedElement.cloneNode(true);
-                    targetElement.id = `cloned-ion-${Date.now()}-${Math.floor(Math.random()*1000)}`;
-                    targetElement.classList.remove('template-ion');
-                    
-                    targetElement.addEventListener('dragstart', (ev) => {
-                        if (targetElement.draggable) {
-                            targetElement.classList.add('dragging');
-                            ev.dataTransfer.setData('text/plain', targetElement.id);
-                        }
-                    });
-                    targetElement.addEventListener('dragend', () => {
-                        targetElement.classList.remove('dragging');
-                    });
-                    
-                    zone.appendChild(targetElement);
-                }
-                // Dropzone -> Pool (Delete)
-                else if (sourceZone.classList.contains('dropzone') && zone.id === 'draggables-container') {
-                    draggedElement.remove();
-                    checkZoneComplete(sourceZone);
-                    return;
-                }
-                // Dropzone -> Dropzone (Move)
-                else if (sourceZone.classList.contains('dropzone') && zone.classList.contains('dropzone')) {
-                    zone.appendChild(draggedElement);
-                }
-                // Pool -> Pool (Do nothing)
-                else {
-                    return;
-                }
+// ── Toolbar interactions ──
+const btnDraw = document.getElementById('btn-draw');
+btnDraw.addEventListener('click', () => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    btnDraw.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    const cp = document.getElementById('color-picker');
+    const et = document.getElementById('eraser-tools');
+    if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+    if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
+});
 
-                // Update styling based on correctness
-                if (zone.classList.contains('dropzone')) {
-                    const requires = zone.dataset.requires.split(',');
-                    if (requires.includes(targetElement.dataset.type)) {
-                        targetElement.classList.add('correct');
-                        targetElement.classList.remove('incorrect');
-                    } else {
-                        targetElement.classList.add('incorrect');
-                        targetElement.classList.remove('correct');
-                    }
-                }
+const btnEraser = document.getElementById('btn-eraser');
+if (btnEraser) btnEraser.addEventListener('click', () => {
+    drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+    btnEraser.classList.toggle('active-tool', drawMode === 'eraser');
+});
 
-                // Check completion status for both target and source zones
-                if (zone.classList.contains('dropzone')) checkZoneComplete(zone);
-                if (sourceZone && sourceZone.classList.contains('dropzone')) checkZoneComplete(sourceZone);
-            });
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        btnEraser && btnEraser.classList.remove('active-tool');
+    });
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+    offCtx.clearRect(0, 0, offscreen.width, offscreen.height);
+    redrawViewport();
+});
+
+document.getElementById('btn-top').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ── Toolbar drag ──
+const toolbar = document.getElementById('toolbar');
+const dragHandle = document.getElementById('drag-handle');
+let isDraggingToolbar = false, dragOffY = 0;
+dragHandle.addEventListener('mousedown', e => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+window.addEventListener('mousemove', e => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+window.addEventListener('mouseup', () => isDraggingToolbar = false);
+dragHandle.addEventListener('touchstart', e => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; });
+window.addEventListener('touchmove', e => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+window.addEventListener('touchend', () => isDraggingToolbar = false);
+
+// ── Random Draw ──
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    let totalBalls = 40, drawBalls = [];
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = ''; drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball'; ball.textContent = i; ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball); drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+        if (!drawModal) return;
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none'; btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block'; btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+        }
+    });
+    btnCloseDraw && btnCloseDraw.addEventListener('click', () => {
+        if (drawModal) drawModal.style.display = 'none';
+        btnRandomDraw && btnRandomDraw.classList.remove('active-tool');
+    });
+    drawTotalInput && drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val; totalBalls = val; renderBalls();
+    });
+
+    let drawInterval, drawTimeout;
+    btnDoDraw && btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+        const cur = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (cur.length === 0) { alert('所有號碼都已抽出！'); return; }
+        btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+        drawInterval = setInterval(() => { cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('flicker'); }, 50);
+        drawTimeout = setTimeout(() => { clearInterval(drawInterval); cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, 2000);
+    });
+})();
+
+// ── Show/Hide Answer buttons ──
+document.querySelectorAll('.btn-show-ans').forEach(btn => {
+    if (btn.id === 'btn-flow-ans') return; // handled separately
+    btn.addEventListener('click', () => {
+        const ansId = btn.dataset.ans;
+        const ansBox = document.getElementById(ansId);
+        if (!ansBox) return;
+        const isVisible = ansBox.classList.contains('visible');
+        if (isVisible) {
+            ansBox.classList.remove('visible');
+            btn.textContent = '顯示解答';
+            btn.classList.remove('shown');
+        } else {
+            ansBox.classList.add('visible');
+            btn.textContent = '隱藏解答';
+            btn.classList.add('shown');
+            if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([ansBox]);
+        }
+    });
+});
+
+// ── Flowchart toggle ──
+function toggleFlowAnswers(btn) {
+    const flow = document.getElementById('example-5-flow');
+    if (!flow) return;
+    const boxes = flow.querySelectorAll('.flow-box');
+    const showing = Array.from(boxes).some(b => b.classList.contains('show-ans'));
+    boxes.forEach(b => b.classList.toggle('show-ans', !showing));
+    btn.textContent = showing ? '顯示流程解答' : '隱藏流程解答';
+    btn.classList.toggle('shown', !showing);
+    if (!showing && window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([flow]);
+}
+
+// ── Drag-and-Drop Precipitation Table ──
+const cationData = [
+    { id: 'Pb',   label: 'Pb<sup>2+</sup>',      color: '#582f2f', type: 'Pb' },
+    { id: 'All',  label: '所有陽<br>離子', color: '#4c3b6b', type: 'all' },
+    { id: 'IIA',  label: 'IIA<sup>2+</sup>',     color: '#4c3b6b', type: 'IIA' },
+    { id: 'IA',   label: 'IA<sup>+</sup>',       color: '#2b5043', type: 'IA' },
+    { id: 'Ag',   label: 'Ag<sup>+</sup>',       color: '#5c4033', type: 'Ag' },
+    { id: 'Cu',   label: 'Cu<sup>+</sup>',       color: '#1f4e5b', type: 'Cu' },
+    { id: 'Sr',   label: 'Sr<sup>2+</sup>',      color: '#4a3a6a', type: 'Sr' },
+    { id: 'NH4',  label: 'NH<sub>4</sub><sup>+</sup>',      color: '#4a3a6a', type: 'NH4' },
+    { id: 'Ba',   label: 'Ba<sup>2+</sup>',      color: '#4a3a6a', type: 'Ba' },
+    { id: 'Mg',   label: 'Mg<sup>2+</sup>',      color: '#2c4c5e', type: 'Mg' },
+    { id: 'Hg2',  label: 'Hg<sub>2</sub><sup>2+</sup>',     color: '#2c4c5e', type: 'Hg2' },
+    { id: 'Ca',   label: 'Ca<sup>2+</sup>',      color: '#5c4033', type: 'Ca' },
+    { id: 'Tl',   label: 'Tl<sup>+</sup>',       color: '#2c4c5e', type: 'Tl' },
+    { id: 'Be',   label: 'Be<sup>2+</sup>',      color: '#582f2f', type: 'Be' }
+];
+
+function initTableDragAndDrop() {
+    const dc = document.getElementById('draggables-container');
+    dc.innerHTML = '';
+    document.querySelectorAll('.dropzone').forEach(z => { z.innerHTML = ''; z.classList.remove('filled','drag-over'); });
+    document.querySelectorAll('#ppt-table tr').forEach(r => r.classList.remove('solved'));
+
+    // Allow deleting clones by dragging back to the container
+    dc.addEventListener('dragover', e => e.preventDefault());
+    dc.addEventListener('drop', e => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const el = document.getElementById(id);
+        if (el && el.parentNode !== dc) {
+            el.remove();
+            document.querySelectorAll('.dropzone').forEach(z => checkRowComplete(z));
+        }
+    });
+
+    cationData.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'draggable';
+        div.id = 'drag-' + cat.id;
+        div.dataset.type = cat.type;
+        div.innerHTML = cat.label;
+        div.draggable = true;
+        div.style.background = `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, ${cat.color} 60%, #111 100%)`;
+
+        div.addEventListener('dragstart', e => {
+            div.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', div.id);
         });
+        div.addEventListener('dragend', () => div.classList.remove('dragging'));
+        dc.appendChild(div);
+    });
 
-        function resetTable() {
-            initTableDragAndDrop();
-        }
-
-        // Initialize on load
-        window.onload = () => {
-            try {
-                initTableDragAndDrop();
-            } catch(e) { console.error("Table Init Error:", e); }
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            const el = document.getElementById(id);
+            if (!el) return;
             
-            try {
-                initGame();
-            } catch(e) { console.error("Game Init Error:", e); }
-        };
+            const isFromContainer = el.parentNode === dc;
+            let targetEl = el;
+            
+            if (isFromContainer) {
+                targetEl = el.cloneNode(true);
+                targetEl.id = el.id + '-' + Date.now() + Math.floor(Math.random()*1000);
+                targetEl.title = "點擊兩下刪除，或拖回右側";
+                targetEl.addEventListener('dragstart', ev => {
+                    targetEl.classList.add('dragging');
+                    ev.dataTransfer.setData('text/plain', targetEl.id);
+                });
+                targetEl.addEventListener('dragend', () => targetEl.classList.remove('dragging'));
+                targetEl.addEventListener('dblclick', () => { 
+                    targetEl.remove(); 
+                    checkRowComplete(zone); 
+                });
+            }
+            
+            zone.appendChild(targetEl);
+            checkRowComplete(zone);
+            
+            // If moved from another zone, update the old zone
+            if (!isFromContainer && el.parentNode !== zone) {
+                document.querySelectorAll('.dropzone').forEach(z => checkRowComplete(z));
+            }
+        });
+    });
 
-        // --- Slide 5: Interactive Game Logic ---
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([document.getElementById('slide-table')]).catch(() => {});
+}
+
+function checkRowComplete(zone) {
+    const reqs = zone.dataset.requires.split(',');
+    const children = Array.from(zone.children);
+    const types = children.map(c => c.dataset.type);
+    
+    children.forEach(c => {
+        if (reqs.includes('all') || reqs.includes(c.dataset.type)) {
+            c.classList.add('correct');
+            c.classList.remove('incorrect');
+        } else {
+            c.classList.add('incorrect');
+            c.classList.remove('correct');
+        }
+    });
+
+    let allMet = false;
+    if (reqs.includes('all')) {
+        allMet = types.length > 0;
+    } else {
+        allMet = reqs.every(r => types.includes(r));
+    }
+    const noWrong = reqs.includes('all') ? true : types.every(t => reqs.includes(t));
+    
+    if (allMet && noWrong && types.length > 0) {
+        zone.classList.add('filled');
+        const row = zone.closest('tr');
+        if (row) row.classList.add('solved');
+    } else {
+        zone.classList.remove('filled');
+        const row = zone.closest('tr');
+        if (row) row.classList.remove('solved');
+    }
+}
+
+function resetTable() { initTableDragAndDrop(); }
+
+// --- Slide 5: Interactive Game Logic ---
         const gameIons = {
             cations: {
                 'Ag': { text: '$\\text{Ag}^+$', color: '#ffffff' },
@@ -1108,10 +1063,14 @@
                 }
             }
 
-            if (currentCations.length === 0 || (currentPuzzle.cations.includes('K') && currentCations.length === 1 && currentCations[0] === 'K')) {
-                 // Success!
-                 const stamp = document.getElementById('game-stamp');
-                 if (stamp) stamp.classList.add('active');
+            let hasError = gameSteps.some(s => s.isError);
+            const stamp = document.getElementById('game-stamp');
+            if (stamp) {
+                if (!hasError && (currentCations.length === 0 || (currentPuzzle.cations.includes('K') && currentCations.length === 1 && currentCations[0] === 'K'))) {
+                     stamp.classList.add('active');
+                } else {
+                     stamp.classList.remove('active');
+                }
             }
 
             if (window.MathJax && MathJax.typesetPromise) {
@@ -1242,7 +1201,7 @@
         }
 
         const gameRules = {
-            'Cl': ['Ag', 'Pb', 'Hg2', 'Cu'],
+            'Cl': ['Ag', 'Pb', 'Hg2'],
             'SO4': ['Ba', 'Sr', 'Pb', 'Ca'],
             'CrO4': ['Ba', 'Pb', 'Ag', 'Sr'],
             'S': ['Ag', 'Pb', 'Cu', 'Ni', 'Co', 'Cd', 'Fe', 'Zn', 'Mn'],
@@ -1304,6 +1263,217 @@
             }, 600);
         }
 
-    </script>
+
+// ── Matching Game (Precipitation Rules) ──
+(function() {
+    const gameDataPool = [
+        { left: '$\\text{NO}_3^-$, $\\text{CH}_3\\text{COO}^-$ 遇陽離子', right: '皆可溶' },
+        { left: 'Cl⁻ 沉澱的例外陽離子', right: '$\\text{Ag}^+$, $\\text{Pb}^{2+}$, $\\text{Hg}_2^{2+}$' },
+        { left: '$\\text{SO}_4^{2-}$ 沉澱的例外陽離子', right: '$\\text{Ba}^{2+}$, $\\text{Sr}^{2+}$, $\\text{Pb}^{2+}$, $\\text{Ca}^{2+}$' },
+        { left: '兩性元素口訣', right: '鈹鋁鎵鋅鉻錫鉛' },
+        { left: '$\\text{Cu(OH)}_2$ 的顏色', right: '藍色沉澱' },
+        { left: '$\\text{Fe(OH)}_3$ 的顏色', right: '紅褐色沉澱（磚紅）' },
+        { left: '$\\text{Ag}_2\\text{S}$ 的顏色', right: '黑色沉澱' },
+        { left: '$\\text{AgCl}$ 溶於', right: '氨水 ($\\text{NH}_3$)' },
+        { left: '$\\text{AgI}$ 溶解性', right: '不溶於氨水' },
+        { left: '$\\text{CuSO}_4 + $ 過量 $\\text{NH}_3$', right: '$[\\text{Cu(NH}_3)_4]^{2+}$ 深藍色' },
+        { left: '溶於強鹼的難溶物', right: '兩性金屬氫氧化物' },
+        { left: '$\\text{PO}_4^{3-}$, $\\text{CO}_3^{2-}$ 可溶的陽離子', right: '鹼金屬離子及 $\\text{NH}_4^+$' },
+        { left: '$\\text{Ag}_2\\text{CrO}_4$ 的顏色', right: '磚紅色沉澱' },
+        { left: '$\\text{BaSO}_4$ 的性質', right: '難溶，不溶於強酸' },
+        { left: '初加入氨水有沉澱，過量氨水復溶', right: '$\\text{Cu}^{2+}$, $\\text{Zn}^{2+}$, $\\text{Ag}^+$, $\\text{Co}^{2+}$...' },
+    ];
+
+    const ITEMS_PER_GAME = 5;
+    let connections = [], isDragging = false, startDotInfo = null, tempLine = null, allDots = [];
+
+    const container = document.getElementById('game-container');
+    const svgEl = document.getElementById('game-svg');
+
+    function getDotCenter(dotEl) {
+        const cr = container.getBoundingClientRect();
+        const dr = dotEl.getBoundingClientRect();
+        return { x: dr.left + dr.width/2 - cr.left, y: dr.top + dr.height/2 - cr.top, el: dotEl };
+    }
+
+    function findDotAt(clientX, clientY, excludeEl, requireOtherSide) {
+        let best = null, bestDist = 38;
+        allDots.forEach(d => {
+            if (d.el === excludeEl) return;
+            if (requireOtherSide !== null && d.isLeft === requireOtherSide) return;
+            if (d.el.classList.contains('active')) return;
+            const dr = d.el.getBoundingClientRect();
+            const cx = dr.left + dr.width/2, cy = dr.top + dr.height/2;
+            const dist = Math.sqrt((clientX-cx)**2 + (clientY-cy)**2);
+            if (dist < bestDist) { bestDist = dist; best = d; }
+        });
+        return best;
+    }
+
+    function initGame() {
+        const leftCol = document.getElementById('left-column');
+        const rightCol = document.getElementById('right-column');
+        if (!leftCol) return;
+        leftCol.innerHTML = ''; rightCol.innerHTML = '';
+        connections = []; allDots = [];
+        const feedback = document.getElementById('game-feedback');
+        if (feedback) feedback.style.display = 'none';
+        svgEl.innerHTML = '';
+
+        const shuffled = [...gameDataPool].sort(() => Math.random()-0.5).slice(0, ITEMS_PER_GAME);
+        const current = shuffled.map((item, i) => ({...item, matchId: i}));
+        const shuffledRight = [...current].sort(() => Math.random()-0.5);
+
+        current.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'game-item';
+            div.innerHTML = `<span style="flex:1">${item.left}</span><div class="dot" data-mid="${item.matchId}" data-side="left"></div>`;
+            leftCol.appendChild(div);
+        });
+        shuffledRight.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'game-item';
+            div.innerHTML = `<div class="dot" data-mid="${item.matchId}" data-side="right"></div><span style="flex:1;text-align:right">${item.right}</span>`;
+            rightCol.appendChild(div);
+        });
+
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([container]).catch(() => {});
+        document.querySelectorAll('#game-container .dot').forEach(el => {
+            allDots.push({ el, matchId: el.dataset.mid, isLeft: el.dataset.side === 'left' });
+        });
+    }
+
+    function getEventPos(e) {
+        if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+    }
+
+    function onPointerDown(e) {
+        if (isDrawingMode) return;
+        const pos = getEventPos(e);
+        const dot = findDotAt(pos.x, pos.y, null, null);
+        if (!dot) return;
+        e.preventDefault();
+        isDragging = true; startDotInfo = dot;
+        const c = getDotCenter(dot.el);
+        tempLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+        tempLine.setAttribute('x1', c.x); tempLine.setAttribute('y1', c.y);
+        tempLine.setAttribute('x2', c.x); tempLine.setAttribute('y2', c.y);
+        tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+        tempLine.setAttribute('stroke-width', '4');
+        tempLine.setAttribute('stroke-dasharray', '6,4');
+        tempLine.setAttribute('stroke-linecap', 'round');
+        svgEl.appendChild(tempLine);
+    }
+
+    function onPointerMove(e) {
+        if (!isDragging || !tempLine || !startDotInfo) return;
+        if (e.cancelable) e.preventDefault();
+        const pos = getEventPos(e);
+        const cr = container.getBoundingClientRect();
+        let tx = pos.x - cr.left, ty = pos.y - cr.top;
+        const hover = findDotAt(pos.x, pos.y, startDotInfo.el, startDotInfo.isLeft);
+        if (hover) {
+            const hc = getDotCenter(hover.el);
+            tx = hc.x; ty = hc.y;
+            tempLine.setAttribute('stroke', hover.matchId === startDotInfo.matchId ? '#34d399' : '#f87171');
+            tempLine.setAttribute('stroke-dasharray', 'none');
+        } else {
+            tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+            tempLine.setAttribute('stroke-dasharray', '6,4');
+        }
+        tempLine.setAttribute('x2', tx); tempLine.setAttribute('y2', ty);
+    }
+
+    function onPointerUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        const pos = getEventPos(e);
+        if (tempLine && tempLine.parentNode) tempLine.parentNode.removeChild(tempLine);
+        tempLine = null;
+        if (!startDotInfo) { startDotInfo = null; return; }
+        const target = findDotAt(pos.x, pos.y, startDotInfo.el, startDotInfo.isLeft);
+        if (target && target.matchId === startDotInfo.matchId) {
+            startDotInfo.el.classList.add('active');
+            target.el.classList.add('active');
+            connections.push({ from: startDotInfo, to: target });
+            redrawLines();
+            if (connections.length === ITEMS_PER_GAME) {
+                setTimeout(() => { const fb = document.getElementById('game-feedback'); if (fb) fb.style.display = 'block'; }, 300);
+            }
+        }
+        startDotInfo = null;
+    }
+
+    function redrawLines() {
+        svgEl.innerHTML = '';
+        connections.forEach(conn => {
+            const c1 = getDotCenter(conn.from.el), c2 = getDotCenter(conn.to.el);
+            const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+            line.setAttribute('x1', c1.x); line.setAttribute('y1', c1.y);
+            line.setAttribute('x2', c2.x); line.setAttribute('y2', c2.y);
+            line.setAttribute('stroke', '#34d399');
+            line.setAttribute('stroke-width', '4');
+            line.setAttribute('stroke-linecap', 'round');
+            svgEl.appendChild(line);
+        });
+    }
+
+    container.addEventListener('mousedown', onPointerDown, {capture: true});
+    container.addEventListener('touchstart', onPointerDown, {capture: true, passive: false});
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('touchmove', onPointerMove, {passive: false});
+    window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchend', onPointerUp);
+
+    window.resetGame = function() { initGame(); };
+    initGame();
+})(); // end Matching Game IIFE
+
+// ── Initialization ──
+function initializeAll() {
+    // 1. Init table
+    try {
+        initTableDragAndDrop();
+    } catch(e) {
+        console.error('Table init error:', e);
+        alert('Table init error: ' + e.message);
+    }
+    
+    // 2. Init game
+    try {
+        newGamePuzzle();
+    } catch(e) {
+        console.error('Game init error:', e);
+    }
+
+    // 3. Init canvas safely
+    try {
+        resizeCanvas();
+    } catch(e) {
+        console.error('Canvas resize error:', e);
+    }
+    
+    // DEBUG NOTIFIER (so user knows the new code is running)
+    const dbg = document.createElement('div');
+    dbg.style.cssText = 'position:fixed;top:10px;right:10px;background:rgba(16,185,129,0.9);color:white;padding:10px 20px;border-radius:10px;z-index:99999;font-weight:bold;box-shadow:0 0 10px rgba(0,0,0,0.5);pointer-events:none;';
+    dbg.textContent = '系統：已經成功執行更新版本！(V3)';
+    document.body.appendChild(dbg);
+    setTimeout(() => dbg.remove(), 5000);
+}
+
+// Run as soon as DOM is ready, don't wait for slow external scripts (like MathJax) to load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAll);
+} else {
+    initializeAll();
+}
+
+// Also try to resize canvas on full load just in case fonts/images changed layout
+window.addEventListener('load', () => {
+    try { resizeCanvas(); } catch(e) {}
+});
+</script>
 </body>
 </html>

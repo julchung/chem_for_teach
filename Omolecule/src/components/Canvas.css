@@ -1,0 +1,273 @@
+/* ── Canvas layout ──────────────────────────────────────────────────────── */
+.canvas {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  background: #0d111c;
+  overflow: hidden;
+  user-select: none;
+}
+
+.canvas.tool-pan {
+  cursor: grab;
+}
+
+.canvas.tool-pan:active {
+  cursor: grabbing;
+}
+
+.canvas-transform-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ── Toolbar ────────────────────────────────────────────────────────────── */
+.canvas-toolbar {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(13, 17, 28, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.canvas-toolbar button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #fff;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+/* Text buttons (全選 / 刪除 / 清除全部) */
+.canvas-toolbar button.toolbar-btn-text {
+  width: auto;
+  padding: 0 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.canvas-toolbar button.toolbar-btn-danger {
+  color: #ff6b81;
+}
+
+.canvas-toolbar button.toolbar-btn-danger:hover {
+  background: rgba(255, 71, 87, 0.2);
+  border-color: rgba(255, 71, 87, 0.4);
+}
+
+.canvas-toolbar button.toolbar-btn-danger.has-selection {
+  color: #fff;
+  background: rgba(255, 71, 87, 0.3);
+  border-color: rgba(255, 71, 87, 0.6);
+  animation: selPulse 1.2s ease-in-out infinite;
+}
+
+.canvas-toolbar button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.canvas-toolbar button.active {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+}
+
+.toolbar-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 4px;
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+.canvas-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #596a8a;
+  pointer-events: none;
+}
+
+.canvas-empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.canvas-empty-text {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.canvas-empty-sub {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+/* ── SVG overlay ────────────────────────────────────────────────────────── */
+.canvas-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Block item ─────────────────────────────────────────────────────── */
+.canvas-block {
+  position: absolute;
+  pointer-events: auto;
+  border-radius: 10px;
+  transition: transform 0.12s, filter 0.12s;
+  z-index: 2;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));
+}
+
+.canvas-block:hover {
+  filter: drop-shadow(0 0 12px rgba(77, 208, 225, 0.45));
+}
+
+.canvas-block.is-dragging {
+  z-index: 10;
+  transform: scale(1.05);
+  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.5));
+}
+
+.canvas-block.is-snap-target {
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.35);
+  z-index: 9;
+}
+
+/* Selected block: blue outline ring */
+.canvas-block.is-selected {
+  outline: 2px solid rgba(77, 208, 225, 0.9);
+  outline-offset: 2px;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 10px rgba(77, 208, 225, 0.5));
+  z-index: 5;
+}
+
+.canvas-block.is-selected:hover {
+  filter: drop-shadow(0 0 14px rgba(77, 208, 225, 0.75));
+}
+
+/* Group dragging: slightly elevated */
+.canvas-block.is-group-drag {
+  z-index: 8;
+  transform: scale(1.04);
+  filter: drop-shadow(0 8px 18px rgba(59, 130, 246, 0.45));
+}
+
+/* ── Delete button ──────────────────────────────────────────────────────── */
+.block-delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff4757;
+  color: white;
+  border: 2px solid #1a1f35;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.block-delete-btn:hover {
+  transform: scale(1.15);
+  background: #ff6b81;
+}
+
+/* ── Open port indicators ───────────────────────────────────────────────── */
+.port-indicator {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #00e5ff;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: pulse 2s infinite;
+}
+
+.port-indicator.bond-double { background: #ffd700; width: 10px; height: 10px; }
+.port-indicator.bond-triple { background: #ff6b6b; width: 12px; height: 12px; }
+
+/* Position them on the edges */
+.port-up    { top: -4px; left: calc(50% - 4px); }
+.port-down  { bottom: -4px; left: calc(50% - 4px); }
+.port-left  { left: -4px; top: calc(50% - 4px); }
+.port-right { right: -4px; top: calc(50% - 4px); }
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Selection count hint bar ────────────────────────────────────────────── */
+.canvas-sel-hint {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(59, 130, 246, 0.25);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 999px;
+  color: #93c5fd;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 16px;
+  z-index: 100;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes selPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.35); }
+  50%       { box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.2); }
+}

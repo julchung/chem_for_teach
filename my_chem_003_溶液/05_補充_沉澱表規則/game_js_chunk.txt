@@ -1,0 +1,293 @@
+// --- Slide 5: Interactive Game Logic ---
+        const gameIons = {
+            cations: {
+                'Ag': { text: '$\\text{Ag}^+$', color: '#ffffff' },
+                'Pb': { text: '$\\text{Pb}^{2+}$', color: '#cbd5e1' },
+                'Ba': { text: '$\\text{Ba}^{2+}$', color: '#facc15' },
+                'Ca': { text: '$\\text{Ca}^{2+}$', color: '#fb923c' },
+                'Mg': { text: '$\\text{Mg}^{2+}$', color: '#4ade80' },
+                'Cu': { text: '$\\text{Cu}^{2+}$', color: '#60a5fa' },
+                'Zn': { text: '$\\text{Zn}^{2+}$', color: '#c084fc' },
+                'Fe': { text: '$\\text{Fe}^{3+}$', color: '#f87171' },
+                'K':  { text: '$\\text{K}^+$', color: '#f472b6' },
+                'Na': { text: '$\\text{Na}^+$', color: '#22d3ee' }
+            },
+            anions: {
+                'Cl': { text: '$\\text{Cl}^-$', color: 'rgba(56, 189, 248, 0.3)' },
+                'SO4': { text: '$\\text{SO}_4^{2-}$', color: 'rgba(52, 211, 153, 0.3)' },
+                'OH': { text: '$\\text{OH}^-$', color: 'rgba(248, 113, 113, 0.3)' },
+                'S': { text: '$\\text{S}^{2-}$', color: 'rgba(168, 85, 247, 0.3)' },
+                'CO3': { text: '$\\text{CO}_3^{2-}$', color: 'rgba(251, 191, 36, 0.3)' },
+                'CrO4': { text: '$\\text{CrO}_4^{2-}$', color: 'rgba(251, 146, 60, 0.3)' }
+            }
+        };
+
+        const puzzles = [
+            { cations: ['Ag', 'Ba', 'Mg'], candidates: ['Cl', 'SO4', 'OH'] },
+            { cations: ['Pb', 'Ba', 'Cu'], candidates: ['Cl', 'SO4', 'S'] },
+            { cations: ['Ag', 'Pb', 'Ba'], candidates: ['CrO4', 'Cl', 'SO4'] },
+            { cations: ['Cu', 'Mg', 'K'], candidates: ['S', 'OH', 'CO3'] }
+        ];
+
+        let currentPuzzle = null;
+        let gameSteps = []; // [{ anion: 'Cl', remaining: ['Ba', 'Mg'], precipitate: 'AgCl' }]
+
+        function initGame() {
+            newGamePuzzle();
+        }
+
+        function newGamePuzzle() {
+            const idx = Math.floor(Math.random() * puzzles.length);
+            currentPuzzle = JSON.parse(JSON.stringify(puzzles[idx]));
+            resetGamePuzzle();
+        }
+
+        function resetGamePuzzle() {
+            gameSteps = [];
+            renderGame();
+            renderCandidates();
+            const stamp = document.getElementById('game-stamp');
+            if (stamp) stamp.classList.remove('active');
+            hideGameMessage();
+        }
+
+        function showGameMessage(text, isError = true) {
+            const msg = document.getElementById('game-message');
+            msg.textContent = text;
+            msg.className = 'game-msg' + (isError ? ' error' : '');
+            setTimeout(hideGameMessage, 3000);
+        }
+
+        function hideGameMessage() {
+            document.getElementById('game-message').style.opacity = '0';
+        }
+
+        function renderGame() {
+            const stage = document.getElementById('game-stage');
+            if (!stage || !currentPuzzle) return;
+            stage.innerHTML = '';
+
+            // Initial Beaker
+            const startBeaker = createBeaker(currentPuzzle.cations, "起始溶液");
+            startBeaker.style.marginTop = "0px";
+            stage.appendChild(startBeaker);
+
+            // Render steps
+            let currentCations = [...currentPuzzle.cations];
+            gameSteps.forEach((step, idx) => {
+                const arrow = createArrow(step.anion, true, step.precipitate, idx, step.isError);
+                arrow.style.marginTop = (idx * 60 + 42) + "px";
+                stage.appendChild(arrow);
+                
+                const nextBeaker = createBeaker(step.remaining, "濾液 " + (idx + 1));
+                nextBeaker.style.marginTop = ((idx + 1) * 60) + "px";
+                stage.appendChild(nextBeaker);
+                currentCations = step.remaining;
+            });
+
+            // Final Arrow if not finished
+            if (currentCations.length > 0 && gameSteps.length < 3) {
+                const lastStep = gameSteps[gameSteps.length - 1];
+                if (!lastStep || !lastStep.isError) {
+                    const pendingArrow = createArrow(null, false, null, gameSteps.length);
+                    pendingArrow.style.marginTop = (gameSteps.length * 60 + 42) + "px";
+                    stage.appendChild(pendingArrow);
+                }
+            }
+
+            if (currentCations.length === 0 || (currentPuzzle.cations.includes('K') && currentCations.length === 1 && currentCations[0] === 'K')) {
+                 // Success!
+                 const stamp = document.getElementById('game-stamp');
+                 if (stamp) stamp.classList.add('active');
+            }
+
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+            }
+        }
+
+        function createBeaker(cations, label) {
+            const wrap = document.createElement('div');
+            wrap.className = 'game-beaker-wrap';
+            
+            const beaker = document.createElement('div');
+            beaker.className = 'game-beaker';
+            
+            const ionsDiv = document.createElement('div');
+            ionsDiv.className = 'game-beaker-ions';
+            cations.forEach(ion => {
+                const span = document.createElement('span');
+                span.innerHTML = gameIons.cations[ion].text;
+                span.style.color = gameIons.cations[ion].color;
+                ionsDiv.appendChild(span);
+            });
+            
+            beaker.appendChild(ionsDiv);
+            wrap.appendChild(beaker);
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'beaker-label';
+            labelDiv.textContent = label;
+            wrap.appendChild(labelDiv);
+            
+            return wrap;
+        }
+
+        function createArrow(anion, isFilled, precipitate, stepIdx, isError) {
+            const wrap = document.createElement('div');
+            wrap.className = 'game-arrow-wrap';
+            
+            const line = document.createElement('div');
+            line.className = 'game-arrow-line';
+            
+            const label = document.createElement('div');
+            label.className = 'game-add-label';
+            label.textContent = isFilled ? "已加入 " : "加入「欄位 " + String.fromCharCode(65 + stepIdx) + "」";
+            wrap.appendChild(label);
+
+            if (isFilled) {
+                const branches = document.createElement('div');
+                branches.className = 'game-branches';
+                
+                const up = document.createElement('div');
+                up.className = 'game-branch-up';
+                
+                const pBox = document.createElement('div');
+                pBox.className = 'game-precipitate';
+                if (isError) {
+                    pBox.style.borderColor = 'var(--accent-red)';
+                    pBox.style.color = 'var(--accent-red)';
+                    pBox.style.background = 'rgba(248, 113, 113, 0.2)';
+                    pBox.innerHTML = `失敗：${precipitate} $\\downarrow$`;
+                } else {
+                    pBox.innerHTML = `沉澱：${precipitate} $\\downarrow$`;
+                }
+                up.appendChild(pBox);
+                
+                const down = document.createElement('div');
+                down.className = 'game-branch-down';
+                
+                branches.appendChild(up);
+                branches.appendChild(down);
+                wrap.appendChild(branches);
+            }
+
+            const slot = document.createElement('div');
+            slot.className = 'game-drop-slot' + (isFilled ? ' filled' : '');
+            if (isFilled) {
+                slot.innerHTML = gameIons.anions[anion].text;
+                slot.style.backgroundColor = gameIons.anions[anion].color;
+            } else {
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slot.classList.add('drag-over');
+                });
+                slot.addEventListener('dragleave', () => {
+                    slot.classList.remove('drag-over');
+                });
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('drag-over');
+                    const anionId = e.dataTransfer.getData('text/plain');
+                    if (anionId.startsWith('game-anion-')) {
+                        const anionType = anionId.replace('game-anion-', '');
+                        processGameStep(anionType, slot);
+                    }
+                });
+            }
+            
+            wrap.appendChild(line);
+            wrap.appendChild(slot);
+            return wrap;
+        }
+
+        function renderCandidates() {
+            const container = document.getElementById('game-candidates');
+            container.innerHTML = '';
+            
+            currentPuzzle.candidates.forEach(anion => {
+                const ball = document.createElement('div');
+                ball.className = 'draggable';
+                ball.id = 'game-anion-' + anion;
+                ball.draggable = true;
+                ball.innerHTML = gameIons.anions[anion].text;
+                ball.style.backgroundColor = gameIons.anions[anion].color;
+                ball.style.width = '70px';
+                ball.style.height = '70px';
+                ball.style.fontSize = '1.1rem';
+                ball.style.fontWeight = 'bold';
+                
+                ball.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', ball.id);
+                });
+                
+                container.appendChild(ball);
+            });
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+            }
+        }
+
+        const gameRules = {
+            'Cl': ['Ag', 'Pb', 'Hg2', 'Cu'],
+            'SO4': ['Ba', 'Sr', 'Pb', 'Ca'],
+            'CrO4': ['Ba', 'Pb', 'Ag', 'Sr'],
+            'S': ['Ag', 'Pb', 'Cu', 'Ni', 'Co', 'Cd', 'Fe', 'Zn', 'Mn'],
+            'OH': ['Ag', 'Pb', 'Cu', 'Ni', 'Co', 'Cd', 'Fe', 'Zn', 'Mn', 'Mg', 'Al', 'Cr'],
+            'CO3': ['Ag', 'Pb', 'Cu', 'Ni', 'Co', 'Cd', 'Fe', 'Zn', 'Mn', 'Mg', 'Al', 'Cr', 'Ba', 'Sr', 'Ca'],
+        };
+
+        function processGameStep(anion, slot) {
+            let currentCations = [...currentPuzzle.cations];
+            gameSteps.forEach(s => {
+                if (!s.isError) currentCations = s.remaining;
+            });
+
+            if (currentCations.length === 0) return;
+
+            // Visual feedback: Put anion in first
+            slot.innerHTML = gameIons.anions[anion].text;
+            slot.style.backgroundColor = gameIons.anions[anion].color;
+            slot.classList.add('filled');
+            MathJax.typesetPromise();
+
+            setTimeout(() => {
+                const precipitating = currentCations.filter(c => gameRules[anion] && gameRules[anion].includes(c));
+                
+                if (precipitating.length > 0) {
+                    const precipitateNames = precipitating.map(c => c + anion).join(', ');
+                    const remaining = currentCations.filter(c => !precipitating.includes(c));
+                    const isError = precipitating.length > 1;
+
+                    gameSteps.push({
+                        anion: anion,
+                        remaining: remaining,
+                        precipitate: precipitateNames,
+                        isError: isError
+                    });
+                    renderGame();
+
+                    if (isError) {
+                        slot.classList.add('error-flash');
+                        showGameMessage("失敗：同時沉澱了多種離子！", true);
+                        
+                        setTimeout(() => {
+                            gameSteps.pop(); // Rollback
+                            renderGame();
+                        }, 2500);
+                    }
+                } else {
+                    // No precipitate
+                    slot.classList.add('error-flash');
+                    showGameMessage("失敗：此試劑無法產生沉澱！", true);
+                    
+                    setTimeout(() => {
+                        slot.classList.remove('filled', 'error-flash');
+                        slot.innerHTML = '';
+                        slot.style.backgroundColor = '';
+                        renderGame(); 
+                    }, 1000);
+                }
+            }, 600);
+        }
+

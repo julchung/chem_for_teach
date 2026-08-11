@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 化學伴讀系統 (多模型協作原型)</title>
+    <!-- 引入 Markdown 渲染器 (marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 Mermaid 流程圖渲染器 -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: false, theme: 'dark' });</script>
+    <!-- 引入 PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- 引入 Fabric.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <!-- 引入 MathJax 數學公式渲染器 (v3 正確路徑: es5/) -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                ready() {
+                    MathJax.startup.defaultReady();
+                    console.log('MathJax 已就緒，typesetPromise 可用。');
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --bg-dark: #1E1E2F;
+            --bg-panel: #2A2A40;
+            --text-light: #F3F4F6;
+            --text-muted: #9CA3AF;
+        }
+        body, html {
+            margin: 0; padding: 0; height: 100%; width: 100vw;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            overflow: hidden;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        /* 左側：教學展示區 */
+        #presentation-pane {
+            flex: 3 0 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #3f3f5a;
+        }
+        .display-area {
+            flex: 1;
+            background-color: var(--bg-panel);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            gap: 15px;
+        }
+        .empty-state {
+            color: var(--text-muted);
+            text-align: center;
+            margin: auto;
+        }
+        
+        /* 摺疊面板 (Accordion) 樣式 */
+        .accordion-item {
+            width: 100%;
+            background-color: #ffffff;
+            color: #2c3e50;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .accordion-header {
+            background-color: #f1f5f9;
+            padding: 15px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .accordion-header:hover {
+            background-color: #e2e8f0;
+        }
+        .accordion-header::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+        }
+        .accordion-item.active .accordion-header::after {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            padding: 20px 25px;
+            display: none;
+            overflow-y: auto;
+            max-height: 500px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        .accordion-item.active .accordion-content {
+            display: block;
+        }
+        
+        /* 右側：對話區 */
+        #chat-pane {
+            flex: 1 0 0;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-dark);
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid #3f3f5a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header select {
+            background: #3f3f5a; color: white;
+            border: none; padding: 5px 10px; border-radius: 5px;
+        }
+        .chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            max-width: 92%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            line-height: 1.75;
+            font-size: 0.97em;
+        }
+        .msg-user {
+            background-color: var(--primary);
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .msg-ai {
+            background-color: var(--bg-panel);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border-left: 3px solid var(--primary);
+        }
+        /* AI 訊息內部 markdown 排版美化 */
+        .msg-ai h1, .msg-ai h2, .msg-ai h3 {
+            color: #a5b4fc;
+            margin: 12px 0 6px;
+            font-size: 1.05em;
+        }
+        .msg-ai strong { color: #c7d2fe; }
+        .msg-ai p { margin: 6px 0; }
+        .msg-ai ul, .msg-ai ol { margin: 6px 0; padding-left: 20px; }
+        .msg-ai li { margin: 4px 0; }
+        .msg-ai code {
+            background: rgba(79,70,229,0.25);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+        .msg-ai pre {
+            background: #111122;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+        .msg-ai pre code { background: none; padding: 0; }
+        .msg-ai blockquote {
+            border-left: 3px solid #4F46E5;
+            margin: 8px 0;
+            padding: 4px 12px;
+            color: #9CA3AF;
+            font-style: italic;
+        }
+        .system-status {
+            font-size: 0.8em; color: #10B981; margin-bottom: 5px;
+        }
+        
+        /* 輸入區 */
+        .chat-input-area {
+            padding: 20px;
+            background-color: var(--bg-panel);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #3f3f5a;
+            background-color: #1E1E2F;
+            color: white;
+            outline: none;
+        }
+        .chat-input-area button {
+            background-color: var(--primary);
+            color: white; border: none;
+            padding: 0 20px; border-radius: 8px;
+            cursor: pointer; font-weight: bold;
+        }
+        .chat-input-area button:hover { background-color: #4338CA; }
+        
+        .image-upload-btn {
+            background-color: #3f3f5a;
+            color: white; border: none;
+            padding: 0 15px; border-radius: 8px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2em;
+        }
+        .image-upload-btn:hover { background-color: #4b4b6b; }
+        #image-preview {
+            max-width: 50px; max-height: 50px; border-radius: 4px; display: none;
+        }
+
+        /* 畫布工具列 */
+        .canvas-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3f3f5a;
+            padding-bottom: 10px;
+            align-items: center;
+            background: var(--bg-panel);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .tool-btn {
+            background: #3f3f5a; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .tool-btn:hover { background: #4b4b6b; }
+        .tool-btn.active { background: var(--primary); }
+        
+        /* 浮動標籤與面板 */
+        #floating-tags-container {
+            position: absolute; top: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 100; align-items: flex-end; pointer-events: none;
+        }
+        .floating-tag {
+            background: var(--primary); color: white;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1em;
+            position: relative;
+        }
+        .floating-tag:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 16px rgba(79,70,229,0.6);
+        }
+        .floating-tag .tag-badge {
+            position: absolute;
+            top: -4px; right: -4px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 16px; height: 16px;
+            font-size: 0.65em;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .floating-panel {
+            background: #1a1a2e;
+            color: #e2e8f0;
+            width: 420px;
+            max-height: 75vh;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none;
+            margin-bottom: 8px;
+            pointer-events: auto;
+            border: 1px solid #3f3f5a;
+        }
+        .floating-panel h3, .floating-panel h4 { color: #a5b4fc; margin-top: 10px; }
+        .floating-panel strong { color: #c7d2fe; }
+
+        /* 設定彈窗 */
+        #settings-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        #settings-modal.open { display: flex; }
+        .settings-box {
+            background: #1a1a2e;
+            border: 1px solid #3f3f5a;
+            border-radius: 16px;
+            padding: 30px;
+            width: 560px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        .settings-box h2 {
+            color: #a5b4fc;
+            margin: 0 0 20px;
+            font-size: 1.2em;
+            border-bottom: 1px solid #3f3f5a;
+            padding-bottom: 12px;
+        }
+        .settings-box h4 {
+            color: #c7d2fe;
+            margin: 18px 0 6px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .settings-box label {
+            display: block;
+            color: #9CA3AF;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+        .settings-box input[type=text], .settings-box input[type=number], .settings-box textarea, .settings-box select {
+            width: 100%;
+            background: #2A2A40;
+            border: 1px solid #3f3f5a;
+            color: #F3F4F6;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .settings-box input:focus, .settings-box textarea:focus {
+            border-color: #4F46E5;
+        }
+        .settings-box textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        .settings-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .settings-actions button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .rag-indicator {
+            display: inline-block;
+            background: rgba(16,185,129,0.15);
+            border: 1px solid #10B981;
+            color: #10B981;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-size: 0.8em;
+            margin-left: 8px;
+        }
+
+        /* Mock Animation */
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+            border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- 設定彈窗 -->
+    <div id="settings-modal">
+        <div class="settings-box">
+            <h2>⚙️ 系統設定</h2>
+
+            <h4>🎯 學科範圍與教學指引</h4>
+            <label>學科範圍限定（告訴 AI 只回答哪些範圍）</label>
+            <input type="text" id="set-subject" placeholder="例：台灣 112 課綱 選修化學I，第1-4章">
+            <label>AI 角色與風格（讓 AI 知道它是誰）</label>
+            <textarea id="set-persona" placeholder="例：你是一位耐心的高中化學老師，專門輔導台灣高中生。回答時要先確認核心概念，再逐步推導。遇到不確定的內容務必說明不確定，不要亂猜。"></textarea>
+            <label>禁止行為（告訴 AI 不能做什麼）</label>
+            <input type="text" id="set-forbidden" placeholder="例：不要提及課綱以外的內容，不要使用簡體中文">
+
+            <h4>⚡ 回應速度與精準度調校</h4>
+            <div class="settings-row">
+                <div>
+                    <label>Temperature（0=精準/保守, 1=創意/發散）</label>
+                    <input type="number" id="set-temperature" min="0" max="1" step="0.05" value="0.3">
+                </div>
+                <div>
+                    <label>最大回覆長度（token 數，越小越快）</label>
+                    <input type="number" id="set-num-predict" min="200" max="4096" step="100" value="800">
+                </div>
+            </div>
+            <div class="settings-row">
+                <div>
+                    <label>記憶視窗大小（num_ctx，影響記憶多少對話）</label>
+                    <input type="number" id="set-num-ctx" min="1024" max="8192" step="512" value="4096">
+                </div>
+                <div>
+                    <label>模型保留時間（秒，0=用完即釋放）</label>
+                    <input type="number" id="set-keep-alive" min="0" max="3600" step="60" value="600">
+                </div>
+            </div>
+
+            <h4>📚 RAG 上下文注入（防止 AI 亂說）</h4>
+            <label>
+                <input type="checkbox" id="set-rag-enabled" checked>
+                &nbsp;啟用「當前頁面文字注入」— 回答前自動附上當前 PDF 頁的文字給 AI 作為依據
+            </label>
+            <br><br>
+
+            <div class="settings-actions">
+                <button onclick="closeSettings()" style="background:#3f3f5a; color:white;">取消</button>
+                <button onclick="saveSettings()" style="background:#4F46E5; color:white;">💾 儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 左側展示區 -->
+    <div id="presentation-pane">
+        <div class="canvas-toolbar">
+            <input type="file" id="pdf-upload" accept="application/pdf" style="display:none" onchange="handlePDFUpload(event)">
+            <label for="pdf-upload" class="tool-btn" style="cursor: pointer;">📂 載入 PDF</label>
+            <button class="tool-btn" onclick="prevPage()">◀</button>
+            <span id="page-num" style="font-weight: bold; color: white;">0 / 0</span>
+            <button class="tool-btn" onclick="nextPage()">▶</button>
+            <div style="width: 2px; height: 20px; background: #555; margin: 0 5px;"></div>
+            <button class="tool-btn" id="btn-pan" onclick="setPanMode()">✋ 拖曳</button>
+            <button class="tool-btn active" id="btn-draw" onclick="setDrawMode()">✏️ 畫筆</button>
+            <button class="tool-btn" id="btn-erase" onclick="setEraseMode()">🧽 橡皮擦</button>
+            <button class="tool-btn" onclick="clearCanvas()">🗑️ 清除畫布</button>
+            <div style="flex:1;"></div>
+            <button class="tool-btn" id="btn-crop" style="background: #10B981; color: white;" onclick="setCropMode()">✂️ 框選發問</button>
+        </div>
+        
+        <div class="display-area" style="position: relative; overflow: auto; background: #1e1e2f; align-items: center; justify-content: flex-start; padding: 20px;">
+            <!-- 隱藏的 PDF 渲染畫布 -->
+            <canvas id="pdf-render-canvas" style="display:none;"></canvas>
+            
+            <!-- Fabric 互動繪圖層 -->
+            <div style="box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <canvas id="drawing-canvas"></canvas>
+            </div>
+            
+            <!-- 浮動標籤容器 -->
+            <div id="floating-tags-container"></div>
+        </div>
+    </div>
+
+    <!-- 右側對話區 -->
+    <div id="chat-pane">
+        <div class="chat-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>AI 伴讀助理 <span id="rag-status-badge" class="rag-indicator" title="已啟用 RAG 頁面文字注入">📚 RAG</span></strong>
+            <button onclick="openSettings()" style="background:#3f3f5a; color:white; border:none; padding:6px 12px; border-radius:8px; cursor:pointer; font-size:0.9em;">⚙️ 設定</button>
+        </div>
+        <div class="connection-bar" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background-color: #232335; border-bottom: 1px solid #3f3f5a; flex-wrap: wrap;">
+            <input type="text" id="ollama-host" value="http://192.168.1.140:11434" style="flex: 2 1 180px; background:#3f3f5a; color:white; border:none; padding:6px 8px; border-radius:5px; font-size: 0.9em;" placeholder="Ollama 主機網址">
+            <button onclick="loadModels()" style="background:var(--primary); color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; font-weight:bold; font-size: 0.9em;">連線</button>
+            <select id="model-select" style="flex: 2 1 150px; background: #3f3f5a; color: white; border: none; padding: 6px 10px; border-radius: 5px; font-size: 0.9em;">
+                <option value="">請點擊連線...</option>
+            </select>
+            <button onclick="clearMemory()" style="background:#e74c3c; color:white; border:none; padding:6px 10px; border-radius:5px; cursor:pointer;" title="清空對話與展示區">🗑️</button>
+        </div>
+        
+        <div class="chat-history" id="chat-history">
+            <div class="message msg-ai">
+                你好！我是你的化學伴讀助理。我們今天想學習什麼？（試著輸入：「請解釋強酸滴定強鹼的過程，並畫出滴定曲線」）
+            </div>
+        </div>
+        
+        <div class="chat-input-area">
+            <label for="image-upload" class="image-upload-btn" title="上傳圖片">🖼️</label>
+            <input type="file" id="image-upload" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+            <img id="image-preview" src="" alt="preview">
+            <input type="text" id="user-input" placeholder="輸入文字 (或上傳圖片)..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">發送</button>
+        </div>
+    </div>
+
+    <script>
+        const chatHistory = document.getElementById('chat-history');
+        const displayArea = document.getElementById('display-area');
+        const userInput = document.getElementById('user-input');
+        const imagePreview = document.getElementById('image-preview');
+        const ollamaHostInput = document.getElementById('ollama-host');
+        const modelSelect = document.getElementById('model-select');
+        
+        let currentBase64Image = null;
+        let conversationHistory = [];
+        let tagCount = 0;
+        // 每頁的繪圖物件與浮動標籤資料
+        let pageDrawings = {};
+        let pageTags = {};
+        // 當前頁面 RAG 文字
+        let currentPageText = '';
+
+        // =============================================
+        // 設定管理 (localStorage)
+        // =============================================
+        const DEFAULT_SETTINGS = {
+            subject: '台灣 112 課綱，選修化學 I',
+            persona: '你是一位台灣高中化學老師，專門輔導 112 課綱「選修化學」的學生。解題時以化學核心概念為主軸，若問題牵涉物理、生物等跨域知識，請用「這在化學中的意義是...」的方式引導回化學，並清楚標示「延伸補充」。遇到不確定的公式或數據，務必坦誠說明，絕不猜測。',
+            forbidden: '不要捕造或猜測化學數據與公式；不要使用簡體中文；回答時不必列出與題目完全無關的知識',
+            temperature: 0.3,
+            numPredict: 800,
+            numCtx: 4096,
+            keepAlive: 600,
+            ragEnabled: true
+        };
+        let appSettings = { ...DEFAULT_SETTINGS };
+
+        function loadSettings() {
+            const saved = localStorage.getItem('aiTutorSettings');
+            if (saved) {
+                try { appSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) }; }
+                catch(e) { appSettings = { ...DEFAULT_SETTINGS }; }
+            }
+            applySettingsToUI();
+        }
+
+        function applySettingsToUI() {
+            document.getElementById('set-subject').value = appSettings.subject;
+            document.getElementById('set-persona').value = appSettings.persona;
+            document.getElementById('set-forbidden').value = appSettings.forbidden;
+            document.getElementById('set-temperature').value = appSettings.temperature;
+            document.getElementById('set-num-predict').value = appSettings.numPredict;
+            document.getElementById('set-num-ctx').value = appSettings.numCtx;
+            document.getElementById('set-keep-alive').value = appSettings.keepAlive;
+            document.getElementById('set-rag-enabled').checked = appSettings.ragEnabled;
+            document.getElementById('rag-status-badge').style.display = appSettings.ragEnabled ? 'inline-block' : 'none';
+        }
+
+        function saveSettings() {
+            appSettings = {
+                subject: document.getElementById('set-subject').value.trim(),
+                persona: document.getElementById('set-persona').value.trim(),
+                forbidden: document.getElementById('set-forbidden').value.trim(),
+                temperature: parseFloat(document.getElementById('set-temperature').value),
+                numPredict: parseInt(document.getElementById('set-num-predict').value),
+                numCtx: parseInt(document.getElementById('set-num-ctx').value),
+                keepAlive: parseInt(document.getElementById('set-keep-alive').value),
+                ragEnabled: document.getElementById('set-rag-enabled').checked
+            };
+            localStorage.setItem('aiTutorSettings', JSON.stringify(appSettings));
+            document.getElementById('rag-status-badge').style.display = appSettings.ragEnabled ? 'inline-block' : 'none';
+            closeSettings();
+        }
+
+        function openSettings() {
+            applySettingsToUI();
+            document.getElementById('settings-modal').classList.add('open');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('open');
+        }
+
+        // 點彈窗背景關閉
+        document.getElementById('settings-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('settings-modal')) closeSettings();
+        });
+
+        // 產生帶有設定的 system prompt
+        function buildSystemPrompt(role) {
+            const s = appSettings;
+            const base = s.persona || '你是一位專業的化學老師。';
+            const scope = s.subject ? `\n\n【學科範圍】：本系統專用於「${s.subject}」。` : '';
+            const forbidden = s.forbidden ? `\n【禁止事項】：${s.forbidden}。` : '';
+            const lang = '\n【語言規範】：一律使用繁體中文（台灣學術用語）。';
+
+            // 跨域引導與學習方向推薦機制
+            const offTopicGuide = `
+
+【引導規則——重要！請務必遵守】：
+你需要时常評估對話的方向。如果發現學生連續發問屬於以下情況，請依照說明的方式回應：
+
+情況 A——「跨域、相鄰領域問題」（例：問物理、生物、數學）：
+  • 先用 1-2 句說明其他領域的觀點。
+  • 再用「化學的角度來看，這在化學中的意義是...」引導回化學。
+  • 在回答末尾加上：「✨ 延伸學習方向：若想深入了解這個方向，可以參考『[XX]』，或搜尋關鍵字『[YY]』。」
+
+情況 B——「更進階、超出課綱的問題」（例：大學、研究所程度）：
+  • 先誚就學生的求知欲望：「這是一個很好的問題！這從大學化學的[XX]領域來看...」
+  • 用高中化學概念先建立地基，再指出進階學習路徑。
+  • 在回答末尾必須加上：「🔍 建議學習路徑：高中化學 → [下一個階段] → [進階資源或課程]。」
+
+情況 C——「完全跟化學無關的話題」（例：將作業、播放音樂）：
+  • 親切且幽默地回到學習主題：「哈哈，看起來你需要休息一下😄 不過我們指對了化學的大門！我們回到講義上的題目吧！」`;
+
+            return base + scope + forbidden + lang + offTopicGuide;
+        }
+
+        // 產生 Ollama 通用參數
+        function buildOllamaOptions() {
+            return {
+                temperature: appSettings.temperature,
+                num_predict: appSettings.numPredict,
+                num_ctx: appSettings.numCtx
+            };
+        }
+
+        // PDF & Fabric 變數
+        let pdfDoc = null;
+        let pageNum = 1;
+        let canvas = null;
+        const pdfRenderCanvas = document.getElementById('pdf-render-canvas');
+        const pdfCtx = pdfRenderCanvas.getContext('2d');
+        
+        let isDragging = false;
+        let lastPosX = 0;
+        let lastPosY = 0;
+        let isCropping = false;
+        let cropRect = null;
+        let cropStartX = 0;
+        let cropStartY = 0;
+
+        // 載入模型
+        async function loadModels() {
+            const host = ollamaHostInput.value.trim();
+            modelSelect.innerHTML = '<option value="">載入模型中...</option>';
+            try {
+                const response = await fetch(`${host}/api/tags`);
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+                modelSelect.innerHTML = '';
+                
+                if (data.models && data.models.length > 0) {
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.name;
+                        option.textContent = model.name;
+                        modelSelect.appendChild(option);
+                    });
+                    const defaultModel = data.models.find(m => m.name.includes('vision') || m.name.includes('vl') || m.name.includes('qwen2.5vl')) || data.models[0];
+                    modelSelect.value = defaultModel.name;
+                } else {
+                    modelSelect.innerHTML = '<option value="">無可用模型</option>';
+                }
+            } catch (e) {
+                console.error("無法連線至 Ollama 主機載入模型:", e);
+                modelSelect.innerHTML = '<option value="">連線失敗 (請確認網址與 CORS)</option>';
+            }
+        }
+
+        // 初始化 Fabric Canvas
+        window.onload = () => {
+            const container = document.querySelector('.display-area');
+            canvas = new fabric.Canvas('drawing-canvas', {
+                isDrawingMode: true,
+                width: container.clientWidth - 40,
+                height: container.clientHeight - 40,
+                backgroundColor: '#ffffff'
+            });
+            canvas.freeDrawingBrush.color = '#e74c3c';
+            canvas.freeDrawingBrush.width = 3;
+            
+            // 綁定畫布縮放 (滑鼠滾輪)
+            canvas.on('mouse:wheel', function(opt) {
+                var delta = opt.e.deltaY;
+                var zoom = canvas.getZoom();
+                zoom *= 0.999 ** delta;
+                if (zoom > 10) zoom = 10;
+                if (zoom < 0.1) zoom = 0.1;
+                canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+                opt.e.preventDefault();
+                opt.e.stopPropagation();
+            });
+
+            // 綁定畫布拖曳 (平移模式) 與框選模式
+            canvas.on('mouse:down', function(opt) {
+                if (isCropping) {
+                    var pointer = canvas.getPointer(opt.e);
+                    cropStartX = pointer.x;
+                    cropStartY = pointer.y;
+                    cropRect = new fabric.Rect({
+                        left: cropStartX,
+                        top: cropStartY,
+                        width: 0,
+                        height: 0,
+                        fill: 'rgba(16, 185, 129, 0.2)',
+                        stroke: '#10B981',
+                        strokeWidth: 2,
+                        strokeDashArray: [5, 5],
+                        selectable: false,
+                        evented: false
+                    });
+                    canvas.add(cropRect);
+                } else if (!canvas.isDrawingMode) {
+                    var evt = opt.e;
+                    isDragging = true;
+                    canvas.selection = false;
+                    lastPosX = evt.clientX;
+                    lastPosY = evt.clientY;
+                }
+            });
+            canvas.on('mouse:move', function(opt) {
+                if (isCropping && cropRect) {
+                    var pointer = canvas.getPointer(opt.e);
+                    if(cropStartX > pointer.x){
+                        cropRect.set({ left: pointer.x });
+                    } else {
+                        cropRect.set({ left: cropStartX });
+                    }
+                    if(cropStartY > pointer.y){
+                        cropRect.set({ top: pointer.y });
+                    } else {
+                        cropRect.set({ top: cropStartY });
+                    }
+                    cropRect.set({ width: Math.abs(cropStartX - pointer.x) });
+                    cropRect.set({ height: Math.abs(cropStartY - pointer.y) });
+                    canvas.requestRenderAll();
+                } else if (isDragging) {
+                    var e = opt.e;
+                    var vpt = canvas.viewportTransform;
+                    vpt[4] += e.clientX - lastPosX;
+                    vpt[5] += e.clientY - lastPosY;
+                    canvas.requestRenderAll();
+                    lastPosX = e.clientX;
+                    lastPosY = e.clientY;
+                }
+            });
+            canvas.on('mouse:up', function(opt) {
+                if (isCropping && cropRect) {
+                    // 1. 取得使用者在螢幕上畫出的邏輯座標與大小
+                    const left = cropRect.left;
+                    const top = cropRect.top;
+                    const width = cropRect.width;
+                    const height = cropRect.height;
+                    
+                    // 2. 移除虛線框並切回畫筆模式
+                    canvas.remove(cropRect);
+                    cropRect = null;
+                    isCropping = false;
+                    setDrawMode();
+                    
+                    if (width > 20 && height > 20) {
+                        // 3. 使用 clone 複製一個虛擬畫布，這能確保完全不影響使用者的畫面與效能
+                        canvas.clone(function(cloned) {
+                            try {
+                                // 4. 關鍵修復：將虛擬畫布的大小撐開到跟原始 PDF 背景圖一樣大，
+                                // 這樣 Fabric.js 在底層擷取時就不會因為畫布太小而把圖「切斷」或「留白」。
+                                if (cloned.backgroundImage) {
+                                    cloned.setWidth(cloned.backgroundImage.width);
+                                    cloned.setHeight(cloned.backgroundImage.height);
+                                }
+                                
+                                // 5. 使用原生的 toDataURL 進行最精準的邏輯座標裁切
+                                const dataUrl = cloned.toDataURL({
+                                    format: 'jpeg',
+                                    quality: 0.9,
+                                    left: left,
+                                    top: top,
+                                    width: width,
+                                    height: height
+                                });
+                                
+                                currentBase64Image = dataUrl.split(',')[1];
+                                
+                                const textInput = document.getElementById('user-input');
+                                if (textInput.value.trim() === '') {
+                                    textInput.value = '請解析我框選的這個部分。';
+                                }
+                                sendMessage();
+                            } catch (e) {
+                                console.error("截圖失敗:", e);
+                                alert("截圖發生錯誤: " + e.message);
+                            }
+                        });
+                    }
+                } else {
+                    canvas.setViewportTransform(canvas.viewportTransform);
+                    isDragging = false;
+                }
+            });
+            
+            // 當視窗大小改變時，動態調整畫布大小
+            window.addEventListener('resize', () => {
+                canvas.setWidth(container.clientWidth - 40);
+                canvas.setHeight(container.clientHeight - 40);
+            });
+            
+            // 初始化 PDF.js Worker
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            loadSettings();
+            loadModels();
+        };
+
+        // 載入 PDF
+        function handlePDFUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                const typedarray = new Uint8Array(e.target.result);
+                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                    pdfDoc = pdf;
+                    pageNum = 1;
+                    renderPage(pageNum);
+                });
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        // 渲染 PDF 頁面至 Fabric 背景
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                // 提高解析度至 2.5 倍以提升畫質
+                const viewport = page.getViewport({ scale: 2.5 });
+                pdfRenderCanvas.width = viewport.width;
+                pdfRenderCanvas.height = viewport.height;
+
+                const renderContext = {
+                    canvasContext: pdfCtx,
+                    viewport: viewport
+                };
+                page.render(renderContext).promise.then(() => {
+                    const dataUrl = pdfRenderCanvas.toDataURL('image/jpeg', 1.0);
+                    fabric.Image.fromURL(dataUrl, function(img) {
+                        // 設置背景圖片大小
+                        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                            originX: 'left',
+                            originY: 'top'
+                        });
+                        
+                        // 計算初始縮放比例以適應視窗
+                        const containerWidth = document.querySelector('.display-area').clientWidth - 40;
+                        const initialZoom = containerWidth / img.width;
+                        canvas.setZoom(initialZoom);
+                        canvas.absolutePan({x: 0, y: 0});
+                    });
+                    document.getElementById('page-num').textContent = `${pageNum} / ${pdfDoc.numPages}`;
+                });
+
+                // RAG: 同步擷取當前頁文字
+                if (appSettings.ragEnabled) {
+                    page.getTextContent().then(textContent => {
+                        currentPageText = textContent.items.map(i => i.str).join(' ');
+                    }).catch(() => { currentPageText = ''; });
+                } else {
+                    currentPageText = '';
+                }
+            });
+        }
+
+        // 儲存當前頁面的繪圖與標籤狀態
+        function saveCurrentPageState() {
+            // 儲存 fabric 物件 (排除背景)
+            const objects = canvas.getObjects();
+            if (objects.length > 0) {
+                pageDrawings[pageNum] = canvas.toJSON(['selectable', 'evented']);
+            } else {
+                delete pageDrawings[pageNum];
+            }
+        }
+
+        // 顯示指定頁面的標籤、隱藏其他頁標籤
+        function refreshTagsForPage(num) {
+            const container = document.getElementById('floating-tags-container');
+            Array.from(container.children).forEach(wrapper => {
+                wrapper.style.display = (wrapper.dataset.page == num) ? 'flex' : 'none';
+            });
+        }
+
+        // 還原頁面繪圖物件
+        function restorePageDrawings(num) {
+            if (pageDrawings[num]) {
+                canvas.loadFromJSON(pageDrawings[num], () => {
+                    canvas.renderAll();
+                });
+            } else {
+                canvas.clear();
+            }
+        }
+
+        function prevPage() {
+            if (pdfDoc && pageNum > 1) {
+                saveCurrentPageState();
+                pageNum--;
+                renderPage(pageNum);
+                restorePageDrawings(pageNum);
+                refreshTagsForPage(pageNum);
+            }
+        }
+
+        function nextPage() {
+            if (pdfDoc && pageNum < pdfDoc.numPages) {
+                saveCurrentPageState();
+                pageNum++;
+                renderPage(pageNum);
+                restorePageDrawings(pageNum);
+                refreshTagsForPage(pageNum);
+            }
+        }
+
+        function setCropMode() {
+            canvas.isDrawingMode = false;
+            canvas.defaultCursor = 'crosshair';
+            isCropping = true;
+            document.getElementById('btn-crop').classList.add('active');
+            document.getElementById('btn-pan').classList.remove('active');
+            document.getElementById('btn-draw').classList.remove('active');
+            document.getElementById('btn-erase').classList.remove('active');
+        }
+
+        function setPanMode() {
+            canvas.isDrawingMode = false;
+            canvas.defaultCursor = 'grab';
+            isCropping = false;
+            document.getElementById('btn-pan').classList.add('active');
+            document.getElementById('btn-crop').classList.remove('active');
+            document.getElementById('btn-draw').classList.remove('active');
+            document.getElementById('btn-erase').classList.remove('active');
+        }
+
+        function setDrawMode() {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.color = '#e74c3c';
+            canvas.freeDrawingBrush.width = 3;
+            isCropping = false;
+            document.getElementById('btn-draw').classList.add('active');
+            document.getElementById('btn-crop').classList.remove('active');
+            document.getElementById('btn-pan').classList.remove('active');
+            document.getElementById('btn-erase').classList.remove('active');
+        }
+
+        function setEraseMode() {
+            canvas.isDrawingMode = true;
+            canvas.freeDrawingBrush.color = '#ffffff'; // 簡化版橡皮擦 (白筆)
+            canvas.freeDrawingBrush.width = 30;
+            isCropping = false;
+            document.getElementById('btn-erase').classList.add('active');
+            document.getElementById('btn-crop').classList.remove('active');
+            document.getElementById('btn-draw').classList.remove('active');
+            document.getElementById('btn-pan').classList.remove('active');
+        }
+
+        function clearCanvas() {
+            canvas.clear();
+        }
+
+        // 新增浮動標籤 (迷你圓形圖示，綁定當前頁)
+        function addFloatingTag(title, htmlContent) {
+            tagCount++;
+            const currentPage = pageNum;
+            const container = document.getElementById('floating-tags-container');
+
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = 'display:flex; flex-direction:column; align-items:flex-end;';
+            wrapper.dataset.page = currentPage;
+
+            const tag = document.createElement('div');
+            tag.className = 'floating-tag';
+            tag.title = `筆記 #${tagCount}: ${title.substring(0, 20)}`;
+            tag.innerHTML = `🔖<span class="tag-badge">${tagCount}</span>`;
+
+            const panel = document.createElement('div');
+            panel.className = 'floating-panel';
+            panel.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #3f3f5a; padding-bottom:10px;">
+                    <strong style="color:#a5b4fc;">💡 AI 解析 #${tagCount}</strong>
+                    <button style="background:rgba(231,76,60,0.2); border:1px solid #e74c3c; color:#e74c3c; cursor:pointer; border-radius:6px; padding:3px 10px; font-size:0.85em;" onclick="this.closest('.floating-panel').style.display='none'">關閉</button>
+                </div>
+                <div style="font-size:0.9em; color:#9CA3AF; margin-bottom:10px;">📖 第 ${currentPage} 頁 · ${title.substring(0, 30)}</div>
+                <div>${htmlContent}</div>
+            `;
+
+            tag.onclick = () => {
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            };
+
+            wrapper.appendChild(tag);
+            wrapper.appendChild(panel);
+            container.appendChild(wrapper);
+
+            if (window.MathJax) {
+                MathJax.typesetPromise([panel]).catch(e => console.log(e));
+            }
+        }
+
+        // 清除記憶與畫面
+        function clearMemory() {
+            conversationHistory = [];
+            pageDrawings = {};
+            pageTags = {};
+            chatHistory.innerHTML = `
+                <div class="message msg-ai">
+                    你好！記憶已清空，我們可以開始全新的章節了。今天想學習什麼？
+                </div>`;
+            document.getElementById('floating-tags-container').innerHTML = '';
+            if (canvas) {
+                canvas.clear();
+            }
+            
+            const host = ollamaHostInput.value.trim();
+            const model = modelSelect.value;
+            if (model) {
+                fetch(`${host}/api/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: model, prompt: "", keep_alive: 0 })
+                }).catch(e => console.log("釋放模型記憶體失敗:", e));
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                currentBase64Image = dataUrl.split(',')[1];
+                imagePreview.src = dataUrl;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 安全的 MathJax 渲染函式——等待 MathJax 完全就緒再執行
+        function safeTypeset(element) {
+            if (!element) return;
+            const doTypeset = () => {
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([element]).catch(err => console.warn('MathJax typeset error:', err));
+                }
+            };
+            // 若 MathJax 已就緒則直接執行，否則延遲 300ms 對 MathJax 債載完成等候
+            if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                doTypeset();
+            } else {
+                setTimeout(doTypeset, 300);
+            }
+        }
+
+        // 在渲染 Markdown 前，先用佔位符保護 LaTeX 公式，避免被 marked.js 破壞
+        function safeParseMd(text) {
+            if (typeof marked === 'undefined') return text;
+            const math = [];
+            // 保護 display math: \[...\] 與 $$...$$
+            let s = text.replace(/(\$\$[\s\S]+?\$\$|\\\[[\s\S]+?\\\])/g, (m) => {
+                math.push(m);
+                return `@@MATH${math.length - 1}@@`;
+            });
+            // 保護 inline math: \(...\) 與 $...$
+            s = s.replace(/(\\\([\s\S]+?\\\)|\$[^\n$]+?\$)/g, (m) => {
+                math.push(m);
+                return `@@MATH${math.length - 1}@@`;
+            });
+            // 渲染 Markdown
+            let html = marked.parse(s);
+            // 還原 LaTeX
+            html = html.replace(/@@MATH(\d+)@@/g, (_, i) => math[parseInt(i)]);
+            return html;
+        }
+
+        function appendMessage(sender, text, status = null) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
+
+            if(status) {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'system-status';
+                statusDiv.innerHTML = status;
+                msgDiv.appendChild(statusDiv);
+            }
+
+            const textDiv = document.createElement('div');
+            if (sender === 'ai') {
+                textDiv.innerHTML = safeParseMd(text);
+            } else {
+                textDiv.innerHTML = text;
+            }
+            msgDiv.appendChild(textDiv);
+
+            chatHistory.appendChild(msgDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // 觸發 MathJax 渲染數學公式
+            safeTypeset(textDiv);
+
+            return msgDiv;
+        }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if(!text && !currentBase64Image) return;
+            
+            const selectedModel = modelSelect.value;
+            if(!selectedModel) {
+                alert("請先選擇或確認已連線至 Ollama 模型！");
+                return;
+            }
+            
+            const host = ollamaHostInput.value.trim();
+
+            let userDisplay = text || '請解析此圖片';
+            if (currentBase64Image) {
+                userDisplay += '<br><img src="data:image/jpeg;base64,' + currentBase64Image + '" style="max-width:200px; border-radius:8px; margin-top:8px;">';
+            }
+            appendMessage('user', userDisplay);
+            
+            // 清空輸入列與暫存圖片
+            userInput.value = '';
+            const tempBase64 = currentBase64Image;
+            const tempText = text;
+            currentBase64Image = null;
+            imagePreview.style.display = 'none';
+            imagePreview.src = '';
+            document.getElementById('image-upload').value = '';
+
+            // 建立 AI 顯示氣泡與狀態列
+            const aiMsg = appendMessage('ai', '<span class="streaming-text">準備分析問題...</span>', `🔄 [Step 1/3] 正在引導路由...`);
+            const textContainer = aiMsg.querySelector('.streaming-text');
+            const statusContainer = aiMsg.querySelector('.system-status');
+
+            try {
+                // ==========================================
+                // 步驟 1: Router (意圖分析與分流)
+                // ==========================================
+                statusContainer.innerHTML = `🔄 [1/3 Router] 正在分析您的提問意圖...`;
+                
+        const routerPrompt = `你是一個化學教學系統的路由分配器。
+請分析使用者的輸入（可能包含圖片或文字），判斷這是一個：
+A. 「日常問候、普通對話、或不需要詳細圖解的簡單問題」(請回覆: CHAT)
+B. 「涉及化學知識、概念解釋、考卷題目解說、或需要繪製圖表/滴定曲線的科學問題」(請回覆: TEACH)
+
+【強制規範】：請只回答 "CHAT" 或 "TEACH" 兩個英文單字之一，絕對不要有任何其他贅字、標點符號或解釋。`;
+
+                const ragContext = (appSettings.ragEnabled && currentPageText && currentPageText.length > 20)
+                    ? `\n\n【當前講義頁面內容（第 ${pageNum} 頁）—— 請僅根據此內容回答，若問題超出範圍請說明】：\n${currentPageText.substring(0, 1500)}`
+                    : '';
+
+                let routerUserMessage = {
+                    role: "user",
+                    content: (tempText || "請分析這張圖片的科學性質。") + ragContext
+                };
+                if (tempBase64) {
+                    routerUserMessage.images = [tempBase64];
+                }
+
+                const routerResponse = await fetch(`${host}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: [
+                            { role: "system", content: routerPrompt },
+                            routerUserMessage
+                        ],
+                        stream: false,
+                        options: buildOllamaOptions()
+                    })
+                });
+
+                if (!routerResponse.ok) throw new Error('Router 節點回應異常: ' + routerResponse.status);
+                const routerData = await routerResponse.json();
+                const routeResult = routerData.message.content.trim().toUpperCase();
+                console.log("Router 分流結果:", routeResult);
+
+                // 如果判定是 CHAT，直接進行一般對話
+                if (routeResult.includes("CHAT")) {
+                    statusContainer.innerHTML = `✅ [簡單對話模式]`;
+                    textContainer.innerHTML = `正在生成簡短回覆...`;
+
+                    const chatPayload = {
+                        model: selectedModel,
+                        messages: [
+                            { role: "system", content: buildSystemPrompt('chat') },
+                            ...conversationHistory,
+                            { role: "user", content: tempText || "你好" }
+                        ],
+                        stream: true,
+                        options: buildOllamaOptions()
+                    };
+
+                    const chatResponse = await fetch(`${host}/api/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(chatPayload)
+                    });
+
+                    if (!chatResponse.ok) throw new Error('對話伺服器回應異常');
+                    
+                    const reader = chatResponse.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let chatAccumulated = '';
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // 保留最後一行不完整的字串到下一次
+                        for (const line of lines) {
+                            if (line.trim() === '') continue;
+                            try {
+                                const parsed = JSON.parse(line);
+                                if (parsed.error) throw new Error(parsed.error);
+                                if (parsed.message && parsed.message.content) {
+                                    chatAccumulated += parsed.message.content;
+                                    textContainer.innerHTML = safeParseMd(chatAccumulated);
+                                }
+                            } catch (e) {
+                                if (e.message && e.message !== 'Unexpected end of JSON input' && !e.message.includes('JSON')) {
+                                    throw e; // 拋出 Ollama 傳回的錯誤
+                                }
+                                console.warn('JSON parse error in chat stream:', e);
+                            }
+                        }
+                    }
+                    if (buffer.trim() !== '') {
+                        try {
+                            const parsed = JSON.parse(buffer);
+                            if (parsed.message && parsed.message.content) {
+                                chatAccumulated += parsed.message.content;
+                                textContainer.innerHTML = safeParseMd(chatAccumulated);
+                            }
+                        } catch (e) {}
+                    }
+
+                    safeTypeset(textContainer);
+
+                    // 儲存對話紀錄
+                    conversationHistory.push({ role: "user", content: tempText || "你好" });
+                    conversationHistory.push({ role: "assistant", content: chatAccumulated });
+                    return; 
+                }
+
+                // ==========================================
+                // 步驟 2: Reasoner (學術推理大腦)
+                // ==========================================
+                statusContainer.innerHTML = `🧠 [2/3 Reasoner] 正在進行深度科學推理...`;
+                textContainer.innerHTML = `<span style="color:var(--text-muted);">大腦正在解析原理中，請稍候...</span>`;
+
+                const reasonerSystemPrompt = buildSystemPrompt('reasoner') + `
+
+你需要：
+1. 說明背後的物理/化學核心原理。
+2. 條列式推導公式或反應步驟（若有）。
+3. 總結學習要點，幫助學生記憶。
+4. 如果問題與提供的講義頁面無關，請先說明。`;
+
+                let reasonerUserMsg = {
+                    role: "user",
+                    content: (tempText || "請解析這張圖並進行化學解說。") + ragContext
+                };
+                if (tempBase64) {
+                    reasonerUserMsg.images = [tempBase64];
+                }
+
+                const reasonerResponse = await fetch(`${host}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: [
+                            { role: "system", content: reasonerSystemPrompt },
+                            ...conversationHistory,
+                            reasonerUserMsg
+                        ],
+                        stream: true,
+                        options: buildOllamaOptions()
+                    })
+                });
+
+                if (!reasonerResponse.ok) throw new Error('Reasoner 節點回應異常');
+                
+                const reasonerReader = reasonerResponse.body.getReader();
+                const reasonerDecoder = new TextDecoder('utf-8');
+                let reasonerAccumulated = '';
+                let reasonerBuffer = '';
+
+                while (true) {
+                    const { done, value } = await reasonerReader.read();
+                    if (done) break;
+                    reasonerBuffer += reasonerDecoder.decode(value, { stream: true });
+                    const lines = reasonerBuffer.split('\n');
+                    reasonerBuffer = lines.pop();
+                    for (const line of lines) {
+                        if (line.trim() === '') continue;
+                        try {
+                            const parsed = JSON.parse(line);
+                            if (parsed.error) throw new Error(parsed.error);
+                            if (parsed.message && parsed.message.content) {
+                                reasonerAccumulated += parsed.message.content;
+                                textContainer.innerHTML = safeParseMd(reasonerAccumulated);
+                            }
+                        } catch(e) {
+                            if (e.message && e.message !== 'Unexpected end of JSON input' && !e.message.includes('JSON')) {
+                                throw e;
+                            }
+                        }
+                    }
+                }
+                if (reasonerBuffer.trim() !== '') {
+                    try {
+                        const parsed = JSON.parse(reasonerBuffer);
+                        if (parsed.message && parsed.message.content) {
+                            reasonerAccumulated += parsed.message.content;
+                            textContainer.innerHTML = safeParseMd(reasonerAccumulated);
+                        }
+                    } catch(e) {}
+                }
+
+                safeTypeset(textContainer);
+
+                if (!reasonerAccumulated.trim()) {
+                    throw new Error("Reasoner 回傳內容為空，可能是因為超出模型的 Context 長度限制，請嘗試調高設定中的『記憶視窗大小』或清除對話紀錄。");
+                }
+
+                // ==========================================
+                // 步驟 3: Visualizer (視覺化繪圖師)
+                // ==========================================
+                statusContainer.innerHTML = `🎨 [3/3 Visualizer] 正在設計排版與生成圖表...`;
+                
+                const visualizerPrompt = `你是一個網頁前端 UI/UX 設計師與科學圖表工程師。
+請閱讀以下【化學解說內容】，並將其**完整且忠實地**轉換成極具設計感、適合放在網頁上展示的 HTML 講義。
+
+【圖表生成規則（非常重要）】：
+因為你無法直接看見自己用 SVG 繪製的實體裝置，請嚴格遵守以下策略：
+1. 若需解說【實驗裝置、物理現象、因果關係、推導步驟】（例如：陰極射線管、原子結構）：**絕對不要勉強使用 SVG 畫裝置**。請使用 Mermaid.js 語法繪製精美的「流程圖 (Flowchart)」或「概念圖」。
+   - Mermaid 語法必須包裝在 <pre class="mermaid"> 標籤內。例如：<pre class="mermaid">graph TD; A[電子束]-->B[擋板]; B-->C[陰影];</pre>
+2. 若需解說【數據圖表、數學函數、折線圖】（例如：酸鹼滴定曲線、反應速率圖）：才可以使用 <svg> 繪製。
+   - SVG 必須包含 viewBox，並設定 style="width:100%; max-width:600px; height:auto; display:block; margin:10px auto;"。
+
+【HTML 格式規範】：
+1. 直接生成可插入 <div> 的 HTML，不要有任何 \`\`\`html 等 Markdown 包裝。
+2. 使用現代化暗色系配色（背景 #1a1a2e，強調色 #4F46E5、#10B981 等）。
+3. 全程使用繁體中文（台灣學術用語），絕不使用簡體字。
+
+【以下是需要轉換的化學解說內容】：
+${reasonerAccumulated}`;
+
+                const visualizerResponse = await fetch(`${host}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: [
+                            { role: "user", content: visualizerPrompt }
+                        ],
+                        stream: false // 圖表一次拿完再進行動態注入，避免畫面閃爍
+                    })
+                });
+
+                if (!visualizerResponse.ok) throw new Error('Visualizer 節點回應異常');
+                const visualizerData = await visualizerResponse.json();
+                let htmlCode = visualizerData.message.content.trim();
+
+                // 清理可能殘留的 markdown 標籤
+                htmlCode = htmlCode.replace(/^```html\s*/i, '').replace(/```\s*$/, '');
+
+                // 建立題目 HTML 內容
+                let userQuestionHtml = `<div style="font-size: 1.1em; font-weight: bold; color: #2c3e50;">${tempText || "圖片解析提問"}</div>`;
+                if (tempBase64) {
+                    userQuestionHtml += `<br><img src="data:image/jpeg;base64,${tempBase64}" style="max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 10px; border: 1px solid #e2e8f0; display: block;">`;
+                }
+
+                // 新增浮動側邊標籤取代原本的覆蓋渲染
+                const tagTitle = tempText && tempText !== '請解析我框選的這個部分。' && tempText !== '請看左邊畫布上我標記的地方，並為我解說。'
+                    ? tempText
+                    : (reasonerAccumulated.split('。')[0].substring(0, 25) || '提問');
+                addFloatingTag(tagTitle, htmlCode);
+                
+                // 觸發 Mermaid 渲染
+                setTimeout(() => {
+                    if (window.mermaid) {
+                        mermaid.run({ querySelector: '.mermaid' }).catch(e => console.log('Mermaid error:', e));
+                    }
+                }, 100);
+
+                // 更新對話框：顯示 Reasoner 的摘要文字，並提示使用者查看標籤
+                const summary = reasonerAccumulated.length > 200
+                    ? reasonerAccumulated.substring(0, 200) + '...'
+                    : reasonerAccumulated;
+                textContainer.innerHTML = safeParseMd(summary) +
+                    `<div style="margin-top:12px; padding:10px 14px; background:rgba(79,70,229,0.15); border-left:3px solid #4F46E5; border-radius:6px; font-size:0.9em; color:#a5b4fc;">
+                        🔖 完整的圖解與說明已儲存至右上角標籤，點擊 <strong>🔖</strong> 即可查閱。
+                    </div>`;
+                safeTypeset(textContainer);
+
+                // 更新狀態
+                statusContainer.innerHTML = `✅ [三智能體協作] 教學內容生成完畢`;
+
+                // 記錄對話歷史
+                conversationHistory.push({
+                    role: "user",
+                    content: tempText || "請解析這張圖片並說明其中的科學原理。"
+                });
+                conversationHistory.push({
+                    role: "assistant",
+                    content: reasonerAccumulated
+                });
+
+            } catch (error) {
+                console.error("Multi-Agent Workflow Error:", error);
+                statusContainer.innerHTML = `❌ 協作流程中斷`;
+                textContainer.innerHTML = `
+                    <span style="color:#e74c3c;">連線至 Ollama 主機失敗或中途超時！</span><br>
+                    <small>錯誤訊息: ${error.message}<br>
+                    請確認您的 Ollama 是否已正確設定 <code>OLLAMA_ORIGINS="*"</code> 並且已載入對應的模型。</small>
+                `;
+            }
+        } // 閉合 sendMessage 函式
+
+        // loadModels() 移至 window.onload 中執行
+    </script>
+</body>
+</html>

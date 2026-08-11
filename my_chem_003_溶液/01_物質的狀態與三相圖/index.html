@@ -23,76 +23,105 @@
             --accent-purple: #a855f7;
             --accent-cyan: #22d3ee;
         }
-        
+
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #app { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
-        #presentation-area { position: relative; width: 100vw; height: 100vh; background: transparent; overflow: hidden; }
-        #slides-container { position: absolute; top: 2vh; left: 5vw; right: 5vw; bottom: 5vh; }
-        
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 0.5rem 6rem 1rem 2rem; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-        @media (max-width: 768px) { .slide { padding: 0.5rem 4.5rem 1rem 1.5rem; } }
-        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; }
-        
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
+
+        /* slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 4rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4rem 1.5rem 1.5rem; } }
+
         .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
         .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
-        .slide p, .slide li { font-size: clamp(1.1rem, 1.3vw, 1.3rem); line-height: 1.6; margin-bottom: 0.6rem; }
-        
-        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.6rem); text-align: center; overflow-x: auto; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-purple { color: var(--accent-purple); }
+
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
         .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
         .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
         .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
-        
-        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; font-size: 1.1rem; }
+
+        /* Drawing layer – matches whole scrollable document */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Toolbar */
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+        #btn-top { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Tables */
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
         .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); font-weight: bold; }
-        .table-chem td { color: rgba(255,255,255,0.9); }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        .table-chem td { color: rgba(255,255,255,0.9); font-size: clamp(0.95rem, 1.3vw, 1.2rem); }
 
-        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 20; pointer-events: none; touch-action: none; }
-        #drawing-layer.drawing-active { pointer-events: auto; }
-        
-        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 10px 5px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 2000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 45px; }
-        .btn-tool { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
-        .btn-tool:hover { background: rgba(255,255,255,0.1); }
-        .btn-tool.active-tool, .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
-        .btn-tool svg { width: 20px; height: 20px; fill: currentColor; }
-        
-        .color-picker { display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px; }
-        .color-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; margin: 0 auto; }
-        .color-swatch.selected { border-color: white; transform: scale(1.2); }
-        
-        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; margin-bottom: 5px; margin-top: -5px; user-select: none; font-size: 1.2rem; line-height: 0.5; }
-        
-        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
-        
-        .btn { background: var(--accent-blue); color: #000; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: transform 0.2s, background 0.2s; }
-        .btn:hover { transform: translateY(-2px); background: #7dd3fc; }
-        
-        .text-red { color: var(--accent-red); }
-        .text-cyan { color: var(--accent-cyan); }
-        .text-yellow { color: var(--accent-yellow); }
-        .text-green { color: var(--accent-green); }
-        .text-purple { color: var(--accent-purple); }
+        /* Example question layout: left 1.3 / right 1 */
+        .ex-split-row { display: flex; gap: 2rem; margin-top: 1rem; align-items: stretch; min-height: 67vh; }
+        .ex-left  { flex: 1.3; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ex-right { flex: 1;   background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 67vh; position: relative; }
+        .ex-options { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .ex-options li { padding: 0.35rem 0; font-size: clamp(1rem, 1.4vw, 1.3rem); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ex-options li:last-child { border-bottom: none; }
+        .ex-answer-box { background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1rem 1.5rem; margin: 0.8rem 0; width: 100%; display: none; }
+        .ex-answer-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .ans-body  { color: white; font-size: 1.1rem; line-height: 1.8; }
+        .btn-show-ans { margin-top: auto; align-self: flex-start; padding: 8px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
 
+        /* Random Draw styles */
+        .draw-ball { width: 100%; aspect-ratio: 1/1; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+
+        /* Game items */
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 22px; height: 22px; background: #fff; border-radius: 50%; cursor: crosshair; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .left-dot { margin-left: auto; }
+        .right-dot { margin-right: auto; }
+        .dot:hover { transform: scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="start-overlay">
             <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">物質的狀態與三相圖</h1>
-            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">高中選修化學教學模組</p>
-            <button id="btn-start" class="btn primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px;">▶ 點擊進入全螢幕教學</button>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">溶液化學 · 高中選修化學教學模組</p>
+            <button id="btn-start" class="btn-tool primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px; width: auto; border-radius: 50px;">▶ 進入教學</button>
         </div>
 
         <div id="presentation-area">
             <div id="slides-container">
-                
-                <!-- Slide 1: States of Matter -->
-                <div class="slide active">
-                    <h1>物質三態間的變化與性質</h1>
+
+                <!-- Slide 1: States of Matter Table -->
+                <div class="slide">
+                    <h1>物質三態的性質比較</h1>
                     <p style="text-align:center;">不同的狀況下，物質的三態可以互相轉換，並伴隨著能量的吸收或放出。</p>
-                    <table class="table-chem" style="margin-top: 2rem;">
+                    <table class="table-chem" style="margin-top: 1rem;">
                         <tr>
                             <th>性質</th>
                             <th class="text-cyan">固態 (Solid)</th>
@@ -109,17 +138,17 @@
                             <td>分子間作用力</td>
                             <td>大</td>
                             <td>中</td>
-                            <td>小</td>
+                            <td>小（可忽略）</td>
                         </tr>
                         <tr>
                             <td>分子間距離</td>
                             <td>緊密靠在一起</td>
                             <td>緊密，但有流動性</td>
-                            <td>分子可自由運動 (距離遠)</td>
+                            <td>分子可自由運動（距離遠）</td>
                         </tr>
                         <tr>
                             <td>密度</td>
-                            <td>大 (少數例外如冰、銻、生鐵)</td>
+                            <td>大（少數例外如冰、銻、生鐵）</td>
                             <td>通常比固態小</td>
                             <td>低</td>
                         </tr>
@@ -133,12 +162,12 @@
                             <td>分子運動方式</td>
                             <td>振動與轉動</td>
                             <td>振動、轉動、移動</td>
-                            <td>振動、轉動、移動</td>
+                            <td>振動、轉動、移動（高速）</td>
                         </tr>
                     </table>
                 </div>
 
-                <!-- Slide 2: Phase Changes -->
+                <!-- Slide 2: Phase Changes (Vaporization & Condensation) -->
                 <div class="slide">
                     <h1>物質的相變化 (一)：汽化與凝結</h1>
                     <div class="flex-row">
@@ -147,11 +176,13 @@
                             <ul>
                                 <li>液體其表面分子，慢慢吸收空氣中的熱而離開液面的現象。</li>
                                 <li>是一種<strong class="text-cyan">緩和的汽化</strong>。</li>
+                                <li>蒸發速率與溫度、液體暴露面積及空氣流動有關。</li>
                             </ul>
                             <h2 class="text-yellow">蒸氣壓 (Vapor Pressure)</h2>
                             <ul>
                                 <li>液體分子離開液面形成氣體後，造成的壓力。</li>
                                 <li>凝結：氣態粒子撞擊液面重回到液體的現象。</li>
+                                <li>當蒸發速率 ＝ 凝結速率，達到<strong class="text-green">動態平衡</strong>，此壓力稱飽和蒸氣壓。</li>
                             </ul>
                         </div>
                         <div class="flex-col">
@@ -169,7 +200,7 @@
                     </div>
                 </div>
 
-                <!-- Slide 3: Sublimation & Heat -->
+                <!-- Slide 3: Sublimation & Heats -->
                 <div class="slide">
                     <h1>物質的相變化 (二)：昇華與相變熱</h1>
                     <div class="flex-row">
@@ -191,14 +222,15 @@
                                 <li>沸點愈高的液體，分子間引力愈強，所需莫耳汽化熱愈多。</li>
                                 <li><strong>莫耳熔化熱：</strong>破壞固態粒子間的作用力與晶體的穩定排列。</li>
                                 <li>同一物質：<strong class="text-red">莫耳汽化熱 ＞ 莫耳熔化熱</strong>。</li>
+                                <li><strong>莫耳昇華熱：</strong>≈ 莫耳汽化熱 + 莫耳熔化熱。</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slide 4: Melting & Freezing -->
+                <!-- Slide 4: Melting, Supercooling -->
                 <div class="slide">
-                    <h1>物質的相變化 (三)：熔化與壓力效應</h1>
+                    <h1>物質的相變化 (三)：熔化與特殊現象</h1>
                     <div class="flex-row" style="align-items: center; gap: 2rem;">
                         <div class="flex-col" style="flex: 1 1 350px;">
                             <h2 class="text-yellow">熔化 (Melting)</h2>
@@ -215,26 +247,17 @@
                         <div class="flex-col" style="flex: 1 1 400px; background: rgba(255,255,255,0.05); text-align: center; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                             <h3 style="color:var(--accent-purple); margin-bottom:1rem; font-size:1.4rem;">冷卻曲線與過冷現象</h3>
                             <svg width="100%" height="250" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid meet">
-                                <!-- Axes -->
-                                <line x1="40" y1="130" x2="280" y2="130" stroke="var(--text-main)" stroke-width="2"/> <!-- Time -->
-                                <line x1="40" y1="130" x2="40" y2="20" stroke="var(--text-main)" stroke-width="2"/> <!-- Temp -->
+                                <line x1="40" y1="130" x2="280" y2="130" stroke="var(--text-main)" stroke-width="2"/>
+                                <line x1="40" y1="130" x2="40" y2="20" stroke="var(--text-main)" stroke-width="2"/>
                                 <text x="285" y="135" fill="var(--text-main)" font-size="12">時間</text>
                                 <text x="35" y="15" fill="var(--text-main)" font-size="12" text-anchor="end">溫度</text>
-                                
-                                <!-- Freezing Point Line (dashed) -->
                                 <line x1="40" y1="60" x2="280" y2="60" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
                                 <text x="35" y="65" fill="var(--accent-yellow)" font-size="12" text-anchor="end">凝固點</text>
-                                
-                                <!-- Cooling Curve -->
                                 <path d="M 40 20 L 100 60 L 120 90 L 130 60 L 220 60 L 260 100" fill="none" stroke="var(--accent-cyan)" stroke-width="3" stroke-linejoin="round"/>
-                                
-                                <!-- Labels -->
                                 <text x="70" y="35" fill="var(--accent-cyan)" font-size="12">液體冷卻</text>
                                 <text x="175" y="55" fill="var(--accent-yellow)" font-size="12" text-anchor="middle">固液共存 (凝固放熱)</text>
                                 <text x="250" y="90" fill="var(--accent-cyan)" font-size="12">固體冷卻</text>
-                                
                                 <circle cx="120" cy="90" r="4" fill="var(--accent-purple)"/>
-                                <!-- 指引線與說明 -->
                                 <line x1="120" y1="90" x2="150" y2="110" stroke="var(--accent-purple)" stroke-width="1"/>
                                 <text x="155" y="115" fill="var(--accent-purple)" font-size="12">過冷液體</text>
                             </svg>
@@ -242,7 +265,7 @@
                     </div>
                 </div>
 
-                <!-- Slide 5: Phase Diagram -->
+                <!-- Slide 5: Phase Diagram concepts -->
                 <div class="slide">
                     <h1>相圖 (Phase Diagram) 核心觀念</h1>
                     <p style="text-align:center;">表示物質在各相平衡時，壓力 (P-atm) 與溫度 (℃) 的關係曲線圖。</p>
@@ -252,9 +275,10 @@
                             <ul style="font-size: 1rem; margin-bottom: 0;">
                                 <li><strong>三相點：</strong>固液氣三相共存的唯一平衡點。</li>
                                 <li><strong>臨界點：</strong>超過臨界溫度，無論加多大壓力皆無法液化。</li>
+                                <li><strong>超臨界流體：</strong>溫度超過臨界溫度，壓力超過臨界壓力時的狀態。</li>
                             </ul>
-                            
-                            <h2 class="text-green" style="margin-top:1rem; font-size: 1.2rem;">壓力對熔點的影響 <span style="font-size:0.9rem;color:#888;">(對應右方曲線)</span></h2>
+
+                            <h2 class="text-green" style="margin-top:1rem; font-size: 1.2rem;">壓力對熔點的影響</h2>
                             <div class="rule-card" style="border-color: var(--accent-blue); padding: 0.8rem; margin-bottom: 0.5rem;">
                                 <h3 style="font-size: 1rem; margin-bottom: 0.2rem; color: var(--accent-blue);">1. 熔化時體積「收縮」 (如：水、鉍、銻)</h3>
                                 <p style="font-size: 0.95rem; margin-bottom: 0;">加壓有助收縮 $\rightarrow$ <strong class="text-red">加壓使熔點下降</strong>。<br><span style="color:#aaa;">(固液共存曲線向左傾斜，斜率為負)</span></p>
@@ -269,22 +293,17 @@
                             <div style="flex: 1; position:relative; background:rgba(255,255,255,0.05); border-radius:10px; padding:0.5rem; text-align:center; min-height: 180px;">
                                 <h3 style="color:var(--accent-cyan); margin-bottom:0.2rem; font-size:1.1rem;">水 (H₂O) 的三相圖 <span style="font-size:0.8rem;color:#888;">(熔點曲線斜率為負)</span></h3>
                                 <svg width="100%" height="160" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet">
-                                    <!-- Axes -->
                                     <line x1="40" y1="180" x2="280" y2="180" stroke="var(--text-main)" stroke-width="2"/>
                                     <line x1="40" y1="180" x2="40" y2="20" stroke="var(--text-main)" stroke-width="2"/>
                                     <text x="285" y="185" fill="var(--text-main)" font-size="12">T (℃)</text>
                                     <text x="35" y="15" fill="var(--text-main)" font-size="12" text-anchor="end">P (atm)</text>
-                                    <!-- Regions -->
                                     <text x="80" y="80" fill="var(--accent-blue)" font-size="16">固 (冰)</text>
                                     <text x="170" y="60" fill="var(--accent-green)" font-size="16">液 (水)</text>
                                     <text x="220" y="160" fill="var(--accent-red)" font-size="16">氣 (水蒸氣)</text>
-                                    <!-- Triple Point -->
                                     <circle cx="120" cy="140" r="4" fill="var(--accent-yellow)"/>
                                     <text x="130" y="145" fill="var(--accent-yellow)" font-size="11">三相點 (0.01℃, 4.58mmHg)</text>
-                                    <!-- Critical Point -->
                                     <circle cx="250" cy="40" r="4" fill="var(--accent-red)"/>
                                     <text x="240" y="35" fill="var(--accent-red)" font-size="11" text-anchor="end">臨界點 (374℃, 218atm)</text>
-                                    <!-- Curves -->
                                     <path d="M 40 180 Q 80 160 120 140" fill="none" stroke="var(--accent-yellow)" stroke-width="2"/>
                                     <!-- Negative slope melting curve -->
                                     <path d="M 120 140 Q 115 80 100 30" fill="none" stroke="var(--accent-blue)" stroke-width="2"/>
@@ -295,22 +314,17 @@
                             <div style="flex: 1; position:relative; background:rgba(255,255,255,0.05); border-radius:10px; padding:0.5rem; text-align:center; min-height: 180px;">
                                 <h3 style="color:var(--accent-cyan); margin-bottom:0.2rem; font-size:1.1rem;">二氧化碳 (CO₂) 的三相圖 <span style="font-size:0.8rem;color:#888;">(熔點曲線斜率為正)</span></h3>
                                 <svg width="100%" height="160" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet">
-                                    <!-- Axes -->
                                     <line x1="40" y1="180" x2="280" y2="180" stroke="var(--text-main)" stroke-width="2"/>
                                     <line x1="40" y1="180" x2="40" y2="20" stroke="var(--text-main)" stroke-width="2"/>
                                     <text x="285" y="185" fill="var(--text-main)" font-size="12">T (℃)</text>
                                     <text x="35" y="15" fill="var(--text-main)" font-size="12" text-anchor="end">P (atm)</text>
-                                    <!-- Regions -->
                                     <text x="80" y="70" fill="var(--accent-blue)" font-size="16">固 (乾冰)</text>
                                     <text x="150" y="60" fill="var(--accent-green)" font-size="16">液態</text>
                                     <text x="200" y="150" fill="var(--accent-red)" font-size="16">氣態</text>
-                                    <!-- Triple Point -->
                                     <circle cx="120" cy="120" r="4" fill="var(--accent-yellow)"/>
                                     <text x="130" y="125" fill="var(--accent-yellow)" font-size="11">三相點 (-56.6℃, 5.11atm)</text>
-                                    <!-- Critical Point -->
                                     <circle cx="230" cy="40" r="4" fill="var(--accent-red)"/>
                                     <text x="220" y="35" fill="var(--accent-red)" font-size="11" text-anchor="end">臨界點 (31℃, 72.8atm)</text>
-                                    <!-- Curves -->
                                     <path d="M 40 180 Q 80 150 120 120" fill="none" stroke="var(--accent-yellow)" stroke-width="2"/>
                                     <!-- Positive slope melting curve -->
                                     <path d="M 120 120 Q 130 80 140 30" fill="none" stroke="var(--accent-blue)" stroke-width="2"/>
@@ -331,6 +345,7 @@
                                 <li>在低於臨界溫度下，可區分物質為氣體或液體。</li>
                                 <li>溫度<strong class="text-red">高於臨界溫度</strong>時，隨著壓力變大，物質的密度也變大（如液體般），但卻無法凝結。</li>
                                 <li>統稱為流體 (fluid)，具備高擴散性與強溶解力。</li>
+                                <li>應用：超臨界 CO₂ 用於萃取咖啡因、香料等。</li>
                             </ul>
                         </div>
                         <div class="flex-col">
@@ -340,136 +355,244 @@
                                     <li>具有特殊形狀分子組合時產生。</li>
                                     <li>它們<strong class="text-cyan">可以流動</strong>（具備液體的性質）。</li>
                                     <li>又<strong class="text-green">擁有結晶的光學性質</strong>（具備固體的光學各向異性）。</li>
+                                    <li>應用：LCD 螢幕顯示技術。</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slide 7: Examples 1 -->
+                <!-- Slide 7: Examples (left 1.3 / right 1) -->
                 <div class="slide">
-                    <h1>觀念演練：狀態判斷</h1>
-                    <div class="flex-row">
-                        <div class="flex-col" style="position: relative;">
-                            <div id="overlay-ans-1" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red);">
-                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(B)</div>
-                                <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.6;">
-                                    在 $0^\circ\text{C}$ 時（高於三相點 $0.0098^\circ\text{C}$ 的左側，但低於正常熔點）。<br>
-                                    當壓力為 $2\text{ atm}$ 時，因加壓冰點下降，此時為<strong class="text-cyan">水 (液態)</strong>。<br>
-                                    壓力下降至 $1\text{ atm}$（正常壓力，熔點為 $0^\circ\text{C}$）時，會部分結冰形成<strong class="text-cyan">冰 (固態)</strong>。<br>
-                                    壓力繼續降至低於 $4.58\text{ mmHg}$ 時，會昇華變成<strong class="text-cyan">水蒸氣</strong>。<br>
-                                    故過程為 水 → 冰 → 水蒸氣。
+                    <h1>範例題</h1>
+
+                    <!-- Ex 1 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 1</h2>
+                            <p>已知水的三相點 (T點)：壓力 $4.58\text{ mmHg}$，溫度 $0.0098^\circ\text{C}$。<br>
+                            臨界點 (C點)：壓力 $217.7\text{ atm}$，溫度 $374.1^\circ\text{C}$。<br>
+                            將水的溫度維持在 $0^\circ\text{C}$，壓力自 $2\text{ atm}$ 逐漸下降，則在過程中，純水的狀態如何改變？</p>
+                            <ul class="ex-options">
+                                <li>(A) 冰 → 水 → 水蒸氣</li>
+                                <li>(B) 水 → 冰 → 水蒸氣</li>
+                                <li>(C) 冰 → 水蒸氣 → 水</li>
+                                <li>(D) 水蒸氣 → 水 → 冰</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-1">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-1" class="ex-answer-box">
+                                <div class="ans-label">解答：(B)</div>
+                                <div class="ans-body">
+                                    在 $0^\circ\text{C}$ 時（高於三相點 $0.0098^\circ\text{C}$ 的溫度）。<br>
+                                    壓力 $2\text{ atm}$：此時高於三相點壓力，且冰的熔點曲線（斜率為負）在 $0^\circ\text{C}$ 對應壓力約 $1\text{ atm}$，而 $2\text{ atm}$ 使熔點下降，故為<strong class="text-cyan">液態水</strong>。<br>
+                                    降壓至 $1\text{ atm}$（正常熔點 $0^\circ\text{C}$）時，繼續降壓，熔點上升，會開始結冰，形成<strong class="text-cyan">冰（固態）</strong>。<br>
+                                    壓力繼續降至低於 $4.58\text{ mmHg}$ 時，冰會昇華變成<strong class="text-cyan">水蒸氣</strong>。<br>
+                                    故過程為：<strong>水 → 冰 → 水蒸氣</strong>。
                                 </div>
-                                <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-1')">關閉</button>
-                            </div>
-                            <h2 class="text-yellow">例題 1</h2>
-                            <p style="font-size:1.2rem;">已知水的三相點（T點）：壓力 $4.58\text{ mmHg}$，溫度 $0.0098^\circ\text{C}$。<br>臨界點（C點）：壓力 $217.7\text{ atm}$，溫度 $374.1^\circ\text{C}$。<br>將水的溫度維持在 $0^\circ\text{C}$，壓力自 $2\text{ atm}$ 逐漸下降，則在過程中，純水的狀態如何改變？</p>
-                            <div style="font-size:1.2rem; margin-top: 1rem;">
-                                (A) 冰 → 水 → 水蒸氣<br>
-                                (B) 水 → 冰 → 水蒸氣<br>
-                                (C) 冰 → 水蒸氣 → 水<br>
-                                (D) 水蒸氣 → 水 → 冰
-                            </div>
-                            <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                                <button class="btn" onclick="toggleOverlay('overlay-ans-1')">顯示解答</button>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Slide 8: Examples 2 -->
-                <div class="slide">
-                    <h1>觀念演練：二氧化碳的相圖</h1>
-                    <div class="flex-row">
-                        <div class="flex-col" style="position: relative;">
-                            <div id="overlay-ans-2" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: flex-start; justify-content: center; border-radius: 10px; text-align: left; padding: 2rem; border: 3px solid var(--accent-red);">
-                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900;">解答：(C)</div>
-                                <div style="color: white; font-size: 1.2rem; margin-top: 15px; line-height: 1.6;">
-                                    (A) 二氧化碳三相點為 $5.11\text{ atm}$，在 $1\text{ atm}$ 下沒有液態，低於 $-78.5^\circ\text{C}$ 時為固態乾冰。<br>
-                                    (B) 溫度 $-56.6^\circ\text{C}$（三相點溫度）且壓力大於 $5.11\text{ atm}$ 時，因CO2加壓熔點上升，故 $10\text{ atm}$ 應為固態。<br>
-                                    (C) 正確。溫度 $31.0^\circ\text{C}$ 且 $75\text{ atm}$（高於臨界壓），尚未超過臨界溫度，且處於液氣交界，高壓下存在液態。<br>
-                                    (D) $32.0^\circ\text{C}$ 已超過臨界溫度 $31.0^\circ\text{C}$，此時為超臨界流體，無法成為液態。
+                    <!-- Ex 2 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 2</h2>
+                            <p>二氧化碳的三相點壓力為 $5.11\text{ atm}$，溫度為 $-56.6^\circ\text{C}$。<br>
+                            臨界點：壓力 $72.8\text{ atm}$，溫度 $31.0^\circ\text{C}$。下列敘述何項正確？</p>
+                            <ul class="ex-options">
+                                <li>(A) 在一大氣壓時，溫度低於 $-78.5^\circ\text{C}$，以液態二氧化碳存在。</li>
+                                <li>(B) 壓力 $10\text{ atm}$，溫度為 $-56.6^\circ\text{C}$ 以液態二氧化碳存在。</li>
+                                <li>(C) 壓力 $75\text{ atm}$，溫度 $31.0^\circ\text{C}$ 以液態二氧化碳存在。</li>
+                                <li>(D) 壓力 $75\text{ atm}$，溫度 $32.0^\circ\text{C}$ 以液態二氧化碳存在。</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-2">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-2" class="ex-answer-box">
+                                <div class="ans-label">解答：(C)</div>
+                                <div class="ans-body">
+                                    (A) 二氧化碳三相點為 $5.11\text{ atm}$，在 $1\text{ atm}$ 下沒有液態，低於 $-78.5^\circ\text{C}$ 時為固態乾冰。✗<br>
+                                    (B) 壓力 $10\text{ atm}$，溫度 $-56.6^\circ\text{C}$（三相點溫度），CO₂加壓熔點上升，故 $10\text{ atm}$ 應為固態。✗<br>
+                                    (C) 溫度 $31.0^\circ\text{C}$ 且 $75\text{ atm}$（高於臨界壓），尚未超過臨界溫度，高壓下存在液態。✓<br>
+                                    (D) $32.0^\circ\text{C}$ 已超過臨界溫度 $31.0^\circ\text{C}$，為超臨界流體，無法成為液態。✗
                                 </div>
-                                <button class="btn" style="margin-top: 20px; width: auto; background: var(--accent-red); align-self: center;" onclick="toggleOverlay('overlay-ans-2')">關閉</button>
-                            </div>
-                            <h2 class="text-yellow">例題 2</h2>
-                            <p style="font-size:1.15rem;">二氧化碳的三相點壓力為 $5.11\text{ atm}$，溫度為 $-56.6^\circ\text{C}$。<br>臨界點：壓力 $72.8\text{ atm}$，溫度 $31.0^\circ\text{C}$。下列敘述何項正確？</p>
-                            <div style="font-size:1.1rem; margin-top: 1rem; line-height: 1.8;">
-                                (A) 在一大氣壓時，溫度低於 $-78.5^\circ\text{C}$，以液態二氧化碳存在。<br>
-                                (B) 壓力 $10\text{ atm}$，溫度為 $-56.6^\circ\text{C}$ 以液態二氧化碳存在。<br>
-                                (C) 壓力 $75\text{ atm}$，溫度 $31.0^\circ\text{C}$ 以液態二氧化碳存在。<br>
-                                (D) 壓力 $75\text{ atm}$，溫度 $32.0^\circ\text{C}$ 以液態二氧化碳存在。<br>
-                            </div>
-                            <div style="margin-top: auto; text-align: center; padding-top: 1rem;">
-                                <button class="btn" onclick="toggleOverlay('overlay-ans-2')">顯示解答</button>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Ex 3 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 3</h2>
+                            <p>下列關於飽和蒸氣壓的敘述，何者正確？</p>
+                            <ul class="ex-options">
+                                <li>(A) 飽和蒸氣壓的大小與液體的量有關</li>
+                                <li>(B) 液體的沸點，是其飽和蒸氣壓等於外界大氣壓力時的溫度</li>
+                                <li>(C) 在相同溫度下，揮發性愈大的液體，其飽和蒸氣壓愈小</li>
+                                <li>(D) 溫度降低時，飽和蒸氣壓增大</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-3">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-3" class="ex-answer-box">
+                                <div class="ans-label">解答：(B)</div>
+                                <div class="ans-body">
+                                    (A) 飽和蒸氣壓與液體的量無關，只與溫度有關。✗<br>
+                                    (B) 正確。沸點定義：飽和蒸氣壓 = 外界大氣壓力時的溫度。在高山上氣壓低，沸點也低。✓<br>
+                                    (C) 揮發性愈大，表示分子間作用力愈弱，飽和蒸氣壓愈<strong>大</strong>（非愈小）。✗<br>
+                                    (D) 溫度降低，分子平均動能降低，能逸出液面的分子減少，飽和蒸氣壓<strong>減小</strong>。✗
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 4 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 4</h2>
+                            <p>下列關於物質的狀態變化，何者敘述正確？</p>
+                            <ul class="ex-options">
+                                <li>(A) 氣體加壓冷卻一定可以液化</li>
+                                <li>(B) 水在 $0^\circ\text{C}$ 時，加壓會使冰的熔點升高</li>
+                                <li>(C) 莫耳汽化熱大於莫耳熔化熱，是因為氣化時需克服更多的分子間作用力</li>
+                                <li>(D) 在三相點時，固、液、氣三態可同時存在且均可相互轉換</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-4">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-4" class="ex-answer-box">
+                                <div class="ans-label">解答：(C)(D)</div>
+                                <div class="ans-body">
+                                    (A) 溫度超過臨界溫度時，無論加多大壓力皆無法液化。✗<br>
+                                    (B) 水熔化時體積膨脹（冰比水輕），加壓阻礙熔化，使熔點<strong>下降</strong>（非升高）。✗<br>
+                                    (C) 汽化需完全克服分子間作用力使其自由運動；熔化只需使分子排列鬆散，故汽化熱 > 熔化熱。✓<br>
+                                    (D) 三相點是固液氣三態共存的唯一溫壓條件，三態間可相互轉換。✓
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 5 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 5</h2>
+                            <p>已知某物質在三相點的溫度為 $T_t$，臨界溫度為 $T_c$（$T_t < T_c$）。<br>
+                            將此物質在溫度 $T_t < T < T_c$ 時逐漸加壓，該物質的狀態變化為？</p>
+                            <ul class="ex-options">
+                                <li>(A) 氣態 → 固態</li>
+                                <li>(B) 氣態 → 液態</li>
+                                <li>(C) 固態 → 液態 → 氣態</li>
+                                <li>(D) 液態 → 固態 → 氣態</li>
+                            </ul>
+                            <p style="color: var(--accent-cyan); font-size: 1rem; margin-top: 0.5rem;">（提示：思考在相圖上該溫度區間，加壓的路徑方向）</p>
+                            <button class="btn-show-ans" data-ans="ex-ans-5">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-5" class="ex-answer-box">
+                                <div class="ans-label">解答：(B)</div>
+                                <div class="ans-body">
+                                    在溫度 $T_t < T < T_c$ 的區間，此溫度高於三相點但低於臨界溫度。<br>
+                                    在相圖上，此溫度處於固-液-氣三相點右側且臨界點左側的範圍。<br>
+                                    從低壓開始逐漸加壓（即在相圖上垂直向上移動）：<br>
+                                    → 起始時壓力低於氣液共存曲線，物質為<strong class="text-red">氣態</strong>。<br>
+                                    → 加壓至達到氣液共存曲線時，氣體<strong class="text-cyan">液化為液態</strong>。<br>
+                                    故變化為：氣態 → 液態，即選 <strong>(B)</strong>。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- end slide 7 -->
+
+                <!-- Slide 8: Matching Game -->
+                <div class="slide" id="slide-game">
+                    <h1>單元挑戰：物質狀態與三相圖連連看</h1>
+                    <p style="text-align: center; color: var(--accent-green); margin-top: -10px;">請連接正確的對應關係。</p>
+                    <div id="game-container" style="position: relative; flex: 1; display: flex; justify-content: space-between; padding: 20px 40px; background: rgba(0,0,0,0.2); border-radius: 20px; min-height: 400px; user-select: none; -webkit-user-select: none;">
+                        <svg id="game-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; overflow: visible;"></svg>
+                        <div id="left-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 8px; width: 42%; pointer-events: none;"></div>
+                        <div id="right-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 8px; width: 42%; pointer-events: none;"></div>
+                        <div id="game-feedback" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(16, 185, 129, 0.95); padding: 2rem 4rem; border-radius: 20px; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); z-index: 100; text-align: center;">🎉 太棒了！全部答對！</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button class="btn-tool" style="width: auto; display: inline-block; padding: 8px 24px;" onclick="resetGame()">再玩一次</button>
+                    </div>
                 </div>
 
-            </div>
+            </div><!-- end slides-container -->
 
             <canvas id="drawing-layer"></canvas>
-        </div>
+        </div><!-- end presentation-area -->
 
-        <div id="slide-info">1 / 8</div>
-
-        <!-- Controls Toolbar -->
+        <!-- Toolbar -->
         <div id="toolbar">
-            <div id="drag-handle" title="拖曳移動工具列">≡</div>
-            <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
-            <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            
-            <button class="btn-tool" id="btn-draw" title="手寫模式">✎</button>
-            
-            <div class="color-picker" id="color-picker">
-                <div class="color-swatch selected" style="background: #f8fafc;" data-color="#f8fafc"></div>
-                <div class="color-swatch" style="background: #f87171;" data-color="#f87171"></div>
-                <div class="color-swatch" style="background: #38bdf8;" data-color="#38bdf8"></div>
-                <div class="color-swatch" style="background: #fbbf24;" data-color="#fbbf24"></div>
-                <div class="color-swatch" style="background: #34d399;" data-color="#34d399"></div>
+            <div id="drag-handle">≡</div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+            <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:2px;">
+                <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
             </div>
-
-            <div id="size-picker" style="display: none; flex-direction: column; align-items: center; gap: 2px; margin: 2px 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px;">
-                <input type="range" id="pen-size" min="1" max="20" value="3" style="width: 100%; height: 4px; cursor: pointer;">
-            </div>
-
-            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 4px; align-items: center;">
-                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
-                    <svg viewBox="0 0 24 24"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+            <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
                 </button>
-                <button class="btn-tool" id="btn-clear" title="全清">🗑</button>
+                <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
             </div>
-            <div style="height: 1px; width: 25px; background: rgba(255,255,255,0.3); margin: 6px 0;"></div>
-            <button class="btn-tool" id="btn-exit-fs" title="回到目錄">🏠</button>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+        </div>
+    </div><!-- end app -->
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
         </div>
     </div>
 
     <script>
-        let currentSlide = 0;
+        // ── Start overlay ──
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        btnStart.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // ── Drawing layer ──
         let isDrawingMode = false;
         let drawMode = 'pen';
         let penColor = '#f8fafc';
         let penSize = 3;
-        let slideDrawings = {}; 
-        let lastX = 0;
-        let lastY = 0;
+        let savedDrawing = null;
+        let lastX = 0, lastY = 0, isDrawing = false;
 
-        function toggleOverlay(id) {
-            const overlay = document.getElementById(id);
-            if (overlay) overlay.style.display = (overlay.style.display === 'none' || overlay.style.display === '') ? 'flex' : 'none';
-        }
-
-        const slides = document.querySelectorAll('.slide');
-        const slideInfo = document.getElementById('slide-info');
         const canvas = document.getElementById('drawing-layer');
         const ctx = canvas.getContext('2d');
-        let isDrawing = false;
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            if (!canvas) return;
+            const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.width  = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
             restoreDrawing();
         }
         window.addEventListener('resize', resizeCanvas);
@@ -481,132 +604,349 @@
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return [clientX - rect.left, clientY - rect.top];
         }
-
         function startDrawing(e) {
             if (!isDrawingMode) return;
-            isDrawing = true;
-            [lastX, lastY] = getCoords(e);
+            isDrawing = true; [lastX, lastY] = getCoords(e);
         }
-
         function draw(e) {
             if (!isDrawing) return;
             const [x, y] = getCoords(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            
-            if (drawMode === 'eraser') {
-                ctx.globalCompositeOperation = 'destination-out';
-                ctx.strokeStyle = 'rgba(0,0,0,1)';
-                ctx.lineWidth = penSize * 10;
-            } else {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.strokeStyle = penColor;
-                ctx.lineWidth = penSize;
-            }
-            
-            ctx.lineCap = 'round';
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = Math.max(20, penSize * 10); }
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; ctx.lineWidth = Math.max(2, penSize); }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
             [lastX, lastY] = [x, y];
         }
-
         function stopDrawing() {
-            if (isDrawing) {
-                isDrawing = false;
-                slideDrawings[currentSlide] = canvas.toDataURL();
-            }
+            if (isDrawing) { isDrawing = false; savedDrawing = canvas.toDataURL(); }
         }
-
         function restoreDrawing() {
+            if (!ctx) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'source-over';
-            if (slideDrawings[currentSlide]) {
-                const img = new Image();
-                img.onload = () => ctx.drawImage(img, 0, 0);
-                img.src = slideDrawings[currentSlide];
-            }
+            if (savedDrawing) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = savedDrawing; }
         }
 
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, {passive: false});
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+        canvas.addEventListener('touchstart', (e) => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
         canvas.addEventListener('touchend', stopDrawing);
 
-        function updateSlides() {
-            slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
-            slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
-            restoreDrawing();
-        }
+        // Resize on load and content changes
+        window.addEventListener('load', resizeCanvas);
+        new ResizeObserver(() => { resizeCanvas(); }).observe(document.body);
 
-        document.getElementById('btn-next').addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
-        document.getElementById('btn-prev').addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-                if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); }
-            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-                if (currentSlide > 0) { currentSlide--; updateSlides(); }
-            }
-        });
-
-        document.getElementById('btn-draw').addEventListener('click', (e) => {
+        // ── Toolbar interactions ──
+        const btnDraw = document.getElementById('btn-draw');
+        btnDraw.addEventListener('click', () => {
             isDrawingMode = !isDrawingMode;
             if (isDrawingMode) drawMode = 'pen';
-            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            btnDraw.classList.toggle('active-tool', isDrawingMode);
             canvas.classList.toggle('drawing-active', isDrawingMode);
-            document.getElementById('color-picker').style.display = isDrawingMode ? 'grid' : 'none';
-            document.getElementById('size-picker').style.display = isDrawingMode ? 'flex' : 'none';
-            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+            const cp = document.getElementById('color-picker');
+            const et = document.getElementById('eraser-tools');
+            if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+            if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
         });
 
-        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+        const btnEraser = document.getElementById('btn-eraser');
+        if (btnEraser) btnEraser.addEventListener('click', () => {
             drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
-            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
-            document.getElementById('btn-draw').classList.toggle('active-tool', drawMode === 'pen');
+            btnEraser.classList.toggle('active-tool', drawMode === 'eraser');
         });
 
-        document.querySelectorAll('.color-swatch').forEach(sw => {
-            sw.addEventListener('click', () => {
-                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
-                sw.classList.add('selected');
-                penColor = sw.dataset.color;
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
                 drawMode = 'pen';
-                document.getElementById('btn-draw').classList.add('active-tool');
-                document.getElementById('btn-eraser').classList.remove('active-tool');
+                btnEraser && btnEraser.classList.remove('active-tool');
             });
         });
 
-        document.getElementById('pen-size').addEventListener('input', (e) => { penSize = parseInt(e.target.value); });
         document.getElementById('btn-clear').addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            slideDrawings[currentSlide] = null;
+            savedDrawing = null;
         });
 
-        document.getElementById('btn-start').addEventListener('click', () => {
-            document.getElementById('start-overlay').style.display = 'none';
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            updateSlides();
+        document.getElementById('btn-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        document.getElementById('btn-exit-fs').addEventListener('click', () => {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            }
-            window.location.href = '../../index.html';
-        });
-
-        const toolbar = document.getElementById('toolbar'), dragHandle = document.getElementById('drag-handle');
+        // ── Toolbar drag ──
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
         let isDraggingToolbar = false, dragOffY = 0;
-        const startDrag = (y) => { isDraggingToolbar = true; dragOffY = y - toolbar.offsetTop; };
-        const moveDrag = (y) => { if (isDraggingToolbar) { toolbar.style.top = (y - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } };
-        dragHandle.addEventListener('mousedown', (e) => startDrag(e.clientY)); 
-        window.addEventListener('mousemove', (e) => moveDrag(e.clientY)); 
+        dragHandle.addEventListener('mousedown', (e) => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+        window.addEventListener('mousemove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
         window.addEventListener('mouseup', () => isDraggingToolbar = false);
-        dragHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY)); 
-        window.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY)); 
+        dragHandle.addEventListener('touchstart', (e) => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; });
+        window.addEventListener('touchmove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
         window.addEventListener('touchend', () => isDraggingToolbar = false);
+
+        // ── Random Draw ──
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const btnDoDraw = document.getElementById('btn-do-draw');
+            const drawTotalInput = document.getElementById('draw-total-input');
+            let totalBalls = 40, drawBalls = [];
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = ''; drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball'; ball.textContent = i; ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball); drawBalls.push(ball);
+                }
+            }
+
+            btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+                if (!drawModal) return;
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none'; btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block'; btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+                }
+            });
+            btnCloseDraw && btnCloseDraw.addEventListener('click', () => {
+                if (drawModal) drawModal.style.display = 'none';
+                btnRandomDraw && btnRandomDraw.classList.remove('active-tool');
+            });
+            drawTotalInput && drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1;
+                drawTotalInput.value = val; totalBalls = val; renderBalls();
+            });
+
+            let drawInterval, drawTimeout;
+            btnDoDraw && btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+                const available = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (available.length === 0) { alert('所有號碼都已抽出！'); return; }
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+                const cur = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (cur.length === 0) { alert('所有號碼都已抽出！'); return; }
+                btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+                drawInterval = setInterval(() => { cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('flicker'); }, 50);
+                drawTimeout = setTimeout(() => { clearInterval(drawInterval); cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, 2000);
+            });
+        })();
+
+        // ── Show/Hide Answer buttons ──
+        document.querySelectorAll('.btn-show-ans').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const ansId = btn.dataset.ans;
+                const ansBox = document.getElementById(ansId);
+                const isVisible = ansBox.classList.contains('visible');
+                if (isVisible) {
+                    ansBox.classList.remove('visible');
+                    btn.textContent = '顯示解答';
+                    btn.classList.remove('shown');
+                } else {
+                    ansBox.classList.add('visible');
+                    btn.textContent = '隱藏解答';
+                    btn.classList.add('shown');
+                    if (window.MathJax) MathJax.typesetPromise([ansBox]);
+                }
+            });
+        });
+
+        // ── Matching Game ──
+        (function() {
+            const gameDataPool = [
+                // 物質三態
+                { left: '固態的分子間距離', right: '緊密靠在一起' },
+                { left: '氣態的可壓縮性', right: '加壓可使體積明顯變小' },
+                { left: '液態的特徵', right: '有一定體積，無一定形狀' },
+                { left: '三相點', right: '固液氣三態共存的唯一平衡點' },
+                { left: '臨界點以上溫度', right: '無論加壓皆無法液化' },
+                { left: '飽和蒸氣壓達外氣壓', right: '液體沸騰的條件' },
+                { left: '莫耳汽化熱 vs 熔化熱', right: '汽化熱 > 熔化熱' },
+                { left: '水的熔點曲線斜率', right: '負（加壓使熔點下降）' },
+                { left: '正常沸點', right: '$1 \\text{ atm}$ 下的沸點' },
+                { left: 'CO₂ 三相點壓力', right: '$5.11 \\text{ atm}$' },
+                { left: '水的三相點溫度', right: '$0.01^\\circ\\text{C}$' },
+                { left: '超臨界流體', right: '兼具高擴散性與強溶解力' },
+                { left: '固體直接變為氣體', right: '昇華 (Sublimation)' },
+                { left: '過冷液體', right: '低於凝固點仍是液體的不穩定狀態' },
+                { left: '液晶的特性', right: '可流動且具光學各向異性' },
+                { left: '水的臨界溫度', right: '$374^\\circ\\text{C}$' },
+                { left: 'CO₂ 的臨界溫度', right: '$31.0^\\circ\\text{C}$' },
+                { left: '固態分子的運動方式', right: '振動與轉動' },
+            ];
+
+            const ITEMS_PER_GAME = 5;
+            let connections = [], isDragging = false, startDotInfo = null, tempLine = null, allDots = [];
+
+            const container = document.getElementById('game-container');
+            const svgEl = document.getElementById('game-svg');
+
+            function getDotCenter(dotEl) {
+                const cr = container.getBoundingClientRect();
+                const dr = dotEl.getBoundingClientRect();
+                return {
+                    x: dr.left + dr.width/2 - cr.left,
+                    y: dr.top  + dr.height/2 - cr.top,
+                    el: dotEl
+                };
+            }
+
+            function findDotAt(clientX, clientY, excludeEl, requireOtherSide) {
+                let best = null, bestDist = 38;
+                allDots.forEach(d => {
+                    if (d.el === excludeEl) return;
+                    if (requireOtherSide !== null && d.isLeft === requireOtherSide) return;
+                    if (d.el.classList.contains('active')) return;
+                    const dr = d.el.getBoundingClientRect();
+                    const cx = dr.left + dr.width/2;
+                    const cy = dr.top  + dr.height/2;
+                    const dist = Math.sqrt((clientX-cx)**2 + (clientY-cy)**2);
+                    if (dist < bestDist) { bestDist = dist; best = d; }
+                });
+                return best;
+            }
+
+            function initGame() {
+                const leftCol  = document.getElementById('left-column');
+                const rightCol = document.getElementById('right-column');
+                if (!leftCol) return;
+                leftCol.innerHTML = ''; rightCol.innerHTML = '';
+                connections = []; allDots = [];
+                const feedback = document.getElementById('game-feedback');
+                if (feedback) feedback.style.display = 'none';
+                svgEl.innerHTML = '';
+
+                const shuffled = [...gameDataPool].sort(() => Math.random()-0.5).slice(0, ITEMS_PER_GAME);
+                const current  = shuffled.map((item, i) => ({...item, matchId: i}));
+                const shuffledRight = [...current].sort(() => Math.random()-0.5);
+
+                current.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'game-item';
+                    div.innerHTML = `<span style="flex:1">${item.left}</span><div class="dot" data-mid="${item.matchId}" data-side="left"></div>`;
+                    leftCol.appendChild(div);
+                });
+                shuffledRight.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'game-item';
+                    div.innerHTML = `<div class="dot" data-mid="${item.matchId}" data-side="right"></div><span style="flex:1;text-align:right">${item.right}</span>`;
+                    rightCol.appendChild(div);
+                });
+
+                if (window.MathJax) MathJax.typesetPromise().catch(()=>{});
+
+                document.querySelectorAll('#game-container .dot').forEach(el => {
+                    allDots.push({ el, matchId: el.dataset.mid, isLeft: el.dataset.side === 'left' });
+                });
+            }
+
+            function getEventPos(e) {
+                if (e.touches && e.touches.length > 0)
+                    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                if (e.changedTouches && e.changedTouches.length > 0)
+                    return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+                return { x: e.clientX, y: e.clientY };
+            }
+
+            function onPointerDown(e) {
+                if (isDrawingMode) return;
+                const pos = getEventPos(e);
+                const dot = findDotAt(pos.x, pos.y, null, null);
+                if (!dot) return;
+                e.preventDefault();
+                isDragging = true;
+                startDotInfo = dot;
+                const c = getDotCenter(dot.el);
+                tempLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+                tempLine.setAttribute('x1', c.x); tempLine.setAttribute('y1', c.y);
+                tempLine.setAttribute('x2', c.x); tempLine.setAttribute('y2', c.y);
+                tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+                tempLine.setAttribute('stroke-width', '4');
+                tempLine.setAttribute('stroke-dasharray', '6,4');
+                tempLine.setAttribute('stroke-linecap', 'round');
+                svgEl.appendChild(tempLine);
+            }
+
+            function onPointerMove(e) {
+                if (!isDragging || !tempLine || !startDotInfo) return;
+                if (e.cancelable) e.preventDefault();
+                const pos = getEventPos(e);
+                const cr  = container.getBoundingClientRect();
+                let tx = pos.x - cr.left;
+                let ty = pos.y - cr.top;
+
+                const requireOtherSide = startDotInfo.isLeft;
+                const hover = findDotAt(pos.x, pos.y, startDotInfo.el, requireOtherSide);
+
+                if (hover) {
+                    const hc = getDotCenter(hover.el);
+                    tx = hc.x; ty = hc.y;
+                    const isCorrect = hover.matchId === startDotInfo.matchId;
+                    tempLine.setAttribute('stroke', isCorrect ? '#34d399' : '#f87171');
+                    tempLine.setAttribute('stroke-dasharray', 'none');
+                } else {
+                    tempLine.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+                    tempLine.setAttribute('stroke-dasharray', '6,4');
+                }
+                tempLine.setAttribute('x2', tx);
+                tempLine.setAttribute('y2', ty);
+            }
+
+            function onPointerUp(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                const pos = getEventPos(e);
+
+                if (tempLine && tempLine.parentNode) tempLine.parentNode.removeChild(tempLine);
+                tempLine = null;
+
+                if (!startDotInfo) { startDotInfo = null; return; }
+                const requireOtherSide = startDotInfo.isLeft;
+                const target = findDotAt(pos.x, pos.y, startDotInfo.el, requireOtherSide);
+
+                if (target && target.matchId === startDotInfo.matchId) {
+                    startDotInfo.el.classList.add('active');
+                    target.el.classList.add('active');
+                    connections.push({ from: startDotInfo, to: target });
+                    redrawLines();
+                    if (connections.length === ITEMS_PER_GAME) {
+                        setTimeout(() => document.getElementById('game-feedback').style.display = 'block', 300);
+                    }
+                }
+                startDotInfo = null;
+            }
+
+            function redrawLines() {
+                svgEl.innerHTML = '';
+                connections.forEach(conn => {
+                    const c1 = getDotCenter(conn.from.el);
+                    const c2 = getDotCenter(conn.to.el);
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', c1.x); line.setAttribute('y1', c1.y);
+                    line.setAttribute('x2', c2.x); line.setAttribute('y2', c2.y);
+                    line.setAttribute('stroke', '#34d399');
+                    line.setAttribute('stroke-width', '4');
+                    line.setAttribute('stroke-linecap', 'round');
+                    svgEl.appendChild(line);
+                });
+            }
+
+            container.addEventListener('mousedown',  onPointerDown, {capture: true});
+            container.addEventListener('touchstart', onPointerDown, {capture: true, passive: false});
+            window.addEventListener('mousemove',  onPointerMove);
+            window.addEventListener('touchmove',  onPointerMove, {passive: false});
+            window.addEventListener('mouseup',    onPointerUp);
+            window.addEventListener('touchend',   onPointerUp);
+
+            window.resetGame = function() { initGame(); };
+            initGame();
+        })();
     </script>
 </body>
 </html>
