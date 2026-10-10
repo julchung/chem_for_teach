@@ -230,158 +230,6 @@ class PortalApp {
     }
   }
 
-  // ── 1.2 教師專用全班學生即時學習進度查核 ──
-  bindTeacherMonitorEvents() {
-    const btnOpen = document.getElementById('btn-open-teacher-monitor');
-    const modal = document.getElementById('modal-teacher-monitor');
-    const btnClose = document.getElementById('btn-close-teacher-monitor');
-    const btnDone = document.getElementById('btn-modal-monitor-done');
-    const btnRefresh = document.getElementById('btn-monitor-refresh');
-    const selectGroup = document.getElementById('select-monitor-group');
-
-    if (!modal) return;
-
-    let unsubscribe = null;
-    let cachedCloudData = {};
-
-    const openModal = () => {
-      modal.style.display = 'flex';
-      this.populateMonitorGroupsSelect();
-      this.renderTeacherMonitorTable(cachedCloudData);
-      if (window.chemSync && window.chemSync.isInitialized) {
-        if (unsubscribe) unsubscribe();
-        unsubscribe = window.chemSync.subscribeAllStudents(data => {
-          cachedCloudData = data || {};
-          this.renderTeacherMonitorTable(cachedCloudData);
-        });
-      }
-    };
-
-    const closeModal = () => {
-      modal.style.display = 'none';
-      if (unsubscribe) {
-        unsubscribe();
-        unsubscribe = null;
-      }
-    };
-
-    if (btnOpen) btnOpen.addEventListener('click', openModal);
-    if (btnClose) btnClose.addEventListener('click', closeModal);
-    if (btnDone) btnDone.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    if (btnRefresh) {
-      btnRefresh.addEventListener('click', () => {
-        this.renderTeacherMonitorTable(cachedCloudData);
-        this.showToast('🔄 已重新整理全班最新進度！', 'info');
-      });
-    }
-
-    if (selectGroup) {
-      selectGroup.addEventListener('change', () => {
-        this.renderTeacherMonitorTable(cachedCloudData);
-      });
-    }
-  }
-
-  populateMonitorGroupsSelect() {
-    const select = document.getElementById('select-monitor-group');
-    if (!select) return;
-    const groups = window.ROSTER_GROUPS || {};
-    const groupNames = Object.keys(groups);
-    let html = `<option value="ALL">📂 全部學生名冊 (${groupNames.length} 群組)</option>`;
-    groupNames.forEach(fn => {
-      let label = fn;
-      if (fn === 'users01.csv') label = 'users01.csv (205班)';
-      else if (fn === 'users02.csv') label = 'users02.csv (第 2 群組)';
-      html += `<option value="${fn}">📄 ${label}</option>`;
-    });
-    select.innerHTML = html;
-  }
-
-  renderTeacherMonitorTable(cloudData = {}) {
-    const tbody = document.getElementById('teacher-monitor-tbody');
-    const statsPill = document.getElementById('monitor-stats-pill');
-    const select = document.getElementById('select-monitor-group');
-    if (!tbody) return;
-
-    const selectedGroup = select ? select.value : 'ALL';
-    const allUsers = (window.USER_DATABASE || []).filter(u => u.role !== 'teacher');
-
-    const students = (selectedGroup === 'ALL')
-      ? allUsers
-      : allUsers.filter(u => u.group === selectedGroup);
-
-    const totalCount = this.allSections.length || 62;
-    let activeTodayCount = 0;
-    const oneDayAgo = Date.now() - 24 * 3600 * 1000;
-
-    const rowsHtml = students.map(u => {
-      const cloudStudent = cloudData[u.username] || {};
-      const cloudProfile = cloudStudent.profile || {};
-      const cloudProgress = cloudStudent.progress || {};
-
-      const localSaved = localStorage.getItem(`chem_progress_${u.username}`);
-      let localProg = null;
-      if (localSaved) {
-        try { localProg = JSON.parse(localSaved); } catch(e) {}
-      }
-
-      const unlocked = cloudProgress.unlockedSections || (localProg && localProg.unlockedSections) || ['ch1_s1'];
-      const lastSectionId = cloudProgress.lastActiveSection || (localProg && localProg.lastActiveSection) || 'ch1_s1';
-      const lastActiveTs = cloudProfile.lastActive || cloudProgress.lastUpdated || null;
-
-      if (lastActiveTs && lastActiveTs > oneDayAgo) {
-        activeTodayCount++;
-      }
-
-      const unlockedLen = Array.isArray(unlocked) ? unlocked.length : 1;
-      const pct = Math.min(100, Math.round((unlockedLen / totalCount) * 100));
-
-      const secObj = this.allSections.find(s => s.id === lastSectionId) || this.allSections[0];
-      const secTitle = secObj ? `${secObj.chapterNum}-${secObj.num} ${secObj.title}` : lastSectionId;
-
-      let timeText = '尚未登入';
-      if (lastActiveTs) {
-        const diffMin = Math.round((Date.now() - lastActiveTs) / 60000);
-        if (diffMin < 2) timeText = '🟢 剛才在線';
-        else if (diffMin < 60) timeText = `⚡ ${diffMin} 分鐘前`;
-        else if (diffMin < 1440) timeText = `🕒 ${Math.round(diffMin / 60)} 小時前`;
-        else {
-          const d = new Date(lastActiveTs);
-          timeText = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-        }
-      }
-
-      return `
-        <tr style="border-bottom: 1px solid #1e293b;">
-          <td style="padding: 10px 8px; color: #94a3b8; font-family: monospace;">${u.group || 'users01.csv'}</td>
-          <td style="padding: 10px 8px; color: #f8fafc; font-weight: 700;">${u.username}</td>
-          <td style="padding: 10px 8px; color: #38bdf8; font-weight: 700;">${u.name}</td>
-          <td style="padding: 10px 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="flex: 1; min-width: 80px; max-width: 120px; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
-                <div style="width: ${pct}%; height: 100%; background: linear-gradient(90deg, #10b981, #38bdf8);"></div>
-              </div>
-              <span style="font-size: 0.8rem; font-weight: 700; color: #34d399;">${unlockedLen}/${totalCount} (${pct}%)</span>
-            </div>
-          </td>
-          <td style="padding: 10px 8px; color: #cbd5e1; font-size: 0.85rem;">${secTitle}</td>
-          <td style="padding: 10px 8px; color: #94a3b8; font-size: 0.82rem;">${timeText}</td>
-        </tr>
-      `;
-    }).join('');
-
-    tbody.innerHTML = rowsHtml || `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #64748b;">暫無學生進度資料</td></tr>`;
-
-    if (statsPill) {
-      statsPill.textContent = `共 ${students.length} 位學生 · 今日在線 ${activeTodayCount} 位`;
-    }
-  }
-
   // ── 1.1 教師專用班級名冊與多群組管理 ──
   bindTeacherRosterEvents() {
     const btnOpen = document.getElementById('btn-open-teacher-roster');
@@ -409,6 +257,15 @@ class PortalApp {
     if (btnOpen) btnOpen.addEventListener('click', openModal);
     if (btnClose) btnClose.addEventListener('click', closeModal);
     if (btnDone) btnDone.addEventListener('click', closeModal);
+
+    const btnSwitchToMonitor = document.getElementById('btn-switch-to-monitor');
+    if (btnSwitchToMonitor) {
+      btnSwitchToMonitor.addEventListener('click', () => {
+        closeModal();
+        const btnOpenMonitor = document.getElementById('btn-open-teacher-monitor');
+        if (btnOpenMonitor) btnOpenMonitor.click();
+      });
+    }
 
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModal();
@@ -631,6 +488,15 @@ class PortalApp {
     if (btnOpen) btnOpen.addEventListener('click', openModal);
     if (btnClose) btnClose.addEventListener('click', closeModal);
     if (btnDone) btnDone.addEventListener('click', closeModal);
+
+    const btnSwitchToRoster = document.getElementById('btn-switch-to-roster');
+    if (btnSwitchToRoster) {
+      btnSwitchToRoster.addEventListener('click', () => {
+        closeModal();
+        const btnOpenRoster = document.getElementById('btn-open-teacher-roster');
+        if (btnOpenRoster) btnOpenRoster.click();
+      });
+    }
 
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModal();
