@@ -81,6 +81,12 @@ class PortalApp {
         }
         this.markCurrentCompleted(secId);
       }
+
+      // ── 子頁面請求跳轉至指定章節 ──
+      if (e.data.type === 'NAVIGATE_SECTION') {
+        const secId = e.data.sectionId || 'ch1_s2';
+        this.openSection(secId);
+      }
     });
   }
 
