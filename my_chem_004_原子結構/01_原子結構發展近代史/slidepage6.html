@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>莫斯利 X 射線實驗與原子序</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      box-sizing: border-box;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      background: #8b5cf6;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: clamp(16px, 2vw, 24px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #c084fc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-box {
+      background: rgba(30, 41, 59, 0.7);
+      border-left: 4px solid #a855f7;
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-size: clamp(0.85rem, 1vw, 0.95rem);
+      line-height: 1.6;
+    }
+    .formula-box {
+      background: #0f172a;
+      border: 1px solid #6b21a8;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      font-size: 1.05rem;
+      color: #e9d5ff;
+    }
+    .target-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .target-btn {
+      background: #334155;
+      border: 1px solid #475569;
+      color: #f1f5f9;
+      padding: 8px 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .target-btn:hover {
+      background: #6b21a8;
+      border-color: #a855f7;
+      transform: translateY(-2px);
+    }
+    .target-btn.active {
+      background: #7c3aed;
+      border-color: #c084fc;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+    }
+    .canvas-container {
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    canvas {
+      width: 100%;
+      background: #090d16;
+      border-radius: 8px;
+      display: block;
+    }
+    .highlight-text {
+      color: #fcd34d;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">主題 06</span>
+      <h1 style="display:inline-block; margin-left: 10px;">莫斯利 X 射線實驗與原子序 (1913)</h1>
+    </div>
+    <div class="subtitle">化學週期表的奠基者：以原子核正電荷（原子序）重新排列週期表</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Theory & Moseley's Law -->
+    <div class="card">
+      <div class="card-title">📖 莫斯利定律與週期表革命</div>
+
+      <div class="info-box">
+        1913 年，英國物理學家<strong>莫斯利 (Henry Moseley)</strong> 以高速陰極射線（高能電子束）轟擊多種不同金屬靶材，使靶材內層電子游離後，外層電子跳遷回填，激發出特徵 \(K_\alpha\) X 射線。
+      </div>
+
+      <div class="formula-box">
+        $$\sqrt{\nu} = a(Z - b)$$
+        <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 4px;">
+          \(\nu\)：特徵 X 射線頻率 ｜ \(Z\)：原子核正電荷數（原子序） ｜ \(a, b\)：常數
+        </div>
+      </div>
+
+      <div class="info-box" style="border-left-color: #38bdf8;">
+        <strong>關鍵科學貢獻：</strong>
+        <ul style="padding-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+          <li><strong>證實核電荷即為原子序：</strong>證明原子核所帶的基元正電荷數 \(Z\)，恰等於元素在週期表中的順序。</li>
+          <li><strong>修正門得列夫週期表矛盾：</strong>以往依「原子量」排序時出現的異常倒置（如 \(_{18}\text{Ar}\) 與 \(_{19}\text{K}\)、\(_{27}\text{Co}\) 與 \(_{28}\text{Ni}\)、\(_{52}\text{Te}\) 與 \(_{53}\text{I}\)），依原子序 \(Z\) 排列後完全合情合理！</li>
+          <li><strong>預測並指引未知元素：</strong>明確指出 \(Z = 43\,(\text{Tc})\)、\(61\,(\text{Pm})\)、\(72\,(\text{Hf})\)、\(75\,(\text{Re})\) 等元素在自然界的空缺位置。</li>
+        </ul>
+      </div>
+
+      <div style="font-size: 0.85rem; color: #94a3b8; line-height: 1.5;">
+        * 莫斯利於 1915 年在一戰加里波利戰役中英年早逝（年僅 27 歲），被視為科學界最巨大的損失之一，隨後英國政府修訂政策禁止傑出科學家上前線。
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Moseley Tube & Graph -->
+    <div class="card">
+      <div class="card-title">🎯 莫斯利金屬靶轟擊與 \(\sqrt{\nu} - Z\) 線性圖</div>
+
+      <div>
+        <div style="font-size:0.85rem; color:#cbd5e1; margin-bottom: 6px;">
+          👉 點擊更換不同金屬陽極靶材，發射高能電子轟擊：
+        </div>
+        <div class="target-grid">
+          <button class="target-btn active" data-z="20" data-sym="Ca" data-name="鈣">Ca (Z=20)</button>
+          <button class="target-btn" data-z="22" data-sym="Ti" data-name="鈦">Ti (Z=22)</button>
+          <button class="target-btn" data-z="24" data-sym="Cr" data-name="鉻">Cr (Z=24)</button>
+          <button class="target-btn" data-z="26" data-sym="Fe" data-name="鐵">Fe (Z=26)</button>
+          <button class="target-btn" data-z="28" data-sym="Ni" data-name="鎳">Ni (Z=28)</button>
+          <button class="target-btn" data-z="29" data-sym="Cu" data-name="銅">Cu (Z=29)</button>
+          <button class="target-btn" data-z="30" data-sym="Zn" data-name="鋅">Zn (Z=30)</button>
+          <button class="target-btn" data-z="47" data-sym="Ag" data-name="銀">Ag (Z=47)</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="c-moseley" height="260"></canvas>
+      </div>
+
+      <div id="target-stat" style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid #334155; font-size:0.85rem; display:flex; justify-content:space-around;">
+        <div>金屬：<span class="highlight-text" id="stat-sym">Ca (鈣)</span></div>
+        <div>原子序 \(Z\)：<span class="highlight-text" id="stat-z">20</span></div>
+        <div>相對頻率 \(\sqrt{\nu}\)：<span class="highlight-text" id="stat-freq">19.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const canvas = document.getElementById('c-moseley');
+    const ctx = canvas.getContext('2d');
+
+    let currentZ = 20;
+    let currentSym = 'Ca';
+    let testedPoints = [{ z: 20, sym: 'Ca' }];
+    let beamAnimation = 1.0;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = 260;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const targetBtns = document.querySelectorAll('.target-btn');
+    targetBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        targetBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        currentZ = parseInt(btn.dataset.z);
+        currentSym = btn.dataset.sym;
+        const name = btn.dataset.name;
+
+        document.getElementById('stat-sym').textContent = `${currentSym} (${name})`;
+        document.getElementById('stat-z').textContent = currentZ;
+        const freqVal = (currentZ - 1).toFixed(2);
+        document.getElementById('stat-freq').textContent = freqVal;
+
+        if (!testedPoints.some(p => p.z === currentZ)) {
+          testedPoints.push({ z: currentZ, sym: currentSym });
+        }
+        beamAnimation = 0.0;
+      });
+    });
+
+    function draw() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, 0, w, h);
+
+      // Left half: X-ray tube schematic
+      // Right half: Moseley plot (sqrt(nu) vs Z)
+      const splitX = w * 0.42;
+
+      // --- Left: X-ray Tube Illustration ---
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(splitX, 10);
+      ctx.lineTo(splitX, h - 10);
+      ctx.stroke();
+
+      // Electron Gun Cathode
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(20, h/2 - 16, 20, 32);
+      ctx.fillStyle = '#f87171';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('陰極 (e⁻)', 12, h/2 - 22);
+
+      // Target Anode
+      const anodeX = splitX - 40;
+      const anodeY = h / 2;
+      ctx.save();
+      ctx.translate(anodeX, anodeY);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = '#c084fc';
+      ctx.fillRect(-12, -24, 24, 48);
+      ctx.restore();
+
+      ctx.fillStyle = '#a855f7';
+      ctx.fillText(`陽極靶 (${currentSym})`, anodeX - 25, anodeY + 45);
+
+      // Electron beam shooting
+      if (beamAnimation < 1.0) {
+        beamAnimation += 0.05;
+      }
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 3]);
+      ctx.beginPath();
+      ctx.moveTo(40, h/2);
+      ctx.lineTo(40 + (anodeX - 40) * Math.min(1, beamAnimation * 1.5), h/2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Emitted X-ray beam down/up
+      if (beamAnimation > 0.4) {
+        ctx.strokeStyle = '#e879f9';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(anodeX, anodeY);
+        ctx.lineTo(anodeX + 25, anodeY - 55);
+        ctx.stroke();
+
+        ctx.fillStyle = '#f0abfc';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('特徵 X 射線', anodeX + 10, anodeY - 60);
+      }
+
+      // --- Right: Moseley Plot ---
+      const plotLeft = splitX + 40;
+      const plotRight = w - 25;
+      const plotBottom = h - 35;
+      const plotTop = 30;
+
+      // Axes
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(plotLeft, plotTop);
+      ctx.lineTo(plotLeft, plotBottom);
+      ctx.lineTo(plotRight, plotBottom);
+      ctx.stroke();
+
+      // Axis Labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('原子序 Z', plotRight - 45, plotBottom + 25);
+      ctx.save();
+      ctx.translate(plotLeft - 25, plotTop + 45);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('頻率平方根 √ν', 0, 0);
+      ctx.restore();
+
+      // Theoretical Moseley Line
+      ctx.strokeStyle = 'rgba(168, 85, 247, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const zMin = 10, zMax = 55;
+      const mapX = (z) => plotLeft + ((z - zMin) / (zMax - zMin)) * (plotRight - plotLeft);
+      const mapY = (z) => plotBottom - ((z - 1) / (zMax - 1)) * (plotBottom - plotTop);
+
+      ctx.moveTo(mapX(zMin), mapY(zMin));
+      ctx.lineTo(mapX(zMax), mapY(zMax));
+      ctx.stroke();
+
+      // Plot tested points
+      testedPoints.forEach(p => {
+        const px = mapX(p.z);
+        const py = mapY(p.z);
+
+        const isCurrent = p.z === currentZ;
+        ctx.fillStyle = isCurrent ? '#facc15' : '#a855f7';
+        ctx.beginPath();
+        ctx.arc(px, py, isCurrent ? 5.5 : 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = isCurrent ? '#fef08a' : '#cbd5e1';
+        ctx.font = isCurrent ? 'bold 11px sans-serif' : '9px sans-serif';
+        ctx.fillText(p.sym, px - 6, py - 8);
+      });
+
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>

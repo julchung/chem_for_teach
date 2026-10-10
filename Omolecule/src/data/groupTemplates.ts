@@ -6,6 +6,19 @@ import type { GroupTemplate } from '../types/molecule';
  * The "headId" atom is the one with the exposed connection port.
  */
 export const GROUP_TEMPLATES: GroupTemplate[] = [
+  // ── Methyl (—CH₃) ───────────────────────────────────────────
+  {
+    id: 'grp_methyl',
+    label: '—CH₃',
+    description: '甲基 (Methyl)',
+    color: '#888888',
+    headId: 'CH3',
+    atoms: [
+      { localId: 'CH3', templateId: '_C_tail', relX: 0, relY: 0 },
+    ],
+    bonds: [],
+  },
+
   // ── Ethyl (—CH₂CH₃) ─────────────────────────────────────────
   {
     id: 'grp_ethyl',
@@ -20,6 +33,45 @@ export const GROUP_TEMPLATES: GroupTemplate[] = [
     bonds: [
       { fromLocalId: 'CH2', fromPortId: 'right', toLocalId: 'CH3', toPortId: 'left' },
     ],
+  },
+
+  // ── Phenyl (—C₆H₅) ──────────────────────────────────────────
+  {
+    id: 'grp_phenyl',
+    label: '—C₆H₅',
+    description: '苯基 (Phenyl)',
+    color: '#AA66CC',
+    headId: 'Ph',
+    atoms: [
+      { localId: 'Ph', templateId: '_C_phenyl', relX: 0, relY: 0 },
+    ],
+    bonds: [],
+  },
+
+  // ── Amino (—NH₂) ────────────────────────────────────────────
+  {
+    id: 'grp_amino',
+    label: '—NH₂',
+    description: '胺基 (Amino)',
+    color: '#4488FF',
+    headId: 'N',
+    atoms: [
+      { localId: 'N', templateId: '_N_amide', relX: 0, relY: 0 },
+    ],
+    bonds: [],
+  },
+
+  // ── Hydroxyl (—OH) ──────────────────────────────────────────
+  {
+    id: 'grp_hydroxyl',
+    label: '—OH',
+    description: '羥基 (Hydroxyl)',
+    color: '#FF4444',
+    headId: 'O',
+    atoms: [
+      { localId: 'O', templateId: '_O_hydroxyl', relX: 0, relY: 0 },
+    ],
+    bonds: [],
   },
 
   // ── Aldehyde (—CHO) ──────────────────────────────────────────

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>範例 1：質譜儀荷質比與原子量計算</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      box-sizing: border-box;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: clamp(16px, 2vw, 24px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .problem-box {
+      background: #0f172a;
+      border-left: 4px solid #3b82f6;
+      padding: 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+    .given-box {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .toggle-btn {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .toggle-btn:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-2px);
+    }
+    .solution-panel {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step-box {
+      border-left: 3px solid #10b981;
+      padding-left: 12px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .step-title {
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 4px;
+    }
+    .answer-tag {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #059669;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">範例 01</span>
+      <h1 style="display:inline-block; margin-left: 10px;">質譜儀荷質比與原子量計算</h1>
+    </div>
+    <div class="subtitle">基礎題型：利用荷質比與基本電荷求元素原子量</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Problem Statement -->
+    <div class="card">
+      <div class="card-title">📝 題目內容</div>
+      <div class="problem-box">
+        某未知元素 \(\text{X}\) 的二價陽離子 \(\text{X}^{2+}\)，於質譜儀中測得其<strong>荷質比</strong>（電荷與質量之比值 \(q/m\)）為：
+        $$\frac{q}{m} = 4.825 \times 10^3 \;\text{C/g}$$
+        已知基本電荷為 \(e = 1.602 \times 10^{-19}\;\text{C}\)，亞佛加厥常數為 \(N_A = 6.02 \times 10^{23}\;\text{mol}^{-1}\)（法拉第常數 \(F = e \times N_A \approx 96500\;\text{C/mol}\)）。<br><br>
+        <strong>試求：元素 \(\text{X}\) 的原子量約為多少？</strong>
+      </div>
+
+      <div class="given-box">
+        💡 <strong>觀念提點：</strong><br>
+        1. 離子所帶電荷 \(q = 2 \times e\)（每顆離子）或 \(2 \times 96500\;\text{C}\)（每莫耳離子）。<br>
+        2. 原子的莫耳質量（原子量 \(M\)）單位為 \(\text{g/mol}\)，代表 1 莫耳原子的質量（克數）。
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Solution Toggle -->
+    <div class="card">
+      <div class="card-title">💡 詳解與步驟分析</div>
+
+      <button class="toggle-btn" id="btn-toggle">
+        <span>👁️ 顯示詳解</span>
+      </button>
+
+      <div class="solution-panel" id="solution-panel">
+        <div class="step-box">
+          <div class="step-title">步驟一：建立莫耳關係式</div>
+          考慮 1 莫耳的 \(\text{X}^{2+}\) 離子：<br>
+          • 總帶電量 \(Q = 2 \times F = 2 \times 96500\;\text{C} = 193000\;\text{C}\)<br>
+          • 總質量 \(M\) 即為 \(\text{X}\) 的原子量（單位：\(\text{g}\)）
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">步驟二：代入荷質比定義式求原子量</div>
+          由荷質比定義：
+          $$\frac{Q}{M} = 4.825 \times 10^3 \;\text{C/g}$$
+          移項求解 \(M\)：
+          $$M = \frac{Q}{4.825 \times 10^3} = \frac{193000}{4825} = 40.0 \;\text{g/mol}$$
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">步驟三：核對化學週期表</div>
+          原子量約為 \(40\) 且常見形成 \(+2\) 價離子者，即為週期表第 2 族鹼土金屬<strong>鈣 (\(\text{Ca}\))</strong>。
+        </div>
+
+        <div class="answer-tag">
+          🎯 正確答案：原子量為 40（元素為鈣 Ca）
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const btnToggle = document.getElementById('btn-toggle');
+    const panel = document.getElementById('solution-panel');
+    let isShown = false;
+
+    btnToggle.addEventListener('click', () => {
+      isShown = !isShown;
+      panel.style.display = isShown ? 'flex' : 'none';
+      btnToggle.innerHTML = isShown ? '<span>🙈 隱藏詳解</span>' : '<span>👁️ 顯示詳解</span>';
+      if (isShown && window.MathJax) {
+        MathJax.typesetPromise();
+      }
+    });
+  </script>
+</body>
+</html>

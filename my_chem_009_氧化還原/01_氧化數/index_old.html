@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oxidation Master Pro | 進階氧化數解析平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --secondary: #ec4899;
+  --accent: #8b5cf6;
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Splash Overlay - 已停用，直接於 SPA 框架中呈現教學內容 */
+.splash-overlay {
+  display: none !important;
+}
+
+.splash-content {
+  text-align: center;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.splash-icon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+}
+
+.splash-content h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  background: linear-gradient(to right, #6366f1, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.splash-content p {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  margin-bottom: 40px;
+}
+
+.splash-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 18px 48px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+  transition: all 0.3s;
+}
+
+.splash-btn:hover {
+  transform: translateY(-5px);
+  background: var(--primary-hover);
+  box-shadow: 0 15px 40px rgba(99, 102, 241, 0.5);
+}
+
+.splash-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Drawing Canvas Layer */
+#drawingCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  pointer-events: none;
+  cursor: crosshair;
+  border-radius: 24px;
+}
+
+#drawingCanvas.active {
+  pointer-events: auto;
+  box-shadow: inset 0 0 0 2px var(--primary);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure UI is above canvas but interactive */
+.tab-bar, .learning-sidebar, .floating-tools, .primary-btn, input, .quiz-item input {
+  position: relative;
+  z-index: 1000;
+}
+
+.form-container {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.form-main {
+  flex: 1;
+}
+
+.quick-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 16px;
+  border-radius: 20px;
+  min-width: 280px;
+}
+
+.panel-header {
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.tag-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, auto);
+  gap: 8px;
+}
+
+.tag-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  padding: 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tag-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+/* Floating Toolbar */
+.floating-tools {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  padding: 12px;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.tool-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-btn.active {
+  background: var(--danger);
+  transform: scale(0.9);
+}
+
+#penOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+#penOptions.hidden {
+  display: none;
+}
+
+.color-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.color-btn:hover { transform: scale(1.2); }
+
+.tool-btn-sm {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.size-slider-container {
+  margin-top: 8px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#penSize {
+  width: 100%;
+  cursor: pointer;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+header {
+  text-align: center;
+  padding: 12px 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Remove header h1 styles as it's deleted */
+
+/* Tab Styles */
+.tab-bar {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+.tab-btn {
+  padding: 10px 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Content Layout */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 0;
+  min-height: calc(100vh - 70px); /* Adjust based on header height */
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  width: 100%;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+h2::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+.description {
+  color: var(--text-muted);
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+}
+
+/* Calculator Specifics */
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.form-row h2 {
+  margin-bottom: 0;
+}
+
+#formulaInput {
+  max-width: 350px;
+}
+
+input[type="text"], input[type="number"] {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Calculator Result Layout */
+.result-display {
+  margin-top: 24px;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+}
+
+.result-header h4 {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.result-header .formula-main {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 24px;
+}
+
+.reasoning-panel {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.reasoning-panel h3 {
+  color: var(--warning);
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+}
+
+.reasoning-list {
+  list-style: none;
+}
+
+.reasoning-list li {
+  margin-bottom: 18px;
+  padding-left: 32px;
+  position: relative;
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.reasoning-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--warning);
+}
+
+.final-states-panel {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.final-states-panel h3 {
+  color: var(--success);
+  font-size: 1.5rem;
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+}
+
+.state-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.state-row strong { font-size: 1.2rem; }
+.state-row span {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Quiz Styles */
+.quiz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.quiz-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s;
+}
+
+.quiz-item:focus-within {
+  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.quiz-formula {
+  flex: 1;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.quiz-formula small {
+  display: block;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.quiz-input {
+  width: 80px;
+  text-align: center;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Overlay Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.3s;
+}
+
+.overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay-content {
+  background: var(--bg-gradient);
+  border: 1px solid var(--glass-border);
+  padding: 48px;
+  border-radius: 32px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  max-width: 400px;
+  width: 90%;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 8px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.score-circle span {
+  font-size: 4rem;
+  font-weight: 800;
+}
+
+.score-circle small {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+/* Utils */
+sup { vertical-align: super; font-size: 0.75em; color: var(--accent); margin-left: 1px; }
+sub { vertical-align: sub; font-size: 0.75em; opacity: 0.8; }
+
+@media (max-width: 900px) {
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row { flex-direction: column; }
+  .quiz-grid { grid-template-columns: 1fr; }
+  .action-bar { flex-direction: column; }
+}
+
+/* Learning Tab Styles */
+.learning-container {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 32px;
+  min-height: calc(100vh - 120px);
+}
+
+.learning-sidebar {
+  position: relative;
+}
+
+.sticky-nav {
+  position: sticky;
+  top: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+}
+
+.sticky-nav h3 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+.sticky-nav ul {
+  list-style: none;
+}
+
+.sticky-nav li {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.sticky-nav li:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.sticky-nav li.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.learning-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rule-card {
+  display: block;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 32px;
+}
+
+.rule-card:last-child {
+  margin-bottom: 0;
+}
+
+.rule-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.badge {
+  background: var(--accent);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rule-body p {
+  font-size: 1.3rem;
+  color: var(--text-main);
+  margin-bottom: 24px;
+  line-height: 1.8;
+}
+
+.example-box {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.ex-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 1.3rem;
+}
+
+.ex-item strong { color: var(--primary); }
+.ex-item small { color: var(--text-muted); }
+
+.en-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+}
+
+.en-row {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: 'Courier New', monospace;
+}
+
+.info-note {
+  font-size: 1.1rem;
+  color: var(--warning);
+  font-style: italic;
+}
+
+.rule-list {
+  list-style: none;
+}
+
+.rule-list li {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.3rem;
+}
+
+.rule-list li:last-child { border-bottom: none; }
+
+.aligned-list li {
+  display: grid;
+  grid-template-columns: 220px 80px 1fr;
+  align-items: center;
+  justify-content: start;
+}
+
+/* Organic Structures */
+.lewis-methane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Courier New', monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  padding: 20px;
+  color: var(--text-main);
+}
+.lewis-methane .highlight-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  border: 2px dashed var(--secondary);
+  border-radius: 50%;
+  background: rgba(236, 72, 153, 0.1);
+  z-index: 0;
+}
+.lewis-methane > div {
+  position: relative;
+  z-index: 1;
+}
+
+.full-structure {
+  display: grid;
+  grid-template-columns: repeat(13, auto);
+  grid-template-rows: auto auto auto auto auto;
+  gap: 8px;
+  align-items: center;
+  justify-items: center;
+  font-family: 'Courier New', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 20px auto;
+  width: max-content;
+  line-height: 1;
+}
+
+.h-bond {
+  height: 2px;
+  width: 32px;
+  background: var(--text-muted);
+}
+.v-bond {
+  width: 2px;
+  height: 28px;
+  background: var(--text-muted);
+}
+.v-double-bond {
+  display: flex;
+  gap: 6px;
+  height: 28px;
+}
+.v-double-bond > div {
+  width: 2px;
+  height: 100%;
+  background: var(--text-muted);
+}
+
+.aligned-list .mid {
+  color: var(--text-muted);
+  font-weight: normal;
+  text-align: center;
+}
+
+.aligned-list .val {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.split-col h3 {
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+
+.split-col ul {
+  list-style: none;
+}
+
+.split-col li {
+  padding: 10px 0;
+  font-size: 1.3rem;
+}
+
+.formula-logic {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(0,0,0,0.2);
+  padding: 32px;
+  border-radius: 24px;
+}
+
+.logic-item {
+  text-align: center;
+}
+
+.logic-item strong { display: block; margin-bottom: 8px; font-size: 1.5rem; }
+.logic-item span { font-size: 1.3rem; }
+.logic-arrow { font-size: 2rem; color: var(--primary); }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.info-cell {
+  background: rgba(255,255,255,0.03);
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.info-cell strong { display: block; color: var(--success); margin-bottom: 8px; font-size: 1.3rem; }
+.info-cell span { font-size: 1.3rem; }
+
+.table-container {
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  padding: 8px;
+  border: 1px solid var(--glass-border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.3rem;
+}
+
+.data-table th, .data-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid var(--glass-border);
+}
+
+.data-table th {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.data-table td {
+  color: var(--text-main);
+}
+
+/* Periodic Table Styles */
+.periodic-mini-container {
+  overflow-x: auto;
+  background: rgba(0,0,0,0.2);
+  padding: 24px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+
+.periodic-grid {
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  gap: 4px;
+  min-width: 800px;
+}
+
+.p-range {
+  font-size: 1.3rem;
+  color: var(--accent);
+  text-align: center;
+  font-weight: 800;
+  padding-bottom: 4px;
+}
+
+.p-group {
+  font-size: 1.3rem;
+  color: var(--primary);
+  text-align: center;
+  font-weight: 800;
+  border-bottom: 2px solid var(--primary);
+  margin-bottom: 8px;
+}
+
+.p-el {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 12px 4px;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 4px;
+  font-size: 1.3rem;
+}
+
+.p-el.transition {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.p-gap {
+  visibility: hidden;
+}
+
+@media (max-width: 900px) {
+  .learning-container { grid-template-columns: 1fr; }
+  .sticky-nav { position: static; margin-bottom: 24px; }
+  .sticky-nav ul { display: flex; overflow-x: auto; gap: 8px; }
+  .sticky-nav li { white-space: nowrap; }
+}
+
+footer {
+  text-align: center;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  background: rgba(15, 23, 42, 0.5);
+  border-top: 1px solid var(--glass-border);
+}
+
+
+        /* ---- Toolbar ---- */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: #22d3ee; color: #0f172a; border-color: #22d3ee; box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        
+        #drawingCanvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; width: 100%; height: 100%; }
+        #drawingCanvas.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* ---- Random Draw Modal ---- */
+        #random-draw-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(15, 23, 42, 0.95); border: 1px solid #22d3ee; box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
+            border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;
+        }
+        #random-draw-balls {
+            display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; justify-content: center; margin: 0 auto 20px auto; width: 100%; max-width: 500px;
+        }
+        .draw-ball {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s;
+        }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px #22d3ee; border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner { background: #fbbf24; border-color: #fbbf24; color: #000; transform: scale(1.25); box-shadow: 0 0 25px #fbbf24; z-index: 10; }
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw { background: linear-gradient(135deg, #22d3ee, #a78bfa); color: #0f172a; border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        #btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid #22d3ee; color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #btn-close-draw:hover { opacity: 1; }
+
+</style>
+</head>
+<body>
+  <!-- Full Screen Entry Splash -->
+  <div id="fsOverlay" class="splash-overlay">
+    <div class="splash-content">
+      <div class="splash-icon">🔬</div>
+      <h1>Oxidation Master Pro</h1>
+      <p>專業氧化數解析與教學平台</p>
+      <button id="startFSBtn" class="splash-btn">進入教學系統 (全螢幕)</button>
+    </div>
+  </div>
+
+  
+  <button class="btn-tool" id="btn-top" style="position: fixed; bottom: 20px; right: 20px; z-index: 9000; width: 40px; height: 40px; border-radius: 50%; background: #38bdf8; color: #0f172a; cursor: pointer;" title="回到頂部" type="button">↑</button>
+  <div id="toolbar">
+    <div id="drag-handle">≡</div>
+    <button class="btn-tool" id="btn-back" title="返回部落格" type="button" onclick="window.location.href='../../index.html';">
+      <svg fill="currentColor" height="18" viewBox="0 0 24 24" width="18"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
+    </button>
+    <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+    <button class="btn-tool" id="btn-draw" title="手寫功能" type="button">✎</button>
+    <div id="color-picker" style="display:none;flex-direction:column;gap:7px;margin-top:4px;">
+      <div class="color-dot" data-color="#f8fafc" style="width:22px;height:22px;background:#f8fafc;border-radius:50%;cursor:pointer;border:2px solid white;"></div>
+      <div class="color-dot" data-color="#f87171" style="width:22px;height:22px;background:#f87171;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#fbbf24" style="width:22px;height:22px;background:#fbbf24;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#38bdf8" style="width:22px;height:22px;background:#38bdf8;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#34d399" style="width:22px;height:22px;background:#34d399;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+      <div class="color-dot" data-color="#a78bfa" style="width:22px;height:22px;background:#a78bfa;border-radius:50%;cursor:pointer;border:2px solid transparent;"></div>
+    </div>
+    <div id="eraser-tools" style="display:none;width:100%;flex-direction:column;gap:7px;align-items:center;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;">
+      <button class="btn-tool" id="btn-eraser" title="橡皮擦" type="button">
+        <svg fill="currentColor" height="16" viewbox="0 0 24 24" width="16"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"></path></svg>
+      </button>
+      <button class="btn-tool" id="btn-clear" title="清除手寫" type="button">🗑</button>
+    </div>
+    <button class="btn-tool" id="btn-random-draw" title="隨機抽號" type="button">🎲</button>
+  </div>
+
+  <div id="random-draw-modal">
+    <button id="btn-close-draw" title="關閉" type="button">×</button>
+    <div id="random-draw-balls"></div>
+    <div id="random-draw-controls">
+      <button id="btn-do-draw" type="button">抽號</button>
+      <div class="draw-input-group">
+        <label for="draw-total-input">籤號總數：</label>
+        <input id="draw-total-input" max="100" min="1" type="number" value="40"/>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="container">
+    <header>
+      <nav class="tab-bar">
+        <button class="tab-btn" data-tab="learning">教學模式</button>
+        <button class="tab-btn active" data-tab="calculator">計算器模式</button>
+        <button class="tab-btn" data-tab="challenge">挑戰模式 (10題)</button>
+      </nav>
+    </header>
+
+    <main class="content-area">
+      <!-- Learning Section -->
+      <section id="learningTab" class="tab-content">
+        <div class="learning-container">
+          <aside class="learning-sidebar">
+            <div class="sticky-nav">
+              <h3>規則導覽</h3>
+              <ul id="ruleNav">
+                <li class="active" data-rule="def">1. 基本定義</li>
+                <li data-rule="en">2. 電負度參考</li>
+                <li data-rule="fixed">3. 恆定規則</li>
+                <li data-rule="ho">4. H 與 O 的變化</li>
+                <li data-rule="sum">5. 電量守恆</li>
+                <li data-rule="range">6. 典型元素範圍</li>
+                <li data-rule="average">7. 平均氧化數</li>
+                <li data-rule="organic" style="line-height: 1.4; display: flex; align-items: flex-start;">
+                  <span style="margin-right: 6px;">8.</span>
+                  <span>有機結構<br>碳原子氧化數</span>
+                </li>
+                <li data-rule="tables">9. 常用參考資料</li>
+              </ul>
+            </div>
+          </aside>
+          
+          <div class="learning-main" id="learningMain" style="position: relative;">
+            <!-- Drawing Layer -->
+            <canvas id="drawingCanvas"></canvas>
+
+            <!-- Definition -->
+            <div id="rule-def" class="rule-card active">
+              <div class="rule-header">
+                <span class="badge">Rule 01</span>
+                <h2>氧化數的定義</h2>
+              </div>
+              <div class="rule-body">
+                <p>氧化數是為了便於計算電子轉移而「假定」的電荷數，並不代表真實電荷。</p>
+                <div class="example-box">
+                  <div class="ex-item">
+                    <strong>單原子離子</strong>
+                    <span>氧化數 = 離子價數</span>
+                    <small>例：Na<sup>+</sup> (+1), Cl<sup>-</sup> (-1)</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Electronegativity -->
+            <div id="rule-en" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 02</span>
+                <h2>電負度 (Electronegativity)</h2>
+              </div>
+              <div class="rule-body">
+                <p>原子吸引共用電子的能力。電負度愈大，氧化數愈傾向為負值。</p>
+                <div class="en-list">
+                  <div class="en-row">氟 ( F ) &nbsp; = &nbsp; 4.0</div>
+                  <div class="en-row">氧 ( O ) &nbsp; = &nbsp; 3.5</div>
+                  <div class="en-row">氮 ( N ) &nbsp; = &nbsp; 3.0</div>
+                  <div class="en-row">氯 ( Cl ) = &nbsp; 3.0</div>
+                </div>
+                <div class="info-note">週期表趨勢：右上角電負度最高，左下角最低。</div>
+              </div>
+            </div>
+
+            <!-- Fixed Rules -->
+            <div id="rule-fixed" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 03</span>
+                <h2>恆定規則 (優先順序高)</h2>
+              </div>
+              <div class="rule-body">
+                <ul class="rule-list aligned-list">
+                  <li><span class="label">單質 (如 O<sub>2</sub>, Fe)</span><span class="mid">：恆為</span><span class="val">0</span></li>
+                  <li><span class="label">氟 ( F )</span><span class="mid">：恆為</span><span class="val">-1</span></li>
+                  <li><span class="label">1A 族 (鹼金屬)</span><span class="mid">：恆為</span><span class="val">+1</span></li>
+                  <li><span class="label">2A 族 (鹼土金屬)</span><span class="mid">：恆為</span><span class="val">+2</span></li>
+                  <li><span class="label">鋁 ( Al )</span><span class="mid">：恆為</span><span class="val">+3</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- H and O -->
+            <div id="rule-ho" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 04</span>
+                <h2>氫 (H) 與 氧 (O) 的例外</h2>
+              </div>
+              <div class="rule-body">
+                <div class="split-view">
+                  <div class="split-col">
+                    <h3>氫 (H)</h3>
+                    <ul>
+                      <li>一般：<strong>+1</strong></li>
+                      <li>金屬氫化物：<strong>-1</strong> (如 NaH, CaH<sub>2</sub>)</li>
+                    </ul>
+                  </div>
+                  <div class="split-col">
+                    <h3>氧 (O)</h3>
+                    <ul>
+                      <li>一般：<strong>-2</strong></li>
+                      <li>過氧化物：<strong>-1</strong> (如 H<sub>2</sub>O<sub>2</sub>)</li>
+                      <li>超氧化物：<strong>-1/2</strong> (如 KO<sub>2</sub>)</li>
+                      <li>與 F 結合：為正值 (如 OF<sub>2</sub> 為 +2)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summation -->
+            <div id="rule-sum" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 05</span>
+                <h2>代數總和規則</h2>
+              </div>
+              <div class="rule-body">
+                <div class="formula-logic">
+                  <div class="logic-item">
+                    <strong>中性分子</strong>
+                    <span>Σ 氧化數 = 0</span>
+                  </div>
+                  <div class="logic-arrow">→</div>
+                  <div class="logic-item">
+                    <strong>多原子離子</strong>
+                    <span>Σ 氧化數 = 離子總電荷</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typical Element Range -->
+            <div id="rule-range" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 06</span>
+                <h2>典型元素氧化數範圍</h2>
+              </div>
+              <div class="rule-body">
+                <p>典型元素(A族)的最外層電子數決定了其最高與最低氧化數範圍：</p>
+                <div class="periodic-mini-container">
+                  <div class="periodic-grid">
+                    <!-- Column Headers (Ranges) -->
+                    <div class="p-range">+1</div>
+                    <div class="p-range">+2</div>
+                    <div class="p-gap" style="grid-column: span 10;"></div>
+                    <div class="p-range">+3</div>
+                    <div class="p-range">-4~+4</div>
+                    <div class="p-range">-3~+5</div>
+                    <div class="p-range">-2~+6</div>
+                    <div class="p-range">-1~+7</div>
+                    <div class="p-range">0</div>
+
+                    <!-- Groups Row -->
+                    <div class="p-group">1A</div>
+                    <div class="p-group">2A</div>
+                    <div class="p-gap" style="grid-column: span 10;"></div>
+                    <div class="p-group">3A</div>
+                    <div class="p-group">4A</div>
+                    <div class="p-group">5A</div>
+                    <div class="p-group">6A</div>
+                    <div class="p-group">7A</div>
+                    <div class="p-group">8A</div>
+
+                    <!-- Row 1 & 2 (Simplified) -->
+                    <div class="p-el">H</div>
+                    <div class="p-gap" style="grid-column: span 16;"></div>
+                    <div class="p-el">He</div>
+
+                    <div class="p-el">Li</div>
+                    <div class="p-el">Be</div>
+                    <div class="p-gap" style="grid-column: span 10;"></div>
+                    <div class="p-el">B</div>
+                    <div class="p-el">C</div>
+                    <div class="p-el">N</div>
+                    <div class="p-el">O</div>
+                    <div class="p-el">F</div>
+                    <div class="p-el">Ne</div>
+
+                    <!-- Row 3 & 4 (Transition Focus) -->
+                    <div class="p-el">Na</div>
+                    <div class="p-el">Mg</div>
+                    <div class="p-gap" style="grid-column: span 10;"></div>
+                    <div class="p-el">Al</div>
+                    <div class="p-el">Si</div>
+                    <div class="p-el">P</div>
+                    <div class="p-el">S</div>
+                    <div class="p-el">Cl</div>
+                    <div class="p-el">Ar</div>
+
+                    <div class="p-el">K</div>
+                    <div class="p-el">Ca</div>
+                    <!-- Transition Block -->
+                    <div class="p-el transition">Sc</div>
+                    <div class="p-el transition">Ti</div>
+                    <div class="p-el transition">V</div>
+                    <div class="p-el transition">Cr</div>
+                    <div class="p-el transition">Mn</div>
+                    <div class="p-el transition">Fe</div>
+                    <div class="p-el transition">Co</div>
+                    <div class="p-el transition">Ni</div>
+                    <div class="p-el transition">Cu</div>
+                    <div class="p-el transition">Zn</div>
+
+                    <div class="p-el">Ga</div>
+                    <div class="p-el">Ge</div>
+                    <div class="p-el">As</div>
+                    <div class="p-el">Se</div>
+                    <div class="p-el">Br</div>
+                    <div class="p-el">Kr</div>
+
+                    <!-- Row 5 -->
+                    <div class="p-el">Rb</div>
+                    <div class="p-el">Sr</div>
+                    <div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div>
+                    <div class="p-el">In</div>
+                    <div class="p-el">Sn</div>
+                    <div class="p-el">Sb</div>
+                    <div class="p-el">Te</div>
+                    <div class="p-el">I</div>
+                    <div class="p-el">Xe</div>
+
+                    <!-- Row 6 -->
+                    <div class="p-el">Cs</div>
+                    <div class="p-el">Ba</div>
+                    <div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div>
+                    <div class="p-el">Tl</div>
+                    <div class="p-el">Pb</div>
+                    <div class="p-el">Bi</div>
+                    <div class="p-el">Po</div>
+                    <div class="p-el">At</div>
+                    <div class="p-el">Rn</div>
+
+                    <!-- Row 7 -->
+                    <div class="p-el">Fr</div>
+                    <div class="p-el">Ra</div>
+                    <div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div><div class="p-el transition"></div>
+                    <div class="p-el">Nh</div>
+                    <div class="p-el">Fl</div>
+                    <div class="p-el">Mc</div>
+                    <div class="p-el">Lv</div>
+                    <div class="p-el">Ts</div>
+                    <div class="p-el">Og</div>
+                  </div>
+                </div>
+                <div class="info-note">註：H 有 +1, -1；F 恆為 -1；O 通常為 -2。</div>
+              </div>
+            </div>
+
+            <!-- Average and Transition -->
+            <div id="rule-average" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 07</span>
+                <h2>平均氧化數與過渡元素</h2>
+              </div>
+              <div class="rule-body">
+                <p style="font-size: 1.3rem;">若計算結果為分數，代表該元素在結構中有兩種以上的氧化數狀態。</p>
+                <div class="split-view" style="gap: 32px; align-items: stretch;">
+                  <!-- Pb3O4 -->
+                  <div class="split-col" style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center;">
+                    <h3 style="margin-bottom: 12px; color: var(--primary);">鉛丹 (Pb<sub>3</sub>O<sub>4</sub>)</h3>
+                    <div class="info-note" style="text-align: center; margin-bottom: 24px; padding: 12px; font-size: 1.3rem; width: 100%; max-width: 400px;">
+                      <strong>平均鉛(Pb)氧化數計算：</strong><br>
+                      令 Pb 的平均氧化數為 x<br>
+                      3x + (-2)×4 = 0<br>
+                      3x = 8 &nbsp;&nbsp;⇒&nbsp;&nbsp; <strong>x = +8/3</strong>
+                    </div>
+                    <div style="text-align: center; color: var(--text-muted); line-height: 1.6; margin-top: auto; margin-bottom: auto;">
+                      實際上 Pb<sub>3</sub>O<sub>4</sub> 是由兩種氧化態的鉛組成：<br><br>
+                      <strong style="color: var(--secondary); font-size: 1.2rem;">2 個 Pb<sup>2+</sup></strong> (氧化數 +2)<br>
+                      <strong style="color: var(--secondary); font-size: 1.2rem;">1 個 Pb<sup>4+</sup></strong> (氧化數 +4)<br>
+                      <br>
+                      <span style="color: var(--warning); font-size: 1.3rem;">平均 = [2×(+2) + 1×(+4)] ÷ 3 = +8/3</span>
+                    </div>
+                  </div>
+
+                  <!-- S2O3 2- -->
+                  <div class="split-col" style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center;">
+                    <h3 style="margin-bottom: 12px; color: var(--primary);">硫代硫酸根離子 (S<sub>2</sub>O<sub>3</sub><sup>2-</sup>)</h3>
+                    <div class="info-note" style="text-align: center; margin-bottom: 24px; padding: 12px; font-size: 1.3rem; width: 100%; max-width: 400px;">
+                      <strong>平均硫(S)氧化數計算：</strong><br>
+                      令 S 的平均氧化數為 x<br>
+                      2x + (-2)×3 = -2<br>
+                      2x = 4 &nbsp;&nbsp;⇒&nbsp;&nbsp; <strong>x = +2</strong>
+                    </div>
+                    
+                    <div class="full-structure">
+                      <!-- Row 1: Top S -->
+                      <div style="grid-column: 7; grid-row: 1; display: flex; align-items: center; gap: 4px; position: relative;">
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <span>S</span>
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <span style="position: absolute; top: -5px; right: -28px; font-size: 0.8rem; color: var(--warning);">(0)</span>
+                      </div>
+
+                      <!-- Row 2: Top vertical double bond -->
+                      <div style="grid-column: 7; grid-row: 2;"><div class="v-double-bond"><div></div><div></div></div></div>
+
+                      <!-- Row 3: Main Chain (O - S - O) -->
+                      <div style="grid-column: 5; grid-row: 3; position: relative; display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <div style="display: flex; flex-direction: column; align-items: center; line-height: 0.8;">
+                           <span style="font-size: 1.2rem; margin-bottom: 2px;">··</span>
+                           <span>O</span>
+                           <span style="font-size: 1.2rem; margin-top: 2px;">··</span>
+                        </div>
+                        <span style="position: absolute; top: -10px; right: -15px; font-size: 0.9rem;">⁻</span>
+                      </div>
+
+                      <div style="grid-column: 6; grid-row: 3;"><div class="h-bond"></div></div>
+
+                      <div style="grid-column: 7; grid-row: 3; position: relative;">
+                        <span style="color: var(--secondary);">S</span>
+                        <span style="position: absolute; top: -5px; left: 18px; font-size: 0.8rem; color: var(--warning);">(+4)</span>
+                      </div>
+
+                      <div style="grid-column: 8; grid-row: 3;"><div class="h-bond"></div></div>
+
+                      <div style="grid-column: 9; grid-row: 3; position: relative; display: flex; align-items: center; gap: 4px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; line-height: 0.8;">
+                           <span style="font-size: 1.2rem; margin-bottom: 2px;">··</span>
+                           <span>O</span>
+                           <span style="font-size: 1.2rem; margin-top: 2px;">··</span>
+                        </div>
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <span style="position: absolute; top: -10px; right: -20px; font-size: 0.9rem;">⁻</span>
+                      </div>
+
+                      <!-- Row 4: Bottom vertical double bond -->
+                      <div style="grid-column: 7; grid-row: 4;"><div class="v-double-bond"><div></div><div></div></div></div>
+
+                      <!-- Row 5: Bottom O -->
+                      <div style="grid-column: 7; grid-row: 5; display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <span>O</span>
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Organic Structures -->
+            <div id="rule-organic" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 08</span>
+                <h2>有機結構碳原子的個別氧化數</h2>
+              </div>
+              <div class="rule-body">
+                <p style="font-size: 1.3rem;">有機化合物中，個別碳原子的氧化數可透過畫出路易斯結構（或結構式），並依電負度大小分配共用電子來計算：<br>
+                <small style="color: var(--warning);">分配原則：共用電子對完全歸屬於電負度較大的原子。若兩原子電負度相同（如 C-C），則平均平分。</small></p>
+
+                <div class="split-view" style="gap: 32px; align-items: stretch;">
+                  <!-- Methane -->
+                  <div class="split-col" style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border);">
+                    <h3 style="margin-bottom: 16px; text-align: center; color: var(--primary);">甲烷 (CH<sub>4</sub>)</h3>
+                    <div class="lewis-methane">
+                      <div class="highlight-circle"></div>
+                      <div style="margin-bottom: 4px;">H</div>
+                      <div style="line-height: 0.8; margin-bottom: 4px;">:</div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>H</span>
+                        <span style="font-weight: 900;">:</span>
+                        <span style="color: var(--secondary); margin: 0 4px;">C</span>
+                        <span style="font-weight: 900;">:</span>
+                        <span>H</span>
+                      </div>
+                      <div style="line-height: 0.8; margin-top: 4px;">:</div>
+                      <div style="margin-top: 4px;">H</div>
+                    </div>
+                    <div class="info-note" style="margin-top: 16px; text-align: center;">
+                      電負度：C (2.5) &gt; H (2.1)<br>
+                      碳獲得所有共用電子 (8個)。<br>
+                      C 氧化數 = 4 - 8 = <strong style="color: var(--secondary);">-4</strong>
+                    </div>
+                  </div>
+
+                  <!-- 3-hydroxypropanoic acid -->
+                  <div class="split-col" style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border);">
+                    <h3 style="margin-bottom: 8px; text-align: center; color: var(--primary);">3-羥基丙酸 (C<sub>3</sub>H<sub>6</sub>O<sub>3</sub>)</h3>
+                    <div class="info-note" style="text-align: center; margin-bottom: 24px; padding: 12px; font-size: 1.3rem;">
+                      <strong>平均碳氧化數計算：</strong><br>
+                      令 C 的平均氧化數為 x<br>
+                      3x + (+1)×6 + (-2)×3 = 0<br>
+                      3x = 0 &nbsp;&nbsp;⇒&nbsp;&nbsp; <strong>x = 0</strong>
+                    </div>
+                    <div class="full-structure">
+                      <!-- Row 1: Top Atoms -->
+                      <div style="grid-column: 5; grid-row: 1;">H</div>
+                      <div style="grid-column: 7; grid-row: 1;">H</div>
+                      <div style="grid-column: 9; grid-row: 1; display: flex; align-items: center; gap: 4px;">
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                        <span>O</span>
+                        <span style="font-size: 1.2rem; font-weight: 900;">:</span>
+                      </div>
+
+                      <!-- Row 2: Top Vertical Bonds -->
+                      <div style="grid-column: 5; grid-row: 2;"><div class="v-bond"></div></div>
+                      <div style="grid-column: 7; grid-row: 2;"><div class="v-bond"></div></div>
+                      <div style="grid-column: 9; grid-row: 2;"><div class="v-double-bond"><div></div><div></div></div></div>
+
+                      <!-- Row 3: Main Chain -->
+                      <div style="grid-column: 1; grid-row: 3;">H</div>
+                      <div style="grid-column: 2; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 3; grid-row: 3; display: flex; flex-direction: column; align-items: center; line-height: 0.8;">
+                        <span style="font-size: 1.2rem; margin-bottom: 2px;">··</span>
+                        <span>O</span>
+                        <span style="font-size: 1.2rem; margin-top: 2px;">··</span>
+                      </div>
+                      <div style="grid-column: 4; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 5; grid-row: 3; color: var(--secondary);">C</div>
+                      <div style="grid-column: 6; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 7; grid-row: 3; color: var(--secondary);">C</div>
+                      <div style="grid-column: 8; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 9; grid-row: 3; color: var(--secondary);">C</div>
+                      <div style="grid-column: 10; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 11; grid-row: 3; display: flex; flex-direction: column; align-items: center; line-height: 0.8;">
+                        <span style="font-size: 1.2rem; margin-bottom: 2px;">··</span>
+                        <span>O</span>
+                        <span style="font-size: 1.2rem; margin-top: 2px;">··</span>
+                      </div>
+                      <div style="grid-column: 12; grid-row: 3;"><div class="h-bond"></div></div>
+                      <div style="grid-column: 13; grid-row: 3;">H</div>
+
+                      <!-- Row 4: Bottom Vertical Bonds -->
+                      <div style="grid-column: 5; grid-row: 4;"><div class="v-bond"></div></div>
+                      <div style="grid-column: 7; grid-row: 4;"><div class="v-bond"></div></div>
+
+                      <!-- Row 5: Bottom Atoms -->
+                      <div style="grid-column: 5; grid-row: 5;">H</div>
+                      <div style="grid-column: 7; grid-row: 5;">H</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reference Tables -->
+            <div id="rule-tables" class="rule-card">
+              <div class="rule-header">
+                <span class="badge">Rule 09</span>
+                <h2>常用參考資料</h2>
+              </div>
+              <div class="rule-body">
+                <h3>常用元素電負度</h3>
+                <div class="table-container">
+                  <table class="data-table">
+                    <tr><th>元素</th><td>F</td><td>O</td><td>N</td><td>Cl</td><td>Br</td><td>C</td><td>S</td><td>I</td><td>H</td><td>P</td></tr>
+                    <tr><th>數值</th><td>4.0</td><td>3.5</td><td>3.0</td><td>3.0</td><td>2.8</td><td>2.5</td><td>2.5</td><td>2.5</td><td>2.1</td><td>2.1</td></tr>
+                  </table>
+                </div>
+
+                <h3 style="margin-top: 32px;">含氮物質氧化數</h3>
+                <div class="table-container">
+                  <table class="data-table">
+                    <tr><th>物質</th><td>HNO<sub>3</sub></td><td>NO<sub>2</sub></td><td>HNO<sub>2</sub></td><td>NO</td><td>N<sub>2</sub>O</td><td>N<sub>2</sub></td><td>NH<sub>2</sub>OH</td><td>N<sub>2</sub>H<sub>4</sub></td><td>NH<sub>3</sub></td></tr>
+                    <tr><th>N 氧化數</th><td>+5</td><td>+4</td><td>+3</td><td>+2</td><td>+1</td><td>0</td><td>-1</td><td>-2</td><td>-3</td></tr>
+                  </table>
+                </div>
+
+                <h3 style="margin-top: 32px;">過渡元素常用氧化數</h3>
+                <div class="table-container">
+                  <table class="data-table">
+                    <tr><th>元素</th><td>Sc</td><td>Ti</td><td>V</td><td>Cr</td><td>Mn</td><td>Fe</td><td>Co</td><td>Ni</td><td>Cu</td><td>Zn</td><td>Ag</td></tr>
+                    <tr><th>氧化數</th><td>+3</td><td>+4</td><td>+5</td><td>+3,+6</td><td>+2,+4,+7</td><td>+2,+3</td><td>+2,+3</td><td>+2</td><td>+1,+2</td><td>+2</td><td>+1</td></tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Calculator Section -->
+      <section id="calculatorTab" class="tab-content active">
+        <div class="card full-width">
+          <div class="form-container">
+            <div class="form-main">
+              <div class="form-row">
+                <h2>氧化數解析</h2>
+                <input id="formulaInput" type="text" placeholder="例如：[Cu(NH3)4]SO4, FeC2O4" autocomplete="off" />
+                <button id="calculateBtn" class="primary-btn">解析化學式</button>
+              </div>
+              <p class="description">支持 [] 與 ()，離子請用 ^ 表示電荷（如 SO4^2-, NH4^+），系統將進行深度解析。</p>
+            </div>
+            
+            <div class="quick-panel">
+              <div class="panel-header">快速示範</div>
+              <div class="tag-grid">
+                <button class="tag-btn">KMnO4</button>
+                <button class="tag-btn">K2Cr2O7</button>
+                <button class="tag-btn">H2O2</button>
+                <button class="tag-btn">FeC2O4</button>
+                <button class="tag-btn">[Cu(NH3)4]SO4</button>
+                <button class="tag-btn">Na2S2O3</button>
+                <button class="tag-btn">Ni(CO)4</button>
+                <button class="tag-btn">CaH2</button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="calculatorResult" class="result-display">
+            <!-- Results injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Challenge Section -->
+      <section id="challengeTab" class="tab-content">
+        <div class="card full-width">
+          <div class="card-header">
+            <h2>氧化數挑戰模式</h2>
+            <p class="description">請填寫下列 10 個化合物中指定元素的氧化數（例如 +3 或 -2）。</p>
+          </div>
+          
+          <div id="quizList" class="quiz-grid">
+            <!-- 10 Questions injected here -->
+          </div>
+
+          <div class="action-bar">
+            <button id="scoreBtn" class="primary-btn">結算總分</button>
+            <button id="resetBtn" class="secondary-btn">再戰一次</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Score Overlay -->
+    <div id="scoreOverlay" class="overlay hidden">
+      <div class="overlay-content">
+        <div class="score-circle">
+          <span id="finalScore">0</span>
+          <small>pts</small>
+        </div>
+        <h3 id="scoreMessage">繼續努力！</h3>
+        <button id="closeOverlayBtn">返回查看</button>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 Oxidation Master Pro | 高中化學專業教學工具</p>
+    </footer>
+  </div>
+
+  <script>
+const formulaInput = document.getElementById('formulaInput');
+const calculateBtn = document.getElementById('calculateBtn');
+const calculatorResult = document.getElementById('calculatorResult');
+
+// Tab elements
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+
+// Quiz elements
+const quizList = document.getElementById('quizList');
+const scoreBtn = document.getElementById('scoreBtn');
+const resetBtn = document.getElementById('resetBtn');
+const scoreOverlay = document.getElementById('scoreOverlay');
+const finalScoreSpan = document.getElementById('finalScore');
+const scoreMessage = document.getElementById('scoreMessage');
+const closeOverlayBtn = document.getElementById('closeOverlayBtn');
+const startFSBtn = document.getElementById('startFSBtn');
+const fsOverlay = document.getElementById('fsOverlay');
+
+// --- Full Screen Entry ---
+startFSBtn.addEventListener('click', () => {
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(err => {
+      console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+    });
+  }
+  fsOverlay.classList.add('hidden');
+});
+
+// --- Data Definitions ---
+
+const group1 = new Set(['Li', 'Na', 'K', 'Rb', 'Cs', 'Fr']);
+const group2 = new Set(['Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra']);
+const fixedStates = { F: -1, Al: 3, Ag: 1, Zn: 2, Cd: 2 };
+
+const polyatomicIons = {
+  'NO3': { charge: -1, atoms: { N: 5, O: -2 } },
+  'NO2': { charge: -1, atoms: { N: 3, O: -2 } },
+  'ClO4': { charge: -1, atoms: { Cl: 7, O: -2 } },
+  'ClO3': { charge: -1, atoms: { Cl: 5, O: -2 } },
+  'ClO2': { charge: -1, atoms: { Cl: 3, O: -2 } },
+  'ClO': { charge: -1, atoms: { Cl: 1, O: -2 } },
+  'SO4': { charge: -2, atoms: { S: 6, O: -2 } },
+  'SO3': { charge: -2, atoms: { S: 4, O: -2 } },
+  'CO3': { charge: -2, atoms: { C: 4, O: -2 } },
+  'C2O4': { charge: -2, atoms: { C: 3, O: -2 } },
+  'PO4': { charge: -3, atoms: { P: 5, O: -2 } },
+  'OH': { charge: -1, atoms: { O: -2, H: 1 } },
+  'NH4': { charge: 1, atoms: { N: -3, H: 1 } },
+  'MnO4': { charge: -1, atoms: { Mn: 7, O: -2 } },
+  'CrO4': { charge: -2, atoms: { Cr: 6, O: -2 } },
+  'Cr2O7': { charge: -2, atoms: { Cr: 6, O: -2 } },
+  'CN': { charge: -1, atoms: { C: 2, N: -3 } },
+  'SCN': { charge: -1, atoms: { S: -2, C: 4, N: -3 } },
+  'CH3COO': { charge: -1, atoms: { C: 0, H: 1, O: -2 } },
+};
+
+const ligands = {
+  'NH3': { charge: 0, atoms: { N: -3, H: 1 } },
+  'H2O': { charge: 0, atoms: { H: 1, O: -2 } },
+  'CO': { charge: 0, atoms: { C: 2, O: -2 } },
+  'en': { charge: 0, atoms: { C: -1, H: 1, N: -3 } },
+};
+
+const quizPool = [
+  { formula: 'KMnO4', element: 'Mn' },
+  { formula: 'K2Cr2O7', element: 'Cr' },
+  { formula: 'FeC2O4', element: 'Fe' },
+  { formula: '[Cu(NH3)4]SO4', element: 'Cu' },
+  { formula: 'K4[Fe(CN)6]', element: 'Fe' },
+  { formula: 'H2SO4', element: 'S' },
+  { formula: 'Na2O2', element: 'O' },
+  { formula: 'OF2', element: 'O' },
+  { formula: 'NH4NO3', element: 'N' },
+  { formula: 'CaH2', element: 'H' },
+  { formula: 'Na2S2O3', element: 'S' },
+  { formula: 'K2PtCl6', element: 'Pt' },
+  { formula: 'CO2', element: 'C' },
+  { formula: 'NH3', element: 'N' },
+  { formula: 'Fe2O3', element: 'Fe' },
+  { formula: 'H2O2', element: 'O' },
+  { formula: 'LiAlH4', element: 'Al' },
+  { formula: 'NaClO', element: 'Cl' },
+  { formula: 'Ba(OH)2', element: 'Ba' },
+  { formula: 'Cr(OH)3', element: 'Cr' }
+];
+
+let currentQuizItems = [];
+
+// --- Logic Implementation ---
+
+function formatFormula(formula) {
+  if (!formula) return formula;
+  return formula.replace(/([A-Z][a-z]?)(\d+)/g, '$1<sub>$2</sub>')
+                .replace(/\((.*?)\)(\d*)/g, '($1)<sub>$2</sub>')
+                .replace(/\[(.*?)\](\d*)/g, '[$1]<sub>$2</sub>')
+                .replace(/\^(\d*[\+\-]|[\+\-]\d*)/g, '<sup>$1</sup>');
+}
+
+function formatCharge(charge) {
+  if (charge === 0) return '';
+  const sign = charge > 0 ? '+' : '-';
+  const abs = Math.abs(charge);
+  const val = abs === 1 ? '' : abs;
+  return `<sup>${val}${sign}</sup>`;
+}
+
+function getElementCounts(formula) {
+  const stack = [{}];
+  let i = 0;
+  while (i < formula.length) {
+    const char = formula[i];
+    if (char === '(' || char === '[') { stack.push({}); i++; }
+    else if (char === ')' || char === ']') {
+      i++;
+      let countStr = '';
+      while (i < formula.length && /\d/.test(formula[i])) { countStr += formula[i]; i++; }
+      const multiplier = countStr ? parseInt(countStr, 10) : 1;
+      const inner = stack.pop();
+      const current = stack[stack.length - 1];
+      for (const [el, count] of Object.entries(inner)) { current[el] = (current[el] || 0) + count * multiplier; }
+    } else if (/[A-Z]/.test(char)) {
+      let element = char; i++;
+      if (i < formula.length && /[a-z]/.test(formula[i])) { element += formula[i]; i++; }
+      let countStr = '';
+      while (i < formula.length && /\d/.test(formula[i])) { countStr += formula[i]; i++; }
+      const count = countStr ? parseInt(countStr, 10) : 1;
+      const current = stack[stack.length - 1];
+      current[element] = (current[element] || 0) + count;
+    } else { i++; }
+  }
+  return stack[0];
+}
+
+function decomposeFormula(formula) {
+  const result = { groups: [], remainingFormula: formula, totalCharge: 0 };
+  const allGroups = { ...polyatomicIons, ...ligands };
+  const sortedNames = Object.keys(allGroups).sort((a, b) => b.length - a.length);
+  let currentFormula = formula;
+
+  const bracketMatch = currentFormula.match(/\[(.*?)\](\d*)/);
+  if (bracketMatch) {
+    const content = bracketMatch[1];
+    const count = bracketMatch[2] ? parseInt(bracketMatch[2], 10) : 1;
+    result.groups.push({ name: `[${content}]`, type: 'coordination_sphere', content, count, isComplex: true });
+    currentFormula = currentFormula.replace(bracketMatch[0], '').trim();
+  }
+
+  for (const name of sortedNames) {
+    const regex = new RegExp(`\\(?${name}\\)?(\\d*)`, 'g');
+    let match;
+    while ((match = regex.exec(currentFormula)) !== null) {
+      const count = match[1] ? parseInt(match[1], 10) : 1;
+      result.groups.push({ name, type: allGroups[name].charge === 0 ? 'ligand' : 'ion', count, data: allGroups[name] });
+      currentFormula = currentFormula.replace(match[0], ' ').trim();
+    }
+  }
+  result.remainingFormula = currentFormula;
+  return result;
+}
+
+function solveOxidationStates(formula) {
+  const reasoning = [];
+  const states = {};
+  const normalized = formula.replace(/\s+/g, '');
+  
+  // Extract total charge if present (e.g., SO4^2-)
+  let totalCharge = 0;
+  let baseFormula = normalized;
+  const chargeMatch = normalized.match(/\^(\d*[\+\-]|[\+\-]\d*)$/);
+  if (chargeMatch) {
+    const chargeStr = chargeMatch[1];
+    baseFormula = normalized.substring(0, chargeMatch.index);
+    if (chargeStr === '+' || chargeStr === '1+') totalCharge = 1;
+    else if (chargeStr === '-' || chargeStr === '1-') totalCharge = -1;
+    else {
+      const val = parseInt(chargeStr.replace(/[\+\-]/g, ''), 10);
+      const sign = chargeStr.includes('+') ? 1 : -1;
+      totalCharge = val * sign;
+    }
+    reasoning.push(`偵測到離子電荷：${totalCharge}`);
+  }
+
+  const counts = getElementCounts(baseFormula);
+  const elements = Object.keys(counts);
+
+  if (elements.length === 0) return null;
+  if (elements.length === 1 && totalCharge === 0) {
+    states[elements[0]] = 0;
+    reasoning.push(`${elements[0]} 為單質，其氧化數為 0。`);
+    return { states, reasoning };
+  }
+
+  const decomp = decomposeFormula(baseFormula);
+  if (decomp.groups.length > 0) {
+    reasoning.push(`偵測到組成單元：`);
+    let knownSubCharge = 0;
+    decomp.groups.forEach(g => {
+      if (g.type === 'ion' || g.type === 'ligand') {
+        const formattedName = g.type === 'ion' ? `${g.name}${formatCharge(g.data.charge)}` : `${g.name} (分子)`;
+        reasoning.push(`  • ${formattedName}：價數 ${g.data.charge}，個數 ${g.count}`);
+        knownSubCharge += g.data.charge * g.count;
+        Object.entries(g.data.atoms).forEach(([el, ox]) => { if (states[el] === undefined) states[el] = ox; });
+      }
+    });
+
+    const sphere = decomp.groups.find(g => g.type === 'coordination_sphere');
+    if (sphere) {
+      const outerElements = getElementCounts(decomp.remainingFormula);
+      let outerCharge = 0;
+      Object.entries(outerElements).forEach(([el, count]) => {
+        if (group1.has(el)) { states[el] = 1; outerCharge += 1 * count; }
+        else if (group2.has(el)) { states[el] = 2; outerCharge += 2 * count; }
+        else if (fixedStates[el]) { states[el] = fixedStates[el]; outerCharge += fixedStates[el] * count; }
+      });
+      const sphereCharge = totalCharge - (knownSubCharge + outerCharge);
+      reasoning.push(`錯離子 ${sphere.name} 總價數：${sphereCharge}`);
+      const innerDecomp = decomposeFormula(sphere.content);
+      let ligandCharge = 0;
+      innerDecomp.groups.forEach(lg => {
+        const formattedLigand = lg.data.charge === 0 ? `${lg.name} (分子)` : `${lg.name}${formatCharge(lg.data.charge)}`;
+        reasoning.push(`  • 內部配位基 ${formattedLigand}：價數 ${lg.data.charge}，個數 ${lg.count}`);
+        ligandCharge += lg.data.charge * lg.count;
+        Object.entries(lg.data.atoms).forEach(([el, ox]) => { if (states[el] === undefined) states[el] = ox; });
+      });
+      const metalCounts = getElementCounts(innerDecomp.remainingFormula);
+      const metals = Object.keys(metalCounts);
+      if (metals.length === 1) {
+        const metal = metals[0];
+        const state = (sphereCharge - ligandCharge) / metalCounts[metal];
+        states[metal] = state;
+        reasoning.push(`中心金屬 ${metal}：(${sphereCharge} - ${ligandCharge}) / ${metalCounts[metal]} = ${state}`);
+      }
+    } else {
+      const metalCounts = getElementCounts(decomp.remainingFormula);
+      const metals = Object.keys(metalCounts);
+      if (metals.length === 1) {
+        const metal = metals[0];
+        const state = (totalCharge - knownSubCharge) / metalCounts[metal];
+        states[metal] = state;
+        reasoning.push(`${metal} 氧化數：(${totalCharge} - (${knownSubCharge})) / ${metalCounts[metal]} = ${state}`);
+      }
+    }
+  }
+
+  // Fallback for remaining elements
+  elements.forEach(el => {
+    if (states[el] !== undefined) return;
+    if (fixedStates[el] !== undefined) states[el] = fixedStates[el];
+    else if (group1.has(el)) states[el] = 1;
+    else if (group2.has(el)) states[el] = 2;
+    else if (el === 'H') states[el] = 1; // Simplified
+    else if (el === 'O') states[el] = -2; // Simplified
+  });
+
+  const unknown = elements.filter(el => states[el] === undefined);
+  if (unknown.length === 1) {
+    let currentSum = 0;
+    elements.forEach(el => { if (el !== unknown[0]) currentSum += states[el] * counts[el]; });
+    const state = (totalCharge - currentSum) / counts[unknown[0]];
+    states[unknown[0]] = state;
+    reasoning.push(`未知元素 ${unknown[0]}：由電荷守恆 (總電量 ${totalCharge}) 計算得 ${state}`);
+  }
+
+  return { states, reasoning };
+}
+
+// --- UI Functions ---
+
+function showCalculatorResult(formula) {
+  const result = solveOxidationStates(formula);
+  if (!result) {
+    calculatorResult.innerHTML = '<p class="danger">無法解析該化學式。</p>';
+    return;
+  }
+
+  const { states, reasoning } = result;
+  calculatorResult.innerHTML = `
+    <div class="result-header">
+      <h4>解析目標：<span class="formula-main">${formatFormula(formula)}</span></h4>
+    </div>
+    <div class="result-grid">
+      <div class="reasoning-panel">
+        <h3>推導步驟</h3>
+        <ul class="reasoning-list">
+          ${reasoning.map(r => `<li>${r}</li>`).join('')}
+        </ul>
+      </div>
+      <div class="final-states-panel">
+        <h3>原子平均氧化數</h3>
+        ${Object.entries(states).map(([el, ox]) => `
+          <div class="state-row">
+            <strong>${el}：${ox >= 0 ? '+' : ''}${ox}</strong>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function generateQuiz() {
+  quizList.innerHTML = '';
+  currentQuizItems = [];
+  const shuffled = [...quizPool].sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 10);
+
+  selected.forEach((item, index) => {
+    currentQuizItems.push(item);
+    const div = document.createElement('div');
+    div.className = 'quiz-item';
+    div.innerHTML = `
+      <div class="quiz-formula">
+        ${formatFormula(item.formula)}
+        <small>求 <strong>${item.element}</strong> 的氧化數</small>
+      </div>
+      <input type="number" class="quiz-input" data-index="${index}" placeholder="?" />
+    `;
+    quizList.appendChild(div);
+  });
+
+  // Add Enter key support to inputs
+  const inputs = quizList.querySelectorAll('.quiz-input');
+  inputs.forEach((input, idx) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (idx < inputs.length - 1) inputs[idx + 1].focus();
+        else scoreBtn.click();
+      }
+    });
+  });
+}
+
+function scoreQuiz() {
+  let score = 0;
+  const inputs = quizList.querySelectorAll('.quiz-input');
+  
+  inputs.forEach((input, idx) => {
+    const userVal = parseFloat(input.value);
+    const item = currentQuizItems[idx];
+    const result = solveOxidationStates(item.formula);
+    const correctVal = result.states[item.element];
+
+    if (!isNaN(userVal) && Math.abs(userVal - correctVal) < 0.01) {
+      score += 10;
+      input.style.borderColor = 'var(--success)';
+    } else {
+      input.style.borderColor = 'var(--danger)';
+      // Optional: show correct answer on hover or something
+      input.title = `正確答案: ${correctVal}`;
+    }
+  });
+
+  finalScoreSpan.textContent = score;
+  scoreMessage.textContent = score >= 80 ? "卓越！完美的化學直覺。" : score >= 60 ? "不錯喔！再接再厲。" : "加油！多練習幾次。";
+  scoreOverlay.classList.remove('hidden');
+}
+
+// --- Event Listeners ---
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`${target}Tab`).classList.add('active');
+    
+    if (target === 'learning') {
+      document.getElementById('drawingToolbar').style.display = 'flex';
+      setTimeout(resizeCanvas, 50);
+    } else {
+      document.getElementById('drawingToolbar').style.display = 'none';
+      if (drawMode) togglePenBtn.click();
+    }
+
+    if (target === 'challenge' && currentQuizItems.length === 0) generateQuiz();
+  });
+});
+
+calculateBtn.addEventListener('click', () => {
+  const val = formulaInput.value.trim();
+  if (val) showCalculatorResult(val);
+});
+
+formulaInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') calculateBtn.click();
+});
+
+scoreBtn.addEventListener('click', scoreQuiz);
+resetBtn.addEventListener('click', generateQuiz);
+
+// --- Quick Tags Logic ---
+document.querySelectorAll('.tag-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    formulaInput.value = btn.textContent;
+    calculateBtn.click();
+  });
+});
+
+// Learning Tab Interactivity
+const ruleNavItems = document.querySelectorAll('#ruleNav li');
+const ruleCards = document.querySelectorAll('.rule-card');
+
+ruleNavItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const targetRule = item.dataset.rule;
+    const targetElement = document.getElementById(`rule-${targetRule}`);
+    if (targetElement) {
+      // Offset by 100px roughly for top navigation padding
+      const y = targetElement.getBoundingClientRect().top + window.scrollY - 120;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  });
+});
+
+// IntersectionObserver to update active nav item while scrolling
+if ('IntersectionObserver' in window) {
+  const observerOptions = {
+    root: null,
+    rootMargin: '-10% 0px -70% 0px',
+    threshold: 0
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id.replace('rule-', '');
+        ruleNavItems.forEach(i => i.classList.remove('active'));
+        const navItem = document.querySelector(`#ruleNav li[data-rule="${id}"]`);
+        if (navItem) navItem.classList.add('active');
+      }
+    });
+  }, observerOptions);
+
+  ruleCards.forEach(card => observer.observe(card));
+}
+
+closeOverlayBtn.addEventListener('click', () => scoreOverlay.classList.add('hidden'));
+
+// --- Handwriting & Annotation Logic ---
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+
+function resizeCanvas() {
+  if (!canvas) return;
+  const main = document.getElementById('learningMain');
+  let newWidth = main ? main.offsetWidth : window.innerWidth;
+  let newHeight = main ? main.offsetHeight : window.innerHeight;
+  
+  if (canvas.width === newWidth && canvas.height === newHeight) return;
+
+  let tempCanvas = null;
+  if (canvas.width > 0 && canvas.height > 0) {
+    tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+  }
+
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+
+  if (tempCanvas) {
+    ctx.drawImage(tempCanvas, 0, 0);
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+
+if (window.ResizeObserver) {
+  const ro = new ResizeObserver(() => {
+    resizeCanvas();
+  });
+  const main = document.getElementById('learningMain');
+  if(main) ro.observe(main);
+}
+
+// Call resize after layout is done
+setTimeout(resizeCanvas, 100);
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+        ctx.lineWidth = 38;
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = 3.5;
+    }
+    ctx.lineCap = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+
+if (canvas) {
+    canvas.addEventListener('pointerdown', startDrawing);
+    canvas.addEventListener('pointermove', draw);
+    canvas.addEventListener('pointerup', stopDrawing);
+    canvas.addEventListener('pointercancel', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+const btnDraw = document.getElementById('btn-draw');
+if(btnDraw) {
+    btnDraw.addEventListener('click', e => {
+        isDrawingMode = !isDrawingMode;
+        if (isDrawingMode) drawMode = 'pen';
+        e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+        canvas.classList.toggle('drawing-active', isDrawingMode);
+        document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+        document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+        if(isDrawingMode) resizeCanvas();
+    });
+}
+
+const btnEraser = document.getElementById('btn-eraser');
+if(btnEraser) {
+    btnEraser.addEventListener('click', e => {
+        drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+        e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+    });
+}
+
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color; drawMode = 'pen';
+        if(btnEraser) btnEraser.classList.remove('active-tool');
+    });
+});
+
+const btnClear = document.getElementById('btn-clear');
+if(btnClear) {
+    btnClear.addEventListener('click', () => {
+        if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+    });
+}
+
+const btnTop = document.getElementById('btn-top');
+if(btnTop) {
+    btnTop.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+}
+
+/* ─── Toolbar drag ─── */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    if(!tb || !dh) return;
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+
+/* ─── Random Draw Logic ─── */
+(function() {
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+    const drawModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const drawBallsContainer = document.getElementById('random-draw-balls');
+    const drawTotalInput = document.getElementById('draw-total-input');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+
+    if(!btnRandomDraw || !drawModal) return;
+
+    let drawBalls = [];
+    let totalBalls = 40;
+
+    function renderBalls() {
+        drawBallsContainer.innerHTML = '';
+        drawBalls = [];
+        for (let i = 1; i <= totalBalls; i++) {
+            const ball = document.createElement('div');
+            ball.className = 'draw-ball';
+            ball.textContent = i;
+            ball.dataset.num = i;
+            drawBallsContainer.appendChild(ball);
+            drawBalls.push(ball);
+        }
+    }
+
+    btnRandomDraw.addEventListener('click', () => {
+        if (drawModal.style.display === 'block') {
+            drawModal.style.display = 'none';
+            btnRandomDraw.classList.remove('active-tool');
+        } else {
+            drawModal.style.display = 'block';
+            btnRandomDraw.classList.add('active-tool');
+            if (drawBalls.length === 0) {
+                totalBalls = parseInt(drawTotalInput.value) || 40;
+                renderBalls();
+            }
+        }
+    });
+
+    btnCloseDraw.addEventListener('click', () => {
+        drawModal.style.display = 'none';
+        btnRandomDraw.classList.remove('active-tool');
+    });
+
+    drawTotalInput.addEventListener('change', () => {
+        let val = parseInt(drawTotalInput.value);
+        if (isNaN(val) || val < 1) val = 1;
+        drawTotalInput.value = val;
+        totalBalls = val;
+        renderBalls();
+    });
+
+    let drawInterval;
+    let drawTimeout;
+
+    btnDoDraw.addEventListener('click', () => {
+        if (btnDoDraw.disabled) return;
+        const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+        
+        if (availableBalls.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+        if (prevWinner) {
+            prevWinner.classList.remove('winner');
+            prevWinner.classList.add('drawn');
+        }
+
+        const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+        if (currentAvailable.length === 0) {
+            alert('所有號碼都已抽出！');
+            return;
+        }
+
+        btnDoDraw.disabled = true;
+        drawTotalInput.disabled = true;
+
+        let flickerCount = 0;
+        const flickerDuration = 3000;
+        const flickerSpeed = 50;
+
+        drawInterval = setInterval(() => {
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+            const randomIdx = Math.floor(Math.random() * currentAvailable.length);
+            currentAvailable[randomIdx].classList.add('flicker');
+        }, flickerSpeed);
+
+        drawTimeout = setTimeout(() => {
+            clearInterval(drawInterval);
+            currentAvailable.forEach(b => b.classList.remove('flicker'));
+
+            const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
+            const winnerBall = currentAvailable[winnerIdx];
+            winnerBall.classList.add('winner');
+
+            btnDoDraw.disabled = false;
+            drawTotalInput.disabled = false;
+        }, flickerDuration);
+    });
+})();
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof updateNav === 'function') updateNav('def');
+  resizeCanvas();
+});
+
+// Init
+showCalculatorResult('KMnO4');
+generateQuiz();
+showCalculatorResult('KMnO4');
+generateQuiz();
+
+</script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>
+

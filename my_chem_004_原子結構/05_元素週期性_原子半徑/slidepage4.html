@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-5 週期表中的原子半徑分佈</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.7;
+    }
+    .formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-left: 5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">互動 01</span>
+      <h1>週期表中的原子半徑分佈</h1>
+    </div>
+    <div class="subtitle">全功能互動元素週期表 · 即時半徑色譜熱度與元素規格檢視</div>
+  </div>
+
+  
+<div style="display: flex; flex-direction: column; flex: 1; gap: 10px; min-height: 0;">
+  <div style="background: rgba(30,41,59,0.8); border: 1px solid #334155; border-radius: 12px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+    <div style="font-size: 0.95rem; color: #cbd5e1;">
+      點選元素方格檢視原子半徑、週期、族別與熱度光譜。顏色越<strong style="color: #f87171;">深紅</strong>表示半徑越大，越<strong style="color: #60a5fa;">深藍</strong>表示半徑越小。
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #94a3b8;">
+      <span>31 pm</span>
+      <div style="width: 100px; height: 10px; border-radius: 5px; background: linear-gradient(90deg, #3b82f6, #10b981, #fbbf24, #ef4444);"></div>
+      <span>265 pm</span>
+    </div>
+  </div>
+
+  <div class="card" style="flex: 1; padding: 8px; overflow: hidden; display: flex; flex-direction: column;">
+    <div id="ptable-grid" style="display: grid; grid-template-columns: repeat(18, 1fr); gap: 3px; width: 100%; height: 100%; align-content: start; box-sizing: border-box;"></div>
+  </div>
+</div>
+
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  
+<script>
+  const ptData = [
+    {sym:'H',  Z:1,  period:1, group:1,  r:53},
+    {sym:'He', Z:2,  period:1, group:18, r:31},
+    {sym:'Li', Z:3,  period:2, group:1,  r:152},
+    {sym:'Be', Z:4,  period:2, group:2,  r:112},
+    {sym:'B',  Z:5,  period:2, group:13, r:87},
+    {sym:'C',  Z:6,  period:2, group:14, r:77},
+    {sym:'N',  Z:7,  period:2, group:15, r:75},
+    {sym:'O',  Z:8,  period:2, group:16, r:73},
+    {sym:'F',  Z:9,  period:2, group:17, r:72},
+    {sym:'Ne', Z:10, period:2, group:18, r:38},
+    {sym:'Na', Z:11, period:3, group:1,  r:186},
+    {sym:'Mg', Z:12, period:3, group:2,  r:160},
+    {sym:'Al', Z:13, period:3, group:13, r:143},
+    {sym:'Si', Z:14, period:3, group:14, r:117},
+    {sym:'P',  Z:15, period:3, group:15, r:110},
+    {sym:'S',  Z:16, period:3, group:16, r:104},
+    {sym:'Cl', Z:17, period:3, group:17, r:99},
+    {sym:'Ar', Z:18, period:3, group:18, r:71},
+    {sym:'K',  Z:19, period:4, group:1,  r:227},
+    {sym:'Ca', Z:20, period:4, group:2,  r:197},
+    {sym:'Ga', Z:31, period:4, group:13, r:135},
+    {sym:'Ge', Z:32, period:4, group:14, r:122},
+    {sym:'As', Z:33, period:4, group:15, r:120},
+    {sym:'Se', Z:34, period:4, group:16, r:117},
+    {sym:'Br', Z:35, period:4, group:17, r:114},
+    {sym:'Kr', Z:36, period:4, group:18, r:88},
+    {sym:'Rb', Z:37, period:5, group:1,  r:248},
+    {sym:'Sr', Z:38, period:5, group:2,  r:215},
+    {sym:'In', Z:49, period:5, group:13, r:167},
+    {sym:'Sn', Z:50, period:5, group:14, r:140},
+    {sym:'Sb', Z:51, period:5, group:15, r:140},
+    {sym:'Te', Z:52, period:5, group:16, r:142},
+    {sym:'I',  Z:53, period:5, group:17, r:133},
+    {sym:'Xe', Z:54, period:5, group:18, r:108},
+    {sym:'Cs', Z:55, period:6, group:1,  r:265},
+    {sym:'Ba', Z:56, period:6, group:2,  r:222},
+    {sym:'Tl', Z:81, period:6, group:13, r:170},
+    {sym:'Pb', Z:82, period:6, group:14, r:146},
+    {sym:'Bi', Z:83, period:6, group:15, r:150},
+    {sym:'Po', Z:84, period:6, group:16, r:168},
+    {sym:'At', Z:85, period:6, group:17, r:140},
+    {sym:'Rn', Z:86, period:6, group:18, r:120}
+  ];
+
+  function initPTable() {
+    const grid = document.getElementById('ptable-grid');
+    const maxR = 265, minR = 31;
+
+    const infoBox = document.createElement('div');
+    infoBox.id = 'ptable-info-embedded';
+    infoBox.style.cssText = `
+      grid-column: 3 / 13;
+      grid-row: 1 / 4;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px dashed rgba(56, 189, 248, 0.4);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      color: #f0f4ff;
+      box-shadow: inset 0 0 15px rgba(56, 189, 248, 0.1);
+      overflow: hidden;
+      box-sizing: border-box;
+    `;
+
+    infoBox.innerHTML = `
+      <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <div style="font-size: 1.6rem;">👆</div>
+        <div style="font-size: 0.95rem; font-weight: 700; color: #38bdf8;">點選週期表中的元素卡片</div>
+        <div style="font-size: 0.75rem; color: #94a3b8;">可在此即時檢視該原子之半徑、原子序與週期族別資訊</div>
+      </div>
+    `;
+    grid.appendChild(infoBox);
+
+    const cells = {};
+    ptData.forEach(el => { cells[`${el.period}-${el.group}`] = el; });
+
+    let lastSelected = null;
+
+    for (let period = 1; period <= 6; period++) {
+      for (let group = 1; group <= 18; group++) {
+        if (period >= 1 && period <= 3 && group >= 3 && group <= 12) continue;
+
+        const key = `${period}-${group}`;
+        const el = cells[key];
+        const div = document.createElement('div');
+        div.style.aspectRatio = '1';
+        div.style.borderRadius = '6px';
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'center';
+        div.style.justifyContent = 'center';
+        div.style.cursor = el ? 'pointer' : 'default';
+        div.style.transition = 'all 0.15s ease';
+        div.style.userSelect = 'none';
+
+        if (el) {
+          const frac = (el.r - minR) / (maxR - minR);
+          const r = Math.round(255 * frac);
+          const b = Math.round(255 * (1 - frac));
+          const g = Math.round(80 * (1 - Math.abs(frac - 0.5) * 2));
+          div.style.background = `rgba(${r}, ${g}, ${b}, 0.85)`;
+          div.style.border = '1px solid rgba(255,255,255,0.2)';
+          div.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+
+          div.innerHTML = `
+            <span style="font-size: clamp(0.7rem, 1vw, 0.9rem); font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">${el.sym}</span>
+            <span style="font-size: clamp(0.55rem, 0.7vw, 0.65rem); color: rgba(255,255,255,0.85);">${el.r}</span>
+          `;
+
+          div.addEventListener('mouseenter', () => {
+            div.style.transform = 'scale(1.15)';
+            div.style.zIndex = '10';
+            div.style.boxShadow = '0 0 12px rgba(255,255,255,0.8)';
+          });
+          div.addEventListener('mouseleave', () => {
+            if (div !== lastSelected) {
+              div.style.transform = 'scale(1)';
+              div.style.zIndex = '1';
+              div.style.boxShadow = '0 2px 5px rgba(0,0,0,0.3)';
+            }
+          });
+
+          div.addEventListener('click', () => {
+            if (lastSelected) {
+              lastSelected.style.transform = 'scale(1)';
+              lastSelected.style.border = '1px solid rgba(255,255,255,0.2)';
+            }
+            lastSelected = div;
+            div.style.transform = 'scale(1.2)';
+            div.style.border = '2px solid #fff';
+
+            const fracVal = (el.r - minR) / (maxR - minR);
+            const ballSize = Math.max(28, Math.min(84, Math.round(el.r * 0.32)));
+            infoBox.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 20px; width: 100%; justify-content: space-around;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  <div style="width: ${ballSize}px; height: ${ballSize}px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(${r},${g},${b},0.95), rgba(15,23,42,0.95)); box-shadow: 0 0 20px rgba(${r},${g},${b},0.8); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; color: #fff;">${el.sym}</div>
+                  <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">原子序 Z = ${el.Z}</div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.95rem;">
+                  <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">${el.sym} · 第 ${el.period} 週期，第 ${el.group} 族</div>
+                  <div style="color: #fef08a; font-weight: 700; font-size: 1.1rem;">原子半徑：${el.r} pm</div>
+                  <div style="color: #cbd5e1; font-size: 0.85rem;">相對大小位階：${(fracVal * 100).toFixed(0)}% (相對於主族全體)</div>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          div.style.background = 'transparent';
+        }
+        grid.appendChild(div);
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initPTable);
+</script>
+
+</body>
+</html>

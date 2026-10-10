@@ -1,0 +1,208 @@
+function drawMechPracticeCanvas(caseNum) {
+    const cvs = document.getElementById('mech-practice-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 340;
+    const H = cvs.height = cvs.offsetHeight || 340;
+    ctx.clearRect(0, 0, W, H);
+
+    const mL = 52, mB = 38, mT = 30, mR = 20;
+    const gW = W - mL - mR;
+    const gH = H - mT - mB;
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#1a1035'); bg.addColorStop(1, '#0f172a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+        const y = mT + gH * i / 5;
+        ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(W - mR, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(mL, mT); ctx.lineTo(mL, H - mB); ctx.lineTo(W - mR + 10, H - mB); ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    // axis arrows
+    ctx.beginPath(); ctx.moveTo(mL-4, mT+6); ctx.lineTo(mL, mT); ctx.lineTo(mL+4, mT+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-mR+5, H-mB-4); ctx.lineTo(W-mR+12, H-mB); ctx.lineTo(W-mR+5, H-mB+4); ctx.fill();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應途徑', mL + gW/2, H - 8);
+    ctx.save(); ctx.translate(14, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('能  量', 0, 0); ctx.restore();
+
+    // Define energy levels per case
+    // Case 1 (甲): reactant=0.75, peak1=0.15, product=0.85 — one peak
+    // Case 2 (乙): reactant=0.75, peak1=0.15 (via fast equilib), valley=0.40, peak2=0.35, product=0.85
+    // Case 3 (丙): reactant=0.75, peak1=0.15, product=0.85 — one peak
+
+    const yR = mT + gH * 0.78; // reactant
+    const yP = mT + gH * 0.90; // product
+
+    function eY(frac) { return mT + gH * frac; }
+
+    const xStart = mL;
+    const xEnd = W - mR;
+
+    // Color by case
+    const colors = ['', '#e11d48', '#06b6d4', '#22c55e'];
+    ctx.strokeStyle = colors[caseNum]; ctx.lineWidth = 3.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+    if (caseNum === 1) {
+        // 機構甲: A+A->C (慢, high Ea1), C+B->D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = C+B intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow)
+        const yVly = eY(0.50);   // C+B intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above C+B)
+
+        const x1  = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B',  xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 double-arrow (left of peak1, tall)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 double-arrow (right of valley, short)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge
+        ctx.fillStyle = 'rgba(251,191,36,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 115, 22, 5); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A]²', mL+8, mT+18);
+
+    } else if (caseNum === 2) {
+        // 機構乙 (互換後): A+B→E (慢, high Ea1), E+A⇌D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = E+A intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow step)
+        const yVly = eY(0.50);   // E+A intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above valley)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('E+A', xVly, yVly + 14);
+        // 中間物 bubble (cyan)
+        ctx.fillStyle = '#06b6d4'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 large arrow (slow, left of peak1)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 small arrow (fast, right of valley)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (cyan)
+        ctx.fillStyle = 'rgba(6,182,212,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 120, 22, 5); ctx.fill();
+        ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A][B]', mL+8, mT+18);
+
+    } else {
+        // 機構丙 (互換後): A+A⇌C (快, small Ea1), C+B→D (慢, large Ea2)
+        // Two peaks: peak1 LOW (fast equilibrium), valley = C+B, peak2 HIGH (slow)
+        const yPk1 = eY(0.42);   // first peak LOW (fast equil)
+        const yVly = eY(0.55);   // C+B intermediate level
+        const yPk2 = eY(0.10);   // second peak HIGH (slow step)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.30;
+        const xVly = mL + gW*0.50;
+        const xPk2 = mL + gW*0.70;
+        const x2   = mL + gW*0.87;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.09, yR, xPk1-gW*0.09, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.08, yPk1, xVly-gW*0.08, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.08, yVly, xPk2-gW*0.10, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        // 中間物 bubble (green)
+        ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 small arrow (fast equilibrium, left of peak1)
+        const aX1 = mL + gW*0.17;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#94a3b8', 'Ea₁(快)', 'right');
+        // Ea2 large arrow (slow, right of valley)
+        const aX2 = xVly + gW*0.09;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#f87171', 'Ea₂(慢)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.58, yR, mL+gW*0.58, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (green)
+        ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 138, 22, 5); ctx.fill();
+        ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k′[A]²[B]', mL+8, mT+18);
+    }
+}

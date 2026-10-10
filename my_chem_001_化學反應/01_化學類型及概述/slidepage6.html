@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-1 化學反應與守恆 · 即時原子守恆檢驗器 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.1rem 1.4rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            flex: 1; min-height: 0; overflow-y: auto; gap: 0.9rem;
+        }
+
+        .balancer-card {
+            background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px; padding: 1rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .equation-row {
+            display: flex; align-items: flex-start; justify-content: center; gap: 14px;
+            font-size: 1.45rem; font-weight: 700; flex-wrap: wrap; padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.28); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .species-term {
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+
+        .coeff-unit {
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+
+        .coeff-box {
+            display: flex; align-items: center; justify-content: center;
+            min-width: 48px; height: 38px; background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px; border: 1.5px solid rgba(251, 191, 36, 0.35);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .coeff-num {
+            font-size: 1.4rem; font-weight: 800; color: var(--accent-yellow); line-height: 1;
+        }
+
+        .coeff-btn-row {
+            display: flex; gap: 4px; justify-content: center;
+        }
+
+        .btn-step {
+            background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-blue);
+            color: #fff; width: 22px; height: 22px; border-radius: 5px;
+            font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: 0.15s;
+            display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;
+        }
+        .btn-step:hover { background: var(--accent-blue); color: #0f172a; transform: scale(1.1); }
+
+        .species-formula {
+            height: 38px; display: flex; align-items: center; font-size: 1.45rem;
+        }
+
+        .equation-operator {
+            height: 38px; display: flex; align-items: center;
+        }
+
+        .atom-counts-box {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+
+        .atom-side {
+            background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .atom-count-pill {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 12px; border-radius: 6px; font-size: 0.95rem; font-weight: 600;
+            transition: all 0.25s ease;
+        }
+        .atom-count-pill.match {
+            background: rgba(52, 211, 153, 0.18); border: 1px solid var(--accent-green); color: var(--accent-green);
+        }
+        .atom-count-pill.diff {
+            background: rgba(248, 113, 113, 0.18); border: 1px solid var(--accent-red); color: var(--accent-red);
+        }
+
+        .status-banner {
+            padding: 12px 18px; border-radius: 10px; text-align: center; font-size: 1.05rem; font-weight: 700;
+            transition: all 0.3s ease;
+        }
+        .status-banner.unbalanced {
+            background: rgba(251, 191, 36, 0.12); border: 1.5px solid var(--accent-yellow); color: var(--accent-yellow);
+        }
+        .status-banner.balanced {
+            background: rgba(52, 211, 153, 0.2); border: 1.5px solid var(--accent-green); color: #34d399;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.3); animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.015); } }
+
+        @media (max-width: 900px) {
+            .atom-counts-box { grid-template-columns: 1fr; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>1-1 化學反應與守恆 · 動手平衡方程式：即時原子守恆檢驗器</h1>
+                <div class="panel">
+                    <p style="color: rgba(255,255,255,0.85); font-size: 0.98rem; margin-bottom: 0.2rem;">
+                        動手點擊 <strong style="color:var(--accent-blue);">[+]</strong> 與 <strong style="color:var(--accent-blue);">[-]</strong> 調整各項係數，觀察下方反應物（左側）與生成物（右側）的各原子總數何時達成完全守恆！
+                    </p>
+
+                    <div class="balancer-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--accent-cyan); font-weight: 700; font-size: 1.05rem;">
+                                🎯 演練題目：丙烷完全燃燒反應式平衡
+                            </span>
+                            <button id="btn-reset-bal" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 5px 14px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; transition: 0.2s;">
+                                ↺ 重置係數
+                            </button>
+                        </div>
+
+                        <!-- 方程式與係數按鈕列（加減按鈕置於係數正下方） -->
+                        <div class="equation-row">
+                            <div class="species-term">
+                                <div class="coeff-unit">
+                                    <div class="coeff-box">
+                                        <span class="coeff-num" id="val-c1">1</span>
+                                    </div>
+                                    <div class="coeff-btn-row">
+                                        <button class="btn-step" data-target="c1" data-delta="-1" title="減少">-</button>
+                                        <button class="btn-step" data-target="c1" data-delta="1" title="增加">+</button>
+                                    </div>
+                                </div>
+                                <span class="species-formula">$\mathrm{C_3H_8}$</span>
+                            </div>
+
+                            <span class="equation-operator" style="color: var(--accent-blue); font-size: 1.5rem;">+</span>
+
+                            <div class="species-term">
+                                <div class="coeff-unit">
+                                    <div class="coeff-box">
+                                        <span class="coeff-num" id="val-c2">1</span>
+                                    </div>
+                                    <div class="coeff-btn-row">
+                                        <button class="btn-step" data-target="c2" data-delta="-1" title="減少">-</button>
+                                        <button class="btn-step" data-target="c2" data-delta="1" title="增加">+</button>
+                                    </div>
+                                </div>
+                                <span class="species-formula">$\mathrm{O_2}$</span>
+                            </div>
+
+                            <span class="equation-operator" style="color: var(--accent-yellow); font-size: 1.6rem;">$\longrightarrow$</span>
+
+                            <div class="species-term">
+                                <div class="coeff-unit">
+                                    <div class="coeff-box">
+                                        <span class="coeff-num" id="val-c3">1</span>
+                                    </div>
+                                    <div class="coeff-btn-row">
+                                        <button class="btn-step" data-target="c3" data-delta="-1" title="減少">-</button>
+                                        <button class="btn-step" data-target="c3" data-delta="1" title="增加">+</button>
+                                    </div>
+                                </div>
+                                <span class="species-formula">$\mathrm{CO_2}$</span>
+                            </div>
+
+                            <span class="equation-operator" style="color: var(--accent-blue); font-size: 1.5rem;">+</span>
+
+                            <div class="species-term">
+                                <div class="coeff-unit">
+                                    <div class="coeff-box">
+                                        <span class="coeff-num" id="val-c4">1</span>
+                                    </div>
+                                    <div class="coeff-btn-row">
+                                        <button class="btn-step" data-target="c4" data-delta="-1" title="減少">-</button>
+                                        <button class="btn-step" data-target="c4" data-delta="1" title="增加">+</button>
+                                    </div>
+                                </div>
+                                <span class="species-formula">$\mathrm{H_2O}$</span>
+                            </div>
+                        </div>
+
+                        <!-- 左右兩端原子數量對比膠囊 -->
+                        <div class="atom-counts-box">
+                            <div class="atom-side">
+                                <h3 style="color: var(--accent-blue); margin-bottom: 4px; font-size: 0.95rem;">
+                                    ⬅️ 左側反應物原子總數
+                                </h3>
+                                <div class="atom-count-pill" id="pill-c-left">
+                                    <span>碳原子 (C)：</span> <strong id="cnt-c-l">3</strong>
+                                </div>
+                                <div class="atom-count-pill" id="pill-h-left">
+                                    <span>氫原子 (H)：</span> <strong id="cnt-h-l">8</strong>
+                                </div>
+                                <div class="atom-count-pill" id="pill-o-left">
+                                    <span>氧原子 (O)：</span> <strong id="cnt-o-l">2</strong>
+                                </div>
+                            </div>
+
+                            <div class="atom-side">
+                                <h3 style="color: var(--accent-green); margin-bottom: 4px; font-size: 0.95rem;">
+                                    ➡️ 右側生成物原子總數
+                                </h3>
+                                <div class="atom-count-pill" id="pill-c-right">
+                                    <span>碳原子 (C)：</span> <strong id="cnt-c-r">1</strong>
+                                </div>
+                                <div class="atom-count-pill" id="pill-h-right">
+                                    <span>氫原子 (H)：</span> <strong id="cnt-h-r">2</strong>
+                                </div>
+                                <div class="atom-count-pill" id="pill-o-right">
+                                    <span>氧原子 (O)：</span> <strong id="cnt-o-r">3</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 平衡狀態即時橫幅 -->
+                        <div class="status-banner unbalanced" id="bal-status">
+                            ⚠️ 尚未平衡！請調整係數使得 C、H、O 各原子數完全相等
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.2); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.88rem; color: #cbd5e1; line-height: 1.6;">
+                        💡 <strong>觀察法解題速算：</strong>以 $\mathrm{C_3H_8}$ 設為 1 $\rightarrow$ 產生 $3\,\mathrm{CO_2}$ 與 $4\,\mathrm{H_2O}$ $\rightarrow$ 右側總氧數 $= 3\times 2 + 4\times 1 = 10$ $\rightarrow$ $\mathrm{O_2}$ 係數為 5！最簡整數係數比為 <strong>1 : 5 $\rightarrow$ 3 : 4</strong>。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const coeffs = { c1: 1, c2: 1, c3: 1, c4: 1 };
+
+function updateBalancer() {
+    const cL = coeffs.c1 * 3;
+    const hL = coeffs.c1 * 8;
+    const oL = coeffs.c2 * 2;
+
+    const cR = coeffs.c3 * 1;
+    const hR = coeffs.c4 * 2;
+    const oR = coeffs.c3 * 2 + coeffs.c4 * 1;
+
+    document.getElementById('val-c1').textContent = coeffs.c1;
+    document.getElementById('val-c2').textContent = coeffs.c2;
+    document.getElementById('val-c3').textContent = coeffs.c3;
+    document.getElementById('val-c4').textContent = coeffs.c4;
+
+    document.getElementById('cnt-c-l').textContent = cL;
+    document.getElementById('cnt-h-l').textContent = hL;
+    document.getElementById('cnt-o-l').textContent = oL;
+
+    document.getElementById('cnt-c-r').textContent = cR;
+    document.getElementById('cnt-h-r').textContent = hR;
+    document.getElementById('cnt-o-r').textContent = oR;
+
+    const cMatch = cL === cR;
+    const hMatch = hL === hR;
+    const oMatch = oL === oR;
+
+    document.getElementById('pill-c-left').className = 'atom-count-pill ' + (cMatch ? 'match' : 'diff');
+    document.getElementById('pill-c-right').className = 'atom-count-pill ' + (cMatch ? 'match' : 'diff');
+    document.getElementById('pill-h-left').className = 'atom-count-pill ' + (hMatch ? 'match' : 'diff');
+    document.getElementById('pill-h-right').className = 'atom-count-pill ' + (hMatch ? 'match' : 'diff');
+    document.getElementById('pill-o-left').className = 'atom-count-pill ' + (oMatch ? 'match' : 'diff');
+    document.getElementById('pill-o-right').className = 'atom-count-pill ' + (oMatch ? 'match' : 'diff');
+
+    const statusEl = document.getElementById('bal-status');
+    if (cMatch && hMatch && oMatch) {
+        statusEl.className = 'status-banner balanced';
+        statusEl.innerHTML = `🎉 恭喜完全平衡！最簡整數係數比：${coeffs.c1} : ${coeffs.c2} $\\rightarrow$ ${coeffs.c3} : ${coeffs.c4}！（原子數完全守恆）`;
+        if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([statusEl]).catch(()=>{});
+    } else {
+        statusEl.className = 'status-banner unbalanced';
+        statusEl.innerHTML = `⚠️ 尚未平衡！當前原子數比較：C (${cL} vs ${cR})、H (${hL} vs ${hR})、O (${oL} vs ${oR})`;
+    }
+}
+
+document.querySelectorAll('.btn-step').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const key = btn.dataset.target;
+        const delta = parseInt(btn.dataset.delta, 10);
+        coeffs[key] = Math.max(1, Math.min(12, coeffs[key] + delta));
+        updateBalancer();
+    });
+});
+
+const resetBtn = document.getElementById('btn-reset-bal');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        coeffs.c1 = 1; coeffs.c2 = 1; coeffs.c3 = 1; coeffs.c4 = 1;
+        updateBalancer();
+    });
+}
+
+updateBalancer();
+</script>
+</body>
+</html>

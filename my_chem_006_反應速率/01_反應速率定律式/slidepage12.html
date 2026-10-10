@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>化學反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：反應速率定義、速率定律式、級數關係互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Slide 3 全畫面表格 */
+        table.orders-table { height: 100%; table-layout: fixed; }
+        table.orders-table th, table.orders-table td {
+            padding: 1.1rem 0.9rem; line-height: 1.6; vertical-align: middle;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        table.orders-table th { background: rgba(56,189,248,0.15); color: var(--accent-blue); font-size: 1em; }
+        table.orders-table tr { height: calc(100% / 7); }
+        
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+            .game-columns { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-example-4">
+                <h1>實戰演練：氣體總壓力與反應級數</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 1rem;">
+                        <h2 style="color:var(--accent-yellow); margin-bottom:0;">題目</h2>
+                        <p style="font-size:1.25rem; line-height:1.6;">例2：某定溫 $T^\circ\text{C}$，乙醛氣體發生分解反應 $CH_3CHO_{(g)} \rightarrow CH_{4(g)} + CO_{(g)}$，經測得反應系統的總壓力 (P) 與時間之變化如表，則求此分解反應之速率定律式及反應速率常數：</p>
+                        
+                        <table class="data-table" style="margin-top:1rem; margin-bottom:1rem; font-size:1.15rem;">
+                            <tr><th>時間 t (分)</th><td>0</td><td>10</td><td>30</td><td>$\infty$</td></tr>
+                            <tr><th>P (mmHg)</th><td>100</td><td>150</td><td>175</td><td>200</td></tr>
+                        </table>
+                    </div>
+
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding: 1rem; position: relative;">
+                        <div id="solution-4" style="display: none; flex-direction: column; gap: 0.4rem; padding-bottom: 3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">1. 換算反應物 (乙醛) 的分壓</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            設初始乙醛壓力為 $100$，消耗量為 $x$：<br>
+                            $CH_3CHO_{(g)} \rightarrow CH_{4(g)} + CO_{(g)}$<br>
+                            初：$\quad 100 \qquad\qquad 0 \qquad\quad 0$<br>
+                            末：$100-x \qquad\quad x \qquad\quad x$<br>
+                            總壓 $P = (100-x) + x + x = 100+x \implies x = P - 100$<br>
+                            乙醛分壓 $P_A = 100 - x = 100 - (P-100) = \mathbf{200 - P}$
+                            </p>
+                            
+                            <table class="data-table" style="font-size: 0.9rem; margin: 0.3rem 0;">
+                                <tr><th>時間 t (分)</th><td>0</td><td>10</td><td>30</td></tr>
+                                <tr><th>$P_A$ (mmHg)</th><td>100</td><td>50</td><td>25</td></tr>
+                            </table>
+
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">2. 判斷反應級數</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            由表可知，第一個半生期 $t_{1/2(1)}$ (100&rightarrow;50) 為 <strong>10 分鐘</strong>。<br>
+                            第二個半生期 $t_{1/2(2)}$ (50&rightarrow;25) 為 $30-10 = \mathbf{20 分鐘}$。<br>
+                            半生期隨著濃度減半而<strong>加倍</strong> ($t_{1/2} \propto \frac{1}{P_A}$)，故為 <strong>二級反應</strong>。<br>
+                            速率定律式：$\mathbf{R = k(P_{CH_3CHO})^2}$
+                            </p>
+                            
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.3rem; margin-bottom:0;">3. 計算反應速率常數 $k$</p>
+                            <p style="font-size:0.95rem; line-height:1.5; margin:0;">
+                            代入二級反應積分式：$\frac{1}{P_A} - \frac{1}{P_{A0}} = kt$<br>
+                            使用 t=10 的數據：$\frac{1}{50} - \frac{1}{100} = k \times 10$<br>
+                            $\frac{1}{100} = 10k \implies \mathbf{k = 1.0 \times 10^{-3} \text{ mmHg}^{-1}\text{min}^{-1}}$
+                            </p>
+                        </div>
+                        <button onclick="toggleSolution('solution-4')" style="position: absolute; bottom: 15px; right: 15px; padding: 10px 20px; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s;">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+/* ---- Toggle Solution ---- */
+function toggleSolution(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none') {
+        el.style.display = 'flex';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+function toggleSolution5() {
+    const sol = document.getElementById('solution-5');
+    const hint = document.getElementById('solution-5-hint');
+    const isHidden = sol.style.display === 'none' || sol.style.display === '';
+    sol.style.display = isHidden ? 'flex' : 'none';
+    sol.style.flexDirection = 'column';
+    hint.style.display = isHidden ? 'none' : 'flex';
+}
+
+/* ---- Intro Screen ---- */
+function startApp() {
+    const el = document.documentElement;
+    try { const p = el.requestFullscreen && el.requestFullscreen(); if (p && p.catch) p.catch(() => {}); } catch(e) {}
+    try { if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } catch(e) {}
+
+    const intro = document.getElementById('intro-screen');
+    intro.style.opacity = '0';
+    setTimeout(() => { intro.style.display = 'none'; }, 500);
+}
+
+/* ---- Drawing layer ---- */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = 38;
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = penColor;
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', e => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ---- Game ---- */
+const GAME_POOL = [
+    { left: '反應速率定律式', right: 'R = k[A]ᵐ[B]ⁿ' },
+    { left: '零級反應濃度時間關係', right: '[A]t = [A]0 - kt' },
+    { left: '一級反應半生期', right: 't_1/2 = 0.693 / k' },
+    { left: '二級反應圖形關係', right: '1/[A] 對 t 成直線' },
+    { left: '零級反應速率常數單位', right: 'M·s⁻¹' },
+    { left: '一級反應圖形關係', right: 'log[A] 對 t 成直線' },
+    { left: '二級反應半生期', right: '與初濃度成反比' },
+    { left: '零級反應圖形關係', right: '[A] 對 t 成直線' },
+    { left: '反應速率常數 k 改變因素', right: '溫度、催化劑' },
+    { left: '一級反應速率常數單位', right: 's⁻¹' },
+    { left: '二級反應濃度時間關係', right: '1/[A]t = 1/[A]0 + kt' },
+    { left: '反應速率單位', right: 'M / s' },
+    { left: '一級反應半生期特性', right: '為定值，與初濃度無關' },
+    { left: '零級反應半生期', right: '與初濃度成正比' }
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column'), rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = ''; rightCol.innerHTML = ''; connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+    const selected = [...GAME_POOL].sort(() => Math.random() - 0.5).slice(0, GAME_COUNT).map((item, i) => ({ ...item, idx: i }));
+    const shuffledRight = [...selected].sort(() => Math.random() - 0.5);
+    selected.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(item => {
+        const div = document.createElement('div'); div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(dot => {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true; startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left, y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-blue)'); currentLine.setAttribute('stroke-width', '4');
+    svg.appendChild(currentLine);
+}
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left); currentLine.setAttribute('y2', cy - rect.top);
+}
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(dot => {
+        const r = dot.getBoundingClientRect();
+        if (cx >= r.left - 14 && cx <= r.right + 14 && cy >= r.top - 14 && cy <= r.bottom + 14) targetDot = dot;
+    });
+    if (targetDot && targetDot !== startDot && startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') && !targetDot.classList.contains('active')) {
+        const svg = document.getElementById('game-svg');
+        const rect = svg.getBoundingClientRect(), r2 = targetDot.getBoundingClientRect();
+        const x2 = r2.left + r2.width / 2 - rect.left;
+        const y2 = r2.top + r2.height / 2 - rect.top;
+        if (startDot.dataset.index === targetDot.dataset.index) {
+            startDot.classList.add('active'); targetDot.classList.add('active');
+            connections.push({ from: startDot, to: targetDot });
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            currentLine.setAttribute('stroke', 'var(--accent-green)');
+            currentLine = null;
+            if (connections.length === GAME_COUNT) {
+                const fb = document.getElementById('game-feedback');
+                fb.style.display = 'block';
+                setTimeout(() => { fb.style.display = 'none'; }, 2800);
+            }
+        } else {
+            currentLine.setAttribute('stroke', 'var(--accent-red)');
+            currentLine.setAttribute('x2', x2); currentLine.setAttribute('y2', y2);
+            const bad = currentLine; currentLine = null;
+            setTimeout(() => { if (bad && bad.parentNode) bad.remove(); }, 450);
+        }
+    } else {
+        if (currentLine) currentLine.remove();
+        currentLine = null;
+    }
+    startDot = null;
+}
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(c => {
+        const r1 = c.from.getBoundingClientRect(), r2 = c.to.getBoundingClientRect();
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+        l.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+        l.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+        l.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+        l.setAttribute('stroke', 'var(--accent-green)');
+        l.setAttribute('stroke-width', '4');
+        l.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(l);
+    });
+}
+function resetGame() { initGame(); }
+
+document.addEventListener('mousemove', gameDragMove);
+document.addEventListener('mouseup', gameDragEnd);
+document.addEventListener('touchmove', gameDragMove, { passive: false });
+document.addEventListener('touchend', gameDragEnd);
+
+/* ---- Slide navigation ---- */
+window.updateSlides = function () {
+    slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    const sid = slides[currentSlide] ? slides[currentSlide].id : '';
+    if (sid === 'slide-game') { initGame(); setTimeout(drawConnections, 80); }
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([slides[currentSlide]]).catch(() => {});
+    }
+};
+
+document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    }
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', () => {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', e => {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', e => {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+        document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+/* ---- Toolbar drag ---- */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = y => { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = y => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', e => sDT(e.clientY));
+    window.addEventListener('mousemove', e => mDT(e.clientY));
+    window.addEventListener('mouseup', () => { isDT = false; });
+    dh.addEventListener('touchstart', e => sDT(e.touches[0].clientY), { passive: true });
+    window.addEventListener('touchmove', e => { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDT = false; });
+})();
+/* ---- Interactive Graphs ---- */
+(function() {
+    const A0 = 120;
+    const k = 0.015;
+    const x0 = 40;
+    const y0 = 150;
+    const maxX = 250;
+    
+    function getCurveY(xPlot) { return A0 * Math.exp(-k * xPlot); }
+    function getCurveSlope(xPlot) { return -A0 * k * Math.exp(-k * xPlot); }
+    
+    function generatePathD() {
+        let d = `M ${x0} ${y0 - getCurveY(0)}`;
+        for(let x = 5; x <= maxX; x+=5) d += ` L ${x0 + x} ${y0 - getCurveY(x)}`;
+        return d;
+    }
+    
+    const pathInst = document.getElementById('path-inst');
+    const pathAvg = document.getElementById('path-avg');
+    if(pathInst) pathInst.setAttribute('d', generatePathD());
+    if(pathAvg) pathAvg.setAttribute('d', generatePathD());
+    
+    function getSVGCoords(svg, e) {
+        let pt = svg.createSVGPoint();
+        if (e.touches && e.touches.length > 0) {
+            pt.x = e.touches[0].clientX; pt.y = e.touches[0].clientY;
+        } else {
+            pt.x = e.clientX; pt.y = e.clientY;
+        }
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    const svgInst = document.getElementById('svg-inst');
+    let instX = 60, isDraggingInst = false;
+    
+    function updateInst() {
+        if(!svgInst) return;
+        if(instX < 0) instX = 0; if(instX > maxX) instX = maxX;
+        let yPlot = getCurveY(instX), slope = getCurveSlope(instX);
+        let cx = x0 + instX, cy = y0 - yPlot;
+        
+        document.getElementById('inst-dot').setAttribute('cx', cx);
+        document.getElementById('inst-dot').setAttribute('cy', cy);
+        document.getElementById('inst-dash-x').setAttribute('x1', cx);
+        document.getElementById('inst-dash-x').setAttribute('y1', cy);
+        document.getElementById('inst-dash-x').setAttribute('x2', cx);
+        document.getElementById('inst-dash-x').setAttribute('y2', y0);
+        document.getElementById('inst-dash-y').setAttribute('x1', cx);
+        document.getElementById('inst-dash-y').setAttribute('y1', cy);
+        document.getElementById('inst-dash-y').setAttribute('x2', x0);
+        document.getElementById('inst-dash-y').setAttribute('y2', cy);
+        
+        document.getElementById('inst-text-t').textContent = `t=${(instX/10).toFixed(1)}`;
+        document.getElementById('inst-text-t').setAttribute('x', cx);
+        document.getElementById('inst-text-a').textContent = `[A]t=${yPlot.toFixed(1)}`;
+        document.getElementById('inst-text-a').setAttribute('y', cy + 4);
+        
+        let L = 50, dx = L / Math.sqrt(1 + slope*slope), dy = slope * dx;
+        document.getElementById('inst-tan').setAttribute('x1', cx - dx);
+        document.getElementById('inst-tan').setAttribute('y1', cy - (-dy));
+        document.getElementById('inst-tan').setAttribute('x2', cx + dx);
+        document.getElementById('inst-tan').setAttribute('y2', cy + (-dy));
+        
+        document.getElementById('inst-val').textContent = (-slope).toFixed(3);
+    }
+    
+    if(svgInst) {
+        function startInstDrag(e) {
+            e.preventDefault(); isDraggingInst = true;
+            document.getElementById('inst-dot').style.cursor = 'grabbing';
+            let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst();
+        }
+        svgInst.addEventListener('mousedown', startInstDrag);
+        svgInst.addEventListener('touchstart', startInstDrag, {passive: false});
+        window.addEventListener('mousemove', (e) => {
+            if(isDraggingInst) { let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst(); }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if(isDraggingInst) { e.preventDefault(); let pt = getSVGCoords(svgInst, e); instX = pt.x - x0; updateInst(); }
+        }, {passive: false});
+        window.addEventListener('mouseup', () => { isDraggingInst = false; if(document.getElementById('inst-dot')) document.getElementById('inst-dot').style.cursor = 'grab'; });
+        window.addEventListener('touchend', () => { isDraggingInst = false; if(document.getElementById('inst-dot')) document.getElementById('inst-dot').style.cursor = 'grab'; });
+        updateInst();
+    }
+
+    const svgAvg = document.getElementById('svg-avg');
+    let avgX1 = 30, avgX2 = 120, draggingAvg = 0;
+    
+    function updateAvg() {
+        if(!svgAvg) return;
+        if(avgX1 < 0) avgX1 = 0; if(avgX1 > maxX) avgX1 = maxX;
+        if(avgX2 < 0) avgX2 = 0; if(avgX2 > maxX) avgX2 = maxX;
+        if(Math.abs(avgX1 - avgX2) < 10) {
+            if(draggingAvg === 1) avgX1 = avgX2 - 10; else if(draggingAvg === 2) avgX2 = avgX1 + 10;
+        }
+        
+        let xL = Math.min(avgX1, avgX2), xR = Math.max(avgX1, avgX2);
+        let yL = getCurveY(xL), yR = getCurveY(xR);
+        let cx1 = x0 + xL, cy1 = y0 - yL, cx2 = x0 + xR, cy2 = y0 - yR;
+        
+        document.getElementById('avg-dot1').setAttribute('cx', cx1);
+        document.getElementById('avg-dot1').setAttribute('cy', cy1);
+        document.getElementById('avg-dot2').setAttribute('cx', cx2);
+        document.getElementById('avg-dot2').setAttribute('cy', cy2);
+        
+        document.getElementById('avg-dash-x1').setAttribute('x1', cx1);
+        document.getElementById('avg-dash-x1').setAttribute('y1', cy1);
+        document.getElementById('avg-dash-x1').setAttribute('x2', cx1);
+        document.getElementById('avg-dash-x1').setAttribute('y2', y0);
+        document.getElementById('avg-dash-y1').setAttribute('x1', cx1);
+        document.getElementById('avg-dash-y1').setAttribute('y1', cy1);
+        document.getElementById('avg-dash-y1').setAttribute('x2', x0);
+        document.getElementById('avg-dash-y1').setAttribute('y2', cy1);
+        
+        document.getElementById('avg-dash-x2').setAttribute('x1', cx2);
+        document.getElementById('avg-dash-x2').setAttribute('y1', cy2);
+        document.getElementById('avg-dash-x2').setAttribute('x2', cx2);
+        document.getElementById('avg-dash-x2').setAttribute('y2', y0);
+        document.getElementById('avg-dash-y2').setAttribute('x1', cx2);
+        document.getElementById('avg-dash-y2').setAttribute('y1', cy2);
+        document.getElementById('avg-dash-y2').setAttribute('x2', x0);
+        document.getElementById('avg-dash-y2').setAttribute('y2', cy2);
+        
+        document.getElementById('avg-text-t1').textContent = `t1`;
+        document.getElementById('avg-text-t1').setAttribute('x', cx1);
+        document.getElementById('avg-text-t2').textContent = `t2`;
+        document.getElementById('avg-text-t2').setAttribute('x', cx2);
+        
+        document.getElementById('avg-text-a1').textContent = `[A]1`;
+        document.getElementById('avg-text-a1').setAttribute('y', cy1 + 4);
+        document.getElementById('avg-text-a2').textContent = `[A]2`;
+        document.getElementById('avg-text-a2').setAttribute('y', cy2 + 4);
+        
+        document.getElementById('avg-triangle').setAttribute('points', `${cx1},${cy1} ${cx2},${cy1} ${cx2},${cy2}`);
+        
+        let slope = (yR - yL) / (xR - xL);
+        let L = 30, dx = L / Math.sqrt(1 + slope*slope), dy = slope * dx;
+        document.getElementById('avg-secant').setAttribute('x1', cx1 - dx);
+        document.getElementById('avg-secant').setAttribute('y1', cy1 - (-dy));
+        document.getElementById('avg-secant').setAttribute('x2', cx2 + dx);
+        document.getElementById('avg-secant').setAttribute('y2', cy2 + (-dy));
+        
+        document.getElementById('avg-text-dt').setAttribute('x', cx1 + (cx2 - cx1)/2);
+        document.getElementById('avg-text-dt').setAttribute('y', cy1 - 8);
+        document.getElementById('avg-text-da').setAttribute('x', cx2 + 8);
+        document.getElementById('avg-text-da').setAttribute('y', cy2 - (cy2 - cy1)/2 + 4);
+        
+        document.getElementById('avg-val').textContent = (-slope).toFixed(3);
+    }
+    
+    if(svgAvg) {
+        function startAvgDrag(e) {
+            e.preventDefault();
+            let pt = getSVGCoords(svgAvg, e), px = pt.x - x0;
+            if(Math.abs(px - avgX1) < Math.abs(px - avgX2)) { draggingAvg = 1; avgX1 = px; }
+            else { draggingAvg = 2; avgX2 = px; }
+            document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grabbing';
+            updateAvg();
+        }
+        svgAvg.addEventListener('mousedown', startAvgDrag);
+        svgAvg.addEventListener('touchstart', startAvgDrag, {passive: false});
+        window.addEventListener('mousemove', (e) => {
+            if(draggingAvg) { let pt = getSVGCoords(svgAvg, e); if(draggingAvg===1) avgX1 = pt.x - x0; else avgX2 = pt.x - x0; updateAvg(); }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if(draggingAvg) { e.preventDefault(); let pt = getSVGCoords(svgAvg, e); if(draggingAvg===1) avgX1 = pt.x - x0; else avgX2 = pt.x - x0; updateAvg(); }
+        }, {passive: false});
+        window.addEventListener('mouseup', () => { if(draggingAvg) document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grab'; draggingAvg = 0; });
+        window.addEventListener('touchend', () => { if(draggingAvg) document.getElementById('avg-dot' + draggingAvg).style.cursor = 'grab'; draggingAvg = 0; });
+        updateAvg();
+    }
+})();
+
+    // ═══════════════ Random Draw Logic ═══════════════
+    let drawnNumbers = new Set();
+    let drawTotal = 40;
+    const rdModal = document.getElementById('random-draw-modal');
+    const btnCloseDraw = document.getElementById('btn-close-draw');
+    const btnDoDraw = document.getElementById('btn-do-draw');
+    const ballsContainer = document.getElementById('random-draw-balls');
+    const drawInput = document.getElementById('draw-total-input');
+    const btnRandomDraw = document.getElementById('btn-random-draw');
+
+    function initBalls() {
+        if (!ballsContainer) return;
+        ballsContainer.innerHTML = '';
+        for (let i = 1; i <= drawTotal; i++) {
+            const d = document.createElement('div');
+            d.className = 'draw-ball'; d.id = 'ball-' + i; d.textContent = i;
+            if (drawnNumbers.has(i)) d.classList.add('drawn');
+            ballsContainer.appendChild(d);
+        }
+    }
+    
+    if (btnRandomDraw) {
+        btnRandomDraw.addEventListener('click', () => {
+            if (rdModal) {
+                rdModal.style.display = rdModal.style.display === 'none' ? 'block' : 'none';
+                if (rdModal.style.display === 'block') initBalls();
+            }
+        });
+    }
+    
+    if (drawInput) {
+        drawInput.addEventListener('change', (e) => {
+            let v = parseInt(e.target.value);
+            if (v < 1) v = 1; if (v > 100) v = 100; drawTotal = v;
+            drawnNumbers.clear(); initBalls();
+        });
+    }
+    if (btnCloseDraw) {
+        btnCloseDraw.addEventListener('click', () => {
+            if (rdModal) rdModal.style.display = 'none';
+        });
+    }
+    if (btnDoDraw) {
+        btnDoDraw.addEventListener('click', () => {
+            if (drawnNumbers.size >= drawTotal) { drawnNumbers.clear(); initBalls(); }
+            const avail = []; for (let i = 1; i <= drawTotal; i++) { if (!drawnNumbers.has(i)) avail.push(i); }
+            if (avail.length === 0) return;
+            btnDoDraw.disabled = true;
+            const winner = avail[Math.floor(Math.random() * avail.length)];
+            let ticks = 0, lastFlicker = null;
+            const interval = setInterval(() => {
+                if (lastFlicker) lastFlicker.classList.remove('flicker');
+                const rnd = avail[Math.floor(Math.random() * avail.length)];
+                const b = document.getElementById('ball-' + rnd);
+                if (b) { b.classList.add('flicker'); lastFlicker = b; }
+                ticks++;
+                if (ticks > 20) {
+                    clearInterval(interval);
+                    if (lastFlicker) lastFlicker.classList.remove('flicker');
+                    const wb = document.getElementById('ball-' + winner);
+                    if (wb) {
+                        wb.classList.add('winner');
+                        setTimeout(() => { wb.classList.remove('winner'); wb.classList.add('drawn'); drawnNumbers.add(winner); btnDoDraw.disabled = false; }, 2000);
+                    } else { btnDoDraw.disabled = false; }
+                }
+            }, 100);
+        });
+    }
+</script>
+
+</body>
+</html>

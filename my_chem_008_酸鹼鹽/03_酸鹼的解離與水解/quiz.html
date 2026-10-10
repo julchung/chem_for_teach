@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>8-3 酸鹼的解離與水解 · 核心通關檢核</title>
+    <meta name="description" content="選修化學三：鹽類水解與酸鹼性判斷連連看通關檢核與章節解鎖">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.2rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 標頭情境框 (公版標準格式) */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.1rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid var(--accent-purple);
+            background: rgba(167,139,250,0.15);
+            color: var(--accent-purple);
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+
+        /* 測驗卡片外框 */
+        .quiz-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 連連看互動區 */
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 16px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: visible;
+            user-select: none;
+        }
+
+        #game-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: visible;
+        }
+
+        .match-columns {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            gap: 20px;
+            min-height: 480px;
+            z-index: 10;
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 8px;
+        }
+
+        .match-col-left {
+            width: 44%;
+        }
+
+        .match-col-right {
+            width: 32%;
+        }
+
+        .match-item {
+            display: flex;
+            align-items: center;
+            padding: 9px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            font-size: 1.05rem;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .match-item:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.08);
+        }
+
+        .match-item.selected {
+            border-color: var(--accent-yellow);
+            background: rgba(251, 191, 36, 0.12);
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+        }
+
+        .match-item.connected {
+            border-color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.08);
+        }
+
+        .match-item.match-wrong {
+            border-color: var(--accent-red) !important;
+            background: rgba(248, 113, 113, 0.15) !important;
+            box-shadow: 0 0 12px rgba(248, 113, 113, 0.4);
+        }
+
+        .match-col-left .match-item {
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .match-col-right .match-item {
+            justify-content: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            padding: 18px 16px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid #fff;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .dot:hover {
+            transform: scale(1.3);
+            background: var(--accent-cyan);
+        }
+
+        .match-item.connected .dot {
+            background: var(--accent-green);
+            border-color: #fff;
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        /* 動作按鈕列 */
+        .quiz-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-game {
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+        .btn-submit:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+        }
+        .btn-reset:hover { background: rgba(255, 255, 255, 0.15); }
+
+        /* 通關解鎖橫幅 (公版標準) */
+        .complete-banner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+            border: 2px solid var(--accent-green);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.25);
+            animation: bannerPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bannerPop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .btn-next-chapter {
+            background: linear-gradient(135deg, #22d3ee, #0284c7);
+            color: #0f172a;
+            font-weight: 800;
+            padding: 10px 28px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(34, 211, 238, 0.4);
+            transition: all 0.2s ease;
+        }
+        .btn-next-chapter:hover { filter: brightness(1.15); transform: translateY(-2px); }
+
+        @media (max-width: 768px) {
+            .match-columns { flex-direction: column; min-height: auto; gap: 30px; }
+            .match-col-left, .match-col-right { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 -->
+        <div class="quiz-scenario-box">
+            <span class="problem-badge">8-3 核心通關檢核 · 鹽類酸鹼性配對大挑戰</span>
+            <h1 style="color: var(--accent-cyan); font-size: 1.45rem; margin-bottom: 0.4rem;">
+                🎯 綜合演練：鹽類水解與酸鹼性質判斷
+            </h1>
+            <p style="color: var(--text-sub); font-size: 0.95rem; line-height: 1.6;">
+                請將左側抽出的 8 種常見鹽類（包含正鹽、酸式鹽等）的圓點拖曳連線，或先後點擊左、右兩端，配對至右側正確的水溶液<strong>酸鹼性質（酸性、中性、鹼性）</strong>。<br>
+                全數配對正確即可通關本章節並解鎖下一節內容！
+            </p>
+        </div>
+
+        <!-- 測驗操作卡片 -->
+        <div class="quiz-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <span id="score-counter" style="font-weight:700; color:var(--accent-yellow); font-size:1rem;">
+                    已連線：0 / 8 組
+                </span>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-game btn-reset" onclick="resetConnections()">🧹 清除重連</button>
+                    <button class="btn-game btn-reset" onclick="newQuestionPool()">🔄 換一組題目</button>
+                </div>
+            </div>
+
+            <!-- 連連看畫布區 -->
+            <div class="match-game-wrapper" id="game-wrapper">
+                <svg id="game-svg"></svg>
+                <div class="match-columns">
+                    <!-- 左欄：鹽類化學式 -->
+                    <div class="match-col match-col-left" id="col-formulas"></div>
+                    <!-- 右欄：酸鹼性質 -->
+                    <div class="match-col match-col-right" id="col-properties"></div>
+                </div>
+            </div>
+
+            <!-- 按鈕與反饋 -->
+            <div class="quiz-actions">
+                <div id="feedback-msg" style="font-size:0.95rem; font-weight:700; min-height:24px;"></div>
+                <button class="btn-game btn-submit" onclick="checkAnswers()">驗證送出 ➔</button>
+            </div>
+        </div>
+
+        <!-- 通關橫幅 (解鎖下一節) -->
+        <div class="complete-banner" id="complete-banner">
+            <div style="font-size: 1.8rem; font-weight: 800; color: #fff;">
+                🎉 恭喜完成 8-3「酸鹼的解離與水解」核心檢核！
+            </div>
+            <p style="color: rgba(255,255,255,0.9); font-size: 1.05rem;">
+                你已徹底掌握電解質解離、水的自解離、pH換算、共軛常數推導、以及鹽類水解的各項機制與判斷。
+            </p>
+            <button class="btn-next-chapter" onclick="goToNextSection()">
+                解鎖並進入 8-4 章節 ➔
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    // 鹽類資料庫 (31種經典鹽類)
+    const gameDataPool = [
+        // 中性鹽（強酸+強鹼）
+        { id: 1,  formula: '$\\mathrm{NaCl}$',           type: '中性' },
+        { id: 2,  formula: '$\\mathrm{KNO_3}$',          type: '中性' },
+        { id: 3,  formula: '$\\mathrm{BaCl_2}$',         type: '中性' },
+        { id: 4,  formula: '$\\mathrm{Na_2SO_4}$',       type: '中性' },
+        { id: 5,  formula: '$\\mathrm{KCl}$',            type: '中性' },
+        { id: 6,  formula: '$\\mathrm{CaCl_2}$',         type: '中性' },
+        { id: 7,  formula: '$\\mathrm{NaNO_3}$',         type: '中性' },
+        // 酸性鹽（強酸+弱鹼 或 酸式鹽解離>水解）
+        { id: 8,  formula: '$\\mathrm{NH_4Cl}$',         type: '酸性' },
+        { id: 9,  formula: '$\\mathrm{NaHSO_4}$',        type: '酸性' },
+        { id: 10, formula: '$\\mathrm{CuSO_4}$',         type: '酸性' },
+        { id: 11, formula: '$\\mathrm{NH_4NO_3}$',       type: '酸性' },
+        { id: 12, formula: '$\\mathrm{NaH_2PO_4}$',      type: '酸性' },
+        { id: 13, formula: '$\\mathrm{Al_2(SO_4)_3}$',   type: '酸性' },
+        { id: 14, formula: '$\\mathrm{FeCl_3}$',         type: '酸性' },
+        { id: 15, formula: '$\\mathrm{(NH_4)_2SO_4}$',   type: '酸性' },
+        { id: 16, formula: '$\\mathrm{CuCl_2}$',         type: '酸性' },
+        { id: 17, formula: '$\\mathrm{ZnCl_2}$',         type: '酸性' },
+        { id: 18, formula: '$\\mathrm{AlCl_3}$',         type: '酸性' },
+        { id: 19, formula: '$\\mathrm{NaHSO_3}$',        type: '酸性' },
+        { id: 20, formula: '$\\mathrm{Fe_2(SO_4)_3}$',   type: '酸性' },
+        // 鹼性鹽（弱酸+強鹼 或 酸式鹽水解>解離）
+        { id: 21, formula: '$\\mathrm{CH_3COONa}$',      type: '鹼性' },
+        { id: 22, formula: '$\\mathrm{NaHCO_3}$',        type: '鹼性' },
+        { id: 23, formula: '$\\mathrm{Na_2CO_3}$',       type: '鹼性' },
+        { id: 24, formula: '$\\mathrm{KCN}$',            type: '鹼性' },
+        { id: 25, formula: '$\\mathrm{NaF}$',            type: '鹼性' },
+        { id: 26, formula: '$\\mathrm{K_3PO_4}$',        type: '鹼性' },
+        { id: 27, formula: '$\\mathrm{Na_2HPO_4}$',      type: '鹼性' },
+        { id: 28, formula: '$\\mathrm{NaHS}$',           type: '鹼性' },
+        { id: 29, formula: '$\\mathrm{Na_2S}$',          type: '鹼性' },
+        { id: 30, formula: '$\\mathrm{CH_3COOK}$',       type: '鹼性' },
+        { id: 31, formula: '$\\mathrm{Na_2SO_3}$',       type: '鹼性' }
+    ];
+
+    const GAME_COUNT = 8;
+    let selectedSalts = [];
+    let userConnections = []; // [{ leftIndex, targetType }]
+    let isPassed = false;
+    let clickSelectedLeft = null;
+    let activePointerDot = null;
+    let tempSvgLine = null;
+
+    const colFormulas    = document.getElementById('col-formulas');
+    const colProperties  = document.getElementById('col-properties');
+    const svgCanvas      = document.getElementById('game-svg');
+    const gameWrapper    = document.getElementById('game-wrapper');
+    const scoreCounter   = document.getElementById('score-counter');
+    const feedbackMsg    = document.getElementById('feedback-msg');
+    const completeBanner = document.getElementById('complete-banner');
+
+    function shuffle(arr) {
+        return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    window.newQuestionPool = function() {
+        isPassed = false;
+        completeBanner.style.display = 'none';
+        feedbackMsg.innerHTML = '';
+        clickSelectedLeft = null;
+        userConnections = [];
+
+        // 抽樣：3酸 + 3鹼 + 2中性（共8題）
+        const acids    = shuffle(gameDataPool.filter(s => s.type === '酸性'));
+        const bases    = shuffle(gameDataPool.filter(s => s.type === '鹼性'));
+        const neutrals = shuffle(gameDataPool.filter(s => s.type === '中性'));
+        selectedSalts  = shuffle([...acids.slice(0,3), ...bases.slice(0,3), ...neutrals.slice(0,2)]);
+
+        renderUI();
+        updateScore();
+        reportIframeHeight();
+    };
+
+    function renderUI() {
+        colFormulas.innerHTML = '';
+        colProperties.innerHTML = '';
+        svgCanvas.innerHTML = '';
+
+        // 渲染左側 8 個化學式
+        selectedSalts.forEach((salt, idx) => {
+            const item = document.createElement('div');
+            item.className = 'match-item';
+            item.dataset.index = idx;
+            item.dataset.correctType = salt.type;
+            item.innerHTML = `
+                <span style="pointer-events:none; font-size:1.15rem;">${salt.formula}</span>
+                <div class="dot" data-role="left-dot" data-index="${idx}"></div>
+            `;
+
+            item.addEventListener('click', (e) => {
+                if (isPassed) return;
+                colFormulas.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                clickSelectedLeft = idx;
+            });
+
+            const dot = item.querySelector('.dot');
+            dot.addEventListener('pointerdown', onDotPointerDown);
+
+            colFormulas.appendChild(item);
+        });
+
+        // 渲染右側 3 種性質
+        const props = [
+            { type: '酸性', color: 'var(--accent-red)' },
+            { type: '中性', color: 'var(--accent-green)' },
+            { type: '鹼性', color: 'var(--accent-blue)' }
+        ];
+
+        props.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'match-item';
+            item.dataset.propType = p.type;
+            item.innerHTML = `
+                <div class="dot" data-role="right-dot" data-type="${p.type}"></div>
+                <span style="font-size:1.3rem; font-weight:bold; color:${p.color}; pointer-events:none;">${p.type} 水溶液</span>
+            `;
+
+            item.addEventListener('click', () => {
+                if (isPassed) return;
+                if (clickSelectedLeft !== null) {
+                    addConnection(clickSelectedLeft, p.type);
+                    clickSelectedLeft = null;
+                    colFormulas.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+                }
+            });
+
+            colProperties.appendChild(item);
+        });
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise([colFormulas]);
+        }
+    }
+
+    /* ── 拖曳連線邏輯 ── */
+    function onDotPointerDown(e) {
+        if (isPassed) return;
+        e.preventDefault();
+        const dot = e.currentTarget;
+        const leftIdx = parseInt(dot.dataset.index);
+        activePointerDot = dot;
+
+        const wrapRect = gameWrapper.getBoundingClientRect();
+        const dotRect  = dot.getBoundingClientRect();
+        const x1 = dotRect.left + dotRect.width / 2 - wrapRect.left;
+        const y1 = dotRect.top  + dotRect.height / 2 - wrapRect.top;
+
+        tempSvgLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tempSvgLine.setAttribute('x1', x1); tempSvgLine.setAttribute('y1', y1);
+        tempSvgLine.setAttribute('x2', x1); tempSvgLine.setAttribute('y2', y1);
+        tempSvgLine.setAttribute('stroke', '#38bdf8');
+        tempSvgLine.setAttribute('stroke-width', '3');
+        tempSvgLine.setAttribute('stroke-dasharray', '6,4');
+        svgCanvas.appendChild(tempSvgLine);
+
+        document.addEventListener('pointermove', onDotPointerMove);
+        document.addEventListener('pointerup', onDotPointerUp);
+    }
+
+    function onDotPointerMove(e) {
+        if (!tempSvgLine || !activePointerDot) return;
+        const wrapRect = gameWrapper.getBoundingClientRect();
+        const cx = e.clientX - wrapRect.left;
+        const cy = e.clientY - wrapRect.top;
+        tempSvgLine.setAttribute('x2', cx);
+        tempSvgLine.setAttribute('y2', cy);
+    }
+
+    function onDotPointerUp(e) {
+        document.removeEventListener('pointermove', onDotPointerMove);
+        document.removeEventListener('pointerup', onDotPointerUp);
+
+        if (tempSvgLine) {
+            tempSvgLine.remove();
+            tempSvgLine = null;
+        }
+
+        if (!activePointerDot) return;
+        const leftIdx = parseInt(activePointerDot.dataset.index);
+        activePointerDot = null;
+
+        const over = document.elementFromPoint(e.clientX, e.clientY);
+        const rightItem = over ? over.closest('.match-item[data-prop-type]') : null;
+        if (rightItem) {
+            const targetType = rightItem.dataset.propType;
+            addConnection(leftIdx, targetType);
+        }
+    }
+
+    function addConnection(leftIdx, targetType) {
+        userConnections = userConnections.filter(c => c.leftIdx !== leftIdx);
+        userConnections.push({ leftIdx, targetType });
+        updateScore();
+        drawAllLines();
+    }
+
+    window.resetConnections = function() {
+        if (isPassed) return;
+        userConnections = [];
+        clickSelectedLeft = null;
+        feedbackMsg.innerHTML = '';
+        colFormulas.querySelectorAll('.match-item').forEach(el => {
+            el.classList.remove('selected', 'connected', 'match-wrong');
+        });
+        colProperties.querySelectorAll('.match-item').forEach(el => el.classList.remove('match-wrong'));
+        drawAllLines();
+        updateScore();
+    };
+
+    function updateScore() {
+        scoreCounter.textContent = `已連線：${userConnections.length} / ${GAME_COUNT} 組`;
+        colFormulas.querySelectorAll('.match-item').forEach((el, idx) => {
+            const isConn = userConnections.some(c => c.leftIdx === idx);
+            if (isConn) el.classList.add('connected');
+            else el.classList.remove('connected');
+        });
+    }
+
+    function drawAllLines() {
+        svgCanvas.innerHTML = '';
+        const wrapRect = gameWrapper.getBoundingClientRect();
+
+        userConnections.forEach(conn => {
+            const leftEl = colFormulas.querySelector(`.match-item[data-index="${conn.leftIdx}"]`);
+            const rightEl = colProperties.querySelector(`.match-item[data-prop-type="${conn.targetType}"]`);
+            if (leftEl && rightEl) {
+                const leftDot = leftEl.querySelector('.dot');
+                const rightDot = rightEl.querySelector('.dot');
+
+                const lRect = leftDot.getBoundingClientRect();
+                const rRect = rightDot.getBoundingClientRect();
+
+                const x1 = lRect.left + lRect.width / 2 - wrapRect.left;
+                const y1 = lRect.top + lRect.height / 2 - wrapRect.top;
+                const x2 = rRect.left + rRect.width / 2 - wrapRect.left;
+                const y2 = rRect.top + rRect.height / 2 - wrapRect.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#38bdf8');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svgCanvas.appendChild(line);
+            }
+        });
+    }
+
+    window.addEventListener('resize', drawAllLines);
+
+    window.checkAnswers = function() {
+        if (isPassed) return;
+
+        if (userConnections.length < GAME_COUNT) {
+            feedbackMsg.innerHTML = '<span style="color:#f87171;">⚠️ 尚有鹽類未完成連線配對，請完成所有 8 組後再送出檢核！</span>';
+            return;
+        }
+
+        let wrongCount = 0;
+        userConnections.forEach(conn => {
+            const salt = selectedSalts[conn.leftIdx];
+            const isCorrect = (salt.type === conn.targetType);
+            const leftEl = colFormulas.querySelector(`.match-item[data-index="${conn.leftIdx}"]`);
+
+            if (!isCorrect) {
+                wrongCount++;
+                if (leftEl) leftEl.classList.add('match-wrong');
+            } else {
+                if (leftEl) leftEl.classList.remove('match-wrong');
+            }
+        });
+
+        if (wrongCount === 0) {
+            isPassed = true;
+            feedbackMsg.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 太厲害了！全部配對正確！章節已正式解鎖！</span>';
+            completeBanner.style.display = 'flex';
+            notifySectionComplete();
+            reportIframeHeight();
+        } else {
+            feedbackMsg.innerHTML = `<span style="color:#f87171;">❌ 共有 ${wrongCount} 組配對錯誤（已用紅色外框標出），請修正後再次驗證！</span>`;
+        }
+    };
+
+    function notifySectionComplete() {
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: 'ch8_s3',
+            sectionFolder: '03_酸鹼的解離與水解',
+            nextSectionId: 'ch8_s4',
+            timestamp: Date.now()
+        };
+        try {
+            window.parent.postMessage(payload, '*');
+            localStorage.setItem('chem_progress_ch8_s3', 'PASSED');
+            localStorage.setItem('chem_unlocked_ch8_s4', 'true');
+        } catch(e) {}
+    }
+
+    window.goToNextSection = function() {
+        notifySectionComplete();
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'NAVIGATE_SECTION', target: '04_酸鹼滴定與鹽類' }, '*');
+            }
+        } catch(e) {}
+    };
+
+    function reportIframeHeight() {
+        setTimeout(() => {
+            const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'RESIZE_IFRAME', height: h }, '*');
+            }
+        }, 120);
+    }
+
+    window.addEventListener('load', () => {
+        newQuestionPool();
+    });
+})();
+</script>
+</body>
+</html>

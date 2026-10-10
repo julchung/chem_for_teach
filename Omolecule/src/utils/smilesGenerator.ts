@@ -10,7 +10,6 @@ export function generateSMILES(state: MoleculeState): string {
 
   const { blocks, connections } = state;
 
-  // Build adjacency list: instanceId -> [{neighborId, bond, fromPort, toPort}]
   const adj = new Map<string, { id: string; bond: Connection }[]>();
   for (const b of blocks) adj.set(b.instanceId, []);
   for (const c of connections) {
@@ -27,21 +26,80 @@ export function generateSMILES(state: MoleculeState): string {
   };
 
   const visited = new Set<string>();
+  let ringCounter = 1;
+  const backEdges = new Map<string, { ringId: number, bond: Connection }[]>();
 
-  function dfs(instanceId: string): string {
+  // Pass 1: DFS to find spanning tree and back-edges
+  function findBackEdges(instanceId: string, parentId: string | null) {
+    visited.add(instanceId);
+    const neighbors = adj.get(instanceId) ?? [];
+    for (const { id: neighborId, bond } of neighbors) {
+      if (neighborId === parentId) continue;
+      if (visited.has(neighborId)) {
+        // Back-edge found! Only assign ringId once per edge (e.g., when reaching the already-visited node)
+        // To avoid duplicate assignment, we check if the reverse edge is already recorded.
+        let alreadyRecorded = false;
+        const targetEdges = backEdges.get(neighborId) || [];
+        for (const te of targetEdges) {
+          if (te.bond === bond) alreadyRecorded = true;
+        }
+        
+        if (!alreadyRecorded) {
+          const ringId = ringCounter++;
+          if (!backEdges.has(instanceId)) backEdges.set(instanceId, []);
+          if (!backEdges.has(neighborId)) backEdges.set(neighborId, []);
+          backEdges.get(instanceId)!.push({ ringId, bond });
+          backEdges.get(neighborId)!.push({ ringId, bond });
+        }
+      } else {
+        findBackEdges(neighborId, instanceId);
+      }
+    }
+  }
+
+  findBackEdges(blocks[0].instanceId, null);
+
+  visited.clear();
+  const ringClosuresUsed = new Set<number>();
+
+  // Pass 2: DFS to build SMILES
+  function dfs(instanceId: string, parentId: string | null): string {
     visited.add(instanceId);
     const block = blocks.find((b) => b.instanceId === instanceId)!;
     const tpl = getTemplate(block.templateId);
     if (!tpl) return '?';
 
     let smiles = tpl.smilesAtom;
+    
+    // Add ring numbers for back-edges connected to this atom
+    const myBackEdges = backEdges.get(instanceId) || [];
+    for (const { ringId, bond } of myBackEdges) {
+      // If it's the second time we see the ring closure, we can prefix the bond symbol
+      if (ringClosuresUsed.has(ringId)) {
+         // Second visitation: append bond type before the ring number if needed
+         // However, standard SMILES often allows just repeating the ring number and it infers single.
+         // Actually, appending bondChar(bond) + ringId works (e.g. C=1)
+         const bChar = bondChar(bond);
+         smiles += `${bChar}${ringId}`;
+      } else {
+         ringClosuresUsed.add(ringId);
+         smiles += `${ringId}`;
+      }
+    }
+
     const neighbors = adj.get(instanceId) ?? [];
     const children: string[] = [];
 
     for (const { id: neighborId, bond } of neighbors) {
-      if (visited.has(neighborId)) continue;
-      const childSmiles = bondChar(bond) + dfs(neighborId);
-      children.push(childSmiles);
+      if (neighborId === parentId) continue;
+      // Skip if this edge is a back-edge (already handled via ring numbers)
+      const isBackEdge = myBackEdges.some(be => be.bond === bond);
+      if (isBackEdge) continue;
+
+      if (!visited.has(neighborId)) {
+        const childSmiles = bondChar(bond) + dfs(neighborId, instanceId);
+        children.push(childSmiles);
+      }
     }
 
     if (children.length === 1) smiles += children[0];
@@ -53,8 +111,7 @@ export function generateSMILES(state: MoleculeState): string {
     return smiles;
   }
 
-  // Start from first block
-  return dfs(blocks[0].instanceId);
+  return dfs(blocks[0].instanceId, null);
 }
 
 /**

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-4 洪德原則 (Hund's Rule)</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+      line-height: 1.8;
+    }
+    .reason-box {
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-left: 4px solid #fbbf24;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.8;
+    }
+    .p-group-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .p-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+    .p-boxes {
+      display: flex;
+      gap: 8px;
+    }
+    .p-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      background: rgba(0,0,0,0.3);
+    }
+    .p-label {
+      font-size: 0.85rem;
+      text-align: center;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">4-4 電子組態</span>
+      <h1>洪德原則 (Hund's Rule)</h1>
+    </div>
+    <div class="subtitle">等價簡併軌域 · 平行自旋單填 · 庫侖排斥最小化</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Definition & Principles -->
+    <div class="card">
+      <div class="card-title">📖 原理定義與穩定性成因</div>
+
+      <div class="info-card">
+        <strong style="color:#38bdf8; font-size:1.15rem;">洪德原則（Hund's Rule）：</strong><br>
+        電子填入<strong>同能階的等價軌域（簡併軌域 Degenerate Orbitals）</strong>（如 $p_x, p_y, p_z$ 或 5 個 $d$ 軌域）時，會先以<strong>相同的自旋方向（平行自旋 $\uparrow$）</strong>分別單獨填入各個軌域中，直到各軌域皆半滿後，才允許自旋相反的電子成對填入。
+      </div>
+
+      <div class="reason-box">
+        <strong style="color:#fbbf24; font-size:1.1rem;">💡 為什麼這樣排列最穩定？</strong>
+        <ol style="margin-left: 20px; margin-top: 8px;">
+          <li><strong>減少電子間排斥力：</strong>電子分佈在不同空間方向的軌域中，彼此相距較遠，庫侖排斥能降到最低。</li>
+          <li><strong>最大平行自旋多重度：</strong>具有相同自旋的電子具有額外的交換穩定能（Exchange Energy），使原子處於能量最低的<strong>基態（Ground State）</strong>。</li>
+          <li><strong>未遵守洪德原則：</strong>若違反洪德原則（但未違反包利不相容原理），該電子排列並非不可能，而是處於能量較高的<strong>激發態（Excited State）</strong>！</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Right Column: Case Demonstration (N & C & O) -->
+    <div class="card">
+      <div class="card-title">🔬 實例對比：氮原子 ($N, Z=7$) 2p 軌域填寫</div>
+
+      <div class="p-group-box">
+        <div style="font-size:1.05rem; color:#cbd5e1; font-weight:600;">
+          氮原子電子組態：$1s^2 2s^2 2p^3$（2p 軌域共有 3 個電子待填入）
+        </div>
+
+        <!-- Correct: Ground State -->
+        <div class="p-row" style="background: rgba(52, 211, 153, 0.08); border: 1.5px solid rgba(52, 211, 153, 0.4);">
+          <div>
+            <div style="color: #34d399; font-weight: 700; font-size: 1.05rem;">✅ 基態（遵守洪德原則）</div>
+            <div style="color: #94a3b8; font-size: 0.88rem; margin-top: 4px;">分別單填，平行自旋，能量最低</div>
+          </div>
+          <div class="p-boxes">
+            <div>
+              <div class="p-box" style="border: 2px solid #34d399; color: #34d399;">&#8593;</div>
+              <div class="p-label">2p<sub>x</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #34d399; color: #34d399;">&#8593;</div>
+              <div class="p-label">2p<sub>y</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #34d399; color: #34d399;">&#8593;</div>
+              <div class="p-label">2p<sub>z</sub></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incorrect / Excited 1: Early Pairing -->
+        <div class="p-row" style="background: rgba(248, 113, 113, 0.08); border: 1.5px solid rgba(248, 113, 113, 0.4);">
+          <div>
+            <div style="color: #f87171; font-weight: 700; font-size: 1.05rem;">⚡ 激發態（違反洪德原則）</div>
+            <div style="color: #94a3b8; font-size: 0.88rem; margin-top: 4px;">提早成對，電子排斥力大，空出一個軌域</div>
+          </div>
+          <div class="p-boxes">
+            <div>
+              <div class="p-box" style="border: 2px solid #f87171; color: #f87171; font-size: 2.2rem;">&#8645;</div>
+              <div class="p-label">2p<sub>x</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #f87171; color: #f87171;">&#8593;</div>
+              <div class="p-label">2p<sub>y</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #64748b; color: #64748b;"></div>
+              <div class="p-label">2p<sub>z</sub></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incorrect / Excited 2: Anti-parallel spin -->
+        <div class="p-row" style="background: rgba(248, 113, 113, 0.08); border: 1.5px solid rgba(248, 113, 113, 0.4);">
+          <div>
+            <div style="color: #f87171; font-weight: 700; font-size: 1.05rem;">⚡ 激發態（違反洪德原則）</div>
+            <div style="color: #94a3b8; font-size: 0.88rem; margin-top: 4px;">自旋方向未平行一致</div>
+          </div>
+          <div class="p-boxes">
+            <div>
+              <div class="p-box" style="border: 2px solid #f87171; color: #f87171;">&#8593;</div>
+              <div class="p-label">2p<sub>x</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #f87171; color: #f87171;">&#8593;</div>
+              <div class="p-label">2p<sub>y</sub></div>
+            </div>
+            <div>
+              <div class="p-box" style="border: 2px solid #f87171; color: #f87171;">&#8595;</div>
+              <div class="p-label">2p<sub>z</sub></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

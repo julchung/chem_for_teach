@@ -1,0 +1,149 @@
+function drawMechanismCanvas() {
+    const cvs = document.getElementById('mechanism-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 500;
+    const H = cvs.height = cvs.offsetHeight || 300;
+    
+    ctx.clearRect(0, 0, W, H);
+    
+    // Set background slightly warm/transparent
+    ctx.fillStyle = 'rgba(250, 240, 230, 0.03)';
+    ctx.fillRect(0, 0, W, H);
+
+    const marginL = 50, marginB = 30, marginT = 100, marginR = 30;
+    const graphW = W - marginL - marginR;
+    const graphH = H - marginT - marginB;
+
+    // Draw axes
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(marginL, marginT-30); ctx.lineTo(marginL, H-marginB); ctx.lineTo(W-marginR+15, H-marginB); ctx.stroke();
+    // Arrows
+    ctx.beginPath(); ctx.moveTo(marginL-4, marginT-25); ctx.lineTo(marginL, marginT-33); ctx.lineTo(marginL+4, marginT-25); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-marginR+10, H-marginB-4); ctx.lineTo(W-marginR+18, H-marginB); ctx.lineTo(W-marginR+10, H-marginB+4); ctx.fill();
+    
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應進行方向', marginL + graphW/2, H - marginB + 20);
+    ctx.save(); ctx.translate(18, H/2 + 20); ctx.rotate(-Math.PI/2); ctx.fillText('能 量', 0, 0); ctx.restore();
+
+    const yReactant = marginT + graphH * 0.75;
+    const yPeak1 = marginT + graphH * 0.15;
+    const yValley = marginT + graphH * 0.50;
+    const yPeak2 = marginT + graphH * 0.35;
+    const yProduct = marginT + graphH * 0.90;
+
+    // Dashed lines
+    function drawDash(y) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(marginL, y); ctx.lineTo(W-marginR, y); ctx.stroke(); ctx.setLineDash([]);
+    }
+    drawDash(yReactant); drawDash(yPeak1); drawDash(yValley); drawDash(yPeak2); drawDash(yProduct);
+
+    // Curve
+    ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    const x0 = marginL;
+    const x1 = marginL + graphW * 0.12;
+    const xPeak1 = marginL + graphW * 0.35;
+    const xValley = marginL + graphW * 0.52;
+    const xPeak2 = marginL + graphW * 0.68;
+    const x2 = marginL + graphW * 0.85;
+    const xEnd = W - marginR;
+
+    ctx.moveTo(x0, yReactant);
+    ctx.lineTo(x1, yReactant);
+    ctx.bezierCurveTo(x1 + (xPeak1-x1)*0.5, yReactant, xPeak1 - (xPeak1-x1)*0.2, yPeak1, xPeak1, yPeak1);
+    ctx.bezierCurveTo(xPeak1 + (xValley-xPeak1)*0.3, yPeak1, xValley - (xValley-xPeak1)*0.3, yValley, xValley, yValley);
+    ctx.bezierCurveTo(xValley + (xPeak2-xValley)*0.3, yValley, xPeak2 - (xPeak2-xValley)*0.3, yPeak2, xPeak2, yPeak2);
+    ctx.bezierCurveTo(xPeak2 + (x2-xPeak2)*0.4, yPeak2, x2 - (x2-xPeak2)*0.5, yProduct, x2, yProduct);
+    ctx.lineTo(xEnd, yProduct);
+    ctx.stroke();
+
+    // Text & Labels
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#a78bfa'; ctx.textAlign = 'left';
+    ctx.fillText('NO₂ + NO₂ + CO', x0 + 5, yReactant + 14);
+    ctx.fillStyle = '#fb923c'; ctx.textAlign = 'center';
+    ctx.fillText('NO + NO₃ + CO', xValley, yValley + 16);
+    
+    // Draw bubble for intermediate
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.roundRect(xValley - 25, yValley + 24, 50, 18, 5); ctx.fill();
+    ctx.fillStyle = '#0f172a'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('中間物', xValley, yValley + 36);
+
+    ctx.fillStyle = '#93c5fd'; ctx.textAlign = 'right';
+    ctx.fillText('NO + CO₂ + NO₂', xEnd - 5, yProduct + 14);
+
+    // Ea1 arrow
+    ctx.strokeStyle = '#c084fc'; ctx.fillStyle = '#c084fc'; ctx.lineWidth = 1.5;
+    const arrowX1 = marginL + graphW * 0.16;
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1, yPeak1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yPeak1); ctx.lineTo(arrowX1-3, yPeak1+6); ctx.lineTo(arrowX1+3, yPeak1+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1-3, yReactant-6); ctx.lineTo(arrowX1+3, yReactant-6); ctx.fill();
+    ctx.textAlign = 'right'; ctx.fillText('慢 Ea₁', arrowX1 - 6, (yReactant + yPeak1)/2 + 4);
+
+    // Ea2 arrow
+    const arrowX2 = xValley + 15;
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2, yPeak2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yPeak2); ctx.lineTo(arrowX2-3, yPeak2+6); ctx.lineTo(arrowX2+3, yPeak2+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2-3, yValley-6); ctx.lineTo(arrowX2+3, yValley-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('Ea₂ 快', arrowX2 + 6, (yValley + yPeak2)/2 + 4);
+
+    // dH arrow
+    const dHx = xValley - 20;
+    ctx.strokeStyle = '#38bdf8'; ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.moveTo(dHx, yReactant); ctx.lineTo(dHx, yProduct); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dHx, yProduct); ctx.lineTo(dHx-3, yProduct-6); ctx.lineTo(dHx+3, yProduct-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('ΔH<0', dHx + 8, (yReactant + yProduct)/2 + 4);
+
+    // Transition State Drawings
+    function drawMoleculeTS(x, y, type) {
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath(); ctx.roundRect(x-45, y-26, 90, 40, 6); ctx.fill();
+        ctx.fillStyle = '#8a5a44'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('活化複合體', x, y-14);
+        
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        if(type === 1) {
+            ctx.moveTo(x, y+14); ctx.lineTo(xPeak1, yPeak1); ctx.lineTo(x+8, y+14); ctx.fill();
+        } else {
+            ctx.moveTo(x-8, y+14); ctx.lineTo(xPeak2, yPeak2); ctx.lineTo(x, y+14); ctx.fill();
+        }
+
+        const r = 5.5;
+        function da(cx, cy, c, lbl) {
+            ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#fff'; ctx.font='bold 8px sans-serif'; ctx.fillText(lbl, cx, cy+3);
+        }
+        function dL(x1,y1, x2,y2, dash) {
+            ctx.strokeStyle='#777'; ctx.lineWidth=1.5; 
+            if(dash) ctx.setLineDash([2,1.5]); else ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        const colO = '#dc2626', colN = '#2563eb', colC = '#334155';
+        if (type === 1) {
+            dL(x-30, y-2, x-18, y+5); dL(x-30, y+12, x-18, y+5);
+            dL(x-18, y+5, x-3, y+5, true); dL(x-3, y+5, x+12, y+5, true); dL(x+12, y+5, x+27, y-2);
+            da(x-30, y-2, colO, 'O'); da(x-30, y+12, colO, 'O');
+            da(x-18, y+5, colN, 'N'); da(x-3, y+5, colO, 'O'); da(x+12, y+5, colN, 'N'); da(x+27, y-2, colO, 'O');
+        } else {
+            dL(x-35, y-2, x-22, y+5); dL(x-35, y+12, x-22, y+5);
+            dL(x-22, y+5, x-10, y+5); dL(x-10, y+5, x+5, y+5, true);
+            dL(x+5, y+3.5, x+20, y+3.5); dL(x+5, y+6.5, x+20, y+6.5);
+            da(x-35, y-2, colO, 'O'); da(x-35, y+12, colO, 'O');
+            da(x-22, y+5, colN, 'N'); da(x-10, y+5, colO, 'O');
+            da(x+5, y+5, colC, 'C'); da(x+20, y+5, colO, 'O');
+        }
+    }
+
+    drawMoleculeTS(xPeak1 - 10, yPeak1 - 50, 1);
+    drawMoleculeTS(xPeak2 + 10, yPeak2 - 50, 2);
+}
+
+/* ========================================================
+   ANIMATION 6: Example 2 Canvas (N2 + 3H2 diagram)
+   ======================================================== */

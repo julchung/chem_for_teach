@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-3 電子軌域的基本概念</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.5vw, 28px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: clamp(14px, 2vw, 24px);
+      flex: 1;
+    }
+    @media (max-width: 1000px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      border-radius: 16px;
+      padding: clamp(14px, 1.8vw, 20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.2rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .contrast-box {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border-left: 4px solid #f87171;
+      font-size: clamp(0.9rem, 1.05vw, 1rem);
+      line-height: 1.6;
+    }
+    .quantum-box {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border-left: 4px solid #34d399;
+      font-size: clamp(0.9rem, 1.05vw, 1rem);
+      line-height: 1.6;
+    }
+    .quantum-box ul {
+      margin-left: 1.3rem;
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-size: clamp(0.9rem, 1.05vw, 0.98rem);
+      line-height: 1.6;
+    }
+    .sim-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      gap: 10px;
+    }
+    .svg-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .svg-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .svg-col-label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .stat-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px 16px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">概念 01</span>
+      <h1>電子軌域的基本概念</h1>
+    </div>
+    <div class="subtitle">古典軌道 vs 量子力學機率雲 · 測不準原理與 1s 軌域徑向分佈</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Theories -->
+    <div class="card">
+      <div class="card-title">⚛️ 理論演進與軌域定義</div>
+
+      <div class="contrast-box">
+        <strong style="color: #f87171;">古典模型之限制（拉塞福、波耳）：</strong><br>
+        將電子視為在固定圓形軌道上繞原子核運行（如行星繞太陽）。此模型無法解釋多電子原子的複雜行為與光譜細部構造。
+      </div>
+
+      <div class="quantum-box">
+        <strong style="color: #34d399;">近代量子力學模型：</strong>
+        <ul>
+          <li><strong>波粒二象性：</strong>高速電子的行為同時具有粒子性與波動性（可產生電子繞射現象）。</li>
+          <li><strong>海森堡測不準原理：</strong>無法同時精確測量電子的位置與動量，電子沒有固定運行軌跡。</li>
+          <li><strong>機率統計：</strong>只能以波函數 $|\psi|^2$ 表示電子在核外各空間出現的<strong>機率密度</strong>。</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <strong style="color: #38bdf8;">「原子軌域 (Orbital)」的定義：</strong><br>
+        指原子核外空間中，電子出現機率最高（通常涵蓋 <strong>90% ~ 95%</strong>）的立體幾何區域界面。
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Simulator -->
+    <div class="card">
+      <div class="card-title">🧪 1s 軌域電子雲與徑向機率分佈互動模擬</div>
+
+      <div class="sim-panel">
+        <div class="svg-row">
+          <!-- Left: Electron Cloud SVG -->
+          <div class="svg-col">
+            <span class="svg-col-label">電子雲機率密度與邊界 (可滑動紅色把手)</span>
+            <svg id="svg-density" viewBox="0 0 160 160" width="210" height="210" style="background: rgba(15,23,42,0.8); border: 1.5px solid #334155; border-radius: 14px; cursor: crosshair;">
+              <!-- Axis lines -->
+              <line x1="10" y1="80" x2="150" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
+              <line x1="80" y1="10" x2="80" y2="150" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" />
+              <!-- Ticks -->
+              <line x1="91" y1="77" x2="91" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <line x1="102" y1="77" x2="102" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <line x1="113" y1="77" x2="113" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <line x1="124" y1="77" x2="124" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <line x1="135" y1="77" x2="135" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <line x1="146" y1="77" x2="146" y2="83" stroke="#94a3b8" stroke-width="1" />
+              <!-- Nucleus -->
+              <circle cx="80" cy="80" r="4" fill="#f87171" style="filter: drop-shadow(0 0 4px #f87171);" />
+              <!-- Electron cloud dots generated via JS -->
+              <g id="cloud-dots" fill="#38bdf8" opacity="0.7"></g>
+              <!-- Boundary -->
+              <circle id="interactive-boundary" cx="80" cy="80" r="30.8" stroke="#f87171" stroke-width="2" fill="rgba(248, 113, 113, 0.15)" style="pointer-events: none;" />
+              <!-- Draggable handle -->
+              <circle id="boundary-handle" cx="110.8" cy="80" r="7" fill="#f87171" style="filter: drop-shadow(0 0 6px #f87171); cursor: ew-resize;" />
+            </svg>
+          </div>
+
+          <!-- Right: Radial Probability Curve -->
+          <div class="svg-col">
+            <span class="svg-col-label">徑向機率分佈 $4\pi r^2 \psi^2$ (極大值 52.9 pm)</span>
+            <svg id="svg-curve" viewBox="0 0 200 160" width="250" height="210" style="background: rgba(15,23,42,0.8); border: 1.5px solid #334155; border-radius: 14px;">
+              <line x1="20" y1="140" x2="190" y2="140" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+              <line x1="20" y1="20" x2="20" y2="140" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+              <text x="10" y="80" fill="#94a3b8" font-size="8" transform="rotate(-90 10 80)" text-anchor="middle">機率 P(r)</text>
+              <text x="20" y="152" fill="#64748b" font-size="7.5" text-anchor="middle">0</text>
+              <text x="49" y="152" fill="#64748b" font-size="7.5" text-anchor="middle">53</text>
+              <text x="75" y="152" fill="#64748b" font-size="7.5" text-anchor="middle">100</text>
+              <text x="130" y="152" fill="#64748b" font-size="7.5" text-anchor="middle">200</text>
+              <text x="185" y="152" fill="#64748b" font-size="7.5" text-anchor="middle">300pm</text>
+              <!-- Integrated path -->
+              <path id="curve-area" fill="rgba(34, 211, 238, 0.35)" />
+              <path id="curve-rest" fill="rgba(255, 255, 255, 0.05)" />
+              <path id="probability-curve" fill="none" stroke="#fbbf24" stroke-width="2.5" />
+              <!-- Peak Indicator at 52.9pm -->
+              <circle cx="49.1" cy="30" r="3.5" fill="#fbbf24" style="filter: drop-shadow(0 0 4px #fbbf24);" />
+              <line x1="49.1" y1="30" x2="49.1" y2="140" stroke="rgba(251, 191, 36, 0.4)" stroke-width="1" stroke-dasharray="2 2" />
+              <!-- Current R -->
+              <line id="current-r-line" x1="113" y1="20" x2="113" y2="140" stroke="#f87171" stroke-width="1.5" stroke-dasharray="2 2" />
+              <circle id="current-r-dot" cx="113" cy="80" r="4" fill="#f87171" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Real-time Stats -->
+        <div class="stat-badge">
+          <div class="stat-item">
+            <span style="color:#94a3b8;">當前包含半徑 (r)：</span>
+            <strong id="stat-radius" style="color:#f87171; font-size: 1.1rem;">140 pm</strong>
+          </div>
+          <div style="width: 1px; height: 20px; background: #334155;"></div>
+          <div class="stat-item">
+            <span style="color:#94a3b8;">球形內發現電子總機率：</span>
+            <strong id="stat-probability" style="color:#38bdf8; font-size: 1.15rem;">90.0%</strong>
+          </div>
+        </div>
+
+        <p style="font-size: 0.84rem; color: #64748b; text-align: center;">
+          💡 提示：在左側電子雲中拖曳紅色圓點，右側曲線的著色面積即為該半徑內找到電子的累積機率（常以 90% 作為軌域邊界）。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    function getRadialProbY(r) {
+      if (r <= 0) return 140;
+      const term = r / 52.9;
+      const val = 110 * Math.pow(term, 2) * Math.exp(2 - 2 * term);
+      return 140 - val;
+    }
+
+    function getIntegratedProb(r) {
+      const k = 2 * r / 52.9;
+      const term = 1 + k + 0.5 * k * k;
+      const prob = 1 - Math.exp(-k) * term;
+      return Math.max(0, Math.min(1, prob));
+    }
+
+    function updateInteractiveDensityDirect(rPm) {
+      rPm = Math.max(0, Math.min(300, rPm));
+      const R = rPm * 0.22;
+      
+      const boundary = document.getElementById('interactive-boundary');
+      const handle = document.getElementById('boundary-handle');
+      const currentRLine = document.getElementById('current-r-line');
+      const currentRDot = document.getElementById('current-r-dot');
+      const statRadius = document.getElementById('stat-radius');
+      const statProbability = document.getElementById('stat-probability');
+      
+      if (boundary) boundary.setAttribute('r', R);
+      if (handle) handle.setAttribute('cx', 80 + R);
+      
+      const curveX = 20 + rPm * 0.55;
+      const curveY = getRadialProbY(rPm);
+      if (currentRLine) {
+        currentRLine.setAttribute('x1', curveX);
+        currentRLine.setAttribute('x2', curveX);
+      }
+      if (currentRDot) {
+        currentRDot.setAttribute('cx', curveX);
+        currentRDot.setAttribute('cy', curveY);
+      }
+      
+      updateFilledAreas(rPm);
+      
+      if (statRadius) statRadius.textContent = `${Math.round(rPm)} pm`;
+      if (statProbability) statProbability.textContent = `${(getIntegratedProb(rPm) * 100).toFixed(1)}%`;
+    }
+
+    function updateFilledAreas(rCurrent) {
+      const areaPath = document.getElementById('curve-area');
+      const restPath = document.getElementById('curve-rest');
+      if (!areaPath || !restPath) return;
+
+      let dArea = `M 20,140`;
+      for (let r = 0; r <= rCurrent; r += 2) {
+        const x = 20 + r * 0.55;
+        const y = getRadialProbY(r);
+        dArea += ` L ${x.toFixed(1)},${y.toFixed(1)}`;
+      }
+      const xEnd = 20 + rCurrent * 0.55;
+      dArea += ` L ${xEnd.toFixed(1)},140 Z`;
+      areaPath.setAttribute('d', dArea);
+      
+      let dRest = `M ${xEnd.toFixed(1)},140`;
+      for (let r = Math.floor(rCurrent); r <= 300; r += 2) {
+        const x = 20 + r * 0.55;
+        const y = getRadialProbY(r);
+        dRest += ` L ${x.toFixed(1)},${y.toFixed(1)}`;
+      }
+      dRest += ` L 185,140 Z`;
+      restPath.setAttribute('d', dRest);
+    }
+
+    function updateInteractiveDensity(clientX) {
+      const svgDensity = document.getElementById('svg-density');
+      if (!svgDensity) return;
+      const rect = svgDensity.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      let R = Math.abs(clientX - cx);
+      R = R * (160 / rect.width);
+      R = Math.max(2, Math.min(66, R));
+      const rPm = R / 0.22;
+      updateInteractiveDensityDirect(rPm);
+    }
+
+    // Initialize Widget
+    (function init() {
+      const cloudGroup = document.getElementById('cloud-dots');
+      if (cloudGroup) {
+        let dotsHTML = '';
+        for (let i = 0; i < 500; i++) {
+          const r1 = -Math.log(Math.random());
+          const r2 = -Math.log(Math.random());
+          const r_pm = (r1 + r2) * 26.45;
+          if (r_pm > 300) continue;
+          const R_svg = r_pm * 0.22;
+          const theta = Math.random() * 2 * Math.PI;
+          const cx = 80 + R_svg * Math.cos(theta);
+          const cy = 80 + R_svg * Math.sin(theta);
+          dotsHTML += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="0.8" />`;
+        }
+        cloudGroup.innerHTML = dotsHTML;
+      }
+
+      const curvePath = document.getElementById('probability-curve');
+      if (curvePath) {
+        let d = '';
+        for (let r = 0; r <= 300; r += 2) {
+          const x = 20 + r * 0.55;
+          const y = getRadialProbY(r);
+          d += (r === 0 ? 'M' : 'L') + ` ${x.toFixed(1)},${y.toFixed(1)}`;
+        }
+        curvePath.setAttribute('d', d);
+      }
+
+      updateInteractiveDensityDirect(140);
+
+      const svgDensity = document.getElementById('svg-density');
+      let isDragging = false;
+      if (svgDensity) {
+        svgDensity.addEventListener('mousedown', e => { isDragging = true; updateInteractiveDensity(e.clientX); });
+        window.addEventListener('mousemove', e => { if (isDragging) updateInteractiveDensity(e.clientX); });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        svgDensity.addEventListener('touchstart', e => { isDragging = true; updateInteractiveDensity(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchmove', e => { if (isDragging) updateInteractiveDensity(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchend', () => { isDragging = false; });
+      }
+    })();
+  </script>
+</body>
+</html>

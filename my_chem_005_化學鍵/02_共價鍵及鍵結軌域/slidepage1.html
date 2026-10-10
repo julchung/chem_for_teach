@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>共價鍵及鍵結軌域 | 互動教學</title>
+    <meta name="description" content="高中選修化學二 第二章：共價鍵形成、σ/π鍵、混成軌域、極性共價鍵互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #071018;
+            --text-main: #ecfdf5;
+            --accent-teal: #2dd4bf;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-yellow: #fde047;
+            --accent-purple: #a78bfa;
+            --accent-red: #f87171;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.14);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 20% 35%, rgba(45, 212, 191, 0.09) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.07) 0%, transparent 50%),
+                radial-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #app:not(.started) #presentation-area { pointer-events: none; }
+        #app:not(.started) ~ #toolbar,
+        #app:not(.started) ~ #slide-info { visibility: hidden; pointer-events: none; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.1em;
+        }
+        .start-title {
+            font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 900; text-align: center; line-height: 1.15;
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .start-sub { font-size: 1.25rem; color: rgba(236, 253, 245, 0.55); margin: 0.7rem 0 2.2rem; text-align: center; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+            color: #071018; border: none; padding: 1.05rem 3rem;
+            border-radius: 60px; font-size: 1.3rem; font-weight: 800;
+            box-shadow: 0 0 40px rgba(45, 212, 191, 0.45);
+            cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.8rem; display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.45rem; font-size: 0.86rem; color: rgba(236, 253, 245, 0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.7rem 0.4rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        .slide-iframe { padding: 0 !important; }
+        .slide-iframe .iframe-wrap {
+            flex: 1; min-height: 0; border-radius: 16px; overflow: hidden;
+            border: 1.5px solid rgba(45, 212, 191, 0.35);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+        }
+        .slide-iframe iframe { width: 100%; height: 100%; border: none; display: block; }
+        .iframe-caption {
+            flex-shrink: 0; text-align: center; font-size: 0.88rem;
+            color: rgba(236,253,245,0.55); padding: 0.4rem 0;
+        }
+
+        h1 {
+            color: var(--accent-teal); font-size: clamp(1.4rem, 2.4vw, 2rem);
+            margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.65rem;
+            border-bottom: 2px solid rgba(45, 212, 191, 0.28); padding-bottom: 0.35rem; flex-shrink: 0;
+        }
+        h1::before {
+            content: ""; width: 7px; height: 26px;
+            background: linear-gradient(var(--accent-teal), var(--accent-cyan)); border-radius: 4px;
+        }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.98rem, 1.5vw, 1.25rem); margin: 0.3rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.88rem, 1.2vw, 1.05rem); margin: 0.2rem 0; font-weight: 600; }
+        p, li { font-size: clamp(0.86rem, 1.15vw, 1.05rem); line-height: 1.5; margin-bottom: 0.32rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-teal); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.25rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border);
+            border-radius: 16px; padding: 0.95rem 1.05rem;
+            backdrop-filter: blur(12px); display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.7rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.1rem, 1.6vw, 1.4rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(34, 211, 238, 0.07); border-radius: 11px;
+            padding: 0.7rem; border: 1px solid rgba(34, 211, 238, 0.22); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(45, 212, 191, 0.08); border-radius: 11px;
+            padding: 0.7rem; border: 1px solid rgba(45, 212, 191, 0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag {
+            display: inline-block; padding: 0.1rem 0.55rem; border-radius: 18px;
+            font-size: 0.76rem; font-weight: 700; margin-right: 0.25rem;
+        }
+        .tag-teal { background: rgba(45,212,191,0.15); border: 1px solid rgba(45,212,191,0.45); color: var(--accent-teal); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.78rem, 1.05vw, 0.92rem); }
+        table.data-table th, table.data-table td {
+            border: 1px solid rgba(255,255,255,0.12); padding: 0.4rem 0.45rem; text-align: center;
+        }
+        table.data-table th { background: rgba(45, 212, 191, 0.12); color: var(--accent-teal); }
+
+        .bond-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0; flex-shrink: 0; }
+        .bond-chip {
+            flex: 1; min-width: 100px; text-align: center; padding: 0.5rem 0.4rem;
+            border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12);
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .bond-chip span { display: block; font-size: 1.4rem; margin-bottom: 0.15rem; }
+
+        #canvas-h2-pe {
+            display: block; width: 100%; flex: 1; min-height: 220px;
+            border-radius: 12px; background: rgba(0,0,0,0.35); cursor: ew-resize;
+        }
+        .pe-label { text-align: center; font-size: 0.88rem; color: var(--accent-cyan); margin-top: 0.35rem; flex-shrink: 0; }
+
+        .hybrid-diagram {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.28); border-radius: 12px; padding: 0.5rem;
+        }
+        .hybrid-diagram svg { max-width: 100%; max-height: 100%; }
+
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0;
+        }
+        .quiz-options { list-style: none; margin: 0.45rem 0 0; padding: 0; flex: 1; }
+        .quiz-options li {
+            font-size: clamp(0.9rem, 1.2vw, 1.02rem); padding: 0.35rem 0.5rem; margin-bottom: 0.15rem;
+            border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+        }
+        .quiz-options li span.opt-label { color: var(--accent-teal); font-weight: 700; min-width: 2em; display: inline-block; }
+
+        .ans-overlay {
+            display: none; position: absolute; inset: 0;
+            background: rgba(7, 16, 24, 0.97); z-index: 100; flex-direction: column;
+            padding: 1.2rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+            color: #071018; border: none; padding: 0.65rem 1.4rem; border-radius: 9px;
+            cursor: pointer; font-weight: 700; font-size: 0.95rem; align-self: flex-start;
+            margin-top: 0.4rem; flex-shrink: 0; position: relative; z-index: 110;
+        }
+        .btn-action:hover { filter: brightness(1.08); transform: scale(1.03); }
+
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(7, 16, 24, 0.92); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.14); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-teal); color: #071018; border-color: var(--accent-teal); box-shadow: 0 0 14px rgba(45,212,191,0.5); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.35); cursor: grab; font-size: 1.25rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; left: 16px; z-index: 9000;
+            font-size: 0.92rem; color: rgba(255,255,255,0.55);
+            background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.12); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 58px; }
+        }
+    </style>
+
+
+<style>
+    #start-overlay, #toolbar, #slide-info { display: none !important; }
+    body, html { width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto !important; }
+    #app { width: 100%; height: 100vh; overflow: hidden; position: relative; }
+    #presentation-area { width: 100%; height: 100%; overflow: hidden; position: relative; pointer-events: auto !important; }
+    #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 2vw; bottom: 2vh; }
+    .slide {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        padding: 0.8rem 0.5rem; opacity: 1 !important; pointer-events: auto !important;
+        display: flex; flex-direction: column; overflow: hidden; transform: none !important;
+    }
+    .scroll-panel { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+</style>
+
+</head>
+<body>
+<div id="app" class="started">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-intro">
+                <h1>共價鍵的形成與性質</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <style>
+                            #slide-intro .scroll-panel p,
+                            #slide-intro .scroll-panel li {
+                                font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+                                line-height: 1.65;
+                                margin-bottom: 0.5rem;
+                            }
+                            #slide-intro .scroll-panel .highlight-box p {
+                                margin-bottom: 0;
+                            }
+                        </style>
+                        <h2>一、共價鍵的定義</h2>
+                        <p>兩個原子以<strong>共用價電子</strong>所形成的化學鍵，使原子達較穩定的電子組態（常符合八隅體）。</p>
+                        <div class="highlight-box">
+                            <p><strong>形成條件：</strong></p>
+                            <ul>
+                                <li>參與原子具<strong>未成對電子</strong>，彼此共用形成鍵結電子對</li>
+                                <li>或一方有成對電子、另一方有空軌域 → <em>配位共價鍵</em>（如 NH₄⁺）</li>
+                            </ul>
+                        </div>
+                        <h2>二、共價鍵的性質</h2>
+                        <ul>
+                            <li><span class="tag tag-teal">重疊</span>價軌域發生重疊，電子機率密度集中於兩核間</li>
+                            <li><span class="tag tag-cyan">方向性</span>軌域重疊具方向，決定分子幾何</li>
+                            <li><span class="tag tag-purple">σ / π</span>單鍵多為 σ；多重鍵含 σ 與 π</li>
+                            <li>可形成<strong>分子晶體</strong>或<strong>網狀共價固體</strong>（如金剛石、石英）</li>
+                        </ul>
+                    </div>
+                    <div class="panel">
+                        <h2>共價鍵 vs 離子鍵</h2>
+                        <table class="data-table">
+                            <tr><th>比較</th><th>共價鍵</th><th>離子鍵</th></tr>
+                            <tr><td>電子</td><td>共用</td><td>轉移</td></tr>
+                            <tr><td>鍵結力</td><td>庫侖引力（共用區）</td><td>靜電力</td></tr>
+                            <tr><td>方向性</td><td>有</td><td>無</td></tr>
+                            <tr><td>實例</td><td>HCl、CH₄</td><td>NaCl</td></tr>
+                        </table>
+                        <div class="info-card" style="margin-top:0.6rem;">
+                            <p>多數鍵結介於兩者之間：如 HCl 為<strong>極性共價鍵</strong>，兼具共價與離子特性。</p>
+                        </div>
+                        <div class="bond-type-row">
+                            <div class="bond-chip">
+                                <span>σ</span>頭對頭重疊
+                                <svg viewBox="0 0 160 120" style="width:100%; max-height:120px; margin-top:12px;">
+                                    <!-- s-s -->
+                                    <circle cx="48" cy="20" r="14" fill="rgba(45,212,191,0.4)" stroke="#2dd4bf" stroke-width="1.5"/>
+                                    <circle cx="70" cy="20" r="14" fill="rgba(34,211,238,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+                                    <text x="110" y="24" fill="rgba(255,255,255,0.6)" font-size="12">s-s</text>
+
+                                    <!-- s-p -->
+                                    <circle cx="42" cy="60" r="14" fill="rgba(45,212,191,0.4)" stroke="#2dd4bf" stroke-width="1.5"/>
+                                    <ellipse cx="68" cy="60" rx="18" ry="10" fill="rgba(34,211,238,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+                                    <ellipse cx="100" cy="60" rx="18" ry="10" fill="rgba(34,211,238,0.1)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="2 2"/>
+                                    <text x="135" y="64" fill="rgba(255,255,255,0.6)" font-size="12">s-p</text>
+
+                                    <!-- p-p -->
+                                    <ellipse cx="22" cy="100" rx="18" ry="10" fill="rgba(45,212,191,0.1)" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="2 2"/>
+                                    <ellipse cx="54" cy="100" rx="18" ry="10" fill="rgba(45,212,191,0.4)" stroke="#2dd4bf" stroke-width="1.5"/>
+                                    <ellipse cx="86" cy="100" rx="18" ry="10" fill="rgba(34,211,238,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+                                    <ellipse cx="118" cy="100" rx="18" ry="10" fill="rgba(34,211,238,0.1)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="2 2"/>
+                                    <text x="150" y="104" fill="rgba(255,255,255,0.6)" font-size="12">p-p</text>
+                                </svg>
+                            </div>
+                            <div class="bond-chip">
+                                <span>π</span>肩並肩重疊
+                                <svg viewBox="0 0 160 120" style="width:100%; max-height:120px; margin-top:12px;">
+                                    <g transform="translate(0, 0)">
+                                        <!-- Left p orbital -->
+                                        <ellipse cx="68" cy="35" rx="16" ry="32" fill="rgba(167,139,250,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+                                        <ellipse cx="68" cy="85" rx="16" ry="32" fill="rgba(167,139,250,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+                                        
+                                        <!-- Right p orbital -->
+                                        <ellipse cx="92" cy="35" rx="16" ry="32" fill="rgba(34,211,238,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+                                        <ellipse cx="92" cy="85" rx="16" ry="32" fill="rgba(34,211,238,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const inline = el.classList.contains('ans-inline');
+    const openDisplay = inline ? 'block' : 'flex';
+    const isOpen = el.style.display === openDisplay;
+    el.style.display = isOpen ? 'none' : openDisplay;
+    const button = btn || el.parentElement.querySelector('.btn-action');
+    if (button) {
+        const showLabel = button.getAttribute('data-show-label') || '顯示解答';
+        button.textContent = isOpen ? showLabel : '隱藏解答';
+    }
+}
+</script>
+
+</body>
+</html>

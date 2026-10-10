@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-2 再結晶與亨利定律動態平衡 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.95rem, 1.1vw, 1.15rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.82rem, 0.94vw, 0.98rem); line-height: 1.55; }
+        ol, ul { margin-left: 1.2rem; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1fr 1.1fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .step-list {
+            display: flex; flex-direction: column; gap: 8px; margin-top: 4px;
+        }
+        .step-item {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 7px 12px; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .step-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--accent-yellow); color: #0f172a;
+            font-size: 0.78rem; font-weight: 800; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+        }
+
+        /* 亨利定律模擬器面板 */
+        .henry-box {
+            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8));
+            border: 1.5px solid rgba(56,189,248,0.3); border-radius: 14px;
+            padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;
+            flex: 1; min-height: 0;
+        }
+        #henry-anim-container {
+            position: relative; flex: 1; min-height: 180px;
+            border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(56,189,248,0.3);
+            background: #050c1a;
+        }
+        #henry-anim-canvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        .btn-henry-reset {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff;
+            border: none; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem;
+            cursor: pointer; font-weight: bold; transition: transform 0.2s;
+        }
+        .btn-henry-reset:hover { transform: translateY(-1px); }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+            #henry-anim-container { height: 180px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-2 溶解度與濃度表示法 &middot; 再結晶純化與亨利定律動態平衡</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：再結晶純化法 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、再結晶 (Recrystallization) 原理</h2>
+                    <p style="color:#cbd5e1;">
+                        利用物質在不同溫度下的<strong>溶解度差異顯著</strong>，以及各成分溶解度特徵不同的原理，藉由高溫飽和後降溫析出晶體，來達到高純度分離的實驗技術。
+                    </p>
+                </div>
+
+                <div class="step-list">
+                    <div class="step-item" style="border-left:3px solid var(--accent-red);">
+                        <span class="step-num">1</span>
+                        <div>
+                            <strong style="color:var(--accent-red);">高溫配製熱飽和溶液</strong>
+                            <p style="color:#cbd5e1; font-size:0.83rem;">加入剛好量的熱溶劑加熱溶解，使待純化混合物完全溶解成高溫飽和狀態。</p>
+                        </div>
+                    </div>
+                    <div class="step-item" style="border-left:3px solid var(--accent-yellow);">
+                        <span class="step-num" style="background:var(--accent-yellow);">2</span>
+                        <div>
+                            <strong style="color:var(--accent-yellow);">趁熱過濾（關鍵步驟！）</strong>
+                            <p style="color:#cbd5e1; font-size:0.83rem;">使用預熱過的漏斗快速過濾，去除不溶性機械雜質（避免降溫過早結晶堵塞）。</p>
+                        </div>
+                    </div>
+                    <div class="step-item" style="border-left:3px solid var(--accent-cyan);">
+                        <span class="step-num" style="background:var(--accent-cyan);">3</span>
+                        <div>
+                            <strong style="color:var(--accent-cyan);">緩慢冷卻結晶</strong>
+                            <p style="color:#cbd5e1; font-size:0.83rem;">靜置室溫自然冷卻，目標溶質隨溶解度驟降析出大而純淨的晶體；微量可溶雜質留在母液中。</p>
+                        </div>
+                    </div>
+                    <div class="step-item" style="border-left:3px solid var(--accent-green);">
+                        <span class="step-num" style="background:var(--accent-green);">4</span>
+                        <div>
+                            <strong style="color:var(--accent-green);">減壓抽濾與冰水洗滌</strong>
+                            <p style="color:#cbd5e1; font-size:0.83rem;">布氏漏斗抽濾分離晶體與母液，並用<strong>少量冰溶劑</strong>洗滌晶體表面殘留母液後乾燥。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右欄：亨利定律動態平衡微觀動畫 -->
+            <div class="panel">
+                <div class="henry-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h2 style="color:var(--accent-cyan); margin:0;">二、亨利定律：氣體溶解動態平衡</h2>
+                        <button class="btn-henry-reset" id="btn-reset-henry">↺ 重置模擬</button>
+                    </div>
+
+                    <div style="text-align:center; font-size:1.1rem; font-weight:bold; color:#fbbf24;">
+                        $\text{H}_2\text{(g, 氣相)} \rightleftharpoons \text{H}_2\text{(aq, 溶解態)}$
+                    </div>
+
+                    <div id="henry-anim-container">
+                        <canvas id="henry-anim-canvas"></canvas>
+                    </div>
+
+                    <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem;">
+                        <div id="henry-status" style="font-weight:bold; color:#fbbf24; background:rgba(251,191,36,0.12); padding:3px 12px; border-radius:14px; border:1px solid rgba(251,191,36,0.3);">
+                            ⏳ 正在建立動態平衡...
+                        </div>
+                        <div style="display:flex; gap:12px; color:rgba(255,255,255,0.7);">
+                            <span><span style="color:#22d3ee;">●</span> 氣態分子</span>
+                            <span><span style="color:#60a5fa;">●</span> 溶劑中水合粒子</span>
+                        </div>
+                    </div>
+
+                    <p style="font-size:0.82rem; color:#94a3b8; line-height:1.45; margin:0;">
+                        💡 <strong>觀察重點：</strong>氣相分子撞擊液面溶解入液體中（$R_{\text{進}}$），同時液中溶質隨熱運動自液面逸出（$R_{\text{出}}$），當兩者速率相等時達到<strong>動態溶解平衡</strong>。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    let henryAnimId = null;
+    let _henryParticles = [];
+    let _henryCtx = null, _henryCanvas = null;
+    let _henryStartTime = 0;
+    const HENRY_TARGET = 6;
+
+    function initHenryEquilibrium() {
+        const container = document.getElementById('henry-anim-container');
+        _henryCanvas = document.getElementById('henry-anim-canvas');
+        if (!_henryCanvas || !container) return;
+        _henryCtx = _henryCanvas.getContext('2d');
+        _henryCanvas.width = container.offsetWidth;
+        _henryCanvas.height = container.offsetHeight;
+
+        _henryStartTime = Date.now();
+        _henryParticles = [];
+
+        const W = _henryCanvas.width, H = _henryCanvas.height;
+        const waterY = H * 0.58;
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = 0.9 + Math.random() * 1.5;
+            _henryParticles.push({
+                x: 20 + Math.random() * (W - 40),
+                y: 15 + Math.random() * (waterY - 30),
+                vx: Math.cos(angle) * spd,
+                vy: Math.sin(angle) * spd,
+                r: 5.5,
+                dissolved: false,
+                trail: []
+            });
+        }
+
+        henryLoop();
+    }
+
+    function henryLoop() {
+        const c = _henryCtx, cv = _henryCanvas;
+        if (!c || !cv) return;
+        const W = cv.width, H = cv.height;
+        const waterY = H * 0.58;
+        const elapsed = (Date.now() - _henryStartTime) / 1000;
+
+        c.clearRect(0, 0, W, H);
+
+        const wGrad = c.createLinearGradient(0, waterY, 0, H);
+        wGrad.addColorStop(0, 'rgba(56,189,248,0.35)');
+        wGrad.addColorStop(1, 'rgba(14,60,120,0.7)');
+        c.fillStyle = wGrad;
+        c.fillRect(0, waterY, W, H - waterY);
+
+        c.save();
+        c.beginPath();
+        c.moveTo(0, waterY);
+        for (let x = 0; x <= W; x += 8) {
+            c.lineTo(x, waterY + Math.sin((x / W * 4 + elapsed * 2) * Math.PI) * 2.5);
+        }
+        c.lineTo(W, H); c.lineTo(0, H); c.closePath();
+        c.fillStyle = 'rgba(56,189,248,0.15)'; c.fill();
+        c.restore();
+
+        c.beginPath(); c.moveTo(0, waterY); c.lineTo(W, waterY);
+        c.strokeStyle = 'rgba(56,189,248,0.7)'; c.lineWidth = 1.5; c.stroke();
+
+        c.fillStyle = 'rgba(34,211,238,0.6)'; c.font = 'bold 11px sans-serif';
+        c.fillText('氣相  H₂(g)', 12, 20);
+        c.fillStyle = 'rgba(56,189,248,0.7)';
+        c.fillText('液相  H₂(aq)', 12, waterY + 18);
+
+        const dissolvedCount = _henryParticles.filter(p => p.dissolved).length;
+
+        _henryParticles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < p.r) { p.x = p.r; p.vx = Math.abs(p.vx); }
+            if (p.x > W - p.r) { p.x = W - p.r; p.vx = -Math.abs(p.vx); }
+            if (p.y < p.r) { p.y = p.r; p.vy = Math.abs(p.vy); }
+            if (p.y > H - p.r) { p.y = H - p.r; p.vy = -Math.abs(p.vy); }
+
+            if (!p.dissolved && p.y + p.r >= waterY) {
+                const canDissolve = elapsed < 6 ? (Math.random() < 0.18) :
+                                   (dissolvedCount < HENRY_TARGET ? Math.random() < 0.85 : false);
+                if (canDissolve) {
+                    p.dissolved = true; p.vx *= 0.45; p.vy = Math.abs(p.vy) * 0.45; p.y = waterY + p.r + 1;
+                } else {
+                    p.vy = -Math.abs(p.vy); p.y = waterY - p.r - 1;
+                }
+            } else if (p.dissolved && p.y - p.r <= waterY) {
+                const canEscape = elapsed < 6 ? (Math.random() < 0.08) :
+                                 (dissolvedCount > HENRY_TARGET ? Math.random() < 0.85 : false);
+                if (canEscape) {
+                    p.dissolved = false; const spd = 1.1 + Math.random() * 1.3;
+                    p.vx = (Math.random() - 0.5) * spd * 2; p.vy = -Math.abs(p.vy) / 0.45; p.y = waterY - p.r - 1;
+                } else {
+                    p.vy = Math.abs(p.vy); p.y = waterY + p.r + 1;
+                }
+            }
+
+            p.trail.push({ x: p.x, y: p.y });
+            if (p.trail.length > 10) p.trail.shift();
+
+            if (p.trail.length > 1) {
+                c.beginPath(); c.moveTo(p.trail[0].x, p.trail[0].y);
+                p.trail.forEach(t => c.lineTo(t.x, t.y));
+                c.strokeStyle = p.dissolved ? 'rgba(59,130,246,0.2)' : 'rgba(34,211,238,0.15)';
+                c.lineWidth = 2.5; c.lineCap = 'round'; c.stroke();
+            }
+
+            const grd = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
+            if (p.dissolved) {
+                grd.addColorStop(0, 'rgba(96,165,250,0.9)'); grd.addColorStop(0.5, 'rgba(59,130,246,0.5)'); grd.addColorStop(1, 'rgba(59,130,246,0)');
+            } else {
+                grd.addColorStop(0, 'rgba(220,255,255,1)'); grd.addColorStop(0.4, 'rgba(34,211,238,0.8)'); grd.addColorStop(1, 'rgba(34,211,238,0)');
+            }
+            c.beginPath(); c.arc(p.x, p.y, p.r * 2, 0, Math.PI * 2); c.fillStyle = grd; c.fill();
+            c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI * 2); c.fillStyle = p.dissolved ? '#60a5fa' : '#e0fffe'; c.fill();
+        });
+
+        const statusEl = document.getElementById('henry-status');
+        if (statusEl) {
+            if (elapsed < 6) {
+                statusEl.textContent = `⏳ 平衡建立中... ${Math.ceil(6 - elapsed)}s`;
+                statusEl.style.color = '#fbbf24';
+            } else {
+                statusEl.textContent = '✅ 已達動態平衡';
+                statusEl.style.color = '#34d399';
+            }
+        }
+
+        henryAnimId = requestAnimationFrame(henryLoop);
+    }
+
+    window.addEventListener('load', () => {
+        initHenryEquilibrium();
+        const resetBtn = document.getElementById('btn-reset-henry');
+        if (resetBtn) {
+            resetBtn.onclick = () => {
+                if (henryAnimId) cancelAnimationFrame(henryAnimId);
+                initHenryEquilibrium();
+            };
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        const container = document.getElementById('henry-anim-container');
+        if (_henryCanvas && container) {
+            _henryCanvas.width = container.offsetWidth;
+            _henryCanvas.height = container.offsetHeight;
+        }
+    });
+})();
+</script>
+
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return; window.__chemScrollBridgeInstalled = true;
+    function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY||0, sx: window.scrollX||0 }, '*'); } }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('message', function (e) { if (!e.data) return; if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY||0, behavior: 'instant' }); reportScroll(); } else if (e.data.type === '__chem_get_scroll') { reportScroll(); } });
+    reportScroll(); window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>

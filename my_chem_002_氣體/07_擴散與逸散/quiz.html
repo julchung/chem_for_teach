@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>單元 2-7 · 核心通關檢核</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+html,body{
+  width:100%;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow-y:auto;background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+}
+#app{max-width:1150px;margin:0 auto;padding:1.2rem 1.2rem 3.5rem 1.2rem;display:flex;flex-direction:column;gap:1.2rem;}
+.header-box{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;
+  padding:1rem 1.25rem;backdrop-filter:blur(12px);display:flex;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+  box-shadow:0 6px 24px rgba(0,0,0,.35);
+}
+.badge{
+  background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.45);
+  color:var(--green);padding:.25rem .75rem;border-radius:20px;font-size:.86rem;font-weight:700;
+}
+.quiz-card{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;
+  padding:1.1rem 1.25rem;backdrop-filter:blur(12px);box-shadow:0 6px 24px rgba(0,0,0,.35);
+  transition:border-color .3s,box-shadow .3s;
+  display:flex;flex-direction:column;
+}
+.quiz-card.card-correct{border-color:rgba(52,211,153,.7);box-shadow:0 0 16px rgba(52,211,153,.25);}
+.quiz-card.card-wrong{border-color:rgba(248,113,113,.7);box-shadow:0 0 16px rgba(248,113,113,.25);}
+.quiz-q-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem;}
+.quiz-q-tag{
+  background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.35);
+  color:var(--blue);font-size:.76rem;font-weight:700;padding:2px 8px;border-radius:6px;
+}
+.quiz-q{font-size:1rem;font-weight:700;line-height:1.55;margin-bottom:.75rem;color:var(--text);flex:1;}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:auto;}
+@media(max-width:680px){.quiz-options{grid-template-columns:1fr;}}
+.quiz-opt{
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.12);
+  color:var(--text);padding:.65rem .95rem;border-radius:9px;font-size:.92rem;
+  text-align:left;cursor:pointer;transition:.2s;touch-action:manipulation;
+}
+.quiz-opt:hover{background:rgba(56,189,248,.1);border-color:var(--blue);}
+.quiz-opt.selected{background:rgba(56,189,248,.2);border-color:var(--blue);font-weight:700;}
+.quiz-opt.verified-pass{background:rgba(52,211,153,.22)!important;border-color:var(--green)!important;color:#6ee7b7!important;}
+.quiz-opt.verified-fail{background:rgba(248,113,113,.22)!important;border-color:var(--red)!important;color:#fca5a5!important;}
+.quiz-card-feedback{font-size:.82rem;line-height:1.4;margin-top:.6rem;padding:.45rem .65rem;border-radius:6px;display:none;}
+.quiz-card-feedback.correct{display:block;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.35);color:#6ee7b7;}
+.quiz-card-feedback.wrong{display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#fca5a5;}
+
+/* 2x2 四方排列容器 */
+.quiz-grid-layout{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:1.1rem;
+  align-items:stretch;
+}
+@media(max-width:860px){
+  .quiz-grid-layout{
+    grid-template-columns:1fr;
+  }
+}
+
+/* 連連看組件 */
+.match-game-wrapper{position:relative;background:rgba(0,0,0,.38);border-radius:12px;padding:1rem;margin:.6rem 0;touch-action:none;}
+.match-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
+.match-cols{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;position:relative;z-index:3;}
+.match-col{display:flex;flex-direction:column;gap:.65rem;}
+.match-item{
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:9px;padding:.55rem .85rem;display:flex;align-items:center;
+  justify-content:space-between;cursor:pointer;transition:.2s;
+}
+.match-item:hover{background:rgba(56,189,248,.12);border-color:var(--blue);}
+.match-item.selected{border-color:var(--yellow);background:rgba(251,191,36,.18);box-shadow:0 0 10px rgba(251,191,36,.3);}
+.match-item.connected{border-color:var(--blue);background:rgba(56,189,248,.15);}
+.match-item.match-correct{border-color:var(--green)!important;background:rgba(52,211,153,.18)!important;}
+.match-item.match-wrong{border-color:var(--red)!important;background:rgba(248,113,113,.18)!important;}
+.match-dot{width:14px;height:14px;border-radius:50%;background:#64748b;border:2px solid #fff;transition:.2s;flex-shrink:0;}
+.match-item:hover .match-dot,.match-item.selected .match-dot{background:var(--yellow);transform:scale(1.2);}
+.match-item.connected .match-dot{background:var(--blue);}
+.match-item.match-correct .match-dot{background:var(--green);}
+.match-item.match-wrong .match-dot{background:var(--red);}
+.match-badge{font-size:.85rem;font-weight:700;}
+
+/* 底部操作與回饋 */
+.action-bar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;padding:1rem 1.25rem;
+}
+.quiz-feedback{font-size:.95rem;font-weight:600;}
+.quiz-feedback.success{color:var(--green);}
+.quiz-feedback.fail{color:var(--red);}
+.btn-submit{
+  background:linear-gradient(135deg,var(--cyan),var(--purple));color:#0f172a;
+  border:none;border-radius:9px;font-weight:800;padding:10px 24px;font-size:1rem;
+  cursor:pointer;transition:.2s;box-shadow:0 4px 14px rgba(34,211,238,.35);
+}
+.btn-submit:hover{transform:scale(1.03);box-shadow:0 0 18px rgba(34,211,238,.5);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-retry{
+  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);
+  color:#f8fafc;border-radius:9px;font-weight:700;padding:10px 20px;font-size:.95rem;
+  cursor:pointer;display:none;transition:.2s;
+}
+.btn-retry:hover{background:rgba(255,255,255,.16);}
+
+/* 通關橫幅 */
+#pass-banner{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2.5rem 1.5rem;
+  background:radial-gradient(ellipse at center,rgba(52,211,153,.2) 0%,rgba(15,23,42,0) 70%);
+  border:2px solid rgba(52,211,153,.4);border-radius:18px;margin-top:1rem;animation:fadeIn .5s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px);}to{opacity:1;transform:translateY(0);}}
+.unlock-tags{display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center;margin:1.2rem 0;}
+.unlock-tag{
+  padding:8px 16px;border-radius:10px;font-size:.88rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.unlock-tag.g{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.4);color:#34d399;}
+.unlock-tag.p{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.4);color:#c084fc;}
+.unlock-tag.b{background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.4);color:#38bdf8;}
+
+.btn-nav-group{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:1rem;}
+.btn-nav{
+  border:none;border-radius:10px;font-size:1rem;font-weight:800;
+  padding:12px 24px;cursor:pointer;transition:.2s;
+}
+.btn-nav.primary{
+  background:linear-gradient(135deg,#38bdf8,#34d399);color:#0f172a;
+  box-shadow:0 4px 18px rgba(56,189,248,.4);
+}
+.btn-nav.primary:hover{transform:scale(1.04);box-shadow:0 0 24px rgba(56,189,248,.6);}
+.btn-nav.supp{
+  background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.5);
+  color:#c084fc;
+}
+.btn-nav.supp:hover{background:rgba(167,139,250,.35);transform:scale(1.03);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 標頭 -->
+  <div class="header-box">
+    <div>
+      <span class="badge">🏆 單元 2-7 · 核心通關檢核</span>
+      <h1 style="color:var(--cyan);font-size:1.35rem;margin-top:.4rem;border:none;padding:0;">擴散與逸散 · 單元通關挑戰</h1>
+    </div>
+    <div style="font-size:.88rem;color:var(--sub);text-align:right;">
+      概念配對連連看（5組）＋ 核心評量題（4題）<br>
+      <span style="color:var(--yellow);">⚠️ 全數答對即可解鎖第二章二補充小節及進入下一章（第 3 章 溶液）！</span>
+    </div>
+  </div>
+
+  <!-- 第 (1) 題：概念連連看 -->
+  <div class="quiz-card" id="card-match">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;">
+      <div class="quiz-q" style="margin:0;"><span style="color:var(--cyan);">(1) 概念配對連連看</span> 請將左側物理概念與右側對應科學公式／物理意義連線：</div>
+      <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:var(--sub);border-radius:6px;padding:3px 10px;font-size:.8rem;cursor:pointer;">重設連線 ↺</button>
+    </div>
+    <div class="match-game-wrapper" id="match-wrapper">
+      <svg class="match-svg" id="match-svg"></svg>
+      <div class="match-cols">
+        <div class="match-col" id="col-left"></div>
+        <div class="match-col" id="col-right"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--sub);margin-top:.3rem;">
+      <span>💡 操作提示：點選左側再點選右側，或直接拖曳圓點連線。</span>
+      <span id="match-count" style="color:var(--cyan);font-weight:700;">已連線：0 / 5</span>
+    </div>
+  </div>
+
+  <!-- 動態隨機 4 題容器（上下左右四方排列） -->
+  <div id="dynamic-questions-container" class="quiz-grid-layout"></div>
+
+  <!-- 操作列 -->
+  <div class="action-bar">
+    <div id="quiz-feedback" class="quiz-feedback">
+      💡 請完成第 (1) 題連連看配對並作答後續 4 道核心評量題，完成後點擊「確定作答」。
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button type="button" id="btn-retry" class="btn-retry">🔄 換題重測</button>
+      <button type="button" id="btn-submit" class="btn-submit">確定作答 🚀</button>
+    </div>
+  </div>
+
+  <!-- 通關成功橫幅 -->
+  <div id="pass-banner">
+    <div style="font-size:3.6rem;margin-bottom:.5rem;">🏆</div>
+    <h2 style="color:var(--green);font-size:1.8rem;font-weight:800;margin-bottom:.3rem;">單元檢核全數通過！</h2>
+    <p style="color:#6ee7b7;font-size:1.05rem;">恭喜全部答對！擴散與逸散核心概念已完全掌握 🎉</p>
+    <p style="color:var(--sub);font-size:.9rem;margin-top:.3rem;">第二章二補充小節與第 3 章已同步為您解鎖！</p>
+
+    <div class="unlock-tags">
+      <div class="unlock-tag g">✅ 2-7 擴散與逸散 — 已通關</div>
+      <div class="unlock-tag p">🔓 （補充一）凡得瓦方程式 — 已解鎖</div>
+      <div class="unlock-tag p">🔓 （補充二）PV=nRT圖示 — 已解鎖</div>
+      <div class="unlock-tag b">🚀 第 3 章 溶液 (3-1 三相圖) — 已解鎖</div>
+    </div>
+
+    <div class="btn-nav-group">
+      <button class="btn-nav primary" onclick="goToNextChapter()">進入下一章：3-1 物質的狀態與三相圖 🚀</button>
+      <button class="btn-nav supp" onclick="goToSupp1()">進入補充一：凡得瓦方程式 🔬</button>
+      <button class="btn-nav supp" onclick="goToSupp2()">進入補充二：PV=nRT 圖示 📊</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  // 第 (1) 題連連看題庫資料
+  const MATCH_DATA = [
+    { id: 'm1', left: '格銳目擴散定律', right: '$r \\propto \\dfrac{1}{\\sqrt{M}} \\propto \\dfrac{1}{\\sqrt{d}}$' },
+    { id: 'm2', left: '擴散所需時間比', right: '$\\dfrac{t_1}{t_2} = \\sqrt{\\dfrac{M_1}{M_2}}$' },
+    { id: 'm3', left: '分子平均動能公式', right: '$\\overline{E_k} = \\dfrac{3}{2}kT$' },
+    { id: 'm4', left: '均方根速率 $v_{rms}$', right: '$\\sqrt{\\dfrac{3RT}{M}}$' },
+    { id: 'm5', left: '絕對溫度的物理意義', right: '氣體分子平均動能的量度' }
+  ];
+
+  // 完整題庫（包含截圖分析題、原 quiz 題與經典觀念題）
+  const QUESTION_BANK = [
+    {
+      id: "q1",
+      tag: "格銳目定律 · STP密度",
+      question: "同狀況下，同體積某未知氣體擴散所需時間為 2 分鐘，而 $\\text{O}_2$ 需 8 分鐘，則該未知氣體在標準狀況（STP，0°C, 1 atm）時之密度約為何？",
+      options: [
+        "A. 0.0893 g/L",
+        "B. 0.179 g/L",
+        "C. 0.268 g/L",
+        "D. 0.357 g/L"
+      ],
+      ans: 0,
+      explanation: "依格銳目擴散定律：$\\dfrac{t_1}{t_2} = \\sqrt{\\dfrac{M_1}{M_2}}$，代入得 $\\dfrac{2}{8} = \\sqrt{\\dfrac{M}{32}} \\implies M = 2\\text{ g/mol}$（該氣體為 $\\text{H}_2$）。在 STP 下 1 莫耳氣體體積為 $22.4\\text{ L}$，故密度 $d = \\dfrac{2}{22.4} \\approx 0.0893\\text{ g/L}$。"
+    },
+    {
+      id: "q2",
+      tag: "氣體動力論 · 溫度微觀意義",
+      question: "若 A 氣體之絕對溫度較 B 氣體為高，則不論兩種氣體分子量與壓力大小為何，下列敘述何者<u>錯誤</u>？（請選出所有錯誤項之組合）<div style='margin:.4rem 0;padding:.4rem .8rem;background:rgba(255,255,255,0.03);border-radius:6px;font-size:.88rem;line-height:1.6;'>(甲) A 分子之平均運動速率必較快<br>(乙) A 分子間之平均距離必較大<br>(丙) A 分子之平均動量必較大<br>(丁) A 分子之平均動能必較大<br>(戊) A 分子之質量必較大</div>",
+      options: [
+        "A. (甲)(乙)(丙)(戊)",
+        "B. (甲)(丙)(戊)",
+        "C. (乙)(丙)(丁)",
+        "D. 僅 (丁)"
+      ],
+      ans: 0,
+      explanation: "氣體分子平均動能 $\\overline{E_k} = \\dfrac{3}{2}kT$，僅與絕對溫度成正比，故僅 (丁) 正確。平均速率受分子量影響；分子間距由莫耳體積決定；動量受質量與速率共同決定；質量由種類決定。因此 (甲)(乙)(丙)(戊) 均錯誤，選 A。"
+    },
+    {
+      id: "q3",
+      tag: "分壓與逸散 · 初逸散莫耳比",
+      question: "在同溫定容之密閉容器中，充入等質量的甲烷 $\\text{CH}_4$（$M=16$）與二氧化硫 $\\text{SO}_2$（$M=64$）。若容器壁上有一微孔，在最初瞬間自微孔逸散出的氣體中，莫耳數比 $n_{\\text{CH}_4} : n_{\\text{SO}_2}$ 為何？",
+      options: [
+        "A. 8 : 1",
+        "B. 4 : 1",
+        "C. 2 : 1",
+        "D. 1 : 1"
+      ],
+      ans: 0,
+      explanation: "初逸散速率比正比於初莫耳數且反比於 $\\sqrt{M}$。等質量下 $n_0(\\text{CH}_4) : n_0(\\text{SO}_2) = \\dfrac{W}{16} : \\dfrac{W}{64} = 4 : 1$。逸散莫耳比為 $\\dfrac{4}{1} \\times \\sqrt{\\dfrac{64}{16}} = 4 \\times 2 = 8 : 1$。"
+    },
+    {
+      id: "q4",
+      tag: "動力論假設 · 完全彈性碰撞",
+      question: "根據理想氣體動力論之基本假設與推論，下列敘述何者完全正確？",
+      options: [
+        "A. 分子碰撞為完全彈性碰撞，碰撞前後系統總動能守恆",
+        "B. 氣體分子的平均運動速率僅取決於溫度，與分子量大小完全無關",
+        "C. 在極高壓力與極低溫度下，真實氣體分子行為最接近理想氣體",
+        "D. 容器中所有同種氣體分子在同溫下具有完全相同的瞬時運動速率"
+      ],
+      ans: 0,
+      explanation: "A 正確，分子碰撞無動能損失，屬完全彈性碰撞；B 錯誤，速率受分子量影響；C 錯誤，高溫低壓才接近理想氣體；D 錯誤，分子速率呈馬克士威分佈。"
+    },
+    {
+      id: "q5",
+      tag: "微孔逸散 · 雙氣體逸散殘量",
+      question: "若使 1.0 莫耳氬（原子量：39.95）與 1.0 莫耳氦（原子量：4.00）之氣體在容器中混合均勻後，使其自器壁小孔向真空逸散。當氦氣逸散後剩餘 0.1 莫耳時，容器中氬氣剩餘的量約為多少莫耳？",
+      options: [
+        "A. 0.715 莫耳",
+        "B. 0.500 莫耳",
+        "C. 0.285 莫耳",
+        "D. 0.100 莫耳"
+      ],
+      ans: 0,
+      explanation: "氦氣逸散 $\\Delta n_{\\text{He}} = 1.0 - 0.1 = 0.9\\text{ mol}$。逸散量比約為 $\\dfrac{\\Delta n_{\\text{He}}}{\\Delta n_{\\text{Ar}}} \\approx \\sqrt{\\dfrac{M_{\\text{Ar}}}{M_{\\text{He}}}} = \\sqrt{\\dfrac{39.95}{4}} \\approx 3.16$。故氬逸散量 $\\Delta n_{\\text{Ar}} \\approx 0.285\\text{ mol}$，剩餘氬氣為 $1.0 - 0.285 = 0.715\\text{ mol}$。"
+    },
+    {
+      id: "q6",
+      tag: "分子特性 · 動能動量比較",
+      question: "A、B 兩氣體分子量已知 $M_A > M_B$。在同溫下，下列關於 A、B 兩氣體之各項物理量敘述，何者<u>錯誤</u>？",
+      options: [
+        "A. A 與 B 氣體分子的平均運動速率相等（$v_A = v_B$）",
+        "B. A 與 B 氣體分子的平均動能相等（$\\overline{E_{k,A}} = \\overline{E_{k,B}}$）",
+        "C. 氣體分子的平均動量大小 $M_A v_A > M_B v_B$",
+        "D. 若兩者在同溫同壓同體積下，A 氣體之密度大於 B 氣體（$D_A > D_B$）"
+      ],
+      ans: 0,
+      explanation: "同溫下各氣體分子平均動能相同，但因 $E_k = \\dfrac{1}{2}M v^2$，分子量大者其平均速率必較小（$v_A < v_B$），故 A 錯誤。"
+    },
+    {
+      id: "q7",
+      tag: "玻璃管擴散 · 白煙生成位置",
+      question: "在兩端開放、全長 100 cm 的玻璃管兩端，同時分別塞入沾有濃氨水（$\\text{NH}_3$，$M=17$）與濃鹽酸（$\\text{HCl}$，$M=36.5$）的棉花球。兩氣體在管內擴散相遇時生成白色煙霧（$\\text{NH}_4\\text{Cl}$），則白煙最先生成之位置距濃氨水端約為多少 cm？",
+      options: [
+        "A. 59.5 cm",
+        "B. 50.0 cm",
+        "C. 40.5 cm",
+        "D. 31.8 cm"
+      ],
+      ans: 0,
+      explanation: "擴散距離比 $\\dfrac{d_{\\text{NH}_3}}{d_{\\text{HCl}}} = \\sqrt{\\dfrac{36.5}{17}} \\approx 1.465$。距濃氨水端距離為 $100 \\times \\dfrac{1.465}{1 + 1.465} \\approx 59.5\\text{ cm}$。"
+    },
+    {
+      id: "q8",
+      tag: "均方根速率 · 溫度比例關係",
+      question: "某固定容器內充入理想氣體，若欲使氣體分子的均方根速率（$v_{rms}$）增為原來的 2 倍，則容器內氣體的絕對溫度（$K$）應調整為原來的幾倍？",
+      options: [
+        "A. 4 倍",
+        "B. 2 倍",
+        "C. $\\sqrt{2}$ 倍",
+        "D. 8 倍"
+      ],
+      ans: 0,
+      explanation: "均方根速率 $v_{rms} = \\sqrt{\\dfrac{3RT}{M}} \\propto \\sqrt{T}$。若速率增為 2 倍，則絕對溫度必須調為原來的 $2^2 = 4$ 倍。"
+    },
+    {
+      id: "q9",
+      tag: "速率分佈 · 麥克斯威曲線",
+      question: "對於一定量的氣體，當溫度由 25°C 升高至 1000°C 時，其馬克士威-波茲曼分子速率分佈曲線之變化，下列敘述何者完全正確？",
+      options: [
+        "A. 曲線最高峰向高速方向右移，峰值高度降低，且分佈範圍展寬",
+        "B. 曲線與橫軸所圍成的總面積隨溫度升高而顯著增加",
+        "C. 氣體分子的最概然速率保持不變，僅高能量分子數增加",
+        "D. 處於極低速率的氣體分子比例在升高溫度後大幅增加"
+      ],
+      ans: 0,
+      explanation: "升溫使分子平均動能增加，分佈曲線向高速端平緩展寬，最高峰高度下降；曲線下所圍總面積代表總分子比例，保持 100% 守恆不變。"
+    },
+    {
+      id: "q10",
+      tag: "微觀壓力推導 · 動能與撞擊頻率",
+      question: "氣體動力論在微觀推導器壁壓力時，推導出容器所受壓力 $P = \\dfrac{1}{3} \\dfrac{N_0 m v^2}{V}$。根據此一微觀物理模型推論，下列敘述何者<u>錯誤</u>？",
+      options: [
+        "A. 氣體分子的平均動能 $\\overline{E_k} = \\dfrac{3}{2}kT$，其數值只與氣體種類（分子量 $M$）有關，而與絕對溫度無關",
+        "B. 分子碰撞器壁產生之壓力，是源於分子單位時間內與器壁碰撞時對器壁所施加的連續動量變化率（$\\Delta p / \\Delta t$）",
+        "C. 容器壁單位面積在單位時間內所受碰撞次數（碰撞頻率），與分子濃度 $n/V$ 及 $\\sqrt{T/M}$ 成正比",
+        "D. 理想氣體方程式 $PV = nRT$ 可藉由分子微觀平均動能與絕對溫度的關係式嚴格導出"
+      ],
+      ans: 0,
+      explanation: "A 錯誤，氣體分子之平均動能 $\\overline{E_k} = \\dfrac{3}{2}kT$ 僅與絕對溫度 $T$ 成正比，與氣體種類及分子量完全無關。"
+    }
+  ];
+
+  let connections = [];
+  let selectedLeft = null;
+  let selectedRight = null;
+  let currentSelectedQuestions = [];
+  let lastSelectedIds = [];
+  let selectedAnswers = {};
+  let isPassed = false;
+  let isVerified = false;
+
+  const leftCol = document.getElementById('col-left');
+  const rightCol = document.getElementById('col-right');
+  const matchSvg = document.getElementById('match-svg');
+  const matchWrapper = document.getElementById('match-wrapper');
+  const matchCount = document.getElementById('match-count');
+  const resetBtn = document.getElementById('btn-reset-match');
+
+  const dynamicContainer = document.getElementById('dynamic-questions-container');
+  const submitBtn = document.getElementById('btn-submit');
+  const retryBtn = document.getElementById('btn-retry');
+  const feedback = document.getElementById('quiz-feedback');
+  const passBanner = document.getElementById('pass-banner');
+
+  // 1. 初始化連連看
+  function renderMatchGame() {
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+    matchSvg.innerHTML = '';
+    connections = [];
+    selectedLeft = null;
+    selectedRight = null;
+
+    MATCH_DATA.forEach(d => {
+      const l = document.createElement('div');
+      l.className = 'match-item';
+      l.dataset.id = d.id;
+      l.dataset.side = 'left';
+      l.innerHTML = `<span>${d.left}</span><span class="match-badge"></span><div class="match-dot"></div>`;
+      l.addEventListener('click', () => onItemClick(l));
+      leftCol.appendChild(l);
+    });
+
+    const shuffled = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+    shuffled.forEach(d => {
+      const r = document.createElement('div');
+      r.className = 'match-item';
+      r.dataset.id = d.id;
+      r.dataset.side = 'right';
+      r.innerHTML = `<div class="match-dot"></div><span class="match-badge"></span><span>${d.right}</span>`;
+      r.addEventListener('click', () => onItemClick(r));
+      rightCol.appendChild(r);
+    });
+
+    updateBadge();
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([matchWrapper]).catch(()=>{});
+    }
+  }
+
+  function onItemClick(el) {
+    if (isPassed || isVerified) return;
+    const side = el.dataset.side;
+
+    if (side === 'left') {
+      if (selectedLeft === el) {
+        el.classList.remove('selected');
+        selectedLeft = null;
+      } else {
+        if (selectedLeft) selectedLeft.classList.remove('selected');
+        selectedLeft = el;
+        el.classList.add('selected');
+      }
+    } else {
+      if (selectedRight === el) {
+        el.classList.remove('selected');
+        selectedRight = null;
+      } else {
+        if (selectedRight) selectedRight.classList.remove('selected');
+        selectedRight = el;
+        el.classList.add('selected');
+      }
+    }
+
+    if (selectedLeft && selectedRight) {
+      const lId = selectedLeft.dataset.id;
+      const rId = selectedRight.dataset.id;
+      connections = connections.filter(c => c.lId !== lId && c.rId !== rId);
+      connections.push({ lId, rId, status: null });
+
+      selectedLeft.classList.remove('selected');
+      selectedRight.classList.remove('selected');
+      selectedLeft = null;
+      selectedRight = null;
+
+      updateBadge();
+      drawConns();
+    }
+  }
+
+  function updateBadge() {
+    matchCount.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+    matchCount.style.color = (connections.length === MATCH_DATA.length) ? '#34d399' : '#38bdf8';
+  }
+
+  function drawConns() {
+    matchSvg.innerHTML = '';
+    const wRect = matchWrapper.getBoundingClientRect();
+
+    matchWrapper.querySelectorAll('.match-item').forEach(it => {
+      if (!isVerified) {
+        it.classList.remove('connected', 'match-correct', 'match-wrong');
+        it.querySelector('.match-badge').textContent = '';
+      }
+    });
+
+    connections.forEach(c => {
+      const lEl = leftCol.querySelector(`.match-item[data-id="${c.lId}"]`);
+      const rEl = rightCol.querySelector(`.match-item[data-id="${c.rId}"]`);
+      if (!lEl || !rEl) return;
+
+      if (!isVerified) {
+        lEl.classList.add('connected');
+        rEl.classList.add('connected');
+      }
+
+      const d1 = lEl.querySelector('.match-dot').getBoundingClientRect();
+      const d2 = rEl.querySelector('.match-dot').getBoundingClientRect();
+
+      const x1 = d1.left + d1.width / 2 - wRect.left;
+      const y1 = d1.top + d1.height / 2 - wRect.top;
+      const x2 = d2.left + d2.width / 2 - wRect.left;
+      const y2 = d2.top + d2.height / 2 - wRect.top;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke-linecap', 'round');
+
+      if (c.status === 'correct') {
+        line.setAttribute('stroke', '#34d399');
+        line.setAttribute('stroke-width', '4');
+        line.setAttribute('filter', 'drop-shadow(0 0 4px #34d399)');
+      } else if (c.status === 'wrong') {
+        line.setAttribute('stroke', '#f87171');
+        line.setAttribute('stroke-width', '3');
+        line.setAttribute('stroke-dasharray', '5,4');
+        line.setAttribute('filter', 'drop-shadow(0 0 4px #f87171)');
+      } else {
+        line.setAttribute('stroke', '#38bdf8');
+        line.setAttribute('stroke-width', '3.5');
+        line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(56,189,248,0.5))');
+      }
+      matchSvg.appendChild(line);
+    });
+  }
+
+  window.addEventListener('resize', drawConns);
+  window.addEventListener('scroll', drawConns, { passive: true });
+
+  resetBtn.addEventListener('click', () => {
+    if (isPassed) return;
+    isVerified = false;
+    connections = [];
+    selectedLeft = null;
+    selectedRight = null;
+    matchWrapper.querySelectorAll('.match-item').forEach(it => {
+      it.classList.remove('selected', 'connected', 'match-correct', 'match-wrong');
+      it.querySelector('.match-badge').textContent = '';
+    });
+    updateBadge();
+    drawConns();
+    retryBtn.style.display = 'none';
+    submitBtn.disabled = false;
+    feedback.className = 'quiz-feedback';
+    feedback.innerHTML = '<span>💡 已清空連線，請重新配對。</span>';
+  });
+
+  // 2. 隨機抽選 4 題
+  function pickRandomQuestions() {
+    let pool = QUESTION_BANK.filter(q => !lastSelectedIds.includes(q.id));
+    if (pool.length < 4) {
+      pool = [...QUESTION_BANK];
+    }
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    currentSelectedQuestions = shuffled.slice(0, 4);
+    lastSelectedIds = currentSelectedQuestions.map(q => q.id);
+    selectedAnswers = {};
+  }
+
+  // 3. 動態渲染 4 題卡片（排列於 2x2 四方容器中）
+  function renderDynamicQuestions() {
+    dynamicContainer.innerHTML = '';
+
+    currentSelectedQuestions.forEach((qData, idx) => {
+      const qNum = idx + 2; // 第 (2), (3), (4), (5) 題
+      const card = document.createElement('div');
+      card.className = 'quiz-card';
+      card.id = `quiz-card-${idx}`;
+      card.dataset.idx = idx;
+
+      let optionsHtml = '';
+      qData.options.forEach((optText, optIdx) => {
+        optionsHtml += `
+          <button type="button" class="quiz-opt" data-qidx="${idx}" data-optidx="${optIdx}">
+            ${optText}
+          </button>
+        `;
+      });
+
+      card.innerHTML = `
+        <div class="quiz-q-header">
+          <span class="quiz-q-tag">${qData.tag}</span>
+          <span style="font-size:0.8rem; color:var(--sub);">第 (${qNum}) 題</span>
+        </div>
+        <div class="quiz-q">
+          <span style="color:var(--cyan); font-weight:800;">(${qNum})</span> ${qData.question}
+        </div>
+        <div class="quiz-options">
+          ${optionsHtml}
+        </div>
+        <div class="quiz-card-feedback" id="card-fb-${idx}"></div>
+      `;
+
+      dynamicContainer.appendChild(card);
+    });
+
+    // 綁定選項點選
+    dynamicContainer.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isPassed) return;
+        const qIdx = parseInt(btn.dataset.qidx, 10);
+        const optIdx = parseInt(btn.dataset.optidx, 10);
+        const card = document.getElementById(`quiz-card-${qIdx}`);
+
+        if (isVerified) {
+          card.classList.remove('card-wrong');
+          card.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('verified-fail'));
+          const fb = document.getElementById(`card-fb-${qIdx}`);
+          if (fb) fb.style.display = 'none';
+        }
+
+        card.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedAnswers[qIdx] = optIdx;
+      });
+    });
+
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([dynamicContainer]).catch(() => {});
+    }
+  }
+
+  // 4. 提交作答檢核
+  submitBtn.addEventListener('click', () => {
+    if (isPassed) return;
+
+    if (connections.length < MATCH_DATA.length) {
+      feedback.className = 'quiz-feedback fail';
+      feedback.innerHTML = `<span>⚠️ 第 (1) 題連連看尚有未配對項目（已完成 ${connections.length}/${MATCH_DATA.length} 組），請全部連線完成！</span>`;
+      return;
+    }
+
+    if (Object.keys(selectedAnswers).length < currentSelectedQuestions.length) {
+      feedback.className = 'quiz-feedback fail';
+      feedback.innerHTML = `<span>⚠️ 評量題尚有未作答（已完成 ${Object.keys(selectedAnswers).length}/${currentSelectedQuestions.length} 題），請全部作答完畢再行檢核！</span>`;
+      return;
+    }
+
+    isVerified = true;
+    let matchOK = true;
+    connections.forEach(c => {
+      const ok = (c.lId === c.rId);
+      c.status = ok ? 'correct' : 'wrong';
+      if (!ok) matchOK = false;
+
+      const lEl = leftCol.querySelector(`.match-item[data-id="${c.lId}"]`);
+      const rEl = rightCol.querySelector(`.match-item[data-id="${c.rId}"]`);
+      [lEl, rEl].forEach(el => {
+        if (!el) return;
+        el.classList.remove('match-correct', 'match-wrong');
+        el.classList.add(ok ? 'match-correct' : 'match-wrong');
+        el.querySelector('.match-badge').textContent = ok ? '✓' : '✗';
+        el.querySelector('.match-badge').style.color = ok ? '#34d399' : '#f87171';
+      });
+    });
+    drawConns();
+
+    let mcOK = true;
+    currentSelectedQuestions.forEach((qData, idx) => {
+      const card = document.getElementById(`quiz-card-${idx}`);
+      const fb = document.getElementById(`card-fb-${idx}`);
+      const user = selectedAnswers[idx];
+      const correct = qData.ans;
+      const ok = (user === correct);
+
+      card.classList.remove('card-correct', 'card-wrong');
+      card.classList.add(ok ? 'card-correct' : 'card-wrong');
+
+      card.querySelectorAll('.quiz-opt').forEach(opt => {
+        opt.classList.remove('verified-pass', 'verified-fail');
+        const optIdx = parseInt(opt.dataset.optidx, 10);
+        if (optIdx === user) {
+          opt.classList.add(ok ? 'verified-pass' : 'verified-fail');
+        }
+      });
+
+      if (fb) {
+        fb.className = `quiz-card-feedback ${ok ? 'correct' : 'wrong'}`;
+        fb.innerHTML = `<strong>${ok ? '✓ 答對了！' : '✗ 答錯了！'}</strong> ${qData.explanation}`;
+        fb.style.display = 'block';
+      }
+
+      if (!ok) mcOK = false;
+    });
+
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetPromise([dynamicContainer]).catch(() => {});
+    }
+
+    if (matchOK && mcOK) {
+      isPassed = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = '檢核通過 ✅';
+      if (retryBtn) retryBtn.style.display = 'none';
+      feedback.className = 'quiz-feedback success';
+      feedback.innerHTML = '<span>🎉 恭喜全部答對！擴散與逸散單元檢核順利通關，下一單元與補充章節已全數解鎖！</span>';
+      notifySectionComplete();
+      if (passBanner) {
+        passBanner.style.display = 'flex';
+        passBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else {
+      feedback.className = 'quiz-feedback fail';
+      feedback.innerHTML = '<span>❌ 檢核未通過：已標示各題解析與正誤狀態，請點擊「換題重測」進行再次測驗！</span>';
+      submitBtn.disabled = true;
+      if (retryBtn) retryBtn.style.display = 'inline-flex';
+    }
+  });
+
+  // 5. 換題重測（未通關時重新抽換 4 題）
+  retryBtn.addEventListener('click', () => {
+    if (isPassed) return;
+    isVerified = false;
+
+    // 清理連連看錯誤連線，保留已正確連線
+    connections = connections.filter(c => {
+      if (c.status === 'correct') return true;
+      const lEl = leftCol.querySelector(`.match-item[data-id="${c.lId}"]`);
+      const rEl = rightCol.querySelector(`.match-item[data-id="${c.rId}"]`);
+      [lEl, rEl].forEach(el => {
+        if (!el) return;
+        el.classList.remove('match-wrong', 'connected');
+        el.querySelector('.match-badge').textContent = '';
+      });
+      return false;
+    });
+    updateBadge();
+    drawConns();
+
+    // 換上 4 題全新題目
+    pickRandomQuestions();
+    renderDynamicQuestions();
+
+    retryBtn.style.display = 'none';
+    submitBtn.disabled = false;
+    feedback.className = 'quiz-feedback';
+    feedback.innerHTML = '<span>🔄 已為您隨機換上 4 道全新題目，請重新作答並挑戰通關！</span>';
+  });
+
+  // 通關完成通知與導航
+  function notifySectionComplete() {
+    try {
+      localStorage.setItem('chem_unlocked_ch2_s8', 'true');
+      localStorage.setItem('chem_unlocked_ch2_s9', 'true');
+      localStorage.setItem('chem_unlocked_ch3_s1', 'true');
+      localStorage.setItem('chem_completed_ch2_s7', 'true');
+    } catch(e) {}
+
+    const payload = {
+      type: 'SECTION_COMPLETE',
+      sectionId: 'ch2_s7',
+      sectionFolder: '07_擴散與逸散',
+      chapterId: 'ch2',
+      unlockSections: ['ch2_s8', 'ch2_s9', 'ch3_s1'],
+      nextSectionId: 'ch3_s1',
+      nextSectionFolder: '../../my_chem_003_溶液/01_物質的狀態與三相圖',
+      timestamp: Date.now()
+    };
+
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(payload, '*');
+      }
+    } catch(e) {}
+  }
+
+  window.goToNextChapter = function() {
+    notifySectionComplete();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'NAVIGATE_SECTION',
+          target: 'ch3_s1',
+          targetFolder: '../../my_chem_003_溶液/01_物質的狀態與三相圖'
+        }, '*');
+      } else {
+        window.location.href = '../../my_chem_003_溶液/01_物質的狀態與三相圖/index.html';
+      }
+    } catch(e) {
+      window.location.href = '../../my_chem_003_溶液/01_物質的狀態與三相圖/index.html';
+    }
+  };
+
+  window.goToSupp1 = function() {
+    notifySectionComplete();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'NAVIGATE_SECTION',
+          target: 'ch2_s8',
+          targetFolder: '../09_補充_凡得瓦方程式'
+        }, '*');
+      } else {
+        window.location.href = '../09_補充_凡得瓦方程式/index.html';
+      }
+    } catch(e) {
+      window.location.href = '../09_補充_凡得瓦方程式/index.html';
+    }
+  };
+
+  window.goToSupp2 = function() {
+    notifySectionComplete();
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'NAVIGATE_SECTION',
+          target: 'ch2_s9',
+          targetFolder: '../08_補充_PV=nRT圖示'
+        }, '*');
+      } else {
+        window.location.href = '../08_補充_PV=nRT圖示/index.html';
+      }
+    } catch(e) {
+      window.location.href = '../08_補充_PV=nRT圖示/index.html';
+    }
+  };
+
+  // 初始載入
+  renderMatchGame();
+  pickRandomQuestions();
+  renderDynamicQuestions();
+})();
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

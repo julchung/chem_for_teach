@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9-1 氧化數 · 氧化數智慧解析計算器</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --secondary: #ec4899;
+      --accent: #8b5cf6;
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --cyan: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: clamp(18px, 2.5vw, 30px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .form-container {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    @media (max-width: 900px) {
+      .form-container { flex-direction: column; }
+    }
+
+    .form-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 240px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: #fff;
+      font-size: 1.1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    }
+
+    .quick-panel {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      padding: 16px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .panel-header {
+      font-size: 0.85rem;
+      color: var(--cyan);
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    .tag-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .tag-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid #334155;
+      color: var(--text-main);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      font-family: monospace;
+    }
+    .tag-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Result Display */
+    .result-display {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .result-header {
+      text-align: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      border-radius: 14px;
+    }
+    .formula-main {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--cyan);
+      font-family: monospace;
+      margin-left: 8px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 860px) {
+      .result-grid { grid-template-columns: 1fr; }
+    }
+
+    .reasoning-panel {
+      background: rgba(245, 158, 11, 0.04);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    .reasoning-panel h3 {
+      font-size: 1.15rem;
+      color: var(--warning);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .reasoning-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .reasoning-list li::before {
+      content: '👉 ';
+      color: var(--warning);
+    }
+
+    .final-states-panel {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .final-states-panel h3 {
+      font-size: 1.15rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .state-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #0f172a;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+    .state-row strong { font-size: 1.15rem; color: #f1f5f9; }
+    .state-row span {
+      font-size: 1.3rem;
+      font-weight: 800;
+      font-family: monospace;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <header class="header-bar">
+    <div>
+      <div class="badge">9-1 氧化數 · 工具模式</div>
+      <h1><span>🧮</span> 氧化數智慧解析計算器</h1>
+      <div class="subtitle">AI Automated Chemical Formula Parser &amp; Step-by-Step Reasoner</div>
+    </div>
+  </header>
+
+  <main class="card">
+    <div class="form-container">
+      <div class="form-main">
+        <div class="form-row">
+          <input id="formulaInput" type="text" placeholder="例如：[Cu(NH3)4]SO4, KMnO4, FeC2O4, Cr2O7^2-" autocomplete="off" value="KMnO4" />
+          <button id="calculateBtn" class="primary-btn">解析化學式 🚀</button>
+        </div>
+        <p style="color:var(--text-muted); font-size: 0.9rem;">
+          💡 提示：支援配位錯合物中括號 <code>[]</code>、小括號 <code>()</code>，多原子離子電量請用 <code>^</code>（如 <code>SO4^2-</code>、<code>NH4^+</code>、<code>Cr2O7^2-</code>）。
+        </p>
+      </div>
+
+      <div class="quick-panel">
+        <div class="panel-header">⚡ 經典示範物種點擊快速試算</div>
+        <div class="tag-grid">
+          <button class="tag-btn">KMnO4</button>
+          <button class="tag-btn">K2Cr2O7</button>
+          <button class="tag-btn">H2O2</button>
+          <button class="tag-btn">FeC2O4</button>
+          <button class="tag-btn">[Cu(NH3)4]SO4</button>
+          <button class="tag-btn">Na2S2O3</button>
+          <button class="tag-btn">K4[Fe(CN)6]</button>
+          <button class="tag-btn">CaH2</button>
+          <button class="tag-btn">OF2</button>
+          <button class="tag-btn">NH4NO3</button>
+          <button class="tag-btn">LiAlH4</button>
+          <button class="tag-btn">NaClO</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="calculatorResult" class="result-display">
+      <!-- Injected by script -->
+    </div>
+  </main>
+
+  <script>
+    const formulaInput = document.getElementById('formulaInput');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const calculatorResult = document.getElementById('calculatorResult');
+
+    const group1 = new Set(['Li', 'Na', 'K', 'Rb', 'Cs', 'Fr']);
+    const group2 = new Set(['Be', 'Mg', 'Ca', 'Sr', 'Ba', 'Ra']);
+    const fixedStates = { F: -1, Al: 3, Ag: 1, Zn: 2, Cd: 2 };
+
+    const polyatomicIons = {
+      'NO3': { charge: -1, atoms: { N: 5, O: -2 } },
+      'NO2': { charge: -1, atoms: { N: 3, O: -2 } },
+      'ClO4': { charge: -1, atoms: { Cl: 7, O: -2 } },
+      'ClO3': { charge: -1, atoms: { Cl: 5, O: -2 } },
+      'ClO2': { charge: -1, atoms: { Cl: 3, O: -2 } },
+      'ClO': { charge: -1, atoms: { Cl: 1, O: -2 } },
+      'SO4': { charge: -2, atoms: { S: 6, O: -2 } },
+      'SO3': { charge: -2, atoms: { S: 4, O: -2 } },
+      'CO3': { charge: -2, atoms: { C: 4, O: -2 } },
+      'C2O4': { charge: -2, atoms: { C: 3, O: -2 } },
+      'PO4': { charge: -3, atoms: { P: 5, O: -2 } },
+      'OH': { charge: -1, atoms: { O: -2, H: 1 } },
+      'NH4': { charge: 1, atoms: { N: -3, H: 1 } },
+      'MnO4': { charge: -1, atoms: { Mn: 7, O: -2 } },
+      'CrO4': { charge: -2, atoms: { Cr: 6, O: -2 } },
+      'Cr2O7': { charge: -2, atoms: { Cr: 6, O: -2 } },
+      'CN': { charge: -1, atoms: { C: 2, N: -3 } },
+      'SCN': { charge: -1, atoms: { S: -2, C: 4, N: -3 } },
+      'CH3COO': { charge: -1, atoms: { C: 0, H: 1, O: -2 } },
+    };
+
+    const ligands = {
+      'NH3': { charge: 0, atoms: { N: -3, H: 1 } },
+      'H2O': { charge: 0, atoms: { H: 1, O: -2 } },
+      'CO': { charge: 0, atoms: { C: 2, O: -2 } },
+      'en': { charge: 0, atoms: { C: -1, H: 1, N: -3 } },
+    };
+
+    function formatFormula(formula) {
+      if (!formula) return formula;
+      return formula.replace(/([A-Z][a-z]?)(\d+)/g, '$1<sub>$2</sub>')
+                    .replace(/\((.*?)\)(\d*)/g, '($1)<sub>$2</sub>')
+                    .replace(/\[(.*?)\](\d*)/g, '[$1]<sub>$2</sub>')
+                    .replace(/\^(\d*[\+\-]|[\+\-]\d*)/g, '<sup>$1</sup>');
+    }
+
+    function formatCharge(charge) {
+      if (charge === 0) return '';
+      const sign = charge > 0 ? '+' : '-';
+      const abs = Math.abs(charge);
+      const val = abs === 1 ? '' : abs;
+      return `<sup>${val}${sign}</sup>`;
+    }
+
+    function getElementCounts(formula) {
+      const stack = [{}];
+      let i = 0;
+      while (i < formula.length) {
+        const char = formula[i];
+        if (char === '(' || char === '[') { stack.push({}); i++; }
+        else if (char === ')' || char === ']') {
+          i++;
+          let countStr = '';
+          while (i < formula.length && /\d/.test(formula[i])) { countStr += formula[i]; i++; }
+          const multiplier = countStr ? parseInt(countStr, 10) : 1;
+          const inner = stack.pop();
+          const current = stack[stack.length - 1];
+          for (const [el, count] of Object.entries(inner)) { current[el] = (current[el] || 0) + count * multiplier; }
+        } else if (/[A-Z]/.test(char)) {
+          let element = char; i++;
+          if (i < formula.length && /[a-z]/.test(formula[i])) { element += formula[i]; i++; }
+          let countStr = '';
+          while (i < formula.length && /\d/.test(formula[i])) { countStr += formula[i]; i++; }
+          const count = countStr ? parseInt(countStr, 10) : 1;
+          const current = stack[stack.length - 1];
+          current[element] = (current[element] || 0) + count;
+        } else { i++; }
+      }
+      return stack[0];
+    }
+
+    function decomposeFormula(formula) {
+      const result = { groups: [], remainingFormula: formula, totalCharge: 0 };
+      const allGroups = { ...polyatomicIons, ...ligands };
+      const sortedNames = Object.keys(allGroups).sort((a, b) => b.length - a.length);
+      let currentFormula = formula;
+
+      const bracketMatch = currentFormula.match(/\[(.*?)\](\d*)/);
+      if (bracketMatch) {
+        const content = bracketMatch[1];
+        const count = bracketMatch[2] ? parseInt(bracketMatch[2], 10) : 1;
+        result.groups.push({ name: `[${content}]`, type: 'coordination_sphere', content, count, isComplex: true });
+        currentFormula = currentFormula.replace(bracketMatch[0], '').trim();
+      }
+
+      for (const name of sortedNames) {
+        const regex = new RegExp(`\\(?${name}\\)?(\\d*)`, 'g');
+        let match;
+        while ((match = regex.exec(currentFormula)) !== null) {
+          const count = match[1] ? parseInt(match[1], 10) : 1;
+          result.groups.push({ name, type: allGroups[name].charge === 0 ? 'ligand' : 'ion', count, data: allGroups[name] });
+          currentFormula = currentFormula.replace(match[0], ' ').trim();
+        }
+      }
+      result.remainingFormula = currentFormula;
+      return result;
+    }
+
+    function solveOxidationStates(formula) {
+      const reasoning = [];
+      const states = {};
+      const normalized = formula.replace(/\s+/g, '');
+      
+      let totalCharge = 0;
+      let baseFormula = normalized;
+      const chargeMatch = normalized.match(/\^(\d*[\+\-]|[\+\-]\d*)$/);
+      if (chargeMatch) {
+        const chargeStr = chargeMatch[1];
+        baseFormula = normalized.substring(0, chargeMatch.index);
+        if (chargeStr === '+' || chargeStr === '1+') totalCharge = 1;
+        else if (chargeStr === '-' || chargeStr === '1-') totalCharge = -1;
+        else {
+          const val = parseInt(chargeStr.replace(/[\+\-]/g, ''), 10);
+          const sign = chargeStr.includes('+') ? 1 : -1;
+          totalCharge = val * sign;
+        }
+        reasoning.push(`偵測到離子總淨電荷：${totalCharge > 0 ? '+' : ''}${totalCharge}`);
+      }
+
+      const counts = getElementCounts(baseFormula);
+      const elements = Object.keys(counts);
+
+      if (elements.length === 0) return null;
+      if (elements.length === 1 && totalCharge === 0) {
+        states[elements[0]] = 0;
+        reasoning.push(`${elements[0]} 為單質，其氧化數恆為 0。`);
+        return { states, reasoning };
+      }
+
+      // Check special peroxides
+      if (baseFormula === 'H2O2' || baseFormula === 'Na2O2' || baseFormula === 'BaO2') {
+        if (baseFormula === 'H2O2') { states['H'] = 1; states['O'] = -1; reasoning.push('雙氧水 H2O2 含有過氧鍵 -O-O-，H 為 +1，O 為 -1。'); }
+        if (baseFormula === 'Na2O2') { states['Na'] = 1; states['O'] = -1; reasoning.push('過氧化鈉 Na2O2 中 Na 為 +1，O 為 -1。'); }
+        if (baseFormula === 'BaO2') { states['Ba'] = 2; states['O'] = -1; reasoning.push('過氧化鋇 BaO2 中 Ba 為 +2，O 為 -1。'); }
+        return { states, reasoning };
+      }
+      if (baseFormula === 'OF2') {
+        states['F'] = -1; states['O'] = 2;
+        reasoning.push('OF2 中氟電負度最高恆為 -1，由代數和得 O 為 +2。');
+        return { states, reasoning };
+      }
+      if (baseFormula === 'CaH2' || baseFormula === 'NaH') {
+        if (baseFormula === 'CaH2') { states['Ca'] = 2; states['H'] = -1; reasoning.push('CaH2 為金屬氫化物，Ca 恆為 +2，H 為 -1。'); }
+        if (baseFormula === 'NaH') { states['Na'] = 1; states['H'] = -1; reasoning.push('NaH 為金屬氫化物，Na 恆為 +1，H 為 -1。'); }
+        return { states, reasoning };
+      }
+
+      const decomp = decomposeFormula(baseFormula);
+      if (decomp.groups.length > 0) {
+        reasoning.push(`辨識出化學組成單元：`);
+        let knownSubCharge = 0;
+        decomp.groups.forEach(g => {
+          if (g.type === 'ion' || g.type === 'ligand') {
+            const formattedName = g.type === 'ion' ? `${g.name}${formatCharge(g.data.charge)}` : `${g.name} (中性配位基)`;
+            reasoning.push(`  • ${formattedName}：價數 ${g.data.charge}，個數 ${g.count}`);
+            knownSubCharge += g.data.charge * g.count;
+            Object.entries(g.data.atoms).forEach(([el, ox]) => { if (states[el] === undefined) states[el] = ox; });
+          }
+        });
+
+        const sphere = decomp.groups.find(g => g.type === 'coordination_sphere');
+        if (sphere) {
+          const outerElements = getElementCounts(decomp.remainingFormula);
+          let outerCharge = 0;
+          Object.entries(outerElements).forEach(([el, count]) => {
+            if (group1.has(el)) { states[el] = 1; outerCharge += 1 * count; }
+            else if (group2.has(el)) { states[el] = 2; outerCharge += 2 * count; }
+            else if (fixedStates[el]) { states[el] = fixedStates[el]; outerCharge += fixedStates[el] * count; }
+          });
+          const sphereCharge = totalCharge - (knownSubCharge + outerCharge);
+          reasoning.push(`錯離子配位球 ${sphere.name} 總價數：${sphereCharge > 0 ? '+' : ''}${sphereCharge}`);
+          const innerDecomp = decomposeFormula(sphere.content);
+          let ligandCharge = 0;
+          innerDecomp.groups.forEach(lg => {
+            const formattedLigand = lg.data.charge === 0 ? `${lg.name} (分子)` : `${lg.name}${formatCharge(lg.data.charge)}`;
+            reasoning.push(`  • 內部配位基 ${formattedLigand}：價數 ${lg.data.charge}，個數 ${lg.count}`);
+            ligandCharge += lg.data.charge * lg.count;
+            Object.entries(lg.data.atoms).forEach(([el, ox]) => { if (states[el] === undefined) states[el] = ox; });
+          });
+          const metalCounts = getElementCounts(innerDecomp.remainingFormula);
+          const metals = Object.keys(metalCounts);
+          if (metals.length === 1) {
+            const metal = metals[0];
+            const state = (sphereCharge - ligandCharge) / metalCounts[metal];
+            states[metal] = state;
+            reasoning.push(`中心金屬 ${metal}：(${sphereCharge} - ${ligandCharge}) / ${metalCounts[metal]} = ${state > 0 ? '+' : ''}${state}`);
+          }
+        } else {
+          const metalCounts = getElementCounts(decomp.remainingFormula);
+          const metals = Object.keys(metalCounts);
+          if (metals.length === 1) {
+            const metal = metals[0];
+            const state = (totalCharge - knownSubCharge) / metalCounts[metal];
+            states[metal] = state;
+            reasoning.push(`${metal} 氧化數：由外圍基團總電量平衡計算得 ${state > 0 ? '+' : ''}${state}`);
+          }
+        }
+      }
+
+      elements.forEach(el => {
+        if (states[el] !== undefined) return;
+        if (fixedStates[el] !== undefined) states[el] = fixedStates[el];
+        else if (group1.has(el)) states[el] = 1;
+        else if (group2.has(el)) states[el] = 2;
+        else if (el === 'H') states[el] = 1;
+        else if (el === 'O') states[el] = -2;
+      });
+
+      const unknown = elements.filter(el => states[el] === undefined);
+      if (unknown.length === 1) {
+        let currentSum = 0;
+        elements.forEach(el => { if (el !== unknown[0]) currentSum += states[el] * counts[el]; });
+        const state = (totalCharge - currentSum) / counts[unknown[0]];
+        states[unknown[0]] = Math.round(state * 100) / 100;
+        reasoning.push(`未知元素 ${unknown[0]}：由電荷守恆 (總電量 ${totalCharge}) 計算得 ${state > 0 ? '+' : ''}${state}`);
+      }
+
+      return { states, reasoning };
+    }
+
+    function showCalculatorResult(formula) {
+      const result = solveOxidationStates(formula);
+      if (!result) {
+        calculatorResult.innerHTML = '<p style="color:var(--danger); padding:16px;">⚠️ 無法解析該化學式，請檢查格式是否正確。</p>';
+        return;
+      }
+
+      const { states, reasoning } = result;
+      calculatorResult.innerHTML = `
+        <div class="result-header">
+          <span style="color:var(--text-muted); font-size:1.1rem;">目標化學式：</span>
+          <span class="formula-main">${formatFormula(formula)}</span>
+        </div>
+        <div class="result-grid">
+          <div class="reasoning-panel">
+            <h3><span>📜</span> 推導步驟詳解</h3>
+            <ul class="reasoning-list">
+              ${reasoning.map(r => `<li>${r}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="final-states-panel">
+            <h3><span>⚡</span> 各元素氧化數結果</h3>
+            ${Object.entries(states).map(([el, ox]) => `
+              <div class="state-row">
+                <strong>${el}</strong>
+                <span>${ox > 0 ? '+' : ''}${ox}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    calculateBtn.addEventListener('click', () => {
+      const val = formulaInput.value.trim();
+      if (val) showCalculatorResult(val);
+    });
+
+    formulaInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') calculateBtn.click();
+    });
+
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        formulaInput.value = btn.textContent;
+        calculateBtn.click();
+      });
+    });
+
+    // 預設執行示範
+    showCalculatorResult('KMnO4');
+  </script>
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

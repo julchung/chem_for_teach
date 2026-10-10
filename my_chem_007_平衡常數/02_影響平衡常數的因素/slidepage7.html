@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>溫度效應（二）：圖形判斷與整理 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        /* ---- 溫度效應總整理專屬美化樣式 ---- */
+        .summary-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+        .summary-header-banner {
+            background: linear-gradient(135deg, rgba(248,113,113,0.12), rgba(52,211,153,0.12));
+            border: 1px solid rgba(248,113,113,0.35);
+            border-radius: 14px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .banner-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .banner-icon {
+            font-size: 1.8rem;
+            background: rgba(248,113,113,0.2);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid rgba(248,113,113,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .banner-core-motto {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+        .banner-subtext {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.78);
+            margin-top: 3px;
+        }
+        .banner-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .badge-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge-pill.cyan { background: rgba(34,211,238,0.18); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .badge-pill.yellow { background: rgba(251,191,36,0.18); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); }
+        .badge-pill.red { background: rgba(248,113,113,0.18); border: 1px solid var(--accent-red); color: var(--accent-red); }
+        .badge-pill.green { background: rgba(52,211,153,0.18); border: 1px solid var(--accent-green); color: var(--accent-green); }
+
+        /* 表格區塊 */
+        .summary-table-card {
+            background: rgba(15,23,42,0.65);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+        }
+        .summary-matrix {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: center;
+            color: #f1f5f9;
+            font-size: 0.95rem;
+            min-width: 820px;
+        }
+        .summary-matrix th, .summary-matrix td {
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+        .summary-matrix thead th {
+            background: rgba(30, 41, 59, 0.92);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 0.96rem;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .summary-matrix tbody tr:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        .summary-matrix .col-op {
+            text-align: left;
+            padding-left: 14px;
+            font-weight: 700;
+        }
+        .shift-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+        .shift-right { background: rgba(52,211,153,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.5); }
+        .shift-left { background: rgba(248,113,113,0.2); color: #f87171; border: 1px solid rgba(248,113,113,0.5); }
+        .shift-none { background: rgba(148,163,184,0.2); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.4); }
+
+        /* 卡片三欄排版 */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 992px) {
+            .grid-3 { grid-template-columns: 1fr; }
+        }
+        .summary-card {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .summary-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3.5px;
+        }
+        .summary-card.card-blue::before { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
+        .summary-card.card-purple::before { background: linear-gradient(90deg, var(--accent-purple), #c084fc); }
+        .summary-card.card-yellow::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-orange)); }
+
+        .card-header-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .step-list li {
+            counter-increment: step-counter;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin: 0;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            background: rgba(34,211,238,0.2);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(34,211,238,0.5);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* 互動檢測工具 */
+        .interactive-tester-box {
+            background: rgba(15,23,42,0.8);
+            border: 1.5px solid rgba(248,113,113,0.35);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .tester-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .tester-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.88);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tester-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(34,211,238,0.12);
+        }
+        .tester-btn.active {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(34,211,238,0.4);
+        }
+        .tester-btn.op-btn.active {
+            background: var(--accent-yellow);
+            color: #0f172a;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 10px rgba(251,191,36,0.4);
+        }
+        .tester-result-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            border-left: 4px solid var(--accent-red);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+    <h1>溫度效應（二）：圖形判斷與整理</h1>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">✏️ 練習 1 (ΔH&lt;0, 降溫)</button>
+        <button class="tab-btn" onclick="switchTab(1)">✏️ 練習 2 (ΔH&gt;0, 升溫)</button>
+        <button class="tab-btn" onclick="switchTab(2)">✏️ 練習 3 (ΔH&gt;0, 降溫)</button>
+        <button class="tab-btn" onclick="switchTab(3)">📙 溫度效應總整理</button>
+    </div>
+    <div class="tab-pane active">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <div class="panel scroll-panel" style="min-height:400px;">
+            <h2 style="color:var(--accent-cyan);">✏️ 練習 1</h2>
+            <p style="margin-top:0.5rem;font-size:1.05rem;color:rgba(255,255,255,0.9);">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$，<span style="color:var(--accent-red);font-weight:700;">$\Delta H &lt; 0$</span>，
+                達平衡後再<strong>降低溫度</strong>，破壞平衡，則：
+            </p>
+            <div style="font-size:1.05rem;line-height:2.3;margin-top:0.7rem;color:rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left:1.5rem;">
+                    <li>
+                        瞬間 $r'_{正} = m\,r_{正(原平衡)}$；$r'_{逆} = n\,r_{逆(原平衡)}$<br>
+                        且 $m$
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        $1$；$n$
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        $1$；$m$
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $n$ <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        瞬間逆反應速率 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">右</span>
+                        達到新平衡 <span style="font-size:0.85rem;color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>反應物 $[\text{A}]$
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">↓</span>
+                        ，生成物 $[\text{B}]$
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">↑</span>
+                        <span style="font-size:0.85rem;color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數
+                        <span class="step-target-tp1 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        原平衡常數 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <!-- 練習1 圖形 -->
+        <div class="panel scroll-panel" style="display:flex;flex-direction:column;gap:0.5rem;padding:0.8rem;flex:1;min-height:0;">
+            <h2 style="margin-bottom:0.2rem;">📊 圖形分析：降溫 ($\Delta H &lt; 0$, 向右)</h2>
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-tp1"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-tp1"/></clipPath>
+                    <clipPath id="clip-concA-tp1"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-tp1"/></clipPath>
+                    <clipPath id="clip-concB-tp1"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-tp1"/></clipPath>
+                </defs>
+            </svg>
+            <div style="display:flex;gap:0.5rem;flex:1;min-height:0;">
+                <!-- [A] -->
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-tp1)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- curve down (A decreases, right shift) -->
+                            <path d="M 45 50 Q 65 50, 105 72" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="72" x2="140" y2="72" stroke="#f87171" stroke-width="2.5"/>
+                            <text x="120" y="65" fill="#f87171" font-size="14" font-weight="bold">↓</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">降溫</text>
+                        <line id="tracker-concA-tp1" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- [B] -->
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-tp1)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- curve up (B increases, right shift) -->
+                            <path d="M 45 50 Q 65 50, 105 27" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="27" x2="140" y2="27" stroke="#38bdf8" stroke-width="2.5"/>
+                            <text x="120" y="40" fill="#38bdf8" font-size="14" font-weight="bold">↑</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">降溫</text>
+                        <line id="tracker-concB-tp1" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+            <!-- Rate graph tp1 -->
+            <div style="flex:1.2;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;min-height:0;display:flex;flex-direction:column;">
+                <div style="font-size:0.85rem;color:#aaa;font-weight:bold;margin-bottom:5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex;flex-direction:row;flex:1;min-height:0;gap:10px;">
+                    <div style="flex:2;display:flex;flex-direction:column;min-width:0;">
+                        <div style="position:relative;flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                                <defs>
+                                    <marker id="arrow-tp1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)"/>
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp1)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp1)"/>
+                                <text x="15" y="55" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                <g clip-path="url(#clip-rate-tp1)">
+                                    <line x1="20" y1="50" x2="280" y2="50" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="50" x2="80" y2="50" stroke="#a78bfa" stroke-width="2.5"/>
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">降溫</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    <!-- 降溫ΔH<0：r_f（放熱方向）降幅小→y=60，之後繼續降至新平衡 y=72 -->
+                                    <!-- r_r（吸熱方向）降幅大→y=82，之後慢慢上升至新平衡 y=72 -->
+                                    <!-- 兩線從同一起點 y=50 各自跳落，一降一升交會於 y=72 -->
+                                    <line x1="80" y1="50" x2="80" y2="60" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 60 Q 130 66, 210 72" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="72" x2="280" y2="72" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="140" y="57" fill="#34d399" font-size="10" font-weight="bold">正反應速率(r_f)</text>
+                                    <line x1="80" y1="50" x2="80" y2="82" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <path d="M 80 82 Q 130 78, 210 72" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="140" y="90" fill="#38bdf8" font-size="10" font-weight="bold">逆反應速率(r_r)</text>
+                                    <text x="22" y="46" fill="#a78bfa" font-size="9">r₀</text>
+                                </g>
+                                <line id="tracker-rate-tp1" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 練習 1 時間軸 (ΔH<0, 降溫)：<span id="slider-label-tp1" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp1'); sl.value=0; updateGraphTimeTp1(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp1'); sl.value=25; updateGraphTimeTp1(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp1'); sl.value=100; updateGraphTimeTp1(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-tp1" min="0" max="100" value="0" oninput="updateGraphTimeTp1(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;border-left:1px dashed rgba(255,255,255,0.2);padding-left:15px;font-size:1.05rem;">
+                        <div style="color:#34d399;font-weight:bold;margin-bottom:0.6rem;">$r_f = k_f[\text{A}]^m$</div>
+                        <div style="color:#38bdf8;font-weight:bold;">$r_r = k_r[\text{B}]^n$</div>
+                        <div style="font-size:0.82rem;color:#888;margin-top:0.7rem;">降溫後正逆速率均下降，但放熱反應正向降幅小，$r_f &gt; r_r$，平衡向右移，$K$ 值增大。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let blanksRevealedTp1 = false;
+    function updateGraphTimeTp1(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-tp1').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-tp1');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-tp1').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-tp1').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        ['tracker-concA-tp1','tracker-concB-tp1'].forEach(id => {
+            const el = document.getElementById(id);
+            el.setAttribute('x1', concX); el.setAttribute('x2', concX);
+            el.style.opacity = v > 0 ? '0.8' : '0';
+        });
+        if (v > 95 && !blanksRevealedTp1) {
+            blanksRevealedTp1 = true;
+            document.querySelectorAll('.step-target-tp1').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTimeTp1(0);
+    </script>
+
+    </div>
+    <div class="tab-pane">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <div class="panel scroll-panel" style="min-height:400px;">
+            <h2 style="color:var(--accent-cyan);">✏️ 練習 2</h2>
+            <p style="margin-top:0.5rem;font-size:1.05rem;color:rgba(255,255,255,0.9);">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$，<span style="color:var(--accent-green);font-weight:700;">$\Delta H &gt; 0$</span>，
+                達平衡後再<strong>升高溫度</strong>，破壞平衡，則：
+            </p>
+            <div style="font-size:1.05rem;line-height:2.3;margin-top:0.7rem;color:rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left:1.5rem;">
+                    <li>
+                        且 $m$
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $1$；$n$
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $1$；$m$
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $n$ <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        瞬間逆反應速率 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">右</span>
+                        達到新平衡 <span style="font-size:0.85rem;color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>反應物 $[\text{A}]$
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">↓</span>
+                        ，生成物 $[\text{B}]$
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">↑</span>
+                        <span style="font-size:0.85rem;color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數
+                        <span class="step-target-tp2 blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        原平衡常數 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <!-- 練習2 圖形 -->
+        <div class="panel scroll-panel" style="display:flex;flex-direction:column;gap:0.5rem;padding:0.8rem;flex:1;min-height:0;">
+            <h2 style="margin-bottom:0.2rem;">📊 圖形分析：升溫 ($\Delta H &gt; 0$, 向右)</h2>
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-tp2"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-tp2"/></clipPath>
+                    <clipPath id="clip-concA-tp2"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-tp2"/></clipPath>
+                    <clipPath id="clip-concB-tp2"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-tp2"/></clipPath>
+                </defs>
+            </svg>
+            <div style="display:flex;gap:0.5rem;flex:1;min-height:0;">
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-tp2)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- A decreases (right shift) -->
+                            <path d="M 45 50 Q 65 50, 105 72" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="72" x2="140" y2="72" stroke="#f87171" stroke-width="2.5"/>
+                            <text x="120" y="65" fill="#f87171" font-size="14" font-weight="bold">↓</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">升溫</text>
+                        <line id="tracker-concA-tp2" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-tp2)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- B increases (right shift) -->
+                            <path d="M 45 50 Q 65 50, 105 27" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="27" x2="140" y2="27" stroke="#38bdf8" stroke-width="2.5"/>
+                            <text x="120" y="40" fill="#38bdf8" font-size="14" font-weight="bold">↑</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">升溫</text>
+                        <line id="tracker-concB-tp2" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+            <!-- Rate graph tp2 -->
+            <div style="flex:1.2;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;min-height:0;display:flex;flex-direction:column;">
+                <div style="font-size:0.85rem;color:#aaa;font-weight:bold;margin-bottom:5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex;flex-direction:row;flex:1;min-height:0;gap:10px;">
+                    <div style="flex:2;display:flex;flex-direction:column;min-width:0;">
+                        <div style="position:relative;flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                                <defs>
+                                    <marker id="arrow-tp2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)"/>
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp2)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp2)"/>
+                                <text x="15" y="65" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                <g clip-path="url(#clip-rate-tp2)">
+                                    <line x1="20" y1="60" x2="280" y2="60" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="60" x2="80" y2="60" stroke="#a78bfa" stroke-width="2.5"/>
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">升溫</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    <!-- 升溫ΔH>0：r_f（吸熱方向）跳至 y=18（較大），之後慢慢下降至新平衡 y=28 -->
+                                    <!-- r_r（放熱方向）跳至 y=42（較小），之後慢慢上升至新平衡 y=28 -->
+                                    <!-- 兩線從同一起點 y=60 各自跳起，一降一升交會於 y=28 -->
+                                    <line x1="80" y1="60" x2="80" y2="18" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 18 Q 130 24, 210 28" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="28" x2="280" y2="28" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="115" y="13" fill="#34d399" font-size="10" font-weight="bold">正反應速率(r_f)</text>
+                                    <line x1="80" y1="60" x2="80" y2="42" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <path d="M 80 42 Q 130 35, 210 28" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="148" y="44" fill="#38bdf8" font-size="10" font-weight="bold">逆反應速率(r_r)</text>
+                                    <text x="22" y="56" fill="#a78bfa" font-size="9">r₀</text>
+                                </g>
+                                <line id="tracker-rate-tp2" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 練習 2 時間軸 (ΔH>0, 升溫)：<span id="slider-label-tp2" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp2'); sl.value=0; updateGraphTimeTp2(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp2'); sl.value=25; updateGraphTimeTp2(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp2'); sl.value=100; updateGraphTimeTp2(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-tp2" min="0" max="100" value="0" oninput="updateGraphTimeTp2(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;border-left:1px dashed rgba(255,255,255,0.2);padding-left:15px;font-size:1.05rem;">
+                        <div style="color:#34d399;font-weight:bold;margin-bottom:0.6rem;">$r_f = k_f[\text{A}]^m$</div>
+                        <div style="color:#38bdf8;font-weight:bold;">$r_r = k_r[\text{B}]^n$</div>
+                        <div style="font-size:0.82rem;color:#888;margin-top:0.7rem;">吸熱反應升溫，正向增幅更大，$r_f &gt; r_r$，平衡右移，$K$ 值增大。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let blanksRevealedTp2 = false;
+    function updateGraphTimeTp2(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-tp2').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-tp2');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-tp2').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-tp2').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        ['tracker-concA-tp2','tracker-concB-tp2'].forEach(id => {
+            const el = document.getElementById(id);
+            el.setAttribute('x1', concX); el.setAttribute('x2', concX);
+            el.style.opacity = v > 0 ? '0.8' : '0';
+        });
+        if (v > 95 && !blanksRevealedTp2) {
+            blanksRevealedTp2 = true;
+            document.querySelectorAll('.step-target-tp2').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTimeTp2(0);
+    </script>
+
+    </div>
+    <div class="tab-pane">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <div class="panel scroll-panel" style="min-height:400px;">
+            <h2 style="color:var(--accent-cyan);">✏️ 練習 3</h2>
+            <p style="margin-top:0.5rem;font-size:1.05rem;color:rgba(255,255,255,0.9);">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$，<span style="color:var(--accent-green);font-weight:700;">$\Delta H &gt; 0$</span>，
+                達平衡後再<strong>降低溫度</strong>，破壞平衡，則：
+            </p>
+            <div style="font-size:1.05rem;line-height:2.3;margin-top:0.7rem;color:rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left:1.5rem;">
+                    <li>
+                        且 $m$
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        $1$；$n$
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        $1$；$m$
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        $n$ <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        瞬間逆反應速率 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">左</span>
+                        達到新平衡 <span style="font-size:0.85rem;color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>反應物 $[\text{A}]$
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">↑</span>
+                        ，生成物 $[\text{B}]$
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">↓</span>
+                        <span style="font-size:0.85rem;color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數
+                        <span class="step-target-tp3 blank-box" onclick="this.classList.add('revealed')">&lt;</span>
+                        原平衡常數 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <!-- 練習3 圖形 -->
+        <div class="panel scroll-panel" style="display:flex;flex-direction:column;gap:0.5rem;padding:0.8rem;flex:1;min-height:0;">
+            <h2 style="margin-bottom:0.2rem;">📊 圖形分析：降溫 ($\Delta H &gt; 0$, 向左)</h2>
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-tp3"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-tp3"/></clipPath>
+                    <clipPath id="clip-concA-tp3"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-tp3"/></clipPath>
+                    <clipPath id="clip-concB-tp3"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-tp3"/></clipPath>
+                </defs>
+            </svg>
+            <div style="display:flex;gap:0.5rem;flex:1;min-height:0;">
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-tp3)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- A increases (left shift) -->
+                            <path d="M 45 50 Q 65 50, 105 25" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="25" x2="140" y2="25" stroke="#f87171" stroke-width="2.5"/>
+                            <text x="120" y="40" fill="#f87171" font-size="14" font-weight="bold">↑</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">降溫</text>
+                        <line id="tracker-concA-tp3" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-tp3)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- B decreases (left shift) -->
+                            <path d="M 45 50 Q 65 50, 105 72" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="72" x2="140" y2="72" stroke="#38bdf8" stroke-width="2.5"/>
+                            <text x="120" y="65" fill="#38bdf8" font-size="14" font-weight="bold">↓</text>
+                        </g>
+                        <text x="75" y="115" text-anchor="middle" fill="#aaa" font-size="9">降溫</text>
+                        <line id="tracker-concB-tp3" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+            <!-- Rate graph tp3 -->
+            <div style="flex:1.2;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;min-height:0;display:flex;flex-direction:column;">
+                <div style="font-size:0.85rem;color:#aaa;font-weight:bold;margin-bottom:5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex;flex-direction:row;flex:1;min-height:0;gap:10px;">
+                    <div style="flex:2;display:flex;flex-direction:column;min-width:0;">
+                        <div style="position:relative;flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                                <defs>
+                                    <marker id="arrow-tp3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)"/>
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp3)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-tp3)"/>
+                                <text x="15" y="55" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                <g clip-path="url(#clip-rate-tp3)">
+                                    <line x1="20" y1="50" x2="280" y2="50" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="50" x2="80" y2="50" stroke="#a78bfa" stroke-width="2.5"/>
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">降溫</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    <!-- 降溫ΔH>0：r_f（吸熱方向）降幅大→y=80，之後慢慢上升至新平衡 y=73 -->
+                                    <!-- r_r（放熱方向）降幅小→y=62，之後繼續下降至新平衡 y=73 -->
+                                    <!-- 兩線從同一起點 y=50 各自跳落，一升一降交會於 y=73 -->
+                                    <line x1="80" y1="50" x2="80" y2="80" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 80 Q 130 77, 210 73" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="73" x2="280" y2="73" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="140" y="90" fill="#34d399" font-size="10" font-weight="bold">正反應速率(r_f)</text>
+                                    <line x1="80" y1="50" x2="80" y2="62" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <path d="M 80 62 Q 130 67, 210 73" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="148" y="57" fill="#38bdf8" font-size="10" font-weight="bold">逆反應速率(r_r)</text>
+                                    <text x="22" y="46" fill="#a78bfa" font-size="9">r₀</text>
+                                </g>
+                                <line id="tracker-rate-tp3" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 練習 3 時間軸 (ΔH>0, 降溫)：<span id="slider-label-tp3" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp3'); sl.value=0; updateGraphTimeTp3(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp3'); sl.value=25; updateGraphTimeTp3(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-tp3'); sl.value=100; updateGraphTimeTp3(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-tp3" min="0" max="100" value="0" oninput="updateGraphTimeTp3(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;border-left:1px dashed rgba(255,255,255,0.2);padding-left:15px;font-size:1.05rem;">
+                        <div style="color:#34d399;font-weight:bold;margin-bottom:0.6rem;">$r_f = k_f[\text{A}]^m$</div>
+                        <div style="color:#38bdf8;font-weight:bold;">$r_r = k_r[\text{B}]^n$</div>
+                        <div style="font-size:0.82rem;color:#888;margin-top:0.7rem;">吸熱反應降溫，正向降幅更大，$r_f &lt; r_r$，平衡左移，$K$ 值減小。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let blanksRevealedTp3 = false;
+    function updateGraphTimeTp3(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-tp3').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-tp3');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-tp3').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-tp3').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        ['tracker-concA-tp3','tracker-concB-tp3'].forEach(id => {
+            const el = document.getElementById(id);
+            el.setAttribute('x1', concX); el.setAttribute('x2', concX);
+            el.style.opacity = v > 0 ? '0.8' : '0';
+        });
+        if (v > 95 && !blanksRevealedTp3) {
+            blanksRevealedTp3 = true;
+            document.querySelectorAll('.step-target-tp3').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTimeTp3(0);
+    </script>
+
+    </div>
+    <!-- 關閉 Tab 2 (練習 3) -->
+
+    <!-- Tab 3: 溫度效應總整理 -->
+    <div class="tab-pane">
+        <div class="summary-wrapper" style="flex:1; min-height:0; overflow-y:auto; padding: 4px 6px 20px 2px;">
+            <!-- 頂部核心觀念 Banner -->
+            <div class="summary-header-banner">
+                <div class="banner-title-group">
+                    <div class="banner-icon">🌡️</div>
+                    <div>
+                        <div class="banner-core-motto">溫度改變對化學平衡之影響總整理（唯一改變 K 之變因）</div>
+                        <div class="banner-subtext">溫度直接改變平衡常數 $K$；升溫必向「吸熱方向」移動，降溫必向「放熱方向」移動</div>
+                    </div>
+                </div>
+                <div class="banner-badges">
+                    <span class="badge-pill red">放熱升溫 $\to$ $K$ 變小 ($\leftarrow$)</span>
+                    <span class="badge-pill green">吸熱升溫 $\to$ $K$ 變大 ($\to$)</span>
+                    <span class="badge-pill cyan">升溫：正逆速率皆增 (吸熱增幅大)</span>
+                    <span class="badge-pill yellow">唯有溫度能改變 $K$ 值</span>
+                </div>
+            </div>
+
+            <!-- 全景規律綜合對照矩陣 -->
+            <div class="summary-table-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); display:flex; align-items:center; gap:6px;">
+                        <span>📊 溫度改變對正逆速率、反應商 $Q$、移動方向與 $K$ 值之全景對照矩陣</span>
+                    </div>
+                    <span style="font-size:0.84rem; color:rgba(255,255,255,0.65);">註：$m$ 為正反應速率倍率，$n$ 為逆反應速率倍率</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="summary-matrix">
+                        <thead>
+                            <tr>
+                                <th style="width:16%;">反應類型 ($\Delta H$)</th>
+                                <th style="width:11%;">溫度操作</th>
+                                <th style="width:18%;">正逆速率初瞬倍率與大小</th>
+                                <th style="width:14%;">初瞬 $Q$ vs $K_{\text{新}}$</th>
+                                <th style="width:17%;">平衡移動方向判定</th>
+                                <th style="width:11%;">平衡常數 $K'$</th>
+                                <th style="width:13%;">達新平衡濃度變化</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 放熱反應 + 升溫 -->
+                            <tr>
+                                <td class="col-op" rowspan="2">
+                                    <span class="tag tag-red" style="font-size:0.78rem;">放熱反應</span><br>
+                                    <strong>$\Delta H < 0$</strong><br>
+                                    <span style="font-size:0.82rem; color:#94a3b8;">$\text{A} \rightleftharpoons \text{B} + \text{熱}$</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-red); font-weight:bold;">🔥 升高溫度</span><br>
+                                    ($T \uparrow$)
+                                </td>
+                                <td>
+                                    $k_f \uparrow, k_r \uparrow$（皆增大）<br>
+                                    <span style="color:var(--accent-red); font-weight:bold;">$n > m > 1 \implies r'_r > r'_f$</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">(逆反應為吸熱，增幅較大)</span>
+                                </td>
+                                <td>
+                                    初瞬 $Q = K_{\text{原}}$<br>
+                                    因 $K_{\text{新}} < K_{\text{原}}$<br>
+                                    <span style="color:var(--accent-red); font-weight:bold;">$Q > K_{\text{新}}$</span>
+                                </td>
+                                <td>
+                                    <span class="shift-badge shift-left">向左移動 $\leftarrow$</span><br>
+                                    <span style="font-size:0.8rem; color:#cbd5e1;">(朝逆向吸熱方向)</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-red); font-weight:bold; font-size:1.1rem;">變小 $\downarrow$</span><br>
+                                    <span style="font-size:0.78rem; color:#888;">($K' < K_{\text{原}}$)</span>
+                                </td>
+                                <td>
+                                    反應物 $[\text{A}] \uparrow$<br>
+                                    生成物 $[\text{B}] \downarrow$
+                                </td>
+                            </tr>
+                            <!-- 放熱反應 + 降溫 -->
+                            <tr>
+                                <td>
+                                    <span style="color:var(--accent-blue); font-weight:bold;">❄️ 降低溫度</span><br>
+                                    ($T \downarrow$)
+                                </td>
+                                <td>
+                                    $k_f \downarrow, k_r \downarrow$（皆減小）<br>
+                                    <span style="color:var(--accent-green); font-weight:bold;">$m > n$ 且 $< 1 \implies r'_f > r'_r$</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">(逆反應降幅較大)</span>
+                                </td>
+                                <td>
+                                    初瞬 $Q = K_{\text{原}}$<br>
+                                    因 $K_{\text{新}} > K_{\text{原}}$<br>
+                                    <span style="color:var(--accent-green); font-weight:bold;">$Q < K_{\text{新}}$</span>
+                                </td>
+                                <td>
+                                    <span class="shift-badge shift-right">向右移動 $\to$</span><br>
+                                    <span style="font-size:0.8rem; color:#cbd5e1;">(朝正向放熱方向)</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-green); font-weight:bold; font-size:1.1rem;">變大 $\uparrow$</span><br>
+                                    <span style="font-size:0.78rem; color:#888;">($K' > K_{\text{原}}$)</span>
+                                </td>
+                                <td>
+                                    反應物 $[\text{A}] \downarrow$<br>
+                                    生成物 $[\text{B}] \uparrow$
+                                </td>
+                            </tr>
+                            <!-- 吸熱反應 + 升溫 -->
+                            <tr style="background:rgba(52,211,153,0.05);">
+                                <td class="col-op" rowspan="2">
+                                    <span class="tag tag-green" style="font-size:0.78rem;">吸熱反應</span><br>
+                                    <strong>$\Delta H > 0$</strong><br>
+                                    <span style="font-size:0.82rem; color:#94a3b8;">$\text{A} + \text{熱} \rightleftharpoons \text{B}$</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-red); font-weight:bold;">🔥 升高溫度</span><br>
+                                    ($T \uparrow$)
+                                </td>
+                                <td>
+                                    $k_f \uparrow, k_r \uparrow$（皆增大）<br>
+                                    <span style="color:var(--accent-green); font-weight:bold;">$m > n > 1 \implies r'_f > r'_r$</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">(正反應為吸熱，增幅較大)</span>
+                                </td>
+                                <td>
+                                    初瞬 $Q = K_{\text{原}}$<br>
+                                    因 $K_{\text{新}} > K_{\text{原}}$<br>
+                                    <span style="color:var(--accent-green); font-weight:bold;">$Q < K_{\text{新}}$</span>
+                                </td>
+                                <td>
+                                    <span class="shift-badge shift-right">向右移動 $\to$</span><br>
+                                    <span style="font-size:0.8rem; color:#cbd5e1;">(朝正向吸熱方向)</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-green); font-weight:bold; font-size:1.1rem;">變大 $\uparrow$</span><br>
+                                    <span style="font-size:0.78rem; color:#888;">($K' > K_{\text{原}}$)</span>
+                                </td>
+                                <td>
+                                    反應物 $[\text{A}] \downarrow$<br>
+                                    生成物 $[\text{B}] \uparrow$
+                                </td>
+                            </tr>
+                            <!-- 吸熱反應 + 降溫 -->
+                            <tr style="background:rgba(52,211,153,0.05);">
+                                <td>
+                                    <span style="color:var(--accent-blue); font-weight:bold;">❄️ 降低溫度</span><br>
+                                    ($T \downarrow$)
+                                </td>
+                                <td>
+                                    $k_f \downarrow, k_r \downarrow$（皆減小）<br>
+                                    <span style="color:var(--accent-red); font-weight:bold;">$n > m$ 且 $< 1 \implies r'_r > r'_f$</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">(正反應降幅較大)</span>
+                                </td>
+                                <td>
+                                    初瞬 $Q = K_{\text{原}}$<br>
+                                    因 $K_{\text{新}} < K_{\text{原}}$<br>
+                                    <span style="color:var(--accent-red); font-weight:bold;">$Q > K_{\text{新}}$</span>
+                                </td>
+                                <td>
+                                    <span class="shift-badge shift-left">向左移動 $\leftarrow$</span><br>
+                                    <span style="font-size:0.8rem; color:#cbd5e1;">(朝逆向放熱方向)</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-red); font-weight:bold; font-size:1.1rem;">變小 $\downarrow$</span><br>
+                                    <span style="font-size:0.78rem; color:#888;">($K' < K_{\text{原}}$)</span>
+                                </td>
+                                <td>
+                                    反應物 $[\text{A}] \uparrow$<br>
+                                    生成物 $[\text{B}] \downarrow$
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 卡片三欄排版 -->
+            <div class="grid-3">
+                <!-- 卡片 1: K 與溫度的對應法則 -->
+                <div class="summary-card card-blue">
+                    <div class="card-header-title" style="color:var(--accent-cyan);">
+                        <span>📊 $K$ 與溫度的唯一連動規律</span>
+                    </div>
+                    <ul class="step-list">
+                        <li>
+                            <div>
+                                <strong>將「熱量」視為參與物種</strong><br>
+                                放熱反應：$\text{熱}$ 在生成物側；吸熱反應：$\text{熱}$ 在反應物側。升溫等同於「加入熱量」，依勒沙特列原理必朝用掉熱量的一方移動。
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <strong>吸熱反應 ($\Delta H > 0$)</strong><br>
+                                升溫 $\to$ 平衡向右 $\to$ 生成物增加 $\to$ <strong style="color:var(--accent-green);">$K$ 變大</strong>。<br>
+                                降溫 $\to$ 平衡向左 $\to$ 生成物減少 $\to$ <strong style="color:var(--accent-red);">$K$ 變小</strong>。
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <strong>放熱反應 ($\Delta H < 0$)</strong><br>
+                                升溫 $\to$ 平衡向左 $\to$ 生成物減少 $\to$ <strong style="color:var(--accent-red);">$K$ 變小</strong>。<br>
+                                降溫 $\to$ 平衡向右 $\to$ 生成物增加 $\to$ <strong style="color:var(--accent-green);">$K$ 變大</strong>。
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 卡片 2: 速率倍率 m 與 n 關係 -->
+                <div class="summary-card card-purple">
+                    <div class="card-header-title" style="color:var(--accent-purple);">
+                        <span>⚡ 速率常數增減幅倍率分析 ($m, n$)</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:0.92rem; line-height:1.55;">
+                        <div style="background:rgba(248,113,113,0.1); border-left:3px solid var(--accent-red); padding:8px 10px; border-radius:6px;">
+                            <strong style="color:var(--accent-red);">🔥 升溫時：正逆反應速率常數必皆增大！</strong>
+                            <p style="margin:2px 0 0; color:rgba(255,255,255,0.85); font-size:0.88rem;">
+                                分子動能提升，超越活化能的有效碰撞比例大增，故 $m > 1$ 且 $n > 1$。<br>
+                                活化能 $E_a$ 較高的一方（吸熱方向）對溫度更敏感，<strong>增幅相對更劇烈</strong>，故平衡移向吸熱方向！
+                            </p>
+                        </div>
+                        <div style="background:rgba(56,189,248,0.1); border-left:3px solid var(--accent-blue); padding:8px 10px; border-radius:6px;">
+                            <strong style="color:var(--accent-blue);">❄️ 降溫時：正逆反應速率常數必皆減小！</strong>
+                            <p style="margin:2px 0 0; color:rgba(255,255,255,0.85); font-size:0.88rem;">
+                                分子碰撞減弱，故 $m < 1$ 且 $n < 1$。<br>
+                                吸熱方向（高活化能）降幅更大，放熱方向降幅較小（相對較快），故平衡向放熱方向移動！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3: 考試避坑指南 -->
+                <div class="summary-card card-yellow">
+                    <div class="card-header-title" style="color:var(--accent-yellow);">
+                        <span>⚠️ 考試高頻三大避坑指南</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:0.92rem; line-height:1.55;">
+                        <div class="info-card-red" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-red);">1. 盲點：左移不代表反應變慢！</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                放熱反應升溫使平衡左移，但升溫後正、逆反應速率其實<strong>都比原平衡更快</strong>！只是逆向加快得更多 ($r_r > r_f$)。
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-yellow);">2. 辨析：改變 Q 還是改變 K？</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                濃度與壓力改變是外力直接改變了 $Q$（$K$ 恆定）；而溫度改變是<strong>直接改變了系統的新平衡常數 $K_{\text{新}}$</strong>（初瞬 $Q = K_{\text{原}}$ 暫未變）。
+                            </div>
+                        </div>
+                        <div class="info-card-cyan" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-cyan);">3. 催化劑 vs 溫度：</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                催化劑等量降低正逆反應活化能，同等加速正逆反應，<strong>完全不改變 $K$ 值</strong>！在化學平衡中，<strong>只有溫度能改變 $K$ 值</strong>。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 即時互動試驗台 -->
+            <div class="interactive-tester-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-purple); display:flex; align-items:center; gap:6px;">
+                        <span>🧪 溫度效應即時演練測試台：選擇反應與溫度操作</span>
+                    </div>
+                    <span style="font-size:0.82rem; color:rgba(255,255,255,0.65);">點選反應與操作，即時驗證平衡移動、速率消長與 K 值變化</span>
+                </div>
+
+                <div class="tester-controls">
+                    <span style="font-size:0.9rem; font-weight:700; color:var(--accent-cyan); min-width:85px;">選擇反應：</span>
+                    <button type="button" class="tester-btn rxn-btn active" onclick="setTempRxn(0)">
+                        $2\text{NO}_{2(g)} \rightleftharpoons \text{N}_2\text{O}_{4(g)}$ ($\Delta H < 0$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setTempRxn(1)">
+                        $\text{N}_2\text{O}_{4(g)} \rightleftharpoons 2\text{NO}_{2(g)}$ ($\Delta H > 0$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setTempRxn(2)">
+                        $\text{N}_{2(g)} + 3\text{H}_{2(g)} \rightleftharpoons 2\text{NH}_{3(g)}$ ($\Delta H < 0$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setTempRxn(3)">
+                        $\text{CO}_{2(g)} + \text{H}_{2(g)} \rightleftharpoons \text{CO}_{(g)} + \text{H}_2\text{O}_{(g)}$ ($\Delta H > 0$)
+                    </button>
+                </div>
+
+                <div class="tester-controls" style="margin-top:4px;">
+                    <span style="font-size:0.9rem; font-weight:700; color:var(--accent-yellow); min-width:85px;">溫度操作：</span>
+                    <button type="button" class="tester-btn op-btn active" onclick="setTempOp(0)">🔥 升高溫度 ($T \uparrow$)</button>
+                    <button type="button" class="tester-btn op-btn" onclick="setTempOp(1)">❄️ 降低溫度 ($T \downarrow$)</button>
+                </div>
+
+                <div class="tester-result-panel" id="temp-test-result">
+                    <!-- 動態產出反饋 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+/* 溫度互動試驗台邏輯 */
+const tempRxnData = [
+    {
+        name: "2\\text{NO}_{2(g)} \\text{ (紅棕色)} \\rightleftharpoons \\text{N}_2\\text{O}_{4(g)} \\text{ (無色)}",
+        isEndo: false,
+        deltaHStr: "\\Delta H = -57.2\\text{ kJ/mol} \\text{ (放熱)}",
+        colorFeature: "紅棕色 (\\text{NO}_2) \\rightleftharpoons 無色 (\\text{N}_2\\text{O}_4)"
+    },
+    {
+        name: "\\text{N}_2\\text{O}_{4(g)} \\text{ (無色)} \\rightleftharpoons 2\\text{NO}_{2(g)} \\text{ (紅棕色)}",
+        isEndo: true,
+        deltaHStr: "\\Delta H = +57.2\\text{ kJ/mol} \\text{ (吸熱)}",
+        colorFeature: "無色 (\\text{N}_2\\text{O}_4) \\rightleftharpoons 紅棕色 (\\text{NO}_2)"
+    },
+    {
+        name: "\\text{N}_{2(g)} + 3\\text{H}_{2(g)} \\rightleftharpoons 2\\text{NH}_{3(g)}",
+        isEndo: false,
+        deltaHStr: "\\Delta H = -92.2\\text{ kJ/mol} \\text{ (放熱)}",
+        colorFeature: "哈柏法製氨工業反應，高溫有利速率但不利平衡產率"
+    },
+    {
+        name: "\\text{CO}_{2(g)} + \\text{H}_{2(g)} \\rightleftharpoons \\text{CO}_{(g)} + \\text{H}_2\\text{O}_{(g)}",
+        isEndo: true,
+        deltaHStr: "\\Delta H = +41\\text{ kJ/mol} \\text{ (吸熱)}",
+        colorFeature: "水煤氣變換逆反應，高溫有助於向右進行"
+    }
+];
+
+let currentTempRxnIdx = 0;
+let currentTempOpIdx = 0;
+
+function updateTempTester() {
+    const rxn = tempRxnData[currentTempRxnIdx];
+    const isHeatUp = (currentTempOpIdx === 0);
+    const resEl = document.getElementById('temp-test-result');
+    if (!resEl) return;
+
+    let shiftText = "";
+    let shiftBadge = "";
+    let kChange = "";
+    let rateExplanation = "";
+    let reason = "";
+
+    if (rxn.isEndo) { // 吸熱反應 ΔH > 0
+        if (isHeatUp) { // 升溫
+            shiftBadge = "<span class='shift-badge shift-right' style='font-size:1rem; padding:4px 12px;'>向右移動 $\\to$</span>";
+            shiftText = "向吸熱反應方向移動（生成物增加）";
+            kChange = "<span style='color:#34d399; font-weight:bold;'>變大 $\\uparrow$</span> ($K' > K_{\\text{原}}$)";
+            rateExplanation = "升溫使正逆反應速率常數皆增大 ($k_f \\uparrow, k_r \\uparrow$)，但吸熱方向活化能大，增幅更顯著 ($m > n > 1$)，初瞬 $r'_f > r'_r$。";
+            reason = "升溫時系統傾向「吸收熱量」以減輕外加溫度上升；且新溫度下的平衡常數 $K_{\\text{新}} > K_{\\text{原}}$，初瞬 $Q < K_{\\text{新}}$，故反應向右進行達成新平衡。";
+        } else { // 降溫
+            shiftBadge = "<span class='shift-badge shift-left' style='font-size:1rem; padding:4px 12px;'>向左移動 $\\leftarrow$</span>";
+            shiftText = "向放熱反應方向移動（反應物增加）";
+            kChange = "<span style='color:#f87171; font-weight:bold;'>變小 $\\downarrow$</span> ($K' < K_{\\text{原}}$)";
+            rateExplanation = "降溫使正逆反應速率常數皆減小 ($k_f \\downarrow, k_r \\downarrow$)，但吸熱方向降幅更大 ($m < n < 1$)，初瞬 $r'_r > r'_f$。";
+            reason = "降溫時系統傾向「釋放熱量」以彌補溫度下降；新溫度下 $K_{\\text{新}} < K_{\\text{原}}$，初瞬 $Q > K_{\\text{新}}$，故反應向左進行達成新平衡。";
+        }
+    } else { // 放熱反應 ΔH < 0
+        if (isHeatUp) { // 升溫
+            shiftBadge = "<span class='shift-badge shift-left' style='font-size:1rem; padding:4px 12px;'>向左移動 $\\leftarrow$</span>";
+            shiftText = "向吸熱反應方向移動（反應物增加）";
+            kChange = "<span style='color:#f87171; font-weight:bold;'>變小 $\\downarrow$</span> ($K' < K_{\\text{原}}$)";
+            rateExplanation = "升溫使正逆反應速率常數皆增大 ($k_f \\uparrow, k_r \\uparrow$)，但逆反應（吸熱方向）活化能大，增幅更劇烈 ($n > m > 1$)，初瞬 $r'_r > r'_f$。";
+            reason = "升溫時系統向吸熱（逆向）移動以消除外加熱量；新溫度下 $K_{\\text{新}} < K_{\\text{原}}$，初瞬 $Q > K_{\\text{新}}$，故平衡向左移動。";
+        } else { // 降溫
+            shiftBadge = "<span class='shift-badge shift-right' style='font-size:1rem; padding:4px 12px;'>向右移動 $\\to$</span>";
+            shiftText = "向放熱反應方向移動（生成物增加）";
+            kChange = "<span style='color:#34d399; font-weight:bold;'>變大 $\\uparrow$</span> ($K' > K_{\\text{原}}$)";
+            rateExplanation = "降溫使正逆反應速率皆減慢，但逆反應（吸熱方向）降幅更大 ($n < m < 1$)，初瞬 $r'_f > r'_r$。";
+            reason = "降溫時系統向放熱（正向）移動以補充熱量；新溫度下 $K_{\\text{新}} > K_{\\text{原}}$，初瞬 $Q < K_{\\text{新}}$，故平衡向右移動。";
+        }
+    }
+
+    resEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-weight:700; color:var(--accent-yellow);">【移動判定】</span>
+                ${shiftBadge}
+                <span style="font-weight:600; color:#fff;">${shiftText}</span>
+            </div>
+            <div style="font-size:0.92rem; color:#fff; font-weight:bold;">
+                平衡常數 $K'$：${kChange}
+            </div>
+        </div>
+        <div style="margin-top:6px; font-size:0.93rem; color:rgba(255,255,255,0.92); line-height:1.6;">
+            <strong>🔍 勒沙特列原理剖析：</strong>${reason}<br>
+            <strong>⚡ 速率常數消長 ($m, n$)：</strong>${rateExplanation}
+            <div style="margin-top:4px; font-size:0.86rem; color:rgba(255,255,255,0.75);">
+                • 反應熱特性：${rxn.deltaHStr}。<br>
+                • 巨觀觀察特徵：${rxn.colorFeature}。
+            </div>
+        </div>
+    `;
+
+    if (window.MathJax) {
+        window.MathJax.typesetPromise([resEl]);
+    }
+}
+
+function setTempRxn(idx) {
+    currentTempRxnIdx = idx;
+    document.querySelectorAll('.rxn-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    updateTempTester();
+}
+
+function setTempOp(idx) {
+    currentTempOpIdx = idx;
+    document.querySelectorAll('.op-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    updateTempTester();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateGraphTimeTp1 === 'function') updateGraphTimeTp1(0);
+    if (typeof updateGraphTimeTp2 === 'function') updateGraphTimeTp2(0);
+    if (typeof updateGraphTimeTp3 === 'function') updateGraphTimeTp3(0);
+    if (typeof updateTempTester === 'function') updateTempTester();
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>2-5 理想氣體方程式 · 公式推導與氣體常數 R</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+html,body{
+  width:100%;height:100%;
+  background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow:hidden;
+  background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+  font-size:16px;
+}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;}
+#slides-container{position:absolute;top:1.2vh;left:1.5vw;right:1.5vw;bottom:1.2vh;}
+.slide{position:absolute;inset:0;padding:.4rem .5rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
+
+/* 標題 */
+h1{
+  color:var(--cyan);
+  font-size:clamp(1.3rem,1.8vw,1.75rem);
+  margin-bottom:.55rem;
+  display:flex;align-items:center;gap:.65rem;
+  border-bottom:2px solid rgba(34,211,238,.25);
+  padding-bottom:.35rem;flex-shrink:0;
+  letter-spacing:.03em;
+}
+h1::before{content:"";width:6px;height:24px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(1.05rem,1.25vw,1.2rem);font-weight:700;flex-shrink:0;}
+
+/* 內文 */
+p,li{font-size:clamp(.95rem,1.1vw,1.1rem);line-height:1.75;}
+strong{color:var(--cyan);font-weight:700;}
+em{color:var(--yellow);font-style:normal;font-weight:600;}
+
+/* 版面 */
+.grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:1rem;flex:1;min-height:0;overflow:hidden;}
+.panel{
+  background:var(--glass);border:1.5px solid var(--gb);
+  border-radius:14px;padding:.85rem 1.15rem;
+  backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);
+  min-height:0;overflow-y:auto;gap:.6rem;
+}
+.panel::-webkit-scrollbar{width:4px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+
+/* 標籤 */
+.tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.82rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
+.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
+.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
+
+/* 規則卡片 */
+.rule-card{
+  background:rgba(56,189,248,.07);
+  border:1px solid rgba(56,189,248,.25);
+  border-radius:11px;padding:.75rem 1rem;
+}
+.rule-card.y{background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.25);}
+
+/* 公式大框 */
+.formula-box{
+  background:rgba(0,0,0,.42);border-radius:10px;
+  border-left:5px solid var(--yellow);
+  padding:.6rem 1rem;
+  font-size:1.35rem;
+  margin:.1rem 0;
+}
+
+/* 步驟 block */
+.step-block{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.1);
+  border-left:4px solid var(--blue);
+  border-radius:10px;padding:.6rem .95rem;
+  line-height:1.7;font-size:.95rem;
+}
+.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
+.step-block.y{border-left-color:var(--yellow);background:rgba(251,191,36,.04);}
+
+/* 對齊表格 */
+.align-table{
+  display:table;width:100%;
+  font-size:1rem;line-height:1.9;
+  margin:.2rem 0;
+}
+.align-row{display:table-row;}
+.align-label{display:table-cell;white-space:nowrap;padding-right:.6rem;color:var(--sub);font-weight:600;}
+.align-eq{display:table-cell;white-space:nowrap;color:var(--cyan);padding:0 .5rem;font-weight:800;text-align:center;}
+.align-val{display:table-cell;padding-left:.1rem;}
+
+/* R 常數三欄卡片 */
+.r-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:.5rem;
+}
+.r-card{
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;padding:.55rem .65rem;
+  display:flex;flex-direction:column;gap:.25rem;
+}
+.r-card.active-r{
+  background:rgba(52,211,153,.08);
+  border-color:rgba(52,211,153,.35);
+}
+.r-card .r-num{
+  font-size:1.2rem;font-weight:800;
+}
+.r-card .r-unit{
+  font-size:.78rem;color:var(--sub);line-height:1.35;
+}
+
+/* 計算機主容器 */
+.calc-box{
+  background:rgba(0,0,0,0.42);
+  border:1.5px solid rgba(56,189,248,.25);
+  border-radius:12px;
+  padding:.75rem 1rem;
+  display:flex;flex-direction:column;gap:.6rem;
+}
+.calc-title{
+  color:var(--cyan);font-size:.95rem;font-weight:700;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.calc-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:.55rem;
+}
+.calc-field{
+  display:flex;flex-direction:column;gap:.25rem;
+}
+.calc-label{
+  font-size:.82rem;color:var(--sub);font-weight:600;
+  letter-spacing:.02em;
+}
+.calc-input{
+  width:100%;
+  background:rgba(255,255,255,0.09);
+  color:#fff;
+  border:1.5px solid rgba(255,255,255,0.2);
+  padding:6px 10px;
+  border-radius:7px;
+  font-size:1.05rem;
+  font-family:inherit;
+  font-weight:600;
+  transition:border-color .2s;
+}
+.calc-input:focus{outline:none;border-color:var(--cyan);background:rgba(255,255,255,.14);}
+
+/* 同步方程式顯示區（兩方程式對齊等號） */
+.live-eq-box{
+  background:rgba(34,211,238,.05);
+  border:1.5px solid rgba(34,211,238,.3);
+  border-radius:10px;
+  padding:.65rem .95rem;
+  display:flex;flex-direction:column;gap:.4rem;
+}
+.live-eq-grid{
+  display:grid;
+  grid-template-columns:auto auto 1fr;
+  align-items:baseline;
+  column-gap:.55rem;
+  row-gap:.45rem;
+  font-size:1.15rem;
+  padding:.2rem 0;
+}
+.live-eq-lhs{
+  text-align:right;
+  color:var(--sub);
+  font-weight:700;
+  white-space:nowrap;
+}
+.live-eq-sign{
+  color:var(--cyan);
+  font-weight:800;
+  font-size:1.25rem;
+  text-align:center;
+}
+.live-eq-rhs{
+  color:var(--text);
+  font-weight:600;
+  white-space:nowrap;
+}
+.live-num{
+  display:inline-block;
+  color:var(--yellow);
+  font-weight:800;
+  background:rgba(251,191,36,.14);
+  border:1px solid rgba(251,191,36,.4);
+  border-radius:5px;
+  padding:.05rem .45rem;
+  margin:0 .15rem;
+}
+.live-num-ans{
+  display:inline-block;
+  color:var(--green);
+  font-weight:800;
+  font-size:1.3rem;
+  background:rgba(52,211,153,.16);
+  border:1.5px solid rgba(52,211,153,.55);
+  border-radius:6px;
+  padding:.1rem .65rem;
+  margin:0 .2rem;
+  letter-spacing:.02em;
+}
+
+@media(max-width:900px){
+  .grid2{grid-template-columns:1fr!important;overflow-y:auto;}
+  html,body,#app{overflow:auto;}
+  .slide{position:relative;height:auto;}
+  .calc-grid{grid-template-columns:1fr;}
+  .r-cards{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body><div id="app"><div id="slides-container"><div class="slide active">
+<h1>理想氣體方程式推導與氣體常數 R</h1>
+
+<div class="grid2">
+  <!-- 左：公式推導與定義 -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.4rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-y">核心定律</span>
+        <h2 style="color:var(--yellow);">理想氣體方程式 (Ideal Gas Law)</h2>
+      </div>
+      <span style="font-size:.82rem;color:rgba(255,255,255,.5);">氣體三大定律歸納綜合</span>
+    </div>
+
+    <div class="rule-card">
+      <p style="margin-bottom:.45rem;font-weight:600;color:var(--text);">由三位科學家實驗定律綜合歸納：</p>
+      <div class="align-table">
+        <div class="align-row">
+          <span class="align-label"><strong>波以耳定律</strong></span>
+          <span class="align-eq">：</span>
+          <span class="align-val">$V \propto \dfrac{1}{P}$　（$T,\,n$ 固定）</span>
+        </div>
+        <div class="align-row">
+          <span class="align-label"><strong>查理定律</strong></span>
+          <span class="align-eq">：</span>
+          <span class="align-val">$V \propto T$　（$P,\,n$ 固定，絕對溫標 K）</span>
+        </div>
+        <div class="align-row">
+          <span class="align-label"><strong>亞佛加厥定律</strong></span>
+          <span class="align-eq">：</span>
+          <span class="align-val">$V \propto n$　（$T,\,P$ 固定）</span>
+        </div>
+      </div>
+      <p style="margin-top:.5rem;color:var(--sub);font-size:.96rem;line-height:1.7;">
+        綜合得：$V \propto \dfrac{nT}{P} \implies \dfrac{PV}{nT} = R$（氣體常數）
+      </p>
+    </div>
+
+    <div class="formula-box" style="text-align:center;">
+      <div style="font-size:1.6rem;font-weight:800;color:var(--yellow);letter-spacing:.05em;">
+        $$PV = nRT$$
+      </div>
+    </div>
+
+    <div class="step-block y">
+      <strong style="color:var(--yellow);font-size:1.02rem;">⚠️ 單位絕對匹配守則（最易失分點）</strong>
+      <p style="margin-top:.35rem;">當 $R = \mathbf{0.082}$ 時，各物理量單位必須嚴格對應：</p>
+      <div class="align-table" style="margin-top:.35rem;">
+        <div class="align-row">
+          <span class="align-label">壓力 $P$</span>
+          <span class="align-eq">=</span>
+          <span class="align-val"><strong>atm</strong>　（$1\text{ atm} = 760\text{ mmHg} = 1013\text{ hPa}$）</span>
+        </div>
+        <div class="align-row">
+          <span class="align-label">體積 $V$</span>
+          <span class="align-eq">=</span>
+          <span class="align-val"><strong>L</strong>　（$1\text{ L} = 1000\text{ mL} = 1000\text{ cm}^3$）</span>
+        </div>
+        <div class="align-row">
+          <span class="align-label">數量 $n$</span>
+          <span class="align-eq">=</span>
+          <span class="align-val"><strong>mol</strong>（莫耳數）</span>
+        </div>
+        <div class="align-row">
+          <span class="align-label">溫度 $T$</span>
+          <span class="align-eq">=</span>
+          <span class="align-val"><strong>K（絕對溫度）</strong>　$T\text{(K)} = t(^\circ\text{C}) + 273$</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右：常數 R 數值 + 動態計算機 -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.4rem;">
+      <span class="tag tag-b">常數與單位</span>
+      <h2 style="color:var(--blue);">氣體常數 $R$ 的不同數值</h2>
+    </div>
+
+    <!-- 三種常用 R 數值卡片 -->
+    <div class="r-cards">
+      <div class="r-card active-r">
+        <span class="tag tag-g" style="align-self:flex-start;padding:.05rem .45rem;font-size:.72rem;">化學常用</span>
+        <div class="r-num" style="color:var(--green);margin-top:.2rem;">0.082</div>
+        <div class="r-unit">$\text{atm·L}$<br>$/(\text{mol·K})$</div>
+      </div>
+      <div class="r-card">
+        <span class="tag tag-b" style="align-self:flex-start;padding:.05rem .45rem;font-size:.72rem;">SI 國際制</span>
+        <div class="r-num" style="color:var(--cyan);margin-top:.2rem;">8.314</div>
+        <div class="r-unit">$\text{J}/(\text{mol·K})$<br>物理熱力學</div>
+      </div>
+      <div class="r-card">
+        <span class="tag tag-y" style="align-self:flex-start;padding:.05rem .45rem;font-size:.72rem;">汞柱單位</span>
+        <div class="r-num" style="color:var(--yellow);margin-top:.2rem;">62.4</div>
+        <div class="r-unit">$\text{mmHg·L}$<br>$/(\text{mol·K})$</div>
+      </div>
+    </div>
+
+    <!-- 動態計算機 -->
+    <div class="calc-box">
+      <div class="calc-title">
+        <span>⚙️ 即時求體積計算機（$R = 0.082$）</span>
+        <span id="calc-status" style="color:var(--green);font-size:.82rem;">✓ 已就緒</span>
+      </div>
+
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label class="calc-label" for="in-p">P — 壓力 (atm)</label>
+          <input class="calc-input" id="in-p" type="number" step="0.1" value="1.0">
+        </div>
+        <div class="calc-field">
+          <label class="calc-label" for="in-n">n — 莫耳數 (mol)</label>
+          <input class="calc-input" id="in-n" type="number" step="0.1" value="1.0">
+        </div>
+        <div class="calc-field">
+          <label class="calc-label" for="in-t">t — 溫度 (°C)</label>
+          <input class="calc-input" id="in-t" type="number" step="1" value="0">
+        </div>
+      </div>
+
+      <!-- 同步方程式顯示區（兩式以等號對齊） -->
+      <div class="live-eq-box">
+        <p style="font-size:.84rem;color:var(--sub);margin-bottom:.2rem;">▶ 同步代入計算過程（以 = 對齊）：</p>
+
+        <div class="live-eq-grid">
+          <!-- 第一式： "P" × V = "n" × 0.082 × ("t" + 273) -->
+          <div class="live-eq-lhs">
+            <span class="live-num" id="show-p">1.0</span> × V
+          </div>
+          <div class="live-eq-sign">=</div>
+          <div class="live-eq-rhs">
+            <span class="live-num" id="show-n">1.0</span> × 0.082 × (<span class="live-num" id="show-t">0</span> + 273)
+          </div>
+
+          <!-- 第二式： V = "  " 升 -->
+          <div class="live-eq-lhs" style="color:var(--text);font-size:1.25rem;">
+            V
+          </div>
+          <div class="live-eq-sign">=</div>
+          <div class="live-eq-rhs">
+            <span class="live-num-ans" id="show-v">22.39</span>
+            <span style="color:var(--green);font-weight:700;font-size:1.05rem;">升 (L)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function updateCalc(){
+    const P = parseFloat(document.getElementById('in-p').value) || 0;
+    const n = parseFloat(document.getElementById('in-n').value) || 0;
+    const t = parseFloat(document.getElementById('in-t').value) || 0;
+    const T = t + 273;
+
+    // 更新同步顯示的數值
+    document.getElementById('show-p').textContent = P.toFixed(P % 1 === 0 ? 0 : 2);
+    document.getElementById('show-n').textContent = n.toFixed(n % 1 === 0 ? 0 : 2);
+    document.getElementById('show-t').textContent = t % 1 === 0 ? t : t.toFixed(1);
+
+    // 計算 V = (n * 0.082 * T) / P
+    const showV = document.getElementById('show-v');
+    const status = document.getElementById('calc-status');
+
+    if (P === 0) {
+      showV.textContent = '∞';
+      status.textContent = '⚠ P 不得為 0';
+      status.style.color = '#f87171';
+    } else {
+      const V = (n * 0.082 * T) / P;
+      showV.textContent = V.toFixed(2);
+      status.textContent = '✓ 計算完成';
+      status.style.color = '#34d399';
+    }
+  }
+
+  ['in-p','in-n','in-t'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', updateCalc);
+  });
+  updateCalc();
+})();
+</script>
+</div></div></div>
+<script>
+window.toggleSolution=function(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const on=el.classList.contains('revealed');
+  if(on){el.classList.remove('revealed');}
+  else{el.classList.add('revealed');if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([el]).catch(()=>{});}
+};
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+</body></html>

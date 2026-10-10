@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>平衡常數的定義與表示法 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.55vw, 1.35rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.22vw, 1.12rem); line-height: 1.55; margin-bottom: 0.35rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.85rem, 1.1vw, 1.02rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.5rem 0.65rem; text-align: center; }
+        table.data-table th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+        .calc-step {
+            background: rgba(0,0,0,0.2); border-left: 4px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0; padding: 0.6rem 0.9rem; margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .step-num {
+            display: inline-block; background: var(--accent-purple); color: #0f172a;
+            width: 1.5em; height: 1.5em; border-radius: 50%; text-align: center; line-height: 1.5em;
+            font-weight: 900; font-size: 0.85rem; margin-right: 0.45rem; flex-shrink: 0;
+        }
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+        .svg-wrap {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; padding: 0.2rem 0; width: 100%;
+        }
+        .svg-wrap svg {
+            max-width: 100%; max-height: 100%; width: 100%; height: auto; display: block;
+        }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-overview">
+                <h1>平衡常數的定義與表示法</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>⚖️ 化學平衡基本概念</h2>
+                        <div class="info-card">
+                            <p><strong>可逆反應</strong>：化學反應中，正反應與逆反應<em>同時</em>進行，稱為可逆反應。</p>
+                            <p style="margin-top:0.4rem;"><strong>平衡狀態</strong>：在封閉系統中，當正反應速率等於逆反應速率，各物質濃度不再隨時間改變，稱為達到<em>化學平衡</em>。</p>
+                        </div>
+                        <div class="formula-box" style="font-size:1.1rem;">
+                            $\text{aA} + \text{bB} \rightleftharpoons \text{cC} + \text{dD}$
+                        </div>
+                        <div class="info-card-green" style="margin-top:0.3rem;">
+                            <p><strong>平衡常數（Equilibrium Constant）：</strong></p>
+                            <div style="font-size:1.3rem; margin: 1rem 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                <div>$$K_c = \underbrace{\frac{k_f}{k_r}}_{\text{定義}} = \underbrace{\frac{[\text{C}]^c[\text{D}]^d}{[\text{A}]^a[\text{B}]^b}}_{\text{表示法}}$$</div>
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.3rem;">
+                            <p><strong>Guldberg 和 Waage（1864）：</strong>提出質量作用定律（Law of Mass Action），用以描述化學平衡時各物質間的定量關係。</p>
+                        </div>
+                    </div>
+                    <div class="panel" style="display:flex; flex-direction:column; overflow:hidden;">
+                        <h2>📚 本章學習架構</h2>
+                        <div class="svg-wrap">
+                            <svg viewBox="0 0 420 310">
+                                <defs>
+                                    <marker id="arr-main" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                                        <path d="M0,0 L8,4 L0,8 Z" fill="#22d3ee"/>
+                                    </marker>
+                                </defs>
+                                <!-- Central node -->
+                                <rect x="155" y="20" width="110" height="42" rx="12" fill="rgba(34,211,238,0.18)" stroke="#22d3ee" stroke-width="2"/>
+                                <text x="210" y="46" text-anchor="middle" fill="#22d3ee" font-weight="900" font-size="17">平衡常數 K</text>
+                                <!-- Branches -->
+                                <rect x="20" y="110" width="105" height="38" rx="9" fill="rgba(52,211,153,0.15)" stroke="#34d399" stroke-width="1.5"/>
+                                <text x="72" y="134" text-anchor="middle" fill="#34d399" font-size="14" font-weight="700">Kc 濃度常數</text>
+                                <rect x="155" y="110" width="110" height="38" rx="9" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="1.5"/>
+                                <text x="210" y="134" text-anchor="middle" fill="#38bdf8" font-size="14" font-weight="700">Kp 壓力常數</text>
+                                <rect x="295" y="110" width="105" height="38" rx="9" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" stroke-width="1.5"/>
+                                <text x="347" y="134" text-anchor="middle" fill="#fbbf24" font-size="14" font-weight="700">均相/異相平衡</text>
+                                <!-- Lines from top -->
+                                <line x1="175" y1="62" x2="100" y2="110" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arr-main)"/>
+                                <line x1="210" y1="62" x2="210" y2="110" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arr-main)"/>
+                                <line x1="245" y1="62" x2="320" y2="110" stroke="#22d3ee" stroke-width="1.8" marker-end="url(#arr-main)"/>
+                                <!-- Second level -->
+                                <rect x="20" y="195" width="105" height="38" rx="9" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1.5"/>
+                                <text x="72" y="219" text-anchor="middle" fill="#a78bfa" font-size="13" font-weight="700">Kp↔Kc 換算</text>
+                                <rect x="155" y="195" width="110" height="38" rx="9" fill="rgba(248,113,113,0.15)" stroke="#f87171" stroke-width="1.5"/>
+                                <text x="210" y="219" text-anchor="middle" fill="#f87171" font-size="13" font-weight="700">Kc 大小的意義</text>
+                                <rect x="295" y="195" width="105" height="38" rx="9" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" stroke-width="1.5"/>
+                                <text x="347" y="219" text-anchor="middle" fill="#22d3ee" font-size="13" font-weight="700">反應商 Q 判斷</text>
+                                <!-- Lines second level -->
+                                <line x1="72" y1="148" x2="72" y2="195" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-main)"/>
+                                <line x1="210" y1="148" x2="210" y2="195" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-main)"/>
+                                <line x1="347" y1="148" x2="347" y2="195" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-main)"/>
+                                <!-- Application level -->
+                                <rect x="130" y="275" width="160" height="30" rx="8" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" stroke-width="1.5"/>
+                                <text x="210" y="295" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700">計算與應用例題</text>
+                                <line x1="72" y1="233" x2="170" y2="275" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-main)"/>
+                                <line x1="210" y1="233" x2="210" y2="275" stroke="#f87171" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-main)"/>
+                                <line x1="347" y1="233" x2="255" y2="275" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-main)"/>
+                            </svg>
+                        </div>
+                        <div class="info-card-purple" style="flex:0 0 auto; margin-top:0.3rem; padding:0.45rem 0.8rem;"><p style="font-size:0.9rem; margin:0;">本節共 <strong>16 頁</strong>教學與實戰分頁 + <strong>1 頁</strong>通關檢核連連看</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.updateSlides = function() {};
+
+</script>
+</body>
+</html>

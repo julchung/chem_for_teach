@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>催化劑與反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：催化劑的定義、種類及其對化學反應速率影響的互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay { display: none !important; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-purple);
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56,189,248,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(56,189,248,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { font-size: clamp(0.88rem, 1.25vw, 1.08rem); font-weight: 700; margin: 0.2rem 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.55; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warn-box {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(248,113,113,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.08rem 0.5rem; border-radius: 18px; font-size: 0.74rem; font-weight: 700; margin-right: 0.2rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.35rem 0.4rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+        .svg-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .svg-wrap svg { max-width: 100%; max-height: 100%; display: block; }
+        .diagram-panel {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.32); border-radius: 12px; padding: 0.35rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+        .quiz-options li {
+            font-size: clamp(0.86rem, 1.1vw, 0.98rem); padding: 0.3rem 0.55rem; margin-bottom: 0.15rem;
+            border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+            cursor: pointer; transition: 0.2s;
+        }
+        .quiz-options li:hover { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); }
+        .quiz-options li span.opt-label { color: var(--accent-blue); font-weight: 700; min-width: 2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-blue); color: #0f172a; border: none; padding: 0.6rem 1.3rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.92rem;
+            align-self: flex-start; margin-top: 0.35rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        /* Game */
+        .game-area {
+            flex: 1; position: relative;
+            background: rgba(0,0,0,0.18); border-radius: 20px; overflow: hidden;
+            margin-top: 0; min-height: 0;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .game-columns {
+            display: flex; justify-content: space-between;
+            height: 100%; padding: 16px 48px;
+            position: relative; z-index: 10; gap: 0;
+        }
+        #left-column, #right-column {
+            width: 42%; display: flex; flex-direction: column;
+            justify-content: space-around; gap: 10px;
+        }
+        .game-item {
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.14);
+            padding: 0 24px;
+            border-radius: 18px;
+            display: flex; align-items: center;
+            width: 100%; position: relative;
+            flex: 1;
+            transition: background 0.18s, border-color 0.18s;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+            font-weight: 500; line-height: 1.3;
+        }
+        .game-item:hover {
+            background: rgba(255,255,255,0.11);
+            border-color: rgba(255,255,255,0.35);
+        }
+        #left-column .game-item {
+            justify-content: flex-start; text-align: left;
+            border-left: 4px solid var(--accent-blue);
+        }
+        #right-column .game-item {
+            justify-content: flex-end; text-align: right;
+            border-right: 4px solid var(--accent-purple);
+        }
+        .dot {
+            width: 22px; height: 22px;
+            background: var(--accent-blue); border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 14px rgba(56,189,248,0.8);
+            transition: 0.2s; flex-shrink: 0; z-index: 5;
+            touch-action: none; border: 2.5px solid #fff;
+        }
+        .left-dot  { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); }
+        .right-dot { position: absolute; left:  -11px; top: 50%; transform: translateY(-50%); }
+        .dot.active {
+            background: var(--accent-green);
+            box-shadow: 0 0 20px var(--accent-green);
+            pointer-events: none;
+        }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.96);
+            padding: 2.2rem 4.5rem; border-radius: 28px;
+            font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+            color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 70px rgba(52,211,153,0.7);
+            z-index: 100; text-align: center; letter-spacing: 0.02em;
+        }
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+            .game-columns { padding: 12px 16px; }
+        }
+        /* Catalyst energy diagram animation */
+        @keyframes drawPath { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
+        .animated-path { stroke-dasharray: 1000; animation: drawPath 2s ease forwards; }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide active" id="slide-types-phase">
+                <h1>催化劑的種類 ─ 以相態區分</h1>
+                <div class="grid-2" style="gap: 1.5rem;">
+                    <div class="panel scroll-panel" style="padding: 1.2rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h2 style="color:var(--accent-blue); border-left: 4px solid var(--accent-blue); padding-left: 0.5rem; margin-bottom: 0.6rem;">勻相催化反應 (Homogeneous)</h2>
+                            <p style="margin-bottom: 0.8rem; line-height: 1.6;">催化劑與反應物能互溶，<strong>同處一相</strong>（如皆為氣相或液相）。</p>
+                            <div class="highlight-box" style="padding: 1rem; border-radius: 12px; background: rgba(56,189,248,0.05);">
+                                <strong style="color: var(--accent-blue); display: inline-block; margin-bottom: 0.5rem;">實例：</strong>
+                                <ul style="list-style-type: none; margin-left: 0; padding-left: 0; display: flex; flex-direction: column; gap: 0.6rem;">
+                                    <li style="line-height: 1.5;">① 雙氧水分解（液相）：<br>
+                                    <span style="color: rgba(255,255,255,0.8); margin-left: 1.5rem;">$2H_2O_2(aq) \xrightarrow{Fe^{2+}或Fe^{3+}(aq)} 2H_2O(l) + O_2(g)$</span></li>
+                                    <li style="line-height: 1.5;">② 澱粉水解（液相）：催化劑 $H^+$ 或酶。</li>
+                                    <li style="line-height: 1.5;">③ 甲酸分解（液相）：催化劑 $H^+$。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h2 style="color:var(--accent-purple); border-left: 4px solid var(--accent-purple); padding-left: 0.5rem; margin-bottom: 0.6rem;">非均相催化反應 (Heterogeneous)</h2>
+                            <p style="margin-bottom: 0.8rem; line-height: 1.6;">催化劑與反應物<strong>不互溶，處於不同相</strong>。反應在相界面（表面）進行。</p>
+                            <div class="info-card" style="border-color:rgba(167,139,250,0.4); padding: 0.8rem; margin-bottom: 1rem; background: rgba(167,139,250,0.05);">
+                                <p style="margin:0; font-weight:700; color:var(--accent-purple); font-size: 1.05rem;">速率 ∝ 催化劑有效表面積</p>
+                                <p style="margin:6px 0 0; font-size:0.95rem; line-height: 1.5;">因此常將催化劑製成<strong>粉末狀</strong>以增加接觸面積。</p>
+                            </div>
+                            <div class="highlight-box" style="padding: 1rem; border-radius: 12px; background: rgba(167,139,250,0.05);">
+                                <strong style="color: var(--accent-purple); display: inline-block; margin-bottom: 0.5rem;">實例：</strong>
+                                <ul style="list-style-type: none; margin-left: 0; padding-left: 0; display: flex; flex-direction: column; gap: 0.6rem;">
+                                    <li style="line-height: 1.5;">① 哈柏法製氨：固體 Fe 粉催化氣體<br>
+                                    <span style="color: rgba(255,255,255,0.8); margin-left: 1.5rem;">$N_2(g) + 3H_2(g) \xrightarrow{Fe(s)} 2NH_3(g)$</span></li>
+                                    <li style="line-height: 1.5;">② 汽車觸媒轉化器：固體 Pt/Rh 催化廢氣（CO、NO）。</li>
+                                    <li style="line-height: 1.5;">③ 鎳粉催化乙烯加氫（氫化植物油）。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel scroll-panel" style="padding: 1.2rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h2 style="color:var(--accent-green); border-left: 4px solid var(--accent-green); padding-left: 0.5rem; margin-bottom: 0.6rem;">酶催化反應 (Enzyme Catalysis)</h2>
+                            <p style="margin-bottom: 1rem; line-height: 1.6;">生物體內的<strong>酶（蛋白質）</strong>是最精妙的催化劑，催化效率遠超人造催化劑，且具有高度<strong>專一性</strong>。</p>
+                            
+                            <table class="data-table" style="margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 0.6rem; background: rgba(52,211,153,0.15); color: var(--accent-green);">酵素</th>
+                                        <th style="padding: 0.6rem; background: rgba(52,211,153,0.15); color: var(--accent-green);">來源</th>
+                                        <th style="padding: 0.6rem; background: rgba(52,211,153,0.15); color: var(--accent-green);">催化反應</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="color:var(--accent-cyan); font-weight:bold; padding: 0.6rem;">木瓜蛋白酶<br>(Papain)</td>
+                                        <td style="padding: 0.6rem;">木瓜乳汁</td>
+                                        <td style="padding: 0.6rem;">分解蛋白質<br>（肉類嫩化）</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:var(--accent-cyan); font-weight:bold; padding: 0.6rem;">麥芽糖化酶<br>(Malt Diastase)</td>
+                                        <td style="padding: 0.6rem;">麥芽萃取</td>
+                                        <td style="padding: 0.6rem;">澱粉水解為麥芽糖</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="warn-box" style="padding: 1rem; margin-bottom: 1rem; background: rgba(248,113,113,0.06); border-left: 4px solid var(--accent-red);">
+                            <p style="margin:0 0 0.5rem 0; color:var(--accent-red); font-weight:700; font-size: 1.05rem;">⚠️ 酵素的限制</p>
+                            <ul style="margin: 0; padding-left: 1.2rem; font-size:0.95rem; line-height: 1.6; display: flex; flex-direction: column; gap: 0.3rem;">
+                                <li>酵素活性受<strong>溫度</strong>及<strong>pH值</strong>影響極大。</li>
+                                <li>高溫 → 蛋白質<strong>變性失活</strong>（催化能力喪失）。</li>
+                                <li>人體酵素最適溫度約 37°C。</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="info-card" style="padding: 1rem; border-left: 4px solid var(--accent-cyan); background: rgba(34,211,238,0.05);">
+                            <p style="margin:0; font-size:0.95rem; line-height: 1.6;">
+                                <strong style="color: var(--accent-cyan);">💡 觀念澄清 (依指考題)：</strong><br>
+                                酵素可同時催化正反應及逆反應，但<em>無法提高總產率</em>，也並非溫度越高催化效果越好。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+/* ---- Quiz Functions ---- */
+function checkAns(quizId, isCorrect, li) {
+    const overlay = document.getElementById('ans-' + quizId);
+    if (overlay) { overlay.style.display = 'flex'; }
+    // Visual feedback on option
+    if (li) {
+        li.style.background = isCorrect ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)';
+        li.style.borderColor = isCorrect ? 'var(--accent-green)' : 'var(--accent-red)';
+    }
+}
+function closeAns(quizId) {
+    const overlay = document.getElementById('ans-' + quizId);
+    if (overlay) { overlay.style.display = 'none'; }
+    // Reset option styles
+    const quiz = document.getElementById(quizId);
+    if (quiz) {
+        quiz.querySelectorAll('.quiz-options li').forEach(function(li) {
+            li.style.background = '';
+            li.style.borderColor = '';
+        });
+    }
+}
+
+/* ---- Q4 Exam Answer Toggle ---- */
+function toggleQ4Answer() {
+    const panel = document.getElementById('q4-answer-panel');
+    const btn = document.getElementById('btn-q4-toggle');
+    const hint = document.getElementById('q4-hint');
+    if (!panel || !btn) return;
+    const isShown = panel.style.display !== 'none';
+    if (isShown) {
+        panel.style.display = 'none';
+        btn.textContent = '💡 顯示答案與解析';
+        btn.style.borderColor = 'rgba(56,189,248,0.5)';
+        btn.style.color = 'var(--accent-blue)';
+        if (hint) hint.textContent = '點擊按鈕查看詳細解析';
+    } else {
+        panel.style.display = 'flex';
+        panel.style.flexDirection = 'column';
+        btn.textContent = '🙈 隱藏答案';
+        btn.style.borderColor = 'rgba(52,211,153,0.6)';
+        btn.style.color = 'var(--accent-green)';
+        if (hint) hint.textContent = '答案：ABCD';
+        // Trigger MathJax on the newly shown panel
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise([panel]).catch(function() {});
+        }
+    }
+}
+
+/* ---- Game ---- */
+const GAME_POOL = [
+    { left: '勻相催化', right: '催化劑與反應物同相（液相或氣相）' },
+    { left: '非均相催化', right: '催化劑常製成粉末以增大表面積' },
+    { left: '正催化劑', right: '降低活化能，加速反應' },
+    { left: '負催化劑 (抑制劑)', right: '減緩反應速率' },
+    { left: '助催化劑', right: '幫助催化劑提升效能' },
+    { left: '毒劑', right: '佔據活性位置使催化劑失活' },
+    { left: '酶 (Enzyme)', right: '生物體內的催化劑（蛋白質）' },
+    { left: '反應熱 ΔH', right: '不因加入催化劑而改變' },
+    { left: '可逆反應的平衡', right: '正逆反應速率等量增加，產率不變' },
+    { left: '阿瑞尼士方程式', right: 'Ea 降低 → k 增大 → 速率加快' },
+    { left: '哈柏法製氨', right: '使用固體鐵粉（非均相催化）' },
+    { left: '木瓜蛋白酶', right: '催化蛋白質分解，用於肉類嫩化' }
+];
+
+let connections = [], isDraggingGame = false, startDot = null, currentLine = null;
+const GAME_COUNT = 5;
+
+function initGame() {
+    const leftCol = document.getElementById('left-column');
+    const rightCol = document.getElementById('right-column');
+    if (!leftCol || !rightCol) return;
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+    connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+    document.getElementById('game-svg').innerHTML = '';
+
+    const selected = [...GAME_POOL].sort(function() { return Math.random() - 0.5; }).slice(0, GAME_COUNT).map(function(item, i) { return Object.assign({}, item, { idx: i }); });
+    const shuffledRight = [...selected].sort(function() { return Math.random() - 0.5; });
+
+    selected.forEach(function(item) {
+        const div = document.createElement('div');
+        div.className = 'game-item';
+        div.innerHTML = '<span>' + item.left + '</span><div class="dot left-dot" data-index="' + item.idx + '"></div>';
+        leftCol.appendChild(div);
+    });
+    shuffledRight.forEach(function(item) {
+        const div = document.createElement('div');
+        div.className = 'game-item';
+        div.innerHTML = '<div class="dot right-dot" data-index="' + item.idx + '"></div><span>' + item.right + '</span>';
+        rightCol.appendChild(div);
+    });
+    document.querySelectorAll('.dot').forEach(function(dot) {
+        dot.addEventListener('mousedown', gameDragStart);
+        dot.addEventListener('touchstart', gameDragStart, { passive: false });
+    });
+}
+
+function gameDragStart(e) {
+    const dot = e.currentTarget;
+    if (dot.classList.contains('active')) return;
+    if (e.type === 'touchstart') e.preventDefault();
+    isDraggingGame = true;
+    startDot = dot;
+    const svg = document.getElementById('game-svg');
+    const dr = dot.getBoundingClientRect(), rect = svg.getBoundingClientRect();
+    currentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const x = dr.left + dr.width / 2 - rect.left;
+    const y = dr.top + dr.height / 2 - rect.top;
+    currentLine.setAttribute('x1', x); currentLine.setAttribute('y1', y);
+    currentLine.setAttribute('x2', x); currentLine.setAttribute('y2', y);
+    currentLine.setAttribute('stroke', 'var(--accent-blue)');
+    currentLine.setAttribute('stroke-width', '4');
+    currentLine.setAttribute('stroke-linecap', 'round');
+    currentLine.setAttribute('opacity', '0.85');
+    svg.appendChild(currentLine);
+}
+
+function gameDragMove(e) {
+    if (!isDraggingGame || !currentLine) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const rect = document.getElementById('game-svg').getBoundingClientRect();
+    currentLine.setAttribute('x2', cx - rect.left);
+    currentLine.setAttribute('y2', cy - rect.top);
+}
+
+function gameDragEnd(e) {
+    if (!isDraggingGame) return;
+    isDraggingGame = false;
+    const cx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const cy = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    let targetDot = null;
+    document.querySelectorAll('.dot').forEach(function(dot) {
+        const r = dot.getBoundingClientRect();
+        if (cx >= r.left - 16 && cx <= r.right + 16 && cy >= r.top - 16 && cy <= r.bottom + 16) {
+            targetDot = dot;
+        }
+    });
+    if (targetDot && targetDot !== startDot &&
+        startDot.classList.contains('left-dot') !== targetDot.classList.contains('left-dot') &&
+        !targetDot.classList.contains('active')) {
+        const svg = document.getElementById('game-svg');
+        const rect = svg.getBoundingClientRect();
+        const r2 = targetDot.getBoundingClientRect();
+        const x2 = r2.left + r2.width / 2 - rect.left;
+        const y2 = r2.top + r2.height / 2 - rect.top;
+        currentLine.setAttribute('x2', x2);
+        currentLine.setAttribute('y2', y2);
+
+        if (startDot.dataset.index === targetDot.dataset.index) {
+            // ✅ Correct: turn green, keep
+            currentLine.setAttribute('stroke', 'var(--accent-green)');
+            currentLine.setAttribute('stroke-width', '4');
+            currentLine.setAttribute('opacity', '1');
+            connections.push({ from: startDot, to: targetDot, line: currentLine });
+            startDot.classList.add('active');
+            targetDot.classList.add('active');
+            currentLine = null;
+            if (connections.length === GAME_COUNT) {
+                const fb = document.getElementById('game-feedback');
+                fb.style.display = 'block';
+                setTimeout(function() { fb.style.display = 'none'; }, 3000);
+            }
+        } else {
+            // ❌ Wrong: flash red, then remove
+            currentLine.setAttribute('stroke', 'var(--accent-red)');
+            currentLine.setAttribute('stroke-width', '4');
+            currentLine.setAttribute('opacity', '1');
+            var bad = currentLine;
+            currentLine = null;
+            setTimeout(function() { if (bad && bad.parentNode) bad.parentNode.removeChild(bad); }, 420);
+        }
+    } else {
+        if (currentLine && currentLine.parentNode) currentLine.parentNode.removeChild(currentLine);
+        currentLine = null;
+    }
+    startDot = null;
+}
+
+function drawConnections() {
+    const svg = document.getElementById('game-svg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    const rect = svg.getBoundingClientRect();
+    connections.forEach(function(c) {
+        const r1 = c.from.getBoundingClientRect(), r2 = c.to.getBoundingClientRect();
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', r1.left + r1.width / 2 - rect.left);
+        l.setAttribute('y1', r1.top + r1.height / 2 - rect.top);
+        l.setAttribute('x2', r2.left + r2.width / 2 - rect.left);
+        l.setAttribute('y2', r2.top + r2.height / 2 - rect.top);
+        l.setAttribute('stroke', 'var(--accent-green)');
+        l.setAttribute('stroke-width', '4');
+        l.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(l);
+    });
+}
+
+function resetGame() { initGame(); }
+
+document.addEventListener('mousemove', gameDragMove);
+document.addEventListener('mouseup', gameDragEnd);
+document.addEventListener('touchmove', gameDragMove, { passive: false });
+document.addEventListener('touchend', gameDragEnd);
+
+/* ---- Drawing Layer ---- */
+let currentSlide = 0, isDrawingMode = false, drawMode = 'pen', penColor = '#f8fafc';
+let slideDrawings = {}, lastX = 0, lastY = 0, isDrawing = false;
+const slides = document.querySelectorAll('.slide');
+const slideInfo = document.getElementById('slide-info');
+const canvas = document.getElementById('drawing-layer');
+const ctx = canvas ? canvas.getContext('2d') : null;
+
+function resizeCanvas() {
+    if (!canvas || !ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    restoreDrawing();
+    if (slides[currentSlide] && slides[currentSlide].id === 'slide-game') drawConnections();
+}
+window.addEventListener('resize', resizeCanvas);
+if (canvas && ctx) resizeCanvas();
+
+function getCoords(e) {
+    if (!canvas) return [0, 0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return [cx - rect.left, cy - rect.top];
+}
+function startDrawing(e) { if (!isDrawingMode || !ctx) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const [x, y] = getCoords(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+    if (drawMode === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = 38;
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = penColor;
+    }
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+    [lastX, lastY] = [x, y];
+}
+function stopDrawing() {
+    if (isDrawing && canvas) { isDrawing = false; slideDrawings[currentSlide] = canvas.toDataURL(); }
+}
+function restoreDrawing() {
+    if (!ctx || !canvas) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (slideDrawings[currentSlide]) {
+        const img = new Image();
+        img.onload = function() { ctx.drawImage(img, 0, 0); };
+        img.src = slideDrawings[currentSlide];
+    }
+}
+if (canvas) {
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('touchstart', function(e) { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, { passive: false });
+    canvas.addEventListener('touchmove', function(e) { if (isDrawingMode) e.preventDefault(); draw(e); }, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+/* ---- Slide navigation ---- */
+window.updateSlides = function () {
+    slides.forEach(function(s, i) { s.classList.toggle('active', i === currentSlide); });
+    slideInfo.textContent = (currentSlide + 1) + ' / ' + slides.length;
+    restoreDrawing();
+    const sid = slides[currentSlide] ? slides[currentSlide].id : '';
+    if (sid === 'slide-game') { initGame(); setTimeout(drawConnections, 80); }
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([slides[currentSlide]]).catch(function() {});
+    }
+};
+
+document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'ArrowRight' || ev.key === 'PageDown') {
+        if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+    } else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') {
+        if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+    } else if (ev.key === 'Home') {
+        currentSlide = 0; window.updateSlides();
+    } else if (ev.key === 'End') {
+        currentSlide = slides.length - 1; window.updateSlides();
+    }
+});
+
+document.getElementById('btn-next').addEventListener('click', function() {
+    if (currentSlide < slides.length - 1) { currentSlide++; window.updateSlides(); }
+});
+document.getElementById('btn-prev').addEventListener('click', function() {
+    if (currentSlide > 0) { currentSlide--; window.updateSlides(); }
+});
+document.getElementById('btn-draw').addEventListener('click', function(e) {
+    isDrawingMode = !isDrawingMode;
+    if (isDrawingMode) drawMode = 'pen';
+    e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+    canvas.classList.toggle('drawing-active', isDrawingMode);
+    document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+    document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+});
+document.getElementById('btn-eraser').addEventListener('click', function(e) {
+    drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
+    e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+});
+document.querySelectorAll('.color-dot').forEach(function(dot) {
+    dot.addEventListener('click', function() {
+        document.querySelectorAll('.color-dot').forEach(function(d) { d.style.borderColor = 'transparent'; });
+        dot.style.borderColor = 'white';
+        penColor = dot.dataset.color;
+        drawMode = 'pen';
+        document.getElementById('btn-eraser').classList.remove('active-tool');
+    });
+});
+document.getElementById('btn-clear').addEventListener('click', function() {
+    if (ctx && canvas) { ctx.clearRect(0, 0, canvas.width, canvas.height); slideDrawings[currentSlide] = null; }
+});
+document.getElementById('btn-home').addEventListener('click', function() { window.location.href = '../../index.html'; });
+
+/* ---- Toolbar drag ---- */
+(function () {
+    const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+    let isDT = false, tOY = 0;
+    const sDT = function(y) { isDT = true; tOY = y - tb.offsetTop; };
+    const mDT = function(y) { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
+    dh.addEventListener('mousedown', function(e) { sDT(e.clientY); });
+    window.addEventListener('mousemove', function(e) { mDT(e.clientY); });
+    window.addEventListener('mouseup', function() { isDT = false; });
+    dh.addEventListener('touchstart', function(e) { sDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchmove', function(e) { if (isDT) mDT(e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', function() { isDT = false; });
+})();
+
+// ═══════════════ Random Draw Logic ═══════════════
+let drawnNumbers = new Set();
+let drawTotal = 40;
+const rdModal = document.getElementById('random-draw-modal');
+const btnCloseDraw = document.getElementById('btn-close-draw');
+const btnDoDraw = document.getElementById('btn-do-draw');
+const ballsContainer = document.getElementById('random-draw-balls');
+const drawInput = document.getElementById('draw-total-input');
+const btnRandomDraw = document.getElementById('btn-random-draw');
+
+function initBalls() {
+    if (!ballsContainer) return;
+    ballsContainer.innerHTML = '';
+    for (let i = 1; i <= drawTotal; i++) {
+        const d = document.createElement('div');
+        d.className = 'draw-ball'; d.id = 'ball-' + i; d.textContent = i;
+        if (drawnNumbers.has(i)) d.classList.add('drawn');
+        ballsContainer.appendChild(d);
+    }
+}
+
+if (btnRandomDraw) {
+    btnRandomDraw.addEventListener('click', () => {
+        if (rdModal) {
+            rdModal.style.display = rdModal.style.display === 'none' ? 'block' : 'none';
+            if (rdModal.style.display === 'block') initBalls();
+        }
+    });
+}
+
+if (drawInput) {
+    drawInput.addEventListener('change', (e) => {
+        let v = parseInt(e.target.value);
+        if (v < 1) v = 1; if (v > 100) v = 100; drawTotal = v;
+        drawnNumbers.clear(); initBalls();
+    });
+}
+if (btnCloseDraw) {
+    btnCloseDraw.addEventListener('click', () => {
+        if (rdModal) rdModal.style.display = 'none';
+    });
+}
+if (btnDoDraw) {
+    btnDoDraw.addEventListener('click', () => {
+        if (drawnNumbers.size >= drawTotal) { drawnNumbers.clear(); initBalls(); }
+        const avail = []; for (let i = 1; i <= drawTotal; i++) { if (!drawnNumbers.has(i)) avail.push(i); }
+        if (avail.length === 0) return;
+        btnDoDraw.disabled = true;
+        const winner = avail[Math.floor(Math.random() * avail.length)];
+        let ticks = 0, lastFlicker = null;
+        const interval = setInterval(() => {
+            if (lastFlicker) lastFlicker.classList.remove('flicker');
+            const rnd = avail[Math.floor(Math.random() * avail.length)];
+            const b = document.getElementById('ball-' + rnd);
+            if (b) { b.classList.add('flicker'); lastFlicker = b; }
+            ticks++;
+            if (ticks > 20) {
+                clearInterval(interval);
+                if (lastFlicker) lastFlicker.classList.remove('flicker');
+                const wb = document.getElementById('ball-' + winner);
+                if (wb) {
+                    wb.classList.add('winner');
+                    setTimeout(() => { wb.classList.remove('winner'); wb.classList.add('drawn'); drawnNumbers.add(winner); btnDoDraw.disabled = false; }, 2000);
+                } else { btnDoDraw.disabled = false; }
+            }
+        }, 100);
+    });
+}
+</script>
+
+</body>
+</html>

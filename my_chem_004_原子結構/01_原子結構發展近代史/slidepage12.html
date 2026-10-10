@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>範例 5：同位素含量與平均原子量逆推計算</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      box-sizing: border-box;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      background: #10b981;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: clamp(16px, 2vw, 24px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .problem-box {
+      background: #0f172a;
+      border-left: 4px solid #10b981;
+      padding: 18px;
+      border-radius: 0 10px 10px 0;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+    .given-box {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .toggle-btn {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .toggle-btn:hover {
+      background: linear-gradient(135deg, #047857, #065f46);
+      transform: translateY(-2px);
+    }
+    .solution-panel {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 18px;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step-box {
+      border-left: 3px solid #10b981;
+      padding-left: 12px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .step-title {
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 4px;
+    }
+    .answer-tag {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #059669;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">範例 05</span>
+      <h1 style="display:inline-block; margin-left: 10px;">同位素含量與平均原子量逆推計算</h1>
+    </div>
+    <div class="subtitle">必備素養：利用已知平均原子量逆推自然界同位素豐度百分比</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Problem Statement -->
+    <div class="card">
+      <div class="card-title">📝 題目內容</div>
+      <div class="problem-box">
+        天然銅金屬（元素符號 \(\text{Cu}\)）在自然界中僅有兩種穩定的天然同位素：<br>
+        • \(^{63}\text{Cu}\)（原子質量以 \(62.93 \;\text{amu}\) 計）<br>
+        • \(^{65}\text{Cu}\)（原子質量以 \(64.93 \;\text{amu}\) 計）<br><br>
+        已知化學週期表上記載銅的<strong>平均原子量為 \(63.54\)</strong>。<br><br>
+        <strong>試求：自然界中 \(^{63}\text{Cu}\) 與 \(^{65}\text{Cu}\) 的原子數百分比（含量豐度）分別為多少百分比？</strong>
+      </div>
+
+      <div class="given-box">
+        💡 <strong>觀念提點：</strong><br>
+        元素的平均原子量為各天然同位素以其「原子個數百分比（豐度）」進行的<strong>加權平均值</strong>：
+        $$\bar{M} = M_1 \times x_1 + M_2 \times x_2$$
+        其中所有同位素含量總和必等於 \(100\%\)（即 \(x_1 + x_2 = 1\)）。
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Solution Toggle -->
+    <div class="card">
+      <div class="card-title">💡 詳解與步驟分析</div>
+
+      <button class="toggle-btn" id="btn-toggle">
+        <span>👁️ 顯示詳解</span>
+      </button>
+
+      <div class="solution-panel" id="solution-panel">
+        <div class="step-box">
+          <div class="step-title">步驟一：設定未知數變數</div>
+          設自然界中 \(^{63}\text{Cu}\) 的百分含量為 \(x\)（小數），則 \(^{65}\text{Cu}\) 的百分含量為 \((1 - x)\)。
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">步驟二：列出加權平均方程式</div>
+          依平均原子量加權公式：
+          $$62.93 \times x + 64.93 \times (1 - x) = 63.54$$
+          展開並化簡：
+          $$62.93x + 64.93 - 64.93x = 63.54$$
+          $$-2.00x + 64.93 = 63.54$$
+          $$2.00x = 64.93 - 63.54 = 1.39$$
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">步驟三：求解含量百分比</div>
+          $$x = \frac{1.39}{2.00} = 0.695 = 69.5\%$$
+          因此：
+          • \(^{63}\text{Cu}\) 含量 \(= 69.5\%\)<br>
+          • \(^{65}\text{Cu}\) 含量 \(= 1 - 0.695 = 0.305 = 30.5\%\)<br><br>
+          <em>（若以整數質量數 63 與 65 簡算：\(63x + 65(1-x) = 63.54 \implies 2x = 1.46 \implies x = 73\%\)，此處依題意精準質量計算）</em>
+        </div>
+
+        <div class="answer-tag">
+          🎯 \(^{63}\text{Cu}\) 約為 69.5% ｜ \(^{65}\text{Cu}\) 約為 30.5%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const btnToggle = document.getElementById('btn-toggle');
+    const panel = document.getElementById('solution-panel');
+    let isShown = false;
+
+    btnToggle.addEventListener('click', () => {
+      isShown = !isShown;
+      panel.style.display = isShown ? 'flex' : 'none';
+      btnToggle.innerHTML = isShown ? '<span>🙈 隱藏詳解</span>' : '<span>👁️ 顯示詳解</span>';
+      if (isShown && window.MathJax) {
+        MathJax.typesetPromise();
+      }
+    });
+  </script>
+</body>
+</html>

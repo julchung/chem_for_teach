@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2-5 理想氣體方程式 · 核心通關檢核 | 互動教學</title>
+    <meta name="description" content="選修化學：理想氣體方程式核心概念連連看與隨機四題題庫抽測通關檢核">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --accent-teal: #2dd4bf;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.2rem 1.2rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 頂部情境引導框 */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.1rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.88rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--accent-green);
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+
+        /* 雙欄網格佈局 (2x2 Grid) */
+        .quiz-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 860px) {
+            .quiz-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-card {
+            background: rgba(19, 27, 46, 0.88);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .quiz-card:hover {
+            border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .quiz-card.card-correct {
+            border-color: rgba(52, 211, 153, 0.75) !important;
+            box-shadow: 0 0 16px rgba(52, 211, 153, 0.2) !important;
+        }
+
+        .quiz-card.card-wrong {
+            border-color: rgba(248, 113, 113, 0.75) !important;
+            box-shadow: 0 0 16px rgba(248, 113, 113, 0.2) !important;
+        }
+
+        .quiz-q-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quiz-q-tag {
+            font-size: 0.78rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .quiz-q {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 10px;
+            line-height: 1.55;
+        }
+
+        .quiz-scenario-sub {
+            background: rgba(15, 23, 42, 0.65);
+            border-left: 3px solid var(--accent-yellow);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .quiz-opt {
+            padding: 10px 14px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            transition: all 0.18s ease;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .quiz-opt:hover {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.35);
+            transform: translateX(3px);
+        }
+
+        .quiz-opt.selected {
+            background: rgba(56, 189, 248, 0.22) !important;
+            border-color: var(--accent-blue) !important;
+            color: #38bdf8 !important;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+        }
+
+        .quiz-opt.verified-pass {
+            background: rgba(52, 211, 153, 0.25) !important;
+            border-color: var(--accent-green) !important;
+            color: #34d399 !important;
+            font-weight: 700;
+        }
+
+        .quiz-opt.verified-fail {
+            background: rgba(248, 113, 113, 0.25) !important;
+            border-color: var(--accent-red) !important;
+            color: #f87171 !important;
+        }
+
+        .quiz-card-feedback {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 連連看互動區 */
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+            background: rgba(7, 16, 24, 0.65);
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid rgba(45, 212, 191, 0.25);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .match-game-cols {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            gap: 28px;
+            z-index: 2;
+        }
+
+        @media (max-width: 768px) {
+            .match-game-cols {
+                gap: 16px;
+            }
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 47%;
+        }
+
+        .match-item {
+            position: relative;
+            background: rgba(20, 36, 48, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.91rem;
+            color: #ecfdf5;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 50px;
+        }
+
+        .match-item:hover {
+            border-color: rgba(45, 212, 191, 0.5);
+            background: rgba(30, 50, 68, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .match-item.selected {
+            border-color: var(--accent-yellow) !important;
+            background: rgba(251, 191, 36, 0.18) !important;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+        }
+
+        .match-item.matched {
+            border-color: var(--accent-teal);
+            background: rgba(45, 212, 191, 0.12);
+        }
+
+        .match-item.match-correct {
+            border-color: var(--accent-green) !important;
+            background: rgba(52, 211, 153, 0.18) !important;
+            color: #6ee7b7 !important;
+        }
+
+        .match-item.match-wrong {
+            border-color: var(--accent-red) !important;
+            background: rgba(248, 113, 113, 0.18) !important;
+            color: #fca5a5 !important;
+        }
+
+        .match-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #2dd4bf;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(45, 212, 191, 0.7);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .match-item:hover .match-dot {
+            transform: scale(1.2);
+            background: #38bdf8;
+        }
+
+        .match-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 底部操作列 */
+        .quiz-action-bar {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .quiz-feedback-msg {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .quiz-feedback-msg.success { color: var(--accent-green); }
+        .quiz-feedback-msg.fail { color: var(--accent-red); }
+
+        .btn-action-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-submit-exam {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #0f172a;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.35);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-submit-exam:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 211, 238, 0.5);
+        }
+
+        .btn-submit-exam:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-retry-exam {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.96rem;
+            cursor: pointer;
+            display: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-retry-exam:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* 通關成功橫幅 */
+        .section-complete-banner {
+            display: none;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.22) 0%, rgba(15, 23, 42, 0.85) 75%);
+            border: 1.5px solid rgba(52, 211, 153, 0.4);
+            border-radius: 18px;
+            padding: 2.2rem 1.6rem;
+            box-shadow: 0 0 35px rgba(52, 211, 153, 0.25);
+            backdrop-filter: blur(14px);
+            margin-top: 8px;
+        }
+
+        .btn-next-nav {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: #0f172a;
+            font-size: 1.05rem;
+            font-weight: 800;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            transition: all 0.25s ease;
+        }
+
+        .btn-next-nav:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="quiz-container-full">
+
+        <!-- 頂部指引 -->
+        <div class="quiz-scenario-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                <span class="problem-badge">🏆 單元 2-5 · 核心通關檢核</span>
+                <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成第 (1) 題連連看配對與後續 4 道精選測驗題</span>
+            </div>
+            <p style="font-size:0.94rem; line-height:1.65; color:#f8fafc; margin:0;">
+                <strong style="color:#fbbf24;">【理想氣體方程式核心檢核】</strong>
+                第 (1) 題為概念連連看（任意拖曳或點選配對），後續為題庫精選 4 道綜合測驗題。全數答對即可順利通關並解鎖下一單元！
+            </p>
+        </div>
+
+        <!-- 第 (1) 題：連連看配對題 -->
+        <div class="quiz-card" id="quiz-matching-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div class="quiz-q" style="margin:0;">
+                    <span style="color:var(--accent-cyan); font-weight:800;">(1) 核心概念配對連連看</span>
+                    <span style="font-size:0.9rem; color:#94a3b8; font-weight:normal; margin-left:8px;">請將左側化學概念連線至右側對應科學意義：</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="btn-shuffle-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; font-size:0.8rem; padding:5px 12px; border-radius:8px; cursor:pointer;">
+                        🔀 隨機更換
+                    </button>
+                    <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#cbd5e1; font-size:0.8rem; padding:5px 12px; border-radius:8px; cursor:pointer;">
+                        重設連線 ↺
+                    </button>
+                </div>
+            </div>
+
+            <div class="match-game-wrapper" id="match-game-wrapper">
+                <svg id="match-svg" class="match-svg"></svg>
+                <div class="match-game-cols">
+                    <div class="match-col" id="match-col-left"></div>
+                    <div class="match-col" id="match-col-right"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <span style="font-size:0.8rem; color:#64748b;">💡 支援按住拖曳連線，或先點擊左側項目再點擊右側項目進行配對</span>
+                <span id="match-count-badge" style="font-size:0.84rem; color:var(--accent-teal); font-weight:700;">已連線：0 / 5</span>
+            </div>
+        </div>
+
+        <!-- 動態 4 題單選題容器 (2x2 Grid) -->
+        <div id="dynamic-questions-container" class="quiz-grid-layout">
+            <!-- 由 JavaScript 動態自題庫抽樣 4 題渲染 -->
+        </div>
+
+        <!-- 底部操作列 -->
+        <div class="quiz-action-bar">
+            <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                <span>💡 請完成第 (1) 題連連看配對，並作答後續 4 道測驗題，完成後點擊「確定作答」。</span>
+            </div>
+            <div class="btn-action-group">
+                <button type="button" id="btn-retry-exam" class="btn-retry-exam">
+                    🔄 換題重測
+                </button>
+                <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+                    確定作答 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- 通關成功橫幅 -->
+        <div id="section-complete-banner" class="section-complete-banner">
+            <div style="font-size: 3.5rem; margin-bottom: 0.6rem;">🎉 🏆 🌟</div>
+            <h2 style="color: #34d399; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.4rem;">恭喜通關！單元檢核全數正確！</h2>
+            <p style="color: #a7f3d0; font-size: 1.05rem; margin-bottom: 1.2rem;">
+                您已透徹掌握理想氣體方程式推導、氣體常數、分子量測定與雙瓶連通平衡系統，成功解鎖下一學習章節！
+            </p>
+            <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                <div style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(52, 211, 153, 0.4); padding: 10px 18px; border-radius: 10px; font-weight: 700; color: #6ee7b7;">
+                    ✅ 2-5 理想氣體方程式 — 通關成功
+                </div>
+                <div style="background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); padding: 10px 18px; border-radius: 10px; font-weight: 700; color: #38bdf8;">
+                    🔓 2-6 道耳吞分壓定律 — 已解鎖
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button type="button" class="btn-next-nav" onclick="goToNextSection()">
+                    前往 2-6 道耳吞分壓定律 →
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ═════════════════════════════════════════════════════════════════════
+// 1. 核心概念連連看題庫池 (10 組核心化學概念，每次隨機抽取 5 組)
+// ═════════════════════════════════════════════════════════════════════
+const MATCH_QUESTION_POOL = [
+    { left: '理想氣體狀態方程式', right: '$PV = nRT$' },
+    { left: '常用氣體常數 $R$', right: '約 $0.082\\ \\text{L}\\cdot\\text{atm}/(\\text{mol}\\cdot\\text{K})$' },
+    { left: 'SI 制氣體常數 $R$', right: '約 $8.314\\ \\text{J}/(\\text{mol}\\cdot\\text{K})$' },
+    { left: '理想氣體微觀假說', right: '分子本身無體積、分子間無吸引力與排斥力' },
+    { left: '氣體趨近理想氣體條件', right: '高溫（克服引力）、低壓（分子間距遠體積可忽略）' },
+    { left: '氣體密度法求分子量', right: '$M = \\dfrac{dRT}{P}$' },
+    { left: '理想氣體莫耳體積公式', right: '$V_m = \\dfrac{V}{n} = \\dfrac{RT}{P}$' },
+    { left: '細管連通容器達平衡條件', right: '兩端容器內氣體「壓力相等」（$P_1 = P_2$）' },
+    { left: '氣體分子平均動能與溫度', right: '平均動能僅與絕對溫度成正比（$\\bar{E}_k \\propto T$）' },
+    { left: '開口容器加熱逸出莫耳數', right: '定壓定容下殘留莫耳數與絕對溫度成反比（$n \\propto \\dfrac{1}{T}$）' }
+];
+
+// ═════════════════════════════════════════════════════════════════════
+// 2. 綜合選擇題庫池 (由本地 AI 模型分析截圖與原有題庫整合而成，共 10 題)
+// ═════════════════════════════════════════════════════════════════════
+const QUESTION_BANK = [
+    // ── 題庫 1 (截圖 140103 / 原題 2)：混合氣體質量求莫耳數 ──
+    {
+        id: 'ideal_gas_mix_n2_o2_he',
+        tag: '混合氣體莫耳數計算 · 理想氣體方程式',
+        scenario: '體積 $1.230\\text{ L}$ 之容器內，盛有 $27^\\circ\\text{C}$、$1\\text{ atm}$ 的 $\\text{N}_2$、$\\text{O}_2$ 及 $\\text{He}$ 混合氣體。若混合氣體總重為 $1.00\\text{ g}$，其中 $\\text{O}_2$ 重為 $0.64\\text{ g}$。（原子量：$\\text{N}=14$，$\\text{O}=16$，$\\text{He}=4$）',
+        question: '試問容器中 $\\text{N}_2$ 之莫耳數為多少莫耳？',
+        options: [
+            'A. 0.01 mol',
+            'B. 0.02 mol',
+            'C. 0.03 mol',
+            'D. 0.04 mol'
+        ],
+        correctIndex: 0,
+        explanation: '依理想氣體方程式 $PV = nRT$：<br>總莫耳數 $n_{\\text{總}} = \\dfrac{1\\text{ atm} \\times 1.230\\text{ L}}{0.082 \\times 300\\text{ K}} = 0.05\\text{ mol}$。<br>$\\text{O}_2$ 莫耳數 $n_{\\text{O}_2} = \\dfrac{0.64}{32} = 0.02\\text{ mol}$。<br>其餘 $\\text{N}_2$ 與 $\\text{He}$ 莫耳數和為 $0.05 - 0.02 = 0.03\\text{ mol}$，質量和為 $1.00 - 0.64 = 0.36\\text{ g}$。<br>設 $\\text{N}_2$ 為 $x\\text{ mol}$，$\\text{He}$ 為 $(0.03 - x)\\text{ mol}$：<br>$28x + 4(0.03 - x) = 0.36 \\implies 24x + 0.12 = 0.36 \\implies 24x = 0.24 \\implies x = 0.01\\text{ mol}$。'
+    },
+
+    // ── 題庫 2 (截圖 140117 & 143900 / 原題 3)：氣體分解平衡與壓力 ──
+    {
+        id: 'ideal_gas_dissociation_ab',
+        tag: '氣體分解平衡與狀態方程式 · 溫壓關聯',
+        scenario: '高溫時氣體 $\\text{AB}_{(g)}$ 部分分解為 $\\text{A}_{(g)}$ 及 $\\text{B}_{(g)}$。設在一個容積不變的密閉容器中置入 $1\\text{ mol}$ 的 $\\text{AB}_{(g)}$，在 $500\\text{ K}$ 達平衡時有 $25\\%$ 分解，測得總壓為 $2.00\\text{ atm}$。',
+        question: '若將溫度升高至 $800\\text{ K}$ 達平衡且有 $50\\%$ 的 $\\text{AB}_{(g)}$ 分解，則此時容器內壓力為若干大氣壓？',
+        options: [
+            'A. 3.20 atm',
+            'B. 3.84 atm',
+            'C. 4.27 atm',
+            'D. 6.40 atm'
+        ],
+        correctIndex: 1,
+        explanation: '分解反應：$\\text{AB}_{(g)} \\rightleftharpoons \\text{A}_{(g)} + \\text{B}_{(g)}$。<br>(1) $500\\text{ K}$ 時分解率 $25\\%$：平衡時 $\\text{AB}=0.75\\text{ mol}$、$\\text{A}=0.25\\text{ mol}$、$\\text{B}=0.25\\text{ mol}$，總莫耳數 $n_1 = 1.25\\text{ mol}$，壓力 $P_1 = 2.00\\text{ atm}$。<br>(2) $800\\text{ K}$ 時分解率 $50\\%$：平衡時 $\\text{AB}=0.50\\text{ mol}$、$\\text{A}=0.50\\text{ mol}$、$\\text{B}=0.50\\text{ mol}$，總莫耳數 $n_2 = 1.50\\text{ mol}$。<br>因容器容積固定，$PV = nRT \\implies P \\propto nT$：<br>$\\dfrac{P_2}{P_1} = \\dfrac{n_2 T_2}{n_1 T_1} = \\dfrac{1.50 \\times 800}{1.25 \\times 500} = \\dfrac{1200}{625} = 1.92$。<br>故 $P_2 = 2.00 \\times 1.92 = 3.84\\text{ atm}$。'
+    },
+
+    // ── 題庫 3 (截圖 140129 / 原題 4)：乙烷燃燒壓力變化倍數 ──
+    {
+        id: 'ideal_gas_combustion_c2h6',
+        tag: '燃燒反應與定容壓力變化 · 化學計量',
+        scenario: '在 $27^\\circ\\text{C}$ 時各取 $1\\text{ mol}$ 的 $\\text{C}_2\\text{H}_6$ 及 $\\text{O}_2$ 置於密閉容器中，加熱至 $327^\\circ\\text{C}$ 使其完全反應生成 $\\text{CO}_2$ 及水蒸氣 $\\text{H}_2\\text{O}_{(g)}$。<br>反應方程式：$2\\text{C}_2\\text{H}_6 + 7\\text{O}_2 \\to 4\\text{CO}_2 + 6\\text{H}_2\\text{O}$。',
+        question: '則完全反應後容器內的氣體總壓力為反應前的多少倍？',
+        options: [
+            'A. 10/7 倍',
+            'B. 12/7 倍',
+            'C. 15/7 倍',
+            'D. 20/7 倍'
+        ],
+        correctIndex: 2,
+        explanation: '反應前：$n_{\\text{前}} = 1 + 1 = 2\\text{ mol}$，$T_{\\text{前}} = 27 + 273 = 300\\text{ K}$。<br>反應時：$\\text{O}_2$ 為限量試劑（消耗 $1\\text{ mol}$）。<br>依係數比，消耗 $\\text{C}_2\\text{H}_6 = \\dfrac{2}{7}\\text{ mol}$，剩餘 $\\text{C}_2\\text{H}_6 = 1 - \\dfrac{2}{7} = \\dfrac{5}{7}\\text{ mol}$。<br>生成 $\\text{CO}_2 = \\dfrac{4}{7}\\text{ mol}$，生成 $\\text{H}_2\\text{O}_{(g)} = \\dfrac{6}{7}\\text{ mol}$。<br>反應後氣體總莫耳數 $n_{\\text{後}} = \\dfrac{5}{7} + \\dfrac{4}{7} + \\dfrac{6}{7} = \\dfrac{15}{7}\\text{ mol}$，$T_{\\text{後}} = 327 + 273 = 600\\text{ K}$。<br>由 $P \\propto nT$：$\\dfrac{P_{\\text{後}}}{P_{\\text{前}}} = \\dfrac{n_{\\text{後}} T_{\\text{後}}}{n_{\\text{前}} T_{\\text{前}}} = \\dfrac{\\frac{15}{7} \\times 600}{2 \\times 300} = \\dfrac{15}{7}$ 倍。'
+    },
+
+    // ── 題庫 4 (截圖 140153 / 原題 5 / 98指考)：揮發性化合物完全汽化求分子量 ──
+    {
+        id: 'ideal_gas_vaporization_mw',
+        tag: '揮發性液體蒸氣壓與分子量測定 · P-T 圖判讀',
+        scenario: '小華將 $8.4\\text{ g}$ 的某揮發性液態化合物置於 $8.2\\text{ L}$ 體積固定的密閉容器中，自 $280\\text{ K}$ 開始加熱升溫至 $360\\text{ K}$。在 $360\\text{ K}$ 時該液體已完全汽化為氣體，且測得容器內氣體壓力為 $0.36\\text{ atm}$。',
+        question: '試問此化合物之分子量（g/mol）最接近下列哪一數值？',
+        options: [
+            'A. 60 g/mol',
+            'B. 72 g/mol',
+            'C. 84 g/mol',
+            'D. 96 g/mol',
+            'E. 108 g/mol'
+        ],
+        correctIndex: 2,
+        explanation: '當液體完全汽化後遵循理想氣體方程式 $PV = \\dfrac{W}{M}RT \\implies M = \\dfrac{WRT}{PV}$。<br>已知 $W = 8.4\\text{ g}$，$V = 8.2\\text{ L}$，$T = 360\\text{ K}$，$P = 0.36\\text{ atm}$，$R = 0.082\\text{ L}\\cdot\\text{atm}/(\\text{mol}\\cdot\\text{K})$：<br>$M = \\dfrac{8.4 \\times 0.082 \\times 360}{0.36 \\times 8.2} = \\dfrac{8.4 \\times (0.082 / 8.2) \\times (360 / 0.36)}{1} = \\dfrac{8.4 \\times 0.01 \\times 1000}{1} = 84\\text{ g/mol}$。'
+    },
+
+    // ── 題庫 5 (截圖 143808)：細管連通雙燒瓶油浴加熱平衡 ──
+    {
+        id: 'ideal_gas_connected_flasks',
+        tag: '連通雙容器變溫平衡系統 · 理想氣體計算',
+        scenario: '兩個容積相等（各為 $V$）的燒瓶用細管相連接（細管體積省略），在 $27^\\circ\\text{C}$ 下置入 $0.6\\text{ mol}$ 的氧氣，測得壓力為 $0.5\\text{ atm}$。現將其中一個燒瓶浸入 $327^\\circ\\text{C}$ 油浴中，另一燒瓶仍維持 $27^\\circ\\text{C}$。',
+        question: '達平衡後，下列有關此系統之敘述，何者正確？',
+        options: [
+            'A. 系統最後平衡壓力約為 0.67 atm',
+            'B. 單一個燒瓶的容積為 29.52 升',
+            'C. 浸入 327°C 之燒瓶內含有 0.4 mol 氧氣',
+            'D. 27°C 與 327°C 二瓶中氧分子平均動能比為 2：1'
+        ],
+        correctIndex: 0,
+        explanation: '(1) 初態：總容積 $2V = \\dfrac{nRT}{P} = \\dfrac{0.6 \\times 0.082 \\times 300}{0.5} = 29.52\\text{ L} \\implies$ 單瓶容積 $V = 14.76\\text{ L}$（故 B 錯誤）。<br>(2) 末態：細管連通末壓相同（$P_{\\text{末}}$），$T_{\\text{左}}=600\\text{ K}$，$T_{\\text{右}}=300\\text{ K}$。<br>莫耳數守恆：$n = \\dfrac{P_{\\text{末}} V}{R \\times 600} + \\dfrac{P_{\\text{末}} V}{R \\times 300} = \\dfrac{P_{\\text{末}} V}{200R} = 0.6\\text{ mol}$。<br>$P_{\\text{末}} = \\dfrac{0.6 \\times 0.082 \\times 200}{14.76} = \\dfrac{2}{3} \\approx 0.67\\text{ atm}$（故 A 正確）。<br>(3) 莫耳數比 $n_{\\text{左}} : n_{\\text{右}} = \\dfrac{1}{600} : \\dfrac{1}{300} = 1 : 2$。浸入 $327^\\circ\\text{C}$ 燒瓶內含氧量為 $0.6 \\times \\dfrac{1}{3} = 0.2\\text{ mol}$（故 C 錯誤）。<br>(4) 平均動能 $\\bar{E}_k \\propto T$，動能比應為 $T_{327} : T_{27} = 600 : 300 = 2 : 1$（故 D 敘述順序錯誤）。'
+    },
+
+    // ── 題庫 6 (截圖 143904)：合成氨反應後混合氣體密度倍數 ──
+    {
+        id: 'ideal_gas_habers_density',
+        tag: '定溫定壓反應與密度變化 · 哈柏法合成氨',
+        scenario: '在一定溫度與壓力下，$\\text{N}_2$ 與 $\\text{H}_2$ 按體積比 $1 : 2$ 混合於一密閉容器中使之反應。反應式為 $\\text{N}_2 + 3\\text{H}_2 \\to 2\\text{NH}_3$。',
+        question: '若反應中有 $30\\%$ 的 $\\text{H}_2$ 發生反應產生 $\\text{NH}_3$，反應後恢復原溫原壓，則混合氣體之密度約為反應前混合氣體密度的若干倍？',
+        options: [
+            'A. 0.87 倍',
+            'B. 0.90 倍',
+            'C. 1.03 倍',
+            'D. 1.15 倍'
+        ],
+        correctIndex: 3,
+        explanation: '同溫同壓下體積比即莫耳數比。設初莫耳數 $\\text{N}_2 = 1\\text{ mol}$，$\\text{H}_2 = 2\\text{ mol}$，初總莫耳數 $n_0 = 3\\text{ mol}$。<br>氣體總質量守恆：$m = 1 \\times 28 + 2 \\times 2 = 32\\text{ g}$。<br>消耗 $\\text{H}_2 = 2 \\times 30\\% = 0.6\\text{ mol}$，消耗 $\\text{N}_2 = 0.2\\text{ mol}$，生成 $\\text{NH}_3 = 0.4\\text{ mol}$。<br>末莫耳數：$\\text{N}_2 = 0.8$、$\\text{H}_2 = 1.4$、$\\text{NH}_3 = 0.4$，末總莫耳數 $n_1 = 2.6\\text{ mol}$。<br>同溫同壓下 $V \\propto n$，因總質量守恆，密度 $d = \\dfrac{m}{V} \\propto \\dfrac{1}{n}$：<br>$\\dfrac{d_1}{d_0} = \\dfrac{n_0}{n_1} = \\dfrac{3}{2.6} = \\dfrac{30}{26} \\approx 1.1538 \\approx 1.15$ 倍。'
+    },
+
+    // ── 題庫 7 (截圖 144016 / 94指考)：玻璃容器放氣前後求分子量 ──
+    {
+        id: 'ideal_gas_effusion_mw_diff',
+        tag: '容器放氣前後質量壓力差求分子量 · 指考經典',
+        scenario: '將某氣體裝入 $20\\text{ L}$ 的玻璃容器中，測其總重量為 $22.8\\text{ kg}$，壓力為 $27.95\\text{ atm}$。若將部分氣體放出，容器的總重量變為 $22.5\\text{ kg}$，氣體的壓力變為 $19.6\\text{ atm}$。假設氣體放出前後容器溫度均維持在 $27^\\circ\\text{C}$，且此氣體為理想氣體。',
+        question: '則此氣體一莫耳的質量（分子量）為多少克？',
+        options: [
+            'A. 16 g',
+            'B. 28 g',
+            'C. 30 g',
+            'D. 32 g',
+            'E. 44 g'
+        ],
+        correctIndex: 4,
+        explanation: '放出氣體質量 $\\Delta m = 22.8 - 22.5\\text{ kg} = 0.3\\text{ kg} = 300\\text{ g}$。<br>壓力降 $\\Delta P = 27.95 - 19.60 = 8.35\\text{ atm}$。<br>容積 $V = 20\\text{ L}$，$T = 27 + 273 = 300\\text{ K}$。<br>由理想氣體方程式 $\\Delta P \\cdot V = \\Delta n \\cdot RT = \\dfrac{\\Delta m}{M} RT$：<br>$M = \\dfrac{\\Delta m \\cdot RT}{\\Delta P \\cdot V} = \\dfrac{300 \\times 0.082 \\times 300}{8.35 \\times 20} = \\dfrac{7380}{167} \\approx 44.19\\text{ g/mol}$。<br>最接近選項為 44 g（如 $\\text{CO}_2$ 或 $\\text{N}_2\\text{O}$）。'
+    },
+
+    // ── 題庫 8 (經典開口容器加熱逸出氣體) ──
+    {
+        id: 'ideal_gas_temp_escape_ratio',
+        tag: '開口/定容容器加熱與氣體溢出莫耳數關係',
+        scenario: '一開口容器在 $27^\\circ\\text{C}$ 時盛有某理想氣體，欲使容器內所殘留之氣體莫耳數為原來的 $\\dfrac{3}{5}$，需將容器加熱至多少攝氏度（$^\\circ\\text{C}$）？',
+        question: '試問加熱後溫度應為多少攝氏度？',
+        options: [
+            'A. 45°C',
+            'B. 177°C',
+            'C. 227°C',
+            'D. 500°C'
+        ],
+        correctIndex: 2,
+        explanation: '開口容器與大氣相通，壓力固定（$P = 1\\text{ atm}$），且容器容積固定（$V$ 固定）。<br>由 $PV = nRT \\implies nT = \\text{定值} \\implies n_1 T_1 = n_2 T_2$。<br>初溫 $T_1 = 27 + 273 = 300\\text{ K}$。<br>$n_2 = \\dfrac{3}{5} n_1 \\implies T_2 = \\dfrac{n_1}{n_2} T_1 = \\dfrac{5}{3} \\times 300 = 500\\text{ K}$。<br>攝氏溫度 $t_2 = 500 - 273 = 227^\\circ\\text{C}$。'
+    },
+
+    // ── 題庫 9 (不同溫壓氣體密度比較換算) ──
+    {
+        id: 'ideal_gas_density_ratio_calc',
+        tag: '狀態方程與氣體密度公式換算',
+        scenario: '某氣體在 $127^\\circ\\text{C}$、$2\\text{ atm}$ 時的密度為 $d_1$，在 $-23^\\circ\\text{C}$、$1\\text{ atm}$ 時的密度為 $d_2$。',
+        question: '試問兩密度之比值（$d_1 : d_2$）為何？',
+        options: [
+            'A. 1：1',
+            'B. 5：4',
+            'C. 4：5',
+            'D. 8：5'
+        ],
+        correctIndex: 1,
+        explanation: '由理想氣體密度公式 $d = \\dfrac{PM}{RT} \\implies d \\propto \\dfrac{P}{T}$（同一氣體分子量 $M$ 相同）。<br>初態：$P_1 = 2\\text{ atm}$，$T_1 = 127 + 273 = 400\\text{ K}$。<br>末態：$P_2 = 1\\text{ atm}$，$T_2 = -23 + 273 = 250\\text{ K}$。<br>$\\dfrac{d_1}{d_2} = \\dfrac{P_1 / T_1}{P_2 / T_2} = \\dfrac{2 / 400}{1 / 250} = \\dfrac{1 / 200}{1 / 250} = \\dfrac{250}{200} = \\dfrac{5}{4}$。'
+    },
+
+    // ── 題庫 10 (隔板活塞平衡與氣體莫耳數) ──
+    {
+        id: 'ideal_gas_piston_temp_equilibrium',
+        tag: '可動隔板活塞平衡系統 · 理想氣體定律',
+        scenario: '一長度 $100\\text{ cm}$ 的圓柱形密閉容器，內部有一可無摩擦自由移動的輕質絕熱活塞，將容器分成左右兩室。左室置入 $1\\text{ mol}$ 氦氣且溫度維持 $27^\\circ\\text{C}$，右室置入 $3\\text{ mol}$ 氬氣且溫度維持 $127^\\circ\\text{C}$。',
+        question: '達力學平衡後，活塞距離左端為多少公分？',
+        options: [
+            'A. 20 cm',
+            'B. 25 cm',
+            'C. 33.3 cm',
+            'D. 40 cm'
+        ],
+        correctIndex: 0,
+        explanation: '活塞平衡時左右兩室壓力相等（$P_{\\text{左}} = P_{\\text{右}}$）。<br>由 $V \\propto nT \\implies \\dfrac{V_{\\text{左}}}{V_{\\text{右}}} = \\dfrac{n_{\\text{左}} T_{\\text{左}}}{n_{\\text{右}} T_{\\text{右}}}$。<br>已知 $T_{\\text{左}} = 27 + 273 = 300\\text{ K}$，$T_{\\text{右}} = 127 + 273 = 400\\text{ K}$。<br>$\\dfrac{V_{\\text{左}}}{V_{\\text{右}}} = \\dfrac{1 \\times 300}{3 \\times 400} = \\dfrac{300}{1200} = \\dfrac{1}{4}$。<br>圓柱體積正比於長度，設活塞距左端長度為 $L$，則右端長度為 $100 - L$：<br>$\\dfrac{L}{100 - L} = \\dfrac{1}{4} \\implies 4L = 100 - L \\implies 5L = 100 \\implies L = 20\\text{ cm}$。'
+    }
+];
+
+// ═════════════════════════════════════════════════════════════════════
+// 3. 連連看與動態隨機 4 題測驗互動邏輯
+// ═════════════════════════════════════════════════════════════════════
+(function() {
+    const matchWrapper = document.getElementById('match-game-wrapper');
+    const matchSvg = document.getElementById('match-svg');
+    const matchLeftCol = document.getElementById('match-col-left');
+    const matchRightCol = document.getElementById('match-col-right');
+    const matchCountBadge = document.getElementById('match-count-badge');
+    const shuffleMatchBtn = document.getElementById('btn-shuffle-match');
+    const resetMatchBtn = document.getElementById('btn-reset-match');
+
+    const dynamicQuestionsContainer = document.getElementById('dynamic-questions-container');
+    const submitBtn = document.getElementById('btn-submit-exam');
+    const retryBtn = document.getElementById('btn-retry-exam');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const completeBanner = document.getElementById('section-complete-banner');
+
+    let currentMatchData = [];
+    let connections = []; // { leftId, rightId, status }
+    let selectedLeftId = null;
+    let isDragging = false;
+    let dragStartPos = null;
+
+    let currentSelectedQuestions = [];
+    let userAnswers = {};
+    let isVerified = false;
+    let isPassed = false;
+    let lastSelectedIds = [];
+
+    // 隨機選取 5 組連連看題目
+    function selectRandomMatchQuestions() {
+        const shuffled = [...MATCH_QUESTION_POOL].sort(() => 0.5 - Math.random());
+        const picked = shuffled.slice(0, 5);
+        currentMatchData = picked.map((item, idx) => ({
+            id: 'm_' + (idx + 1),
+            left: item.left,
+            right: item.right
+        }));
+    }
+
+    // 渲染連連看
+    function renderMatchGame() {
+        if (!currentMatchData.length) selectRandomMatchQuestions();
+
+        connections = [];
+        selectedLeftId = null;
+        isDragging = false;
+
+        matchLeftCol.innerHTML = '';
+        matchRightCol.innerHTML = '';
+        matchSvg.innerHTML = '';
+        updateMatchCountBadge();
+
+        // 打亂左側
+        const leftList = [...currentMatchData].sort(() => 0.5 - Math.random());
+        leftList.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'match-item';
+            div.dataset.id = item.id;
+            div.dataset.side = 'left';
+            div.innerHTML = `
+                <span class="match-item-text">${item.left}</span>
+                <span class="match-item-badge" style="font-size:0.85rem; font-weight:700; margin-left:6px;"></span>
+                <div class="match-dot"></div>
+            `;
+            matchLeftCol.appendChild(div);
+        });
+
+        // 打亂右側
+        const rightList = [...currentMatchData].sort(() => 0.5 - Math.random());
+        rightList.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'match-item';
+            div.dataset.id = item.id;
+            div.dataset.side = 'right';
+            div.innerHTML = `
+                <div class="match-dot"></div>
+                <span class="match-item-text" style="padding-left:12px;">${item.right}</span>
+                <span class="match-item-badge" style="font-size:0.85rem; font-weight:700; margin-left:6px;"></span>
+            `;
+            matchRightCol.appendChild(div);
+        });
+
+        bindMatchEvents();
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([document.getElementById('quiz-matching-card')]).catch(() => {});
+        }
+    }
+
+    // 隨機選取 4 題單選題（換題重測時優先更換新題目）
+    function selectRandomQuizQuestions() {
+        let pool = QUESTION_BANK.filter(q => !lastSelectedIds.includes(q.id));
+        if (pool.length < 4) {
+            pool = [...QUESTION_BANK];
+        }
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        currentSelectedQuestions = shuffled.slice(0, 4);
+        lastSelectedIds = currentSelectedQuestions.map(q => q.id);
+        userAnswers = {};
+    }
+
+    // 動態渲染 4 題單選題為 2x2 Grid
+    function renderDynamicQuestions() {
+        dynamicQuestionsContainer.innerHTML = '';
+
+        currentSelectedQuestions.forEach((qData, qIdx) => {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.dataset.qindex = qIdx;
+            card.id = `quiz-card-${qIdx}`;
+
+            const qNum = qIdx + 2; // 第 (2), (3), (4), (5) 題
+            const scenarioHtml = qData.scenario ? `<div class="quiz-scenario-sub">${qData.scenario}</div>` : '';
+
+            let optionsHtml = '';
+            qData.options.forEach((optText, optIdx) => {
+                optionsHtml += `
+                    <button type="button" class="quiz-opt" data-qindex="${qIdx}" data-optindex="${optIdx}">
+                        ${optText}
+                    </button>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="quiz-q-header">
+                    <span class="quiz-q-tag">${qData.tag}</span>
+                    <span style="font-size:0.8rem; color:#94a3b8;">第 (${qNum}) 題</span>
+                </div>
+                ${scenarioHtml}
+                <div class="quiz-q">
+                    <span style="color: var(--accent-cyan); font-weight:800;">(${qNum})</span> ${qData.question}
+                </div>
+                <div class="quiz-options">
+                    ${optionsHtml}
+                </div>
+                <div class="quiz-card-feedback" id="fb-card-${qIdx}"></div>
+            `;
+
+            dynamicQuestionsContainer.appendChild(card);
+        });
+
+        // 綁定選項點選事件
+        dynamicQuestionsContainer.querySelectorAll('.quiz-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (isPassed) return;
+
+                const qIdx = parseInt(btn.dataset.qindex, 10);
+                const optIdx = parseInt(btn.dataset.optindex, 10);
+
+                const card = document.getElementById(`quiz-card-${qIdx}`);
+                card.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                userAnswers[qIdx] = optIdx;
+
+                if (feedbackMsg && feedbackMsg.classList.contains('fail')) {
+                    feedbackMsg.className = 'quiz-feedback-msg';
+                    feedbackMsg.innerHTML = '<span>✏️ 作答已更新，完成後點擊「確定作答」。</span>';
+                }
+            });
+        });
+
+        // 觸發 MathJax 重新排版
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise([dynamicQuestionsContainer]).catch(() => {});
+        }
+    }
+
+    // ── 連連看 SVG 貝茲曲線與座標計算 ──
+    function getDotPos(element, side) {
+        const wrapRect = matchWrapper.getBoundingClientRect();
+        const dot = element.querySelector('.match-dot');
+        const dotRect = dot.getBoundingClientRect();
+        return {
+            x: (side === 'left' ? dotRect.right - wrapRect.left - 2 : dotRect.left - wrapRect.left + 2),
+            y: dotRect.top - wrapRect.top + (dotRect.height / 2)
+        };
+    }
+
+    function createBezierPath(x1, y1, x2, y2, status = 'normal') {
+        const dx = Math.abs(x2 - x1) * 0.5;
+        const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+
+        let strokeColor = '#2dd4bf';
+        let strokeWidth = '3';
+        let strokeDash = '';
+
+        if (status === 'correct') {
+            strokeColor = '#34d399';
+            strokeWidth = '3.5';
+        } else if (status === 'wrong') {
+            strokeColor = '#f87171';
+            strokeWidth = '3.5';
+            strokeDash = '6,4';
+        } else if (status === 'preview') {
+            strokeColor = '#fde047';
+            strokeWidth = '2.5';
+            strokeDash = '6,4';
+        }
+
+        path.setAttribute('stroke', strokeColor);
+        path.setAttribute('stroke-width', strokeWidth);
+        if (strokeDash) path.setAttribute('stroke-dasharray', strokeDash);
+        path.setAttribute('stroke-linecap', 'round');
+        return path;
+    }
+
+    function drawAllConnections() {
+        matchSvg.innerHTML = '';
+        connections.forEach(conn => {
+            const leftEl = matchLeftCol.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = matchRightCol.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+            if (leftEl && rightEl) {
+                const p1 = getDotPos(leftEl, 'left');
+                const p2 = getDotPos(rightEl, 'right');
+                const path = createBezierPath(p1.x, p1.y, p2.x, p2.y, conn.status);
+                matchSvg.appendChild(path);
+            }
+        });
+    }
+
+    function updateMatchCountBadge() {
+        if (!matchCountBadge) return;
+        matchCountBadge.textContent = `已連線：${connections.length} / ${currentMatchData.length}`;
+        matchCountBadge.style.color = (connections.length === currentMatchData.length) ? '#34d399' : '#2dd4bf';
+    }
+
+    function addConnection(leftId, rightId) {
+        if (isVerified && isPassed) return;
+
+        connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+        connections.push({ leftId, rightId, status: 'normal' });
+
+        updateMatchItemStyles();
+        drawAllConnections();
+        updateMatchCountBadge();
+    }
+
+    function updateMatchItemStyles() {
+        matchLeftCol.querySelectorAll('.match-item').forEach(el => {
+            const id = el.dataset.id;
+            const isMatched = connections.some(c => c.leftId === id);
+            el.classList.toggle('matched', isMatched);
+            el.classList.toggle('selected', id === selectedLeftId);
+        });
+
+        matchRightCol.querySelectorAll('.match-item').forEach(el => {
+            const id = el.dataset.id;
+            const isMatched = connections.some(c => c.rightId === id);
+            el.classList.toggle('matched', isMatched);
+        });
+    }
+
+    function bindMatchEvents() {
+        matchLeftCol.onclick = e => {
+            if (isVerified && isPassed) return;
+            const item = e.target.closest('.match-item');
+            if (!item) return;
+
+            const id = item.dataset.id;
+            selectedLeftId = (selectedLeftId === id) ? null : id;
+            updateMatchItemStyles();
+        };
+
+        matchRightCol.onclick = e => {
+            if (isVerified && isPassed) return;
+            const item = e.target.closest('.match-item');
+            if (!item) return;
+
+            const rightId = item.dataset.id;
+            if (selectedLeftId) {
+                addConnection(selectedLeftId, rightId);
+                selectedLeftId = null;
+                updateMatchItemStyles();
+            }
+        };
+
+        matchWrapper.onpointerdown = e => {
+            if (isVerified && isPassed) return;
+            const item = e.target.closest('.match-item[data-side="left"]');
+            if (!item) return;
+
+            selectedLeftId = item.dataset.id;
+            dragStartPos = getDotPos(item, 'left');
+            isDragging = true;
+            matchWrapper.setPointerCapture(e.pointerId);
+            updateMatchItemStyles();
+        };
+
+        matchWrapper.onpointermove = e => {
+            if (!isDragging || !dragStartPos) return;
+
+            const wrapRect = matchWrapper.getBoundingClientRect();
+            const curX = e.clientX - wrapRect.left;
+            const curY = e.clientY - wrapRect.top;
+
+            drawAllConnections();
+
+            const previewPath = createBezierPath(dragStartPos.x, dragStartPos.y, curX, curY, 'preview');
+            matchSvg.appendChild(previewPath);
+        };
+
+        matchWrapper.onpointerup = e => {
+            if (!isDragging) return;
+            isDragging = false;
+
+            const dropEl = document.elementFromPoint(e.clientX, e.clientY);
+            const targetRight = dropEl ? dropEl.closest('.match-item[data-side="right"]') : null;
+
+            if (targetRight && selectedLeftId) {
+                addConnection(selectedLeftId, targetRight.dataset.id);
+            }
+
+            selectedLeftId = null;
+            dragStartPos = null;
+            updateMatchItemStyles();
+            drawAllConnections();
+        };
+    }
+
+    window.addEventListener('resize', () => {
+        drawAllConnections();
+    });
+
+    // 清空連線按鈕
+    resetMatchBtn.addEventListener('click', () => {
+        if (isPassed) return;
+        connections = [];
+        selectedLeftId = null;
+        updateMatchItemStyles();
+        drawAllConnections();
+        updateMatchCountBadge();
+        matchWrapper.querySelectorAll('.match-item-badge').forEach(b => b.textContent = '');
+        matchWrapper.querySelectorAll('.match-item').forEach(el => {
+            el.classList.remove('match-correct', 'match-wrong', 'matched', 'selected');
+        });
+        if (feedbackMsg && feedbackMsg.classList.contains('fail')) {
+            feedbackMsg.className = 'quiz-feedback-msg';
+            feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新進行概念配對。</span>';
+        }
+    });
+
+    // 隨機更換連連看題目按鈕
+    shuffleMatchBtn.addEventListener('click', () => {
+        if (isPassed) return;
+        selectRandomMatchQuestions();
+        renderMatchGame();
+    });
+
+    // ── 提交作答檢核 ──
+    submitBtn.addEventListener('click', () => {
+        if (isPassed) return;
+
+        // 檢查連連看是否完成
+        if (connections.length < currentMatchData.length) {
+            feedbackMsg.className = 'quiz-feedback-msg fail';
+            feedbackMsg.innerHTML = `<span>⚠️ 第 (1) 題連連看尚未完成（已連線 ${connections.length}/${currentMatchData.length} 組），請全數連線！</span>`;
+            document.getElementById('quiz-matching-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // 檢查 4 題選擇題是否完成
+        const answeredCount = Object.keys(userAnswers).length;
+        if (answeredCount < currentSelectedQuestions.length) {
+            feedbackMsg.className = 'quiz-feedback-msg fail';
+            feedbackMsg.innerHTML = `<span>⚠️ 尚有題目未作答（已完成 ${answeredCount}/${currentSelectedQuestions.length} 題），請完成所有選擇題後再提交！</span>`;
+            return;
+        }
+
+        isVerified = true;
+
+        // 1. 驗證連連看
+        let allMatchCorrect = true;
+        connections.forEach(conn => {
+            const isCorrect = (conn.leftId === conn.rightId);
+            conn.status = isCorrect ? 'correct' : 'wrong';
+            if (!isCorrect) allMatchCorrect = false;
+
+            const leftEl = matchLeftCol.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = matchRightCol.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+
+            if (leftEl) {
+                leftEl.classList.remove('match-correct', 'match-wrong');
+                leftEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                leftEl.querySelector('.match-item-badge').textContent = isCorrect ? ' ✓' : ' ✗';
+                leftEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+            }
+
+            if (rightEl) {
+                rightEl.classList.remove('match-correct', 'match-wrong');
+                rightEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                rightEl.querySelector('.match-item-badge').textContent = isCorrect ? ' ✓' : ' ✗';
+                rightEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+            }
+        });
+        drawAllConnections();
+
+        // 2. 驗證 4 題選擇題
+        let allQuestionsCorrect = true;
+        currentSelectedQuestions.forEach((qData, qIdx) => {
+            const card = document.getElementById(`quiz-card-${qIdx}`);
+            const fbBox = document.getElementById(`fb-card-${qIdx}`);
+            const chosen = userAnswers[qIdx];
+            const isCorrect = (chosen === qData.correctIndex);
+
+            card.classList.remove('card-correct', 'card-wrong');
+            card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+
+            card.querySelectorAll('.quiz-opt').forEach((btn, optIdx) => {
+                btn.classList.remove('verified-pass', 'verified-fail');
+                if (optIdx === chosen) {
+                    btn.classList.add(isCorrect ? 'verified-pass' : 'verified-fail');
+                }
+                if (!isCorrect && optIdx === qData.correctIndex) {
+                    btn.classList.add('verified-pass');
+                }
+            });
+
+            // 展開解析
+            fbBox.style.display = 'block';
+            if (isCorrect) {
+                fbBox.innerHTML = `
+                    <div style="color:var(--accent-green); font-weight:700; margin-bottom:4px;">✅ 正確！</div>
+                    <div style="color:#cbd5e1; font-size:0.83rem;">${qData.explanation}</div>
+                `;
+            } else {
+                allQuestionsCorrect = false;
+                fbBox.innerHTML = `
+                    <div style="color:var(--accent-red); font-weight:700; margin-bottom:4px;">❌ 答案錯誤（正確答案：${qData.options[qData.correctIndex]}）</div>
+                    <div style="color:#cbd5e1; font-size:0.83rem;">${qData.explanation}</div>
+                `;
+            }
+        });
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([dynamicQuestionsContainer]).catch(() => {});
+        }
+
+        // 3. 判斷總結果
+        if (allMatchCorrect && allQuestionsCorrect) {
+            isPassed = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '檢核通過 ✅';
+            retryBtn.style.display = 'none';
+
+            feedbackMsg.className = 'quiz-feedback-msg success';
+            feedbackMsg.innerHTML = '<span>🎉 恭喜全數答對！理想氣體方程式核心檢核順利通關！</span>';
+
+            notifySectionComplete();
+
+            completeBanner.style.display = 'block';
+            completeBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            feedbackMsg.className = 'quiz-feedback-msg fail';
+            feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示正確（綠色）與錯誤（紅色），點擊「🔄 換題重測」將由題庫重新為您抽選 4 道題目挑戰！</span>';
+
+            submitBtn.disabled = true;
+            retryBtn.style.display = 'inline-block';
+        }
+    });
+
+    // ── 換題重測按鈕 ──
+    retryBtn.addEventListener('click', () => {
+        if (isPassed) return;
+
+        isVerified = false;
+
+        // 重新選取 4 題題目並渲染
+        selectRandomQuizQuestions();
+        renderDynamicQuestions();
+
+        // 重新啟用提交按鈕
+        submitBtn.disabled = false;
+        retryBtn.style.display = 'none';
+
+        feedbackMsg.className = 'quiz-feedback-msg';
+        feedbackMsg.innerHTML = '<span>🔄 已從題庫重新抽選 4 道題目，請再次進行作答！</span>';
+
+        // 滾動至動態題目區
+        document.getElementById('quiz-matching-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // 通知與導航
+    function notifySectionComplete() {
+        try {
+            localStorage.setItem('chem_unlocked_ch2_s6', 'true');
+        } catch(e) {}
+
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: 'ch2_s5',
+            sectionFolder: '05_理想氣體方程式',
+            nextSectionId: 'ch2_s6',
+            nextSectionFolder: '../../my_chem_002_氣體/06_道耳吞分壓定律',
+            timestamp: Date.now()
+        };
+
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage(payload, '*');
+            }
+        } catch(e) {}
+    }
+
+    window.goToNextSection = function() {
+        notifySectionComplete();
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'NAVIGATE_SECTION',
+                    target: 'ch2_s6',
+                    targetFolder: '../../my_chem_002_氣體/06_道耳吞分壓定律'
+                }, '*');
+            } else {
+                window.location.href = '../06_道耳吞分壓定律/index.html';
+            }
+        } catch(e) {
+            window.location.href = '../06_道耳吞分壓定律/index.html';
+        }
+    };
+
+    // 初始化呼叫
+    selectRandomMatchQuestions();
+    renderMatchGame();
+    selectRandomQuizQuestions();
+    renderDynamicQuestions();
+
+})();
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

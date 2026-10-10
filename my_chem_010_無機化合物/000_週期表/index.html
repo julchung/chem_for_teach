@@ -926,5 +926,91 @@
         document.addEventListener('webkitfullscreenchange', () => requestAnimationFrame(fitTable));
 
     </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
 </body>
 </html>

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>碰撞學說 | 互動教學</title>
+    <meta name="description" content="選修化學二：碰撞學說、正確位向、活化能與低限能互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warning-box {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(52,211,153,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        /* Mechanism Practice Slide */
+        .mech-tab-btn {
+            padding: 0.45rem 1.5rem; border-radius: 999px; border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.2s;
+        }
+        .mech-tab-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .mech-tab-active { background: var(--accent-blue) !important; color: #0f172a !important; border-color: var(--accent-blue) !important; }
+        .mech-reveal-btn {
+            margin-top: 0.6rem; padding: 0.5rem 1.2rem; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: opacity 0.2s; align-self: flex-start;
+        }
+        .mech-reveal-btn:hover { opacity: 0.85; }
+        .mech-case { display: flex; flex-direction: column; gap: 0.4rem; height: 100%; }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 1rem; color: #fff;
+            text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+
+        /* Animation canvas */
+        #collision-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+        #energy-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+
+        /* Orientation animation */
+        .orient-container { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .orient-row { display: flex; gap: 0.7rem; flex: 1; min-height: 0; }
+        .orient-box {
+            flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1.5px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; position: relative; overflow: hidden;
+        }
+        .orient-label {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px;
+            white-space: nowrap;
+        }
+        .label-fail { background: rgba(248,113,113,0.2); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .label-ok { background: rgba(52,211,153,0.2); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+
+        /* Energy diagram styles */
+        .energy-diagram-wrapper { flex: 1; min-height: 0; position: relative; }
+        .energy-label-box {
+            position: absolute; background: rgba(15,23,42,0.85); border-radius: 8px;
+            padding: 3px 8px; font-size: 0.78rem; font-weight: 700; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Slider styles */
+        .slider-row { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; margin-top: 0.4rem; }
+        .slider-row label { font-size: 0.9rem; color: var(--accent-yellow); white-space: nowrap; }
+        input[type=range] { flex: 1; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* btn-action */
+        .btn-action {
+            padding: 0.5rem 1.2rem; border-radius: 10px; font-size: 1rem; cursor: pointer;
+            border: 1.5px solid var(--accent-blue); background: rgba(56,189,248,0.12);
+            color: #fff; font-weight: 700; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #0f172a; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.82rem;
+            font-weight: 700; margin: 0 3px;
+        }
+        .badge-red { background: rgba(248,113,113,0.18); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .badge-green { background: rgba(52,211,153,0.18); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+        .badge-yellow { background: rgba(251,191,36,0.18); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-blue { background: rgba(56,189,248,0.18); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4); }
+        .badge-orange { background: rgba(251,146,60,0.18); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.4); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide slide-intro active" id="slide-co-no2">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.35rem; margin-bottom: 0.45rem; flex-shrink:0;">
+                    <h1 style="border:none; margin:0; padding:0; font-size:clamp(1.2rem, 2vw, 1.7rem);">反應途徑與位能變化 ($\text{I}^- + \text{CH}_3\text{Cl} \rightarrow \text{CH}_3\text{I} + \text{Cl}^-$)</h1>
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <button id="btn-toggle-anim" class="btn-action" style="padding:0.25rem 0.85rem; font-size:0.85rem; border-radius:8px;">⏸ 暫停</button>
+                        <button id="btn-reset-anim" class="btn-action" style="padding:0.25rem 0.85rem; font-size:0.85rem; border-radius:8px; border-color:var(--accent-yellow); color:var(--accent-yellow);">↺ 重播</button>
+                        <span id="anim-stage-badge" style="font-size:0.82rem; font-weight:700; padding:3px 12px; border-radius:20px; background:rgba(56,189,248,0.18); color:var(--accent-blue); border:1px solid rgba(56,189,248,0.4); white-space:nowrap;">❶ 反應物接近</span>
+                    </div>
+                </div>
+                <div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:0.1rem 0.2rem;">
+                    <div style="flex:1; min-height:0; position:relative; background:rgba(15,23,42,0.65); border-radius:16px; border:1.5px solid var(--glass-border); overflow:hidden; padding:0.4rem;">
+                        <canvas id="co-no2-canvas" style="width:100%; height:100%; display:block; cursor:pointer;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+};
+window.updateSlides = function() {};
+
+(function() {
+    const cvs = document.getElementById('co-no2-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+
+    // 動畫狀態變數
+    let isPlaying = true;
+    let progress = 0.05; // 0.0 ~ 1.0 反應進程
+    const btnToggle = document.getElementById('btn-toggle-anim');
+    const btnReset = document.getElementById('btn-reset-anim');
+    const badge = document.getElementById('anim-stage-badge');
+
+    if (btnToggle) {
+        btnToggle.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            btnToggle.textContent = isPlaying ? '⏸ 暫停' : '▶ 播放';
+            btnToggle.style.background = isPlaying ? 'rgba(56,189,248,0.12)' : 'rgba(52,211,153,0.2)';
+            btnToggle.style.borderColor = isPlaying ? 'var(--accent-blue)' : 'var(--accent-green)';
+        });
+    }
+
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            progress = 0.01;
+            isPlaying = true;
+            if (btnToggle) {
+                btnToggle.textContent = '⏸ 暫停';
+                btnToggle.style.background = 'rgba(56,189,248,0.12)';
+                btnToggle.style.borderColor = 'var(--accent-blue)';
+            }
+        });
+    }
+
+    // 點擊卡片或徽章跳轉階段
+    let cardBoxes = [];
+    let badgeBoxes = [];
+    cvs.addEventListener('click', (e) => {
+        const r = cvs.getBoundingClientRect();
+        const mx = (e.clientX - r.left) * (cvs.width / r.width);
+        const my = (e.clientY - r.top) * (cvs.height / r.height);
+        for (let i = 0; i < cardBoxes.length; i++) {
+            const b = cardBoxes[i];
+            if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+                if (i === 0) progress = 0.01;
+                else if (i === 1) progress = 0.34;
+                else if (i === 2) progress = 0.67;
+                return;
+            }
+        }
+        for (let i = 0; i < badgeBoxes.length; i++) {
+            const b = badgeBoxes[i];
+            const dist = Math.hypot(mx - b.x, my - b.y);
+            if (dist <= 22) {
+                if (i === 0) progress = 0.01;
+                else if (i === 1) progress = 0.34;
+                else if (i === 2) progress = 0.67;
+                return;
+            }
+        }
+    });
+
+    function drawAtom(ctx, x, y, r, c1, c2, label) {
+        const grad = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+        grad.addColorStop(0, c1);
+        grad.addColorStop(1, c2);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fill();
+        if (label) {
+            ctx.fillStyle = '#fff';
+            ctx.font = `bold ${Math.round(r*1.05)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x, y + 1);
+        }
+    }
+
+    const colC = ['#94a3b8', '#334155'], colI = ['#d8b4fe', '#9333ea'], colCl = ['#6ee7b7', '#059669'], colH = ['#f8fafc', '#cbd5e1'];
+    const atomR = 12;
+    const atomRH = 6.5;
+
+    // 階段 1：二分子由遠往近水平靠近
+    function drawReactants(ctx, x, y, t) {
+        // t 為 0.0 (遠) ~ 1.0 (近)
+        // I- 從左邊向中央靠近：偏移量 dxI 由 -32 漸變到 0
+        const dxI = -32 * (1 - t);
+        const ix = x - 42 + dxI;
+        drawAtom(ctx, ix, y, atomR + 3, colI[0], colI[1], 'I');
+
+        // CH3Cl 從右邊向中央靠近：偏移量 dxM 由 +28 漸變到 0
+        const dxM = 28 * (1 - t);
+        const cx = x + 24 + dxM;
+
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2.5;
+        // C-Cl 鍵
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 24, y); ctx.stroke();
+        // C-H 鍵 (三個方向)
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 13, y - 16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 13, y + 16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 5, y); ctx.stroke();
+
+        // 氯原子
+        drawAtom(ctx, cx + 27, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+        // 碳原子
+        drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+        // 三個氫原子
+        drawAtom(ctx, cx - 13, y - 16, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx - 13, y + 16, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx - 18, y + 3, atomRH, colH[0], colH[1], 'H');
+    }
+
+    // 階段 2：形成活化複合體 (過渡狀態)
+    function drawTransitionState(ctx, x, y, t) {
+        // 微幅能量振動
+        const vib = Math.sin(Date.now() * 0.009) * 1.8;
+        const cx = x;
+
+        // 活化狀態能量微暈
+        const glow = ctx.createRadialGradient(cx, y, 10, cx, y, 55);
+        glow.addColorStop(0, 'rgba(251,191,36,0.22)');
+        glow.addColorStop(1, 'rgba(251,191,36,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, y, 55, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 虛線半鍵：I...C...Cl
+        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 3; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(cx - 38 - vib, y); ctx.lineTo(cx, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 38 + vib, y); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 平面傘狀 C-H 鍵
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx, y - 22); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 11, y + 18); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 11, y + 18); ctx.stroke();
+
+        // 兩側即將成鍵/斷鍵的原子
+        drawAtom(ctx, cx - 40 - vib, y, atomR + 3, colI[0], colI[1], 'I');
+        drawAtom(ctx, cx + 40 + vib, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+
+        // 中心碳與過渡態平面三個氫
+        drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+        drawAtom(ctx, cx, y - 22, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx - 11, y + 18, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx + 11, y + 18, atomRH, colH[0], colH[1], 'H');
+    }
+
+    // 階段 3：兩個產物一個向左一個向右遠離
+    function drawProducts(ctx, x, y, t) {
+        // t 為 0.0 (初分開) ~ 1.0 (遠離兩側)
+        // CH3I 往左側遠離：sepLeft 由 0 漸變到 -32
+        const sepLeft = -32 * t;
+        const cx = x - 15 + sepLeft;
+
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2.5;
+        // C-I 鍵
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx - 24, y); ctx.stroke();
+        // C-H 鍵 (三個方向朝右伸展)
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 13, y - 16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 13, y + 16); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, y); ctx.lineTo(cx + 5, y); ctx.stroke();
+
+        // 碘原子 (在碳左邊)
+        drawAtom(ctx, cx - 27, y, atomR + 3, colI[0], colI[1], 'I');
+        // 碳原子
+        drawAtom(ctx, cx, y, atomR, colC[0], colC[1], 'C');
+        // 三個氫原子
+        drawAtom(ctx, cx + 13, y - 16, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx + 13, y + 16, atomRH, colH[0], colH[1], 'H');
+        drawAtom(ctx, cx + 18, y + 3, atomRH, colH[0], colH[1], 'H');
+
+        // Cl- 離去基團往右側遠離：sepRight 由 0 漸變到 +34
+        const sepRight = 34 * t;
+        drawAtom(ctx, x + 24 + sepRight, y, atomR + 2, colCl[0], colCl[1], 'Cl');
+    }
+
+    function render() {
+        const rect = cvs.parentElement.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+            if (cvs.width !== Math.round(rect.width) || cvs.height !== Math.round(rect.height)) {
+                cvs.width = Math.round(rect.width);
+                cvs.height = Math.round(rect.height);
+            }
+        }
+
+        const W = cvs.width, H = cvs.height;
+        ctx.clearRect(0, 0, W, H);
+
+        if (W < 100 || H < 100) {
+            requestAnimationFrame(render);
+            return;
+        }
+
+        const marginL = 75, marginB = 75, marginR = 35, marginT = 65;
+        const graphW = W - marginL - marginR;
+        const graphH = H - marginB - marginT;
+
+        // 坐標軸
+        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(marginL, marginT - 20); ctx.lineTo(marginL, H - marginB);
+        ctx.lineTo(W - marginR + 20, H - marginB); ctx.stroke();
+
+        // 坐標軸箭頭
+        ctx.fillStyle = '#cbd5e1';
+        ctx.beginPath(); ctx.moveTo(marginL - 6, marginT - 15); ctx.lineTo(marginL, marginT - 25); ctx.lineTo(marginL + 6, marginT - 15); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(W - marginR + 15, H - marginB - 6); ctx.lineTo(W - marginR + 25, H - marginB); ctx.lineTo(W - marginR + 15, H - marginB + 6); ctx.fill();
+
+        ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.save();
+        ctx.translate(marginL - 45, H / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('位能 (kJ/mol)', 0, 0);
+        ctx.restore();
+        ctx.fillText('反應途徑 (Reaction Coordinate)', marginL + graphW / 2, H - marginB + 38);
+
+        const yReactant = marginT + graphH * 0.82;
+        const yPeak = marginT + graphH * 0.12;
+        const yProduct = marginT + graphH * 0.56;
+
+        const x1 = marginL;
+        const x2 = marginL + graphW * 0.25;
+        const x3 = marginL + graphW * 0.5;
+        const x4 = marginL + graphW * 0.75;
+        const x5 = marginL + graphW;
+
+        // 位能主曲線
+        ctx.strokeStyle = '#34d399'; ctx.lineWidth = 5.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x1, yReactant); ctx.lineTo(x2, yReactant);
+        ctx.bezierCurveTo(x2 + graphW*0.1, yReactant, x3 - graphW*0.1, yPeak, x3, yPeak);
+        ctx.bezierCurveTo(x3 + graphW*0.1, yPeak, x4 - graphW*0.1, yProduct, x4, yProduct);
+        ctx.lineTo(x5, yProduct);
+        ctx.stroke();
+
+        // 參考虛線
+        function drawDashedLine(sx, sy, ex, ey, color) {
+            ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke(); ctx.restore();
+        }
+        drawDashedLine(marginL, yPeak, x5, yPeak, 'rgba(255,255,255,0.3)');
+        drawDashedLine(marginL, yReactant, x5, yReactant, 'rgba(255,255,255,0.3)');
+        drawDashedLine(marginL, yProduct, x5, yProduct, 'rgba(255,255,255,0.3)');
+
+        // 活化能與反應熱箭頭
+        function drawArrow(sx, sy, ex, ey, color, text, offset, tCol='#fff') {
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3.5;
+            ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+            const sign = ey > sy ? -1 : 1;
+            ctx.beginPath();
+            ctx.moveTo(ex, ey); ctx.lineTo(ex - 8, ey + sign * 12); ctx.lineTo(ex + 8, ey + sign * 12); ctx.fill();
+            ctx.font = 'bold 15px sans-serif'; ctx.fillStyle = tCol; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, (sx + ex)/2 + offset.x, (sy + ey)/2 + offset.y);
+        }
+        drawArrow(x2 + graphW*0.02, yReactant, x2 + graphW*0.02, yPeak, '#fbbf24', 'Ea(正)', {x: -32, y: 0}, '#fbbf24');
+        drawArrow(x4 - graphW*0.02, yProduct, x4 - graphW*0.02, yPeak, '#fbbf24', 'Ea(逆)', {x: 32, y: 0}, '#fbbf24');
+        drawArrow(x3, yReactant, x3, yProduct, '#38bdf8', 'ΔH < 0', {x: 36, y: 0}, '#38bdf8');
+
+        // 當前階段判斷與階段內部進度計算 (0.0 ~ 1.0)
+        let activeStage = 1;
+        let t1 = 0, t2 = 0, t3 = 0;
+
+        if (progress < 0.333) {
+            activeStage = 1;
+            t1 = progress / 0.333; // 0 -> 1 水平靠近
+        } else if (progress < 0.666) {
+            activeStage = 2;
+            t1 = 1;
+            t2 = (progress - 0.333) / 0.333; // 0 -> 1 活化複合體
+        } else {
+            activeStage = 3;
+            t1 = 1;
+            t2 = 1;
+            t3 = (progress - 0.666) / 0.334; // 0 -> 1 產物向兩側遠離
+        }
+
+        // 三大分子結構卡片
+        const positions = [
+            { x: x1 + (x2 - x1) * 0.5, y: yReactant - 75, label: '❶ 反應物 (碰撞靠近)', active: activeStage === 1 },
+            { x: x3, y: yPeak - 78, label: '❷ 活化複合體 (過渡態)', active: activeStage === 2 },
+            { x: x4 + (x5 - x4) * 0.5, y: yProduct + 68, label: '❸ 產物 (向兩側遠離)', active: activeStage === 3 }
+        ];
+
+        cardBoxes = [];
+        positions.forEach((p, i) => {
+            const cardW = 185, cardH = 82;
+            const cardX = p.x - cardW / 2;
+            const cardY = p.y - cardH / 2;
+            cardBoxes.push({ x: cardX, y: cardY, w: cardW, h: cardH });
+
+            // 卡片背景與發光邊框
+            ctx.save();
+            if (p.active) {
+                const glowCol = i === 0 ? 'rgba(56,189,248,0.85)' : (i === 1 ? 'rgba(251,191,36,0.9)' : 'rgba(52,211,153,0.85)');
+                const borderCol = i === 0 ? '#38bdf8' : (i === 1 ? '#fbbf24' : '#34d399');
+                ctx.shadowColor = glowCol;
+                ctx.shadowBlur = 18;
+                ctx.fillStyle = 'rgba(15,23,42,0.95)';
+                ctx.strokeStyle = borderCol;
+                ctx.lineWidth = 2.5;
+            } else {
+                ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                ctx.lineWidth = 1.2;
+            }
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 10);
+            else ctx.rect(cardX, cardY, cardW, cardH);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+
+            // 標籤文字
+            ctx.fillStyle = p.active ? (i === 0 ? '#38bdf8' : (i === 1 ? '#fbbf24' : '#34d399')) : '#94a3b8';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(p.label, p.x, p.y + 30);
+
+            // 繪製分子 (依階段呈現動態)
+            if (i === 0) {
+                drawReactants(ctx, p.x, p.y - 10, activeStage === 1 ? t1 : 1.0);
+            } else if (i === 1) {
+                drawTransitionState(ctx, p.x, p.y - 10, activeStage === 2 ? t2 : 0);
+            } else if (i === 2) {
+                drawProducts(ctx, p.x, p.y - 10, activeStage === 3 ? t3 : (progress < 0.333 ? 0 : 1.0));
+            }
+        });
+
+        // ═══════════════ 依順序亮 1號、2號、3號位置 ═══════════════
+        badgeBoxes = [];
+        function drawNumBadge(x, y, num, isActive, activeCol) {
+            badgeBoxes.push({ x, y });
+
+            // 若處於當前活躍位置，繪製呼吸發光外環與高亮
+            if (isActive) {
+                const pulse = (Math.sin(Date.now() * 0.006) + 1) * 0.5; // 0 ~ 1
+                ctx.save();
+                ctx.shadowColor = activeCol;
+                ctx.shadowBlur = 16 + pulse * 10;
+
+                // 發光波紋外圈
+                ctx.strokeStyle = activeCol;
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.arc(x, y, 17 + pulse * 5, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 核心發光徽章球
+                ctx.fillStyle = activeCol;
+                ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.stroke();
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(num, x, y + 1);
+                ctx.restore();
+            } else {
+                // 非活躍狀態：沉穩低調徽章
+                ctx.save();
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath(); ctx.arc(x, y, 13, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.6; ctx.stroke();
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(num, x, y + 1);
+                ctx.restore();
+            }
+        }
+
+        // 亮 1號位置
+        drawNumBadge(x1 + (x2 - x1) * 0.5, yReactant, '1', activeStage === 1, '#38bdf8');
+        // 亮 2號位置
+        drawNumBadge(x3, yPeak, '2', activeStage === 2, '#fbbf24');
+        // 亮 3號位置
+        drawNumBadge(x4 + (x5 - x4) * 0.5, yProduct, '3', activeStage === 3, '#34d399');
+
+        // 進度推進：均勻平穩地循環前進 (約 7.5 秒一個循環)
+        if (isPlaying) {
+            progress += 0.0022;
+            if (progress >= 1.0) {
+                progress = 0.0;
+            }
+        }
+
+        // 更新頂部狀態徽章文字
+        if (badge) {
+            if (activeStage === 1) {
+                badge.textContent = '❶ 亮 1 號位置：反應物二分子 (I⁻ 與 CH₃Cl) 由遠往近水平靠近';
+                badge.style.color = 'var(--accent-blue)';
+                badge.style.borderColor = 'rgba(56,189,248,0.5)';
+                badge.style.background = 'rgba(56,189,248,0.16)';
+            } else if (activeStage === 2) {
+                badge.textContent = '❷ 亮 2 號位置：達到活化能，形成活化複合體 [I⋯CH₃⋯Cl]⁻';
+                badge.style.color = 'var(--accent-yellow)';
+                badge.style.borderColor = 'rgba(251,191,36,0.5)';
+                badge.style.background = 'rgba(251,191,36,0.18)';
+            } else {
+                badge.textContent = '❸ 亮 3 號位置：生成產物，CH₃I 向左、Cl⁻ 向右遠離';
+                badge.style.color = 'var(--accent-green)';
+                badge.style.borderColor = 'rgba(52,211,153,0.5)';
+                badge.style.background = 'rgba(52,211,153,0.18)';
+            }
+        }
+
+        requestAnimationFrame(render);
+    }
+
+    // 啟動動畫渲染循環
+    requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

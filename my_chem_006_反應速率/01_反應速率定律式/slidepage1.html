@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>化學反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：反應速率定義、速率定律式、級數關係互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Slide 3 全畫面表格 */
+        table.orders-table { height: 100%; table-layout: fixed; }
+        table.orders-table th, table.orders-table td {
+            padding: 1.1rem 0.9rem; line-height: 1.6; vertical-align: middle;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        table.orders-table th { background: rgba(56,189,248,0.15); color: var(--accent-blue); font-size: 1em; }
+        table.orders-table tr { height: calc(100% / 7); }
+        
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+            .game-columns { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-def">
+                <h1>化學反應速率 (Reaction Rate)</h1>
+                <div class="grid-2" style="height: 100%; gap: 1rem; align-items: stretch;">
+                    
+                    <!-- 左欄：文字描述與關係式 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.6rem; padding: 1rem;">
+                        <h2 style="margin-bottom: 0; color:var(--accent-yellow);">反應速率的定義與觀念</h2>
+                        <div style="display:grid; grid-template-columns:auto 1fr; gap:0.3rem; font-size:clamp(1rem, 1.3vw, 1.15rem); line-height:1.5;">
+                            <strong style="white-space:nowrap;">定義：</strong>
+                            <span>單位時間內反應物濃度之消耗量，或生成物濃度之增加量。</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:auto 1fr; gap:0.3rem; font-size:clamp(1rem, 1.3vw, 1.15rem); line-height:1.5;">
+                            <strong style="white-space:nowrap;">單位：</strong>
+                            <span>濃度除以時間。一般以 <strong style="color:var(--accent-yellow);">$M/s$ (體積莫耳濃度/秒)</strong> 表示。氣相反應可用壓力單位替代。</span>
+                        </div>
+                        
+                        <div class="info-card" style="margin: 0.3rem 0; padding: 0.8rem; display:flex; flex-direction:column; gap:0.4rem;">
+                            <p style="margin:0; font-size:1.05rem;"><strong style="color:var(--accent-blue);">平均速率：</strong> 一段時間間隔 $\Delta t$ 內的濃度變化 (<strong>割線斜率</strong>)。</p>
+                            <p style="margin:0; font-size:1.05rem;"><strong style="color:var(--accent-green);">瞬時速率：</strong> 極短時間內的變化率 $\Delta t \to 0$ (<strong>切線斜率</strong>)。</p>
+                        </div>
+                        
+                        <h2 style="margin-top:0.4rem; margin-bottom:0; color:var(--accent-cyan);">消耗速率與生成速率的關係</h2>
+                        <div class="highlight-box" style="margin:0; padding:0.8rem; display:flex; flex-direction:column; gap:0.5rem; flex:1;">
+                            <p style="margin:0; font-size:1.05rem;">若反應為 <strong style="color:var(--accent-yellow); font-size:1.15rem;">$aA + bB \rightarrow cC + dD$</strong></p>
+                            <p style="margin:0; font-size:0.95rem;">各物質的反應速率比等於化學計量係數比：</p>
+                            <div class="formula-box" style="font-size:1.15rem; margin:0; padding:0.4rem;">
+                                $$R_A : R_B : R_C : R_D = a : b : c : d$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">以等式表示（同除以係數即可相等）：</p>
+                            <div class="formula-box" style="font-size:1.15rem; margin:0; padding:0.4rem;">
+                                $$\frac{R_A}{a} = \frac{R_B}{b} = \frac{R_C}{c} = \frac{R_D}{d}$$
+                            </div>
+                            <p style="margin:0; font-size:0.95rem;">用濃度變化量表示 ($A,B$ 為反應物，$C,D$ 為生成物)：</p>
+                            <div class="formula-box" style="font-size:1rem; margin:0; padding:0.4rem;">
+                                $$-\frac{1}{a}\frac{\Delta[A]}{\Delta t} = -\frac{1}{b}\frac{\Delta[B]}{\Delta t} = \frac{1}{c}\frac{\Delta[C]}{\Delta t} = \frac{1}{d}\frac{\Delta[D]}{\Delta t}$$
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：圖表 -->
+                    <div style="display:flex; flex-direction:column; gap:1rem; height: 100%;">
+                        
+                        <!-- 右上：瞬時速率 -->
+                        <div class="panel" style="flex:1; display:flex; flex-direction:row; align-items:center; justify-content: space-between; padding:0.5rem 1rem; gap:1rem; overflow:hidden;">
+                            <!-- 圖 -->
+                            <div style="flex:1.2; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:center;">
+                                <p style="color:var(--accent-green);font-weight:700;margin-bottom:0.2rem;font-size:1.05rem;">瞬時反應速率 <span style="font-size:0.8rem; font-weight:normal; color:#94a3b8;">(可拖曳綠點)</span></p>
+                                <svg id="svg-inst" viewBox="0 0 320 180" style="width:100%; max-height:180px; background:var(--glass); border-radius:12px; border:1.5px solid var(--glass-border); margin-top:0.3rem; display:block; touch-action:none; cursor:crosshair;">
+                                    <line x1="40" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="40" y1="20" x2="40" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,150 292,146 292,154" fill="#cbd5e1"/>
+                                    <polygon points="40,20 36,28 44,28" fill="#cbd5e1"/>
+                                    <text x="290" y="140" fill="#cbd5e1" font-size="12" text-anchor="end">時間 (t)</text>
+                                    <text x="48" y="32" fill="#cbd5e1" font-size="12">濃度 [A]</text>
+                                    
+                                    <path id="path-inst" fill="none" stroke="var(--accent-blue)" stroke-width="3" d="M 40 30.0 L 45 38.7 L 50 46.7 L 55 54.2 L 60 61.1 L 65 67.5 L 70 73.5 L 75 79.0 L 80 84.1 L 85 88.9 L 90 93.3 L 95 97.4 L 100 101.2 L 105 104.7 L 110 108.0 L 115 111.0 L 120 113.9 L 125 116.5 L 130 118.9 L 135 121.1 L 140 123.2 L 145 125.2 L 150 127.0 L 155 128.6 L 160 130.2 L 165 131.6 L 170 132.9 L 175 134.2 L 180 135.3 L 185 136.4 L 190 137.4 L 195 138.3 L 200 139.1 L 205 139.9 L 210 140.6 L 215 141.3 L 220 141.9 L 225 142.5 L 230 143.1 L 235 143.6 L 240 144.0 L 245 144.5 L 250 144.9 L 255 145.2 L 260 145.6 L 265 145.9 L 270 146.2 L 275 146.5 L 280 146.7 L 285 147.0 L 290 147.2"/>
+                                    
+                                    <g id="inst-interactive">
+                                        <line id="inst-dash-x" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="100" y1="101.2" x2="100" y2="150"/>
+                                        <line id="inst-dash-y" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="100" y1="101.2" x2="40" y2="101.2"/>
+                                        <line id="inst-tan" stroke="var(--accent-green)" stroke-width="2" x1="59.7" y1="71.7" x2="140.4" y2="130.7"/>
+                                        <text id="inst-text-t" fill="var(--accent-yellow)" font-size="13" text-anchor="middle" x="100" y="168" font-weight="bold">t=6.0</text>
+                                        <text id="inst-text-a" fill="var(--accent-yellow)" font-size="13" text-anchor="end" x="35" y="105.2" font-weight="bold">[A]t=48.8</text>
+                                        <circle id="inst-dot" cx="100" cy="101.2" r="7" fill="var(--accent-green)" style="cursor:grab; box-shadow:0 0 10px rgba(52,211,153,0.8);"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <!-- 公式 -->
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                                <span id="inst-formula" style="font-size:1.1rem;">$$R = \frac{-d[A]}{dt} = \text{切線斜率}$$</span>
+                                <div style="color:var(--accent-green); font-weight:bold; margin-top:0.8rem; font-size:1.25rem; background:rgba(52,211,153,0.1); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(52,211,153,0.3);">R ≈ <span id="inst-val">0.732</span> M/s</div>
+                            </div>
+                        </div>
+
+                        <!-- 右下：平均速率 -->
+                        <div class="panel" style="flex:1; display:flex; flex-direction:row; align-items:center; justify-content: space-between; padding:0.5rem 1rem; gap:1rem; overflow:hidden;">
+                            <!-- 圖 -->
+                            <div style="flex:1.2; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:center;">
+                                <p style="color:var(--accent-blue);font-weight:700;margin-bottom:0.2rem;font-size:1.05rem;">平均反應速率 <span style="font-size:0.8rem; font-weight:normal; color:#94a3b8;">(可拖曳紫點)</span></p>
+                                <svg id="svg-avg" viewBox="0 0 320 180" style="width:100%; max-height:180px; background:var(--glass); border-radius:12px; border:1.5px solid var(--glass-border); margin-top:0.3rem; display:block; touch-action:none; cursor:crosshair;">
+                                    <line x1="40" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <line x1="40" y1="20" x2="40" y2="150" stroke="#cbd5e1" stroke-width="2"/>
+                                    <polygon points="300,150 292,146 292,154" fill="#cbd5e1"/>
+                                    <polygon points="40,20 36,28 44,28" fill="#cbd5e1"/>
+                                    <text x="290" y="140" fill="#cbd5e1" font-size="12" text-anchor="end">時間 (t)</text>
+                                    <text x="48" y="32" fill="#cbd5e1" font-size="12">濃度 [A]</text>
+                                    
+                                    <path id="path-avg" fill="none" stroke="var(--accent-blue)" stroke-width="3" d="M 40 30.0 L 45 38.7 L 50 46.7 L 55 54.2 L 60 61.1 L 65 67.5 L 70 73.5 L 75 79.0 L 80 84.1 L 85 88.9 L 90 93.3 L 95 97.4 L 100 101.2 L 105 104.7 L 110 108.0 L 115 111.0 L 120 113.9 L 125 116.5 L 130 118.9 L 135 121.1 L 140 123.2 L 145 125.2 L 150 127.0 L 155 128.6 L 160 130.2 L 165 131.6 L 170 132.9 L 175 134.2 L 180 135.3 L 185 136.4 L 190 137.4 L 195 138.3 L 200 139.1 L 205 139.9 L 210 140.6 L 215 141.3 L 220 141.9 L 225 142.5 L 230 143.1 L 235 143.6 L 240 144.0 L 245 144.5 L 250 144.9 L 255 145.2 L 260 145.6 L 265 145.9 L 270 146.2 L 275 146.5 L 280 146.7 L 285 147.0 L 290 147.2"/>
+                                    
+                                    <g id="avg-interactive">
+                                        <line id="avg-dash-x1" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="70" y1="73.5" x2="70" y2="150"/>
+                                        <line id="avg-dash-y1" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="70" y1="73.5" x2="40" y2="73.5"/>
+                                        <line id="avg-dash-x2" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="160" y1="130.2" x2="160" y2="150"/>
+                                        <line id="avg-dash-y2" stroke="#cbd5e1" stroke-dasharray="4,4" stroke-width="1.5" x1="160" y1="130.2" x2="40" y2="130.2"/>
+                                        <text id="avg-text-t1" fill="#cbd5e1" font-size="12" text-anchor="middle" x="70" y="168">t1</text>
+                                        <text id="avg-text-t2" fill="#cbd5e1" font-size="12" text-anchor="middle" x="160" y="168">t2</text>
+                                        <text id="avg-text-a1" fill="#cbd5e1" font-size="12" text-anchor="end" x="35" y="77.5">[A]1</text>
+                                        <text id="avg-text-a2" fill="#cbd5e1" font-size="12" text-anchor="end" x="35" y="134.2">[A]2</text>
+                                        <polygon id="avg-triangle" fill="rgba(167,139,250,0.1)" stroke="var(--accent-purple)" stroke-dasharray="3,3" stroke-width="1.5" points="70,73.5 160,73.5 160,130.2"/>
+                                        <line id="avg-secant" stroke="var(--accent-purple)" stroke-width="2" x1="44.6" y1="57.5" x2="185.4" y2="146.2"/>
+                                        <text id="avg-text-dt" fill="var(--accent-purple)" font-size="14" text-anchor="middle" font-weight="bold" x="115" y="65.5">Δt</text>
+                                        <text id="avg-text-da" fill="var(--accent-purple)" font-size="14" text-anchor="start" font-weight="bold" x="168" y="105.8">Δ[A]</text>
+                                        <circle id="avg-dot1" cx="70" cy="73.5" r="7" fill="var(--accent-purple)" style="cursor:grab;"/>
+                                        <circle id="avg-dot2" cx="160" cy="130.2" r="7" fill="var(--accent-purple)" style="cursor:grab;"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <!-- 公式 -->
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                                <span id="avg-formula" style="font-size:1.1rem;">$$R = \frac{-\Delta[A]}{\Delta t} = \text{割線斜率}$$</span>
+                                <div style="color:var(--accent-purple); font-weight:bold; margin-top:0.8rem; font-size:1.25rem; background:rgba(167,139,250,0.1); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(167,139,250,0.3);">R ≈ <span id="avg-val">0.630</span> M/s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+/* ---- Compatibility Stubs ---- */
+window.toggleSolution = function() {};
+window.updateSlides = function() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise().catch(() => {});
+    }
+};
+
+/* ---- Interactive Graphs ---- */
+(function() {
+    const A0 = 120;
+    const k = 0.015;
+    const x0 = 40;
+    const y0 = 150;
+    const maxX = 250;
+    
+    function getCurveY(xPlot) { return A0 * Math.exp(-k * xPlot); }
+    function getCurveSlope(xPlot) { return -A0 * k * Math.exp(-k * xPlot); }
+    
+    function generatePathD() {
+        let d = `M ${x0} ${(y0 - getCurveY(0)).toFixed(1)}`;
+        for (let x = 5; x <= maxX; x += 5) {
+            d += ` L ${x0 + x} ${(y0 - getCurveY(x)).toFixed(1)}`;
+        }
+        return d;
+    }
+    
+    function getSVGCoords(svg, e) {
+        let pt = svg.createSVGPoint();
+        if (e.touches && e.touches.length > 0) {
+            pt.x = e.touches[0].clientX;
+            pt.y = e.touches[0].clientY;
+        } else {
+            pt.x = e.clientX;
+            pt.y = e.clientY;
+        }
+        const ctm = svg.getScreenCTM();
+        return ctm ? pt.matrixTransform(ctm.inverse()) : { x: pt.x, y: pt.y };
+    }
+
+    /* ---- 瞬時反應速率互動 ---- */
+    const svgInst = document.getElementById('svg-inst');
+    const pathInst = document.getElementById('path-inst');
+    if (pathInst) pathInst.setAttribute('d', generatePathD());
+
+    let instX = 60, isDraggingInst = false;
+    
+    function updateInst() {
+        if (!svgInst) return;
+        if (instX < 0) instX = 0;
+        if (instX > maxX) instX = maxX;
+        
+        const yPlot = getCurveY(instX);
+        const slope = getCurveSlope(instX);
+        const cx = x0 + instX;
+        const cy = y0 - yPlot;
+        
+        const dot = document.getElementById('inst-dot');
+        const dashX = document.getElementById('inst-dash-x');
+        const dashY = document.getElementById('inst-dash-y');
+        const tan = document.getElementById('inst-tan');
+        const textT = document.getElementById('inst-text-t');
+        const textA = document.getElementById('inst-text-a');
+        const val = document.getElementById('inst-val');
+        
+        if (dot) { dot.setAttribute('cx', cx.toFixed(1)); dot.setAttribute('cy', cy.toFixed(1)); }
+        if (dashX) {
+            dashX.setAttribute('x1', cx.toFixed(1)); dashX.setAttribute('y1', cy.toFixed(1));
+            dashX.setAttribute('x2', cx.toFixed(1)); dashX.setAttribute('y2', y0);
+        }
+        if (dashY) {
+            dashY.setAttribute('x1', cx.toFixed(1)); dashY.setAttribute('y1', cy.toFixed(1));
+            dashY.setAttribute('x2', x0); dashY.setAttribute('y2', cy.toFixed(1));
+        }
+        
+        if (textT) {
+            textT.textContent = `t=${(instX / 10).toFixed(1)}`;
+            textT.setAttribute('x', cx.toFixed(1));
+        }
+        if (textA) {
+            textA.textContent = `[A]t=${yPlot.toFixed(1)}`;
+            textA.setAttribute('y', (cy + 4).toFixed(1));
+        }
+        
+        const L = 50;
+        const dx = L / Math.sqrt(1 + slope * slope);
+        const dy = slope * dx;
+        if (tan) {
+            tan.setAttribute('x1', (cx - dx).toFixed(1));
+            tan.setAttribute('y1', (cy - (-dy)).toFixed(1));
+            tan.setAttribute('x2', (cx + dx).toFixed(1));
+            tan.setAttribute('y2', (cy + (-dy)).toFixed(1));
+        }
+        
+        if (val) val.textContent = (-slope).toFixed(3);
+    }
+    
+    if (svgInst) {
+        function startInstDrag(e) {
+            e.preventDefault();
+            isDraggingInst = true;
+            const dot = document.getElementById('inst-dot');
+            if (dot) dot.style.cursor = 'grabbing';
+            const pt = getSVGCoords(svgInst, e);
+            instX = pt.x - x0;
+            updateInst();
+        }
+        svgInst.addEventListener('mousedown', startInstDrag);
+        svgInst.addEventListener('touchstart', startInstDrag, { passive: false });
+        
+        window.addEventListener('mousemove', (e) => {
+            if (isDraggingInst) {
+                const pt = getSVGCoords(svgInst, e);
+                instX = pt.x - x0;
+                updateInst();
+            }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (isDraggingInst) {
+                e.preventDefault();
+                const pt = getSVGCoords(svgInst, e);
+                instX = pt.x - x0;
+                updateInst();
+            }
+        }, { passive: false });
+        
+        window.addEventListener('mouseup', () => {
+            isDraggingInst = false;
+            const dot = document.getElementById('inst-dot');
+            if (dot) dot.style.cursor = 'grab';
+        });
+        window.addEventListener('touchend', () => {
+            isDraggingInst = false;
+            const dot = document.getElementById('inst-dot');
+            if (dot) dot.style.cursor = 'grab';
+        });
+        
+        updateInst();
+    }
+
+    /* ---- 平均反應速率互動 ---- */
+    const svgAvg = document.getElementById('svg-avg');
+    const pathAvg = document.getElementById('path-avg');
+    if (pathAvg) pathAvg.setAttribute('d', generatePathD());
+
+    let avgX1 = 30, avgX2 = 120, draggingAvg = 0;
+    
+    function updateAvg() {
+        if (!svgAvg) return;
+        if (avgX1 < 0) avgX1 = 0;
+        if (avgX1 > maxX) avgX1 = maxX;
+        if (avgX2 < 0) avgX2 = 0;
+        if (avgX2 > maxX) avgX2 = maxX;
+        if (Math.abs(avgX1 - avgX2) < 10) {
+            if (draggingAvg === 1) avgX1 = avgX2 - 10;
+            else if (draggingAvg === 2) avgX2 = avgX1 + 10;
+        }
+        
+        const xL = Math.min(avgX1, avgX2);
+        const xR = Math.max(avgX1, avgX2);
+        const yL = getCurveY(xL);
+        const yR = getCurveY(xR);
+        const cx1 = x0 + xL;
+        const cy1 = y0 - yL;
+        const cx2 = x0 + xR;
+        const cy2 = y0 - yR;
+        
+        const dot1 = document.getElementById('avg-dot1');
+        const dot2 = document.getElementById('avg-dot2');
+        const dashX1 = document.getElementById('avg-dash-x1');
+        const dashY1 = document.getElementById('avg-dash-y1');
+        const dashX2 = document.getElementById('avg-dash-x2');
+        const dashY2 = document.getElementById('avg-dash-y2');
+        const textT1 = document.getElementById('avg-text-t1');
+        const textT2 = document.getElementById('avg-text-t2');
+        const textA1 = document.getElementById('avg-text-a1');
+        const textA2 = document.getElementById('avg-text-a2');
+        const triangle = document.getElementById('avg-triangle');
+        const secant = document.getElementById('avg-secant');
+        const textDt = document.getElementById('avg-text-dt');
+        const textDa = document.getElementById('avg-text-da');
+        const val = document.getElementById('avg-val');
+        
+        if (dot1) { dot1.setAttribute('cx', cx1.toFixed(1)); dot1.setAttribute('cy', cy1.toFixed(1)); }
+        if (dot2) { dot2.setAttribute('cx', cx2.toFixed(1)); dot2.setAttribute('cy', cy2.toFixed(1)); }
+        
+        if (dashX1) {
+            dashX1.setAttribute('x1', cx1.toFixed(1)); dashX1.setAttribute('y1', cy1.toFixed(1));
+            dashX1.setAttribute('x2', cx1.toFixed(1)); dashX1.setAttribute('y2', y0);
+        }
+        if (dashY1) {
+            dashY1.setAttribute('x1', cx1.toFixed(1)); dashY1.setAttribute('y1', cy1.toFixed(1));
+            dashY1.setAttribute('x2', x0); dashY1.setAttribute('y2', cy1.toFixed(1));
+        }
+        if (dashX2) {
+            dashX2.setAttribute('x2', cx2.toFixed(1)); dashX2.setAttribute('y1', cy2.toFixed(1));
+            dashX2.setAttribute('x1', cx2.toFixed(1)); dashX2.setAttribute('y2', y0);
+        }
+        if (dashY2) {
+            dashY2.setAttribute('x1', cx2.toFixed(1)); dashY2.setAttribute('y1', cy2.toFixed(1));
+            dashY2.setAttribute('x2', x0); dashY2.setAttribute('y2', cy2.toFixed(1));
+        }
+        
+        if (textT1) { textT1.textContent = 't1'; textT1.setAttribute('x', cx1.toFixed(1)); }
+        if (textT2) { textT2.textContent = 't2'; textT2.setAttribute('x', cx2.toFixed(1)); }
+        if (textA1) { textA1.textContent = '[A]1'; textA1.setAttribute('y', (cy1 + 4).toFixed(1)); }
+        if (textA2) { textA2.textContent = '[A]2'; textA2.setAttribute('y', (cy2 + 4).toFixed(1)); }
+        
+        if (triangle) {
+            triangle.setAttribute('points', `${cx1.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy2.toFixed(1)}`);
+        }
+        
+        const slope = (yR - yL) / (xR - xL);
+        const L = 30;
+        const dx = L / Math.sqrt(1 + slope * slope);
+        const dy = slope * dx;
+        if (secant) {
+            secant.setAttribute('x1', (cx1 - dx).toFixed(1));
+            secant.setAttribute('y1', (cy1 - (-dy)).toFixed(1));
+            secant.setAttribute('x2', (cx2 + dx).toFixed(1));
+            secant.setAttribute('y2', (cy2 + (-dy)).toFixed(1));
+        }
+        
+        if (textDt) {
+            textDt.setAttribute('x', (cx1 + (cx2 - cx1) / 2).toFixed(1));
+            textDt.setAttribute('y', (cy1 - 8).toFixed(1));
+        }
+        if (textDa) {
+            textDa.setAttribute('x', (cx2 + 8).toFixed(1));
+            textDa.setAttribute('y', (cy2 - (cy2 - cy1) / 2 + 4).toFixed(1));
+        }
+        
+        if (val) val.textContent = (-slope).toFixed(3);
+    }
+    
+    if (svgAvg) {
+        function startAvgDrag(e) {
+            e.preventDefault();
+            const pt = getSVGCoords(svgAvg, e);
+            const px = pt.x - x0;
+            if (Math.abs(px - avgX1) < Math.abs(px - avgX2)) {
+                draggingAvg = 1;
+                avgX1 = px;
+            } else {
+                draggingAvg = 2;
+                avgX2 = px;
+            }
+            const activeDot = document.getElementById('avg-dot' + draggingAvg);
+            if (activeDot) activeDot.style.cursor = 'grabbing';
+            updateAvg();
+        }
+        
+        svgAvg.addEventListener('mousedown', startAvgDrag);
+        svgAvg.addEventListener('touchstart', startAvgDrag, { passive: false });
+        
+        window.addEventListener('mousemove', (e) => {
+            if (draggingAvg) {
+                const pt = getSVGCoords(svgAvg, e);
+                if (draggingAvg === 1) avgX1 = pt.x - x0;
+                else avgX2 = pt.x - x0;
+                updateAvg();
+            }
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (draggingAvg) {
+                e.preventDefault();
+                const pt = getSVGCoords(svgAvg, e);
+                if (draggingAvg === 1) avgX1 = pt.x - x0;
+                else avgX2 = pt.x - x0;
+                updateAvg();
+            }
+        }, { passive: false });
+        
+        window.addEventListener('mouseup', () => {
+            if (draggingAvg) {
+                const activeDot = document.getElementById('avg-dot' + draggingAvg);
+                if (activeDot) activeDot.style.cursor = 'grab';
+                draggingAvg = 0;
+            }
+        });
+        window.addEventListener('touchend', () => {
+            if (draggingAvg) {
+                const activeDot = document.getElementById('avg-dot' + draggingAvg);
+                if (activeDot) activeDot.style.cursor = 'grab';
+                draggingAvg = 0;
+            }
+        });
+        
+        updateAvg();
+    }
+    
+    window.addEventListener('resize', () => {
+        updateInst();
+        updateAvg();
+    });
+})();
+</script>
+
+</body>
+</html>

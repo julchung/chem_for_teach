@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>拉塞福 α 粒子散射實驗與原子核模型</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      box-sizing: border-box;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      background: #dc2626;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+    @media (max-width: 1024px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 14px;
+      padding: clamp(16px, 2vw, 24px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .canvas-container {
+      position: relative;
+      background: #020617;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+    }
+    canvas {
+      width: 100%;
+      background: #090d16;
+      border-radius: 8px;
+      display: block;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ctrl-btn {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .ctrl-btn:hover { background: #475569; }
+    .ctrl-btn.active {
+      background: #dc2626;
+      border-color: #ef4444;
+      color: #fff;
+    }
+    .info-box {
+      background: rgba(30, 41, 59, 0.7);
+      border-left: 4px solid #ef4444;
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-size: clamp(0.85rem, 1vw, 0.95rem);
+      line-height: 1.6;
+    }
+    .phenomenon-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .phenom-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .phenom-item strong { color: #fca5a5; }
+    .calc-tag {
+      background: #450a0a;
+      color: #fca5a5;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">主題 05</span>
+      <h1 style="display:inline-block; margin-left: 10px;">拉塞福 α 粒子散射實驗 (1911)</h1>
+    </div>
+    <div class="subtitle">核型原子模型的誕生：極小而緻密的帶正電原子核</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Experimental Concept & Inferences -->
+    <div class="card">
+      <div class="card-title">🔬 實驗現象與三大革命性推論</div>
+      <div class="info-box">
+        1911年，拉塞福指導學生蓋革 (Geiger) 與馬士登 (Marsden)，以放射性物質放出之高能量 <strong>\(\alpha\) 粒子 (\(\text{He}^{2+}\))</strong> 撞擊厚度僅約 \(400\,\text{nm}\) 的金箔，觀察散射角分佈。
+      </div>
+
+      <div class="phenomenon-list">
+        <div class="phenom-item">
+          <strong>① 絕大多數直穿無阻（&gt; 99%）：</strong><br>
+          幾乎不發生偏折直接穿透金箔。<br>
+          <span class="calc-tag">結論</span> 原子內部絕大部分空間是<strong>空無一物</strong>的，質量並非均勻散佈。
+        </div>
+
+        <div class="phenom-item">
+          <strong>② 極少數發生大角度偏折（&lt; 1%）：</strong><br>
+          少部分 \(\alpha\) 粒子發生較大角度偏轉。<br>
+          <span class="calc-tag">結論</span> 原子內有<strong>帶正電荷</strong>的微小區域，對 \(\alpha\) 粒子產生強烈庫侖靜電排斥力。
+        </div>
+
+        <div class="phenom-item">
+          <strong>③ 萬分之一以極大角度（&gt; 90° 甚至 180°）反彈：</strong><br>
+          約每 8,000 ~ 20,000 顆中僅有 1 顆被反向彈回。<br>
+          <span class="calc-tag">拉塞福感嘆</span>「猶如用 15 吋巨砲轟擊薄紙，砲彈竟然彈回來擊中自己！」<br>
+          <span class="calc-tag">結論</span> 原子的<strong>全部正電與幾乎所有質量</strong>皆集中於體積極小的<strong>「原子核」</strong>中。
+        </div>
+      </div>
+
+      <div class="info-box" style="border-left-color: #38bdf8;">
+        <strong>核模型尺度對比：</strong><br>
+        原子半徑約為 \(10^{-10}\,\text{m}\) (\(1\,\text{Å}\))，原子核半徑約為 \(10^{-15} \sim 10^{-14}\,\text{m}\) (\(1 \sim 10\,\text{fm}\))。<br>
+        半徑比約為 \(10^4 \sim 10^5\) 倍，體積比高達 <strong>\(10^{12} \sim 10^{15}\) 倍</strong>！若原子核如棒球大小，原子宛如整座大型體育館。
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Canvases -->
+    <div class="card">
+      <div class="card-title">📡 實驗裝置與微觀散射模擬</div>
+
+      <div class="canvas-container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem; font-weight:700; color:#cbd5e1;">【巨觀】金箔散射裝置與螢光幕探測</span>
+          <span style="font-size:0.75rem; color:#94a3b8;">放射源 \(\alpha\) 束 → 金箔 → 環形硫化鋅螢光幕</span>
+        </div>
+        <canvas id="c-ruth-macro" height="150"></canvas>
+      </div>
+
+      <div class="canvas-container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.85rem; font-weight:700; color:#fca5a5;">【微觀】金原子核庫侖排斥力散射軌跡</span>
+          <div class="btn-group">
+            <button class="ctrl-btn active" id="btn-toggle-run">暫停/播放</button>
+            <button class="ctrl-btn" id="btn-add-headon">發射正面碰撞粒子</button>
+          </div>
+        </div>
+        <canvas id="c-ruth-micro" height="180"></canvas>
+        <div style="font-size:0.75rem; color:#94a3b8; text-align:center;">
+          金色圓點：金原子核 (\(+79e\)) ｜ 綠色飛行點：\(\alpha\) 粒子 (\(+2e\)) ｜ 雙曲線排斥散射
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    // --- Canvas 1: Macroscopic Setup Animation ---
+    const cMacro = document.getElementById('c-ruth-macro');
+    const ctxMacro = cMacro.getContext('2d');
+    let macroParticles = [];
+
+    function resizeMacro() {
+      const rect = cMacro.getBoundingClientRect();
+      cMacro.width = rect.width;
+      cMacro.height = 150;
+    }
+    window.addEventListener('resize', resizeMacro);
+    resizeMacro();
+
+    function drawMacro() {
+      const w = cMacro.width;
+      const h = cMacro.height;
+      ctxMacro.fillStyle = '#090d16';
+      ctxMacro.fillRect(0, 0, w, h);
+
+      // Lead box source
+      ctxMacro.fillStyle = '#475569';
+      ctxMacro.fillRect(20, h/2 - 20, 36, 40);
+      ctxMacro.fillStyle = '#94a3b8';
+      ctxMacro.fillRect(56, h/2 - 4, 12, 8);
+      ctxMacro.fillStyle = '#f87171';
+      ctxMacro.font = '10px sans-serif';
+      ctxMacro.fillText('鐳源', 26, h/2 + 4);
+
+      // Gold Foil Center
+      const foilX = w * 0.45;
+      const foilY = h / 2;
+      ctxMacro.strokeStyle = '#eab308';
+      ctxMacro.lineWidth = 3;
+      ctxMacro.beginPath();
+      ctxMacro.moveTo(foilX, foilY - 45);
+      ctxMacro.lineTo(foilX, foilY + 45);
+      ctxMacro.stroke();
+      ctxMacro.fillStyle = '#eab308';
+      ctxMacro.fillText('金箔 (400nm)', foilX - 30, foilY - 50);
+
+      // Circular fluorescent screen
+      ctxMacro.strokeStyle = '#38bdf8';
+      ctxMacro.lineWidth = 2;
+      ctxMacro.setLineDash([4, 4]);
+      ctxMacro.beginPath();
+      ctxMacro.arc(foilX, foilY, w * 0.38, -Math.PI * 0.8, Math.PI * 0.8);
+      ctxMacro.stroke();
+      ctxMacro.setLineDash([]);
+      ctxMacro.fillStyle = '#38bdf8';
+      ctxMacro.fillText('ZnS 螢光幕', foilX + w * 0.28, foilY - 35);
+
+      // Add beam particles
+      if (Math.random() < 0.6) {
+        macroParticles.push({
+          x: 68,
+          y: foilY + (Math.random() - 0.5) * 4,
+          vx: 4.5,
+          vy: 0,
+          state: 0 // 0: approaching, 1: scattered
+        });
+      }
+
+      for (let i = macroParticles.length - 1; i >= 0; i--) {
+        const p = macroParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.state === 0 && p.x >= foilX) {
+          p.state = 1;
+          const r = Math.random();
+          if (r < 0.96) {
+            // Straight through
+            p.vx = 4.5;
+            p.vy = (Math.random() - 0.5) * 0.6;
+          } else if (r < 0.995) {
+            // Small/medium angle deflection
+            const angle = (Math.random() < 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.7);
+            const speed = 4.2;
+            p.vx = speed * Math.cos(angle);
+            p.vy = speed * Math.sin(angle);
+          } else {
+            // Large bounce back (> 90 deg)
+            const angle = Math.PI - (Math.random() - 0.5) * 0.8;
+            const speed = 4.0;
+            p.vx = speed * Math.cos(angle);
+            p.vy = speed * Math.sin(angle);
+          }
+        }
+
+        ctxMacro.fillStyle = '#4ade80';
+        ctxMacro.beginPath();
+        ctxMacro.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
+        ctxMacro.fill();
+
+        if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+          macroParticles.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(drawMacro);
+    }
+    requestAnimationFrame(drawMacro);
+
+
+    // --- Canvas 2: Microscopic Coulomb Scattering ---
+    const cMicro = document.getElementById('c-ruth-micro');
+    const ctxMicro = cMicro.getContext('2d');
+    let microParticles = [];
+    let isRunning = true;
+
+    function resizeMicro() {
+      const rect = cMicro.getBoundingClientRect();
+      cMicro.width = rect.width;
+      cMicro.height = 180;
+    }
+    window.addEventListener('resize', resizeMicro);
+    resizeMicro();
+
+    const nuclei = [
+      { xRel: 0.5, yRel: 0.5, charge: 79 }
+    ];
+
+    function spawnMicro(isHeadOn = false) {
+      const w = cMicro.width;
+      const h = cMicro.height;
+      const yOffset = isHeadOn ? (Math.random() - 0.5) * 3 : (Math.random() - 0.5) * (h * 0.85);
+      microParticles.push({
+        x: 10,
+        y: h / 2 + yOffset,
+        vx: 5.5,
+        vy: 0,
+        trail: []
+      });
+    }
+
+    document.getElementById('btn-toggle-run').addEventListener('click', (e) => {
+      isRunning = !isRunning;
+      e.target.classList.toggle('active', isRunning);
+      e.target.textContent = isRunning ? '暫停/播放' : '▶ 播放';
+    });
+
+    document.getElementById('btn-add-headon').addEventListener('click', () => {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => spawnMicro(true), i * 120);
+      }
+    });
+
+    function drawMicro() {
+      if (!isRunning) {
+        requestAnimationFrame(drawMicro);
+        return;
+      }
+      const w = cMicro.width;
+      const h = cMicro.height;
+      ctxMicro.fillStyle = 'rgba(9, 13, 22, 0.25)';
+      ctxMicro.fillRect(0, 0, w, h);
+
+      // Gold Nucleus
+      const nucX = w * 0.5;
+      const nucY = h * 0.5;
+
+      // Glow around nucleus
+      const grad = ctxMicro.createRadialGradient(nucX, nucY, 2, nucX, nucY, 30);
+      grad.addColorStop(0, 'rgba(234, 179, 8, 0.9)');
+      grad.addColorStop(0.3, 'rgba(234, 179, 8, 0.3)');
+      grad.addColorStop(1, 'transparent');
+      ctxMicro.fillStyle = grad;
+      ctxMicro.beginPath();
+      ctxMicro.arc(nucX, nucY, 30, 0, Math.PI * 2);
+      ctxMicro.fill();
+
+      // Core
+      ctxMicro.fillStyle = '#fbbf24';
+      ctxMicro.beginPath();
+      ctxMicro.arc(nucX, nucY, 7, 0, Math.PI * 2);
+      ctxMicro.fill();
+      ctxMicro.fillStyle = '#0f172a';
+      ctxMicro.font = 'bold 8px monospace';
+      ctxMicro.textAlign = 'center';
+      ctxMicro.textBaseline = 'middle';
+      ctxMicro.fillText('+79', nucX, nucY);
+
+      // Spawn normal random beam
+      if (Math.random() < 0.45) {
+        spawnMicro(false);
+      }
+
+      // Update & Draw particles
+      const kCoulomb = 2800; // electrostatic repulsion constant
+      for (let i = microParticles.length - 1; i >= 0; i--) {
+        const p = microParticles[i];
+
+        const dx = p.x - nucX;
+        const dy = p.y - nucY;
+        const distSq = dx * dx + dy * dy;
+        const dist = Math.sqrt(distSq);
+
+        if (dist > 8) {
+          const force = kCoulomb / distSq;
+          const fx = force * (dx / dist);
+          const fy = force * (dy / dist);
+          p.vx += fx * 0.016;
+          p.vy += fy * 0.016;
+        }
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 10) p.trail.shift();
+
+        // Draw trail
+        if (p.trail.length > 1) {
+          ctxMicro.strokeStyle = 'rgba(74, 222, 128, 0.4)';
+          ctxMicro.lineWidth = 1.5;
+          ctxMicro.beginPath();
+          ctxMicro.moveTo(p.trail[0].x, p.trail[0].y);
+          for (let j = 1; j < p.trail.length; j++) {
+            ctxMicro.lineTo(p.trail[j].x, p.trail[j].y);
+          }
+          ctxMicro.stroke();
+        }
+
+        // Draw particle head
+        ctxMicro.fillStyle = '#4ade80';
+        ctxMicro.beginPath();
+        ctxMicro.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+        ctxMicro.fill();
+
+        if (p.x < -20 || p.x > w + 20 || p.y < -20 || p.y > h + 20) {
+          microParticles.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(drawMicro);
+    }
+    requestAnimationFrame(drawMicro);
+  </script>
+</body>
+</html>

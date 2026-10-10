@@ -1,0 +1,158 @@
+/* ========================================================
+   ANIMATION 3: Energy Diagram (Slide 3)
+   ======================================================== */
+let reactionType = 'exo';
+function setReactionType(type) {
+    reactionType = type;
+    document.getElementById('btn-exo').style.background = type === 'exo' ? 'rgba(52,211,153,0.2)' : '';
+    document.getElementById('btn-exo').style.borderColor = type === 'exo' ? 'var(--accent-green)' : '';
+    document.getElementById('btn-endo').style.background = type === 'endo' ? 'rgba(248,113,113,0.2)' : '';
+    document.getElementById('btn-endo').style.borderColor = type === 'endo' ? 'var(--accent-red)' : '';
+    drawEnergyDiagram();
+}
+
+function drawEnergyDiagram() {
+    const cvs = document.getElementById('energy-canvas');
+    if (!cvs) return;
+    const c = cvs.getContext('2d');
+    const W = cvs.offsetWidth, H = cvs.offsetHeight;
+    cvs.width = W; cvs.height = H;
+
+    const Ea = parseInt(document.getElementById('ea-slider')?.value || 80);
+    const exo = reactionType === 'exo';
+
+    // Coordinate system
+    const ox = 55, oy = H - 45, maxW = W - 80, maxH = H - 75;
+
+    c.clearRect(0, 0, W, H);
+    c.fillStyle = 'rgba(15,23,42,0.95)';
+    c.fillRect(0, 0, W, H);
+
+    // Axes
+    c.strokeStyle = 'rgba(255,255,255,0.4)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(ox, oy + 5); c.lineTo(ox, oy - maxH - 10); c.stroke();
+    c.beginPath(); c.moveTo(ox - 5, oy); c.lineTo(ox + maxW + 10, oy); c.stroke();
+    // Axis arrowheads
+    c.fillStyle = 'rgba(255,255,255,0.4)';
+    c.beginPath(); c.moveTo(ox - 5, oy - maxH - 5); c.lineTo(ox, oy - maxH - 15); c.lineTo(ox + 5, oy - maxH - 5); c.fill();
+    c.beginPath(); c.moveTo(ox + maxW + 5, oy - 5); c.lineTo(ox + maxW + 15, oy); c.lineTo(ox + maxW + 5, oy + 5); c.fill();
+
+    // Labels
+    c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '11px sans-serif'; c.textAlign = 'center';
+    c.fillText('反應座標', ox + maxW / 2, H - 12);
+    c.save(); c.translate(18, H / 2); c.rotate(-Math.PI / 2);
+    c.fillText('位能 (Energy)', 0, 0); c.restore();
+
+    // Energy levels — keep product well above x-axis
+    const reactantE = 0.30;  // fraction of maxH from bottom
+    const deltaH = exo ? -0.18 : 0.20;
+    const productE = reactantE + deltaH;
+    const peakFrac = Ea / 200;
+    const peakE = reactantE + peakFrac;
+
+    const ry  = oy - reactantE * maxH;  // reactant y
+    const py  = oy - productE  * maxH;  // product y
+    const tsy = oy - peakE     * maxH;  // peak y
+
+    const rx1 = ox + maxW * 0.03, rx2 = ox + maxW * 0.25;
+    const px1 = ox + maxW * 0.75, px2 = ox + maxW * 0.97;
+    const tsx = ox + maxW * 0.5;
+
+    // ---- Horizontal dashed reference lines ----
+    function hDash(y, col) {
+        c.save(); c.strokeStyle = col; c.lineWidth = 1; c.setLineDash([6, 4]);
+        c.beginPath(); c.moveTo(ox, y); c.lineTo(ox + maxW, y); c.stroke();
+        c.restore();
+    }
+    hDash(ry,  'rgba(56,189,248,0.35)');   // reactant
+    hDash(py,  exo ? 'rgba(52,211,153,0.35)' : 'rgba(248,113,113,0.35)'); // product
+    hDash(tsy, 'rgba(251,191,36,0.35)');    // peak
+
+    // ---- Smooth curve ----
+    c.beginPath();
+    c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+    c.bezierCurveTo(rx2 + maxW * 0.1, ry, tsx - maxW * 0.12, tsy + 5, tsx, tsy);
+    c.bezierCurveTo(tsx + maxW * 0.12, tsy + 5, px1 - maxW * 0.1, py, px1, py);
+    c.lineTo(px2, py);
+    c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 2.5; c.stroke();
+
+    // ---- Reactant level label ----
+    c.beginPath(); c.moveTo(rx1, ry); c.lineTo(rx2, ry);
+    c.strokeStyle = '#38bdf8'; c.lineWidth = 2.5; c.stroke();
+    c.fillStyle = '#38bdf8'; c.font = 'bold 11px sans-serif'; c.textAlign = 'left';
+    c.fillText('反應物', rx1 + 2, ry - 6);
+
+    // ---- Product level label ----
+    c.beginPath(); c.moveTo(px1, py); c.lineTo(px2, py);
+    c.strokeStyle = exo ? '#34d399' : '#f87171'; c.lineWidth = 2.5; c.stroke();
+    c.fillStyle = exo ? '#34d399' : '#f87171'; c.font = 'bold 11px sans-serif'; c.textAlign = 'right';
+    c.fillText('產物', px2 - 2, py - 6);
+
+    // ---- Activated complex ----
+    c.beginPath(); c.arc(tsx, tsy, 6, 0, Math.PI * 2);
+    c.fillStyle = '#fb923c'; c.fill();
+    c.fillStyle = '#fb923c'; c.font = 'bold 10px sans-serif'; c.textAlign = 'center';
+    c.fillText('活化錯合物', tsx, tsy - 10);
+
+    // ---- Helper: draw a double-headed arrow with label ----
+    function drawBiArrow(x, y1, y2, col, label, labelSide) {
+        c.strokeStyle = col; c.fillStyle = col; c.lineWidth = 1.5;
+        c.setLineDash([4, 3]);
+        c.beginPath(); c.moveTo(x, y1); c.lineTo(x, y2); c.stroke();
+        c.setLineDash([]);
+        // arrowhead at y2
+        c.beginPath(); c.moveTo(x - 5, y2 + 10); c.lineTo(x, y2); c.lineTo(x + 5, y2 + 10); c.stroke();
+        // arrowhead at y1
+        c.beginPath(); c.moveTo(x - 5, y1 - 10); c.lineTo(x, y1); c.lineTo(x + 5, y1 - 10); c.stroke();
+        c.fillStyle = col; c.font = 'bold 12px sans-serif';
+        c.textAlign = labelSide === 'right' ? 'left' : 'right';
+        c.fillText(label, x + (labelSide === 'right' ? 6 : -6), (y1 + y2) / 2 + 4);
+    }
+
+    // Ea正: reactant → peak  (left side, clear of curve)
+    const eaX = ox + maxW * 0.16;
+    drawBiArrow(eaX, ry, tsy, '#fbbf24', 'Ea正', 'left');
+
+    // Ea逆: product → peak  (right side, clear of curve)
+    const earX = ox + maxW * 0.84;
+    drawBiArrow(earX, py, tsy, '#fb923c', 'Ea逆', 'right');
+
+    // ΔH: reactant → product  (centre of diagram) — always green
+    const dhX = tsx;
+    const dhCol = '#34d399';
+    c.strokeStyle = dhCol; c.fillStyle = dhCol; c.lineWidth = 1.5;
+    c.setLineDash([4, 3]);
+    c.beginPath(); c.moveTo(dhX, ry); c.lineTo(dhX, py); c.stroke();
+    c.setLineDash([]);
+    if (exo) {
+        c.beginPath(); c.moveTo(dhX - 5, py + 10); c.lineTo(dhX, py); c.lineTo(dhX + 5, py + 10); c.stroke();
+    } else {
+        c.beginPath(); c.moveTo(dhX - 5, ry - 10); c.lineTo(dhX, ry); c.lineTo(dhX + 5, ry - 10); c.stroke();
+    }
+    c.fillStyle = dhCol; c.font = 'bold 12px sans-serif'; c.textAlign = 'left';
+    c.fillText('ΔH ' + (exo ? '< 0 (放熱)' : '> 0 (吸熱)'), dhX + 6, (ry + py) / 2 + 4);
+
+    // Eth dashed line label
+    c.fillStyle = '#fbbf24'; c.font = '10px sans-serif'; c.textAlign = 'left';
+    c.fillText('Eth (低限能)', ox + 3, tsy - 4);
+}
+
+// Init energy canvas
+setTimeout(() => {
+    const easl = document.getElementById('ea-slider');
+    const eal = document.getElementById('ea-label');
+    if (easl) {
+        easl.addEventListener('input', () => {
+            eal.textContent = easl.value + ' kJ';
+            drawEnergyDiagram();
+        });
+    }
+    setReactionType('exo');
+    const cvs = document.getElementById('energy-canvas');
+    if (cvs) {
+        cvs.width = cvs.offsetWidth; cvs.height = cvs.offsetHeight;
+        drawEnergyDiagram();
+    }
+    window.addEventListener('resize', drawEnergyDiagram);
+}, 200);
+

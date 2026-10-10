@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>7-2 影響平衡常數的因素 · 核心通關檢核</title>
+    <meta name="description" content="選修化學三：平衡常數的表示法核心觀念連連看通關檢核與章節解鎖">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.5rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .text-cyan { color: var(--accent-cyan); }
+
+        /* ── 標頭情境框 (公版標準格式) ── */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+
+        /* ── 測驗卡片外框 (quiz-card) ── */
+        .quiz-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+
+        .quiz-q {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.5;
+        }
+
+        /* ── 連連看互動區 CSS ── */
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .match-game-cols {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            gap: 28px;
+            z-index: 2;
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 44%;
+        }
+
+        .match-item {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 9px 14px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            touch-action: none;
+            font-size: 0.92rem;
+            color: #f1f5f9;
+            min-height: 48px;
+        }
+
+        .match-item:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.selected {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.22);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+        }
+
+        .match-item.connected {
+            border-color: rgba(56, 189, 248, 0.65);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.match-correct {
+            border-color: #34d399 !important;
+            background: rgba(52, 211, 153, 0.18) !important;
+            color: #6ee7b7 !important;
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.3) !important;
+        }
+
+        .match-item.match-wrong {
+            border-color: #f87171 !important;
+            background: rgba(248, 113, 113, 0.18) !important;
+            color: #fca5a5 !important;
+            box-shadow: 0 0 12px rgba(248, 113, 113, 0.3) !important;
+        }
+
+        .match-item-text {
+            flex: 1;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+
+        .match-item-badge {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin: 0 4px;
+            pointer-events: none;
+        }
+
+        .match-dot {
+            width: 16px;
+            height: 16px;
+            background: #38bdf8;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.2s;
+            z-index: 5;
+            box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+            pointer-events: none;
+        }
+
+        .match-item[data-side="left"] .match-dot {
+            right: -8px;
+        }
+
+        .match-item[data-side="right"] .match-dot {
+            left: -8px;
+        }
+
+        .match-dot.active {
+            transform: translateY(-50%) scale(1.3);
+            background: #fbbf24;
+            box-shadow: 0 0 12px #fbbf24;
+        }
+
+        .match-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── 操作反饋列與提交按鈕 (quiz-action-bar) ── */
+        .quiz-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .quiz-feedback-msg {
+            flex: 1;
+            min-width: 260px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #94a3b8;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .quiz-feedback-msg.success {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+
+        .quiz-feedback-msg.fail {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.35);
+        }
+
+        .btn-submit-exam {
+            flex-shrink: 0;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #38bdf8, #34d399);
+            color: #0b1120;
+            font-size: 0.97rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-submit-exam:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-submit-exam:disabled { opacity: 0.55; cursor: default; transform: none; box-shadow: none; }
+
+        .btn-retry-exam {
+            flex-shrink: 0;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 0.97rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-retry-exam:hover { opacity: 0.92; transform: translateY(-1px); }
+
+        /* ── 通關完成橫幅 ── */
+        #section-complete-banner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 40vh;
+            padding: 3rem 2rem;
+            background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0.85) 70%);
+            border-top: 1px solid rgba(52,211,153,0.25);
+            margin-top: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            animation: fadeInBanner 0.6s ease forwards;
+        }
+
+        @keyframes fadeInBanner {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-trophy {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .banner-badge-item {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .match-game-cols { gap: 14px; }
+            .match-col { width: 48%; }
+            .match-item { font-size: 0.82rem; padding: 7px 10px; min-height: 44px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 -->
+        <div class="quiz-scenario-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                <span class="problem-badge" style="background:rgba(52,211,153,0.2); border-color:rgba(52,211,153,0.4); color:#34d399;">
+                    🏆 單元 7-2 · 核心通關檢核
+                </span>
+                <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成概念連連看配對，點擊右下角「確定作答」提交檢核</span>
+            </div>
+            <p style="font-size:0.94rem; line-height:1.6; color:#f8fafc; margin:0;">
+                【勒沙特略原理、濃度、壓力、溫度效應、催化劑及哈柏法應用】請將左側核心概念連線至右側對應科學定義或數學關係，5 組配對全部正確即可通關解鎖下一單元。
+            </p>
+        </div>
+
+        <!-- ★ 第(1)題：概念連連看（互動連線，橫跨全欄） -->
+        <div class="quiz-card" id="quiz-matching-card" style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="quiz-q" style="margin:0;">
+                    <span class="text-cyan">(1) 概念配對連連看</span> 請將左側概念連線至右側對應科學描述（可拖曳或點選圓點任意連線）。
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="btn-shuffle-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#38bdf8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                        隨機抽題 🔀
+                    </button>
+                    <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                        重設連線 ↺
+                    </button>
+                </div>
+            </div>
+
+            <!-- 連連看畫布與題目兩欄 -->
+            <div class="match-game-wrapper" id="match-game-wrapper">
+                <svg id="match-svg" class="match-svg"></svg>
+                <div class="match-game-cols">
+                    <div class="match-col" id="match-col-left"></div>
+                    <div class="match-col" id="match-col-right"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <p style="font-size:0.8rem; color:#64748b; margin:0;">💡 操作說明：點擊左側再點擊右側，或直接按住拖曳連線。提交前可任意重連。</p>
+                <span id="match-count-badge" style="font-size:0.82rem; color:#38bdf8; font-weight:600;">已連線：0 / 5</span>
+            </div>
+        </div>
+
+        <!-- 底部操作列 (包含反饋訊息、再試一次按鈕、確定作答按鈕) -->
+        <div class="quiz-action-bar">
+            <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                <span>💡 請完成 5 組概念配對連線，完成後點擊「確定作答」。</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" id="btn-retry-exam" class="btn-retry-exam">
+                    🔄 再試一次
+                </button>
+                <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+                    確定作答 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- 通關成功橫幅 -->
+        <div id="section-complete-banner">
+            <div style="font-size:4rem; margin-bottom:0.8rem; animation: pulse-trophy 1.5s ease-in-out infinite;">🏆</div>
+            <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+            <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜你 5 組配對全數答對！已完成 影響平衡常數的因素 核心檢核 🎉</p>
+            <p style="color:#94a3b8; font-size:0.95rem;">相關單元已自動解鎖，請從左側目錄切換繼續學習</p>
+            <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                <div class="banner-badge-item" style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); color:#34d399;">
+                    ✅ 7-2 影響平衡常數的因素 — 通關
+                </div>
+                <div class="banner-badge-item" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#38bdf8;">
+                    🏆 第七章 化學平衡 — 全面通關！
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── 7-2 影響平衡常數的因素 核心檢核系統 ──
+(function initSectionCheckpoint() {
+    const FULL_QUESTION_POOL = [
+        { "left": "增加反應物濃度", "right": "平衡向右（生成物方向）移動" },
+        { "left": "增加生成物濃度", "right": "平衡向左（反應物方向）移動" },
+        { "left": "加入固體反應物", "right": "不影響平衡位置" },
+        { "left": "水溶液加水稀釋（弱酸）", "right": "解離度上升，但各離子濃度仍降低" },
+        { "left": "壓縮體積（增壓）", "right": "平衡向氣體莫耳數少的方向移動" },
+        { "left": "擴大體積（減壓）", "right": "平衡向氣體莫耳數多的方向移動" },
+        { "left": "定容下加入鈍氣（如 He）", "right": "各分壓不變，平衡不移動" },
+        { "left": "定壓下加入鈍氣（如 Ar）", "right": "各分壓降低，向莫耳數多方移動" },
+        { "left": "反應係數和左右相等時加壓", "right": "平衡不移動" },
+        { "left": "升高溫度（吸熱反應）", "right": "平衡向右移動，K 值增大" },
+        { "left": "升高溫度（放熱反應）", "right": "平衡向左移動，K 值減小" },
+        { "left": "降低溫度（放熱反應）", "right": "平衡向右移動，K 值增大" },
+        { "left": "溫度不變時加催化劑", "right": "K 值不變，平衡不移動" },
+        { "left": "催化劑的作用機制", "right": "降低活化能，使正逆反應速率同等增大" },
+        { "left": "加入催化劑後達平衡時間", "right": "縮短（更快達到平衡狀態）" },
+        { "left": "哈柏法採用高壓（約 200 atm）", "right": "有利 NH₃ 生成（反應物係數和 4 > 2）" },
+        { "left": "哈柏法採用 400–500°C（中等溫度）", "right": "兼顧反應速率與平衡產率的折衷" },
+        { "left": "哈柏法使用鐵粉催化劑", "right": "加速達到平衡，不改變 K 值" },
+        { "left": "哈柏法及時移走 NH₃", "right": "降低生成物濃度，促進平衡持續右移" },
+        { "left": "唯一能改變 K 值的因素", "right": "溫度（吸熱反應升溫 K 增大）" },
+        { "left": "反應商 Q < K 時", "right": "反應向正方向（右）進行" },
+        { "left": "反應商 Q > K 時", "right": "反應向逆方向（左）進行" }
+    ];
+
+    let MATCH_DATA = [];
+    const GAME_COUNT = 5;
+
+    // 狀態變數
+    let isPassed = false;
+    let isVerified = false;
+    let connections = [];
+    let selectedItem = null;
+    let isDraggingMatch = false;
+    let dragStartItem = null;
+    let tempMatchLine = null;
+
+    // DOM 元素
+    const leftCol = document.getElementById('match-col-left');
+    const rightCol = document.getElementById('match-col-right');
+    const matchSvg = document.getElementById('match-svg');
+    const matchWrapper = document.getElementById('match-game-wrapper');
+    const matchCountBadge = document.getElementById('match-count-badge');
+    const submitBtn = document.getElementById('btn-submit-exam');
+    const retryBtn = document.getElementById('btn-retry-exam');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const completeBanner = document.getElementById('section-complete-banner');
+    const resetMatchBtn = document.getElementById('btn-reset-match');
+    const shuffleMatchBtn = document.getElementById('btn-shuffle-match');
+
+    function renderMatchGame() {
+        connections = [];
+        selectedItem = null;
+        isDraggingMatch = false;
+        isVerified = false;
+        if (tempMatchLine) { tempMatchLine.remove(); tempMatchLine = null; }
+        matchSvg.innerHTML = '';
+        if (retryBtn) retryBtn.style.display = 'none';
+        if (submitBtn) submitBtn.disabled = false;
+        feedbackMsg.className = 'quiz-feedback-msg';
+        feedbackMsg.innerHTML = '<span>💡 請完成 5 組概念配對連線，完成後點擊「確定作答」。</span>';
+
+        // 隨機抽 5 題
+        const shuffledPool = [...FULL_QUESTION_POOL].sort(() => Math.random() - 0.5);
+        MATCH_DATA = shuffledPool.slice(0, GAME_COUNT).map((item, idx) => ({
+            id: idx,
+            left: item.left,
+            right: item.right
+        }));
+
+        // 渲染左欄
+        leftCol.innerHTML = '';
+        MATCH_DATA.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'match-item';
+            div.dataset.id = d.id;
+            div.dataset.side = 'left';
+            div.innerHTML = `
+                <span class="match-item-text">${d.left}</span>
+                <span class="match-item-badge"></span>
+                <div class="match-dot"></div>
+            `;
+            bindItemEvents(div);
+            leftCol.appendChild(div);
+        });
+
+        // 渲染右欄（隨機重洗右欄順序）
+        rightCol.innerHTML = '';
+        const shuffledRight = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+        shuffledRight.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'match-item';
+            div.dataset.id = d.id;
+            div.dataset.side = 'right';
+            div.innerHTML = `
+                <div class="match-dot"></div>
+                <span class="match-item-text">${d.right}</span>
+                <span class="match-item-badge"></span>
+            `;
+            bindItemEvents(div);
+            rightCol.appendChild(div);
+        });
+
+        updateMatchBadge();
+        reportIframeHeight();
+    }
+
+    function bindItemEvents(el) {
+        // 點選模式
+        el.addEventListener('click', (e) => {
+            if (isPassed || isVerified) return;
+            handleItemClick(el);
+        });
+
+        // 拖曳模式
+        el.addEventListener('mousedown', (e) => {
+            if (isPassed || isVerified) return;
+            startDrag(el, e.clientX, e.clientY);
+        });
+
+        el.addEventListener('touchstart', (e) => {
+            if (isPassed || isVerified) return;
+            const touch = e.touches[0];
+            startDrag(el, touch.clientX, touch.clientY);
+        }, { passive: true });
+    }
+
+    function startDrag(el, clientX, clientY) {
+        isDraggingMatch = true;
+        dragStartItem = el;
+        el.querySelector('.match-dot')?.classList.add('active');
+
+        const wrapRect = matchWrapper.getBoundingClientRect();
+        const dotRect = el.querySelector('.match-dot').getBoundingClientRect();
+        const startX = dotRect.left + dotRect.width / 2 - wrapRect.left;
+        const startY = dotRect.top + dotRect.height / 2 - wrapRect.top;
+
+        if (!tempMatchLine) {
+            tempMatchLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tempMatchLine.setAttribute('stroke', '#38bdf8');
+            tempMatchLine.setAttribute('stroke-width', '3');
+            tempMatchLine.setAttribute('stroke-dasharray', '5,5');
+            matchSvg.appendChild(tempMatchLine);
+        }
+        tempMatchLine.setAttribute('x1', startX);
+        tempMatchLine.setAttribute('y1', startY);
+        tempMatchLine.setAttribute('x2', clientX - wrapRect.left);
+        tempMatchLine.setAttribute('y2', clientY - wrapRect.top);
+    }
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDraggingMatch || !tempMatchLine) return;
+        const wrapRect = matchWrapper.getBoundingClientRect();
+        tempMatchLine.setAttribute('x2', e.clientX - wrapRect.left);
+        tempMatchLine.setAttribute('y2', e.clientY - wrapRect.top);
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDraggingMatch || !tempMatchLine) return;
+        const touch = e.touches[0];
+        const wrapRect = matchWrapper.getBoundingClientRect();
+        tempMatchLine.setAttribute('x2', touch.clientX - wrapRect.left);
+        tempMatchLine.setAttribute('y2', touch.clientY - wrapRect.top);
+    }, { passive: true });
+
+    function endDrag(clientX, clientY) {
+        if (!isDraggingMatch) return;
+        isDraggingMatch = false;
+        if (dragStartItem) {
+            dragStartItem.querySelector('.match-dot')?.classList.remove('active');
+        }
+        if (tempMatchLine) {
+            tempMatchLine.remove();
+            tempMatchLine = null;
+        }
+
+        const target = document.elementFromPoint(clientX, clientY);
+        const targetItem = target?.closest('.match-item');
+        if (targetItem && dragStartItem && targetItem !== dragStartItem) {
+            const startSide = dragStartItem.dataset.side;
+            const targetSide = targetItem.dataset.side;
+            if (startSide !== targetSide) {
+                const leftEl = startSide === 'left' ? dragStartItem : targetItem;
+                const rightEl = startSide === 'right' ? dragStartItem : targetItem;
+                connectPair(parseInt(leftEl.dataset.id, 10), parseInt(rightEl.dataset.id, 10));
+            }
+        }
+        dragStartItem = null;
+    }
+
+    window.addEventListener('mouseup', (e) => endDrag(e.clientX, e.clientY));
+    window.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches ? e.changedTouches[0] : null;
+        if (touch) endDrag(touch.clientX, touch.clientY);
+    });
+
+    function handleItemClick(el) {
+        const side = el.dataset.side;
+        if (!selectedItem) {
+            selectedItem = el;
+            el.classList.add('selected');
+            el.querySelector('.match-dot')?.classList.add('active');
+            return;
+        }
+
+        if (selectedItem === el) {
+            selectedItem.classList.remove('selected');
+            selectedItem.querySelector('.match-dot')?.classList.remove('active');
+            selectedItem = null;
+            return;
+        }
+
+        if (selectedItem.dataset.side === side) {
+            selectedItem.classList.remove('selected');
+            selectedItem.querySelector('.match-dot')?.classList.remove('active');
+            selectedItem = el;
+            el.classList.add('selected');
+            el.querySelector('.match-dot')?.classList.add('active');
+            return;
+        }
+
+        const leftEl = side === 'left' ? el : selectedItem;
+        const rightEl = side === 'right' ? el : selectedItem;
+        connectPair(parseInt(leftEl.dataset.id, 10), parseInt(rightEl.dataset.id, 10));
+
+        selectedItem.classList.remove('selected');
+        selectedItem.querySelector('.match-dot')?.classList.remove('active');
+        selectedItem = null;
+    }
+
+    function connectPair(leftId, rightId) {
+        connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+        connections.push({ leftId, rightId, status: null });
+
+        matchWrapper.querySelectorAll('.match-item').forEach(el => {
+            const id = parseInt(el.dataset.id, 10);
+            const side = el.dataset.side;
+            const isConn = connections.some(c => (side === 'left' ? c.leftId === id : c.rightId === id));
+            el.classList.toggle('connected', isConn);
+        });
+
+        updateMatchBadge();
+        drawAllConnections();
+    }
+
+    function updateMatchBadge() {
+        matchCountBadge.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+        if (connections.length === MATCH_DATA.length) {
+            matchCountBadge.style.color = '#34d399';
+        } else {
+            matchCountBadge.style.color = '#38bdf8';
+        }
+    }
+
+    function drawAllConnections() {
+        matchSvg.querySelectorAll('.perm-line').forEach(l => l.remove());
+        const wrapRect = matchWrapper.getBoundingClientRect();
+
+        connections.forEach(c => {
+            const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+            const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+            if (!leftEl || !rightEl) return;
+
+            const lDot = leftEl.querySelector('.match-dot').getBoundingClientRect();
+            const rDot = rightEl.querySelector('.match-dot').getBoundingClientRect();
+
+            const x1 = lDot.left + lDot.width / 2 - wrapRect.left;
+            const y1 = lDot.top + lDot.height / 2 - wrapRect.top;
+            const x2 = rDot.left + rDot.width / 2 - wrapRect.left;
+            const y2 = rDot.top + rDot.height / 2 - wrapRect.top;
+
+            let strokeColor = '#38bdf8';
+            if (c.status === 'correct') strokeColor = '#34d399';
+            else if (c.status === 'wrong') strokeColor = '#f87171';
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const dx = (x2 - x1) * 0.45;
+            const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+            line.setAttribute('d', d);
+            line.setAttribute('fill', 'none');
+            line.setAttribute('stroke', strokeColor);
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('class', 'perm-line');
+            matchSvg.appendChild(line);
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        drawAllConnections();
+        reportIframeHeight();
+    });
+    window.addEventListener('scroll', drawAllConnections, { passive: true });
+
+    if (resetMatchBtn) {
+        resetMatchBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            isVerified = false;
+            connections = [];
+            selectedItem = null;
+            const allItems = matchWrapper.querySelectorAll('.match-item');
+            allItems.forEach(el => {
+                el.classList.remove('selected', 'connected', 'match-correct', 'match-wrong');
+                el.querySelector('.match-item-badge').textContent = '';
+            });
+            updateMatchBadge();
+            drawAllConnections();
+            if (retryBtn) retryBtn.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = false;
+            feedbackMsg.className = 'quiz-feedback-msg';
+            feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新進行概念配對。</span>';
+        });
+    }
+
+    if (shuffleMatchBtn) {
+        shuffleMatchBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            renderMatchGame();
+        });
+    }
+
+    // 「確定作答」檢核按鈕 (核心通關判定)
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            if (isPassed) return;
+
+            if (connections.length < MATCH_DATA.length) {
+                feedbackMsg.className = 'quiz-feedback-msg fail';
+                feedbackMsg.innerHTML = `<span>⚠️ 概念連連看尚有未配對項目（已完成 ${connections.length}/${MATCH_DATA.length} 組），請將 5 組概念全部連線！</span>`;
+                return;
+            }
+
+            isVerified = true;
+            let allCorrect = true;
+
+            connections.forEach(c => {
+                const isCorrect = (c.leftId === c.rightId);
+                c.status = isCorrect ? 'correct' : 'wrong';
+                if (!isCorrect) allCorrect = false;
+
+                const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+
+                if (leftEl) {
+                    leftEl.classList.remove('match-correct', 'match-wrong');
+                    leftEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                    leftEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                    leftEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                }
+                if (rightEl) {
+                    rightEl.classList.remove('match-correct', 'match-wrong');
+                    rightEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                    rightEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                    rightEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                }
+            });
+
+            drawAllConnections();
+
+            if (allCorrect) {
+                isPassed = true;
+                submitBtn.disabled = true;
+                submitBtn.textContent = '檢核通過 ✅';
+                if (retryBtn) retryBtn.style.display = 'none';
+
+                feedbackMsg.className = 'quiz-feedback-msg success';
+                feedbackMsg.innerHTML = '<span>🎉 檢核通過！5 組概念配對全數答對，單元已成功解鎖通關！</span>';
+
+                if (completeBanner) {
+                    completeBanner.style.display = 'flex';
+                    reportIframeHeight();
+                    setTimeout(() => {
+                        completeBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 250);
+                }
+
+                notifySectionComplete();
+            } else {
+                feedbackMsg.className = 'quiz-feedback-msg fail';
+                feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示正確（綠色）與錯誤（紅色）部分，請點擊「再試一次」進行修正！</span>';
+
+                submitBtn.disabled = true;
+                if (retryBtn) {
+                    retryBtn.style.display = 'inline-flex';
+                    retryBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        });
+    }
+
+    // 「再試一次」按鈕：保留答對連線，清除答錯連線供重試
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            isVerified = false;
+
+            connections = connections.filter(c => {
+                if (c.status === 'correct') {
+                    return true;
+                } else {
+                    const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                    const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                    if (leftEl) {
+                        leftEl.classList.remove('match-wrong', 'connected');
+                        leftEl.querySelector('.match-item-badge').textContent = '';
+                    }
+                    if (rightEl) {
+                        rightEl.classList.remove('match-wrong', 'connected');
+                        rightEl.querySelector('.match-item-badge').textContent = '';
+                    }
+                    return false;
+                }
+            });
+
+            updateMatchBadge();
+            drawAllConnections();
+
+            retryBtn.style.display = 'none';
+            submitBtn.disabled = false;
+            feedbackMsg.className = 'quiz-feedback-msg';
+            feedbackMsg.innerHTML = '<span>✏️ 請重新連線錯誤的概念，完成後再次點擊「確定作答」。</span>';
+        });
+    }
+
+    // 通關通知外層母網頁 SPA (portal.js)
+    function notifySectionComplete() {
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: '02_影響平衡常數的因素',
+            chapterId: 'ch7',
+            title: '平衡常數的表示法'
+        };
+
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage(payload, '*');
+        }
+        if (window.top && window.top !== window && window.top !== window.parent) {
+            window.top.postMessage(payload, '*');
+        }
+    }
+
+    // 回報本頁高度給父層以自適應調整 iframe 高度
+    function reportIframeHeight() {
+        setTimeout(() => {
+            const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'RESIZE_IFRAME', height: h }, '*');
+            }
+        }, 200);
+    }
+
+    renderMatchGame();
+})();
+</script>
+
+</body>
+</html>

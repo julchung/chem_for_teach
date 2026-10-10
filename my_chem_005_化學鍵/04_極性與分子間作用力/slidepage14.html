@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>極性與分子間作用力 - 第 14 頁</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="chem-diagrams.js"></script>
+    
+    <style>
+
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 2px, transparent 2px);
+            background-size: 60px 60px;
+        }
+        #app:not(.started) 
+        #app:not(.started) ~ #toolbar, #app:not(.started) ~ #slide-info { visibility: hidden; pointer-events: none; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-cyan);
+            background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56,189,248,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: var(--accent-blue); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(56,189,248,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        
+        
+        
+        
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.08rem 0.5rem; border-radius: 18px; font-size: 0.74rem; font-weight: 700; margin-right: 0.2rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.72rem, 0.95vw, 0.88rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.32rem 0.35rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+        .svg-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .svg-wrap svg, .chem-svg { max-width: 100%; max-height: 100%; display: block; }
+        .diagram-panel {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.32); border-radius: 12px; padding: 0.35rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .diagram-panel:focus { outline: 3px solid rgba(56,189,248,0.12); box-shadow: 0 6px 20px rgba(56,189,248,0.06); }
+        .diagram-stack { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .diagram-label { font-size: 0.78rem; color: rgba(248,250,252,0.5); text-align: center; flex-shrink: 0; }
+        .panel-diagram-only { padding: 0.5rem 0.65rem; }
+        #slide-en .slide-en-left { display: flex; flex-direction: column; min-height: 0; gap: 0.45rem; }
+        #slide-en .slide-en-text { flex: 1; min-height: 0; overflow-y: auto; }
+        #slide-en .slide-en-text h2 { font-size: clamp(1.05rem, 1.55vw, 1.28rem); }
+        #slide-en .slide-en-text p,
+        #slide-en .slide-en-text li { font-size: clamp(0.95rem, 1.28vw, 1.12rem); line-height: 1.52; }
+        #slide-en .slide-en-text .formula-box { font-size: clamp(1.05rem, 1.45vw, 1.22rem); }
+        #slide-en .formula-inline {
+            font-size: clamp(0.78rem, 1vw, 0.9rem); line-height: 1.35; padding: 0.3rem 0.55rem; margin: 0.3rem 0;
+            text-align: center; white-space: nowrap; overflow-x: auto;
+            background: rgba(0,0,0,0.35); border-radius: 8px; border-left: 3px solid var(--accent-green);
+        }
+        #slide-en .slide-en-hf { flex: 0 0 auto; max-height: 32%; min-height: 100px; margin-top: 0; }
+        #slide-en .grid-2-slide-en { grid-template-columns: 1.3fr 1fr; }
+        #slide-en .slide-en-right { display: flex; flex-direction: column; min-height: 0; gap: 0.5rem; padding: 0.55rem 0.7rem; }
+        #slide-en .slide-en-right-caption { flex-shrink: 0; padding-bottom: 0.15rem; }
+        #slide-en .slide-en-right-caption h2 {
+            font-size: clamp(1.05rem, 1.55vw, 1.28rem); margin: 0 0 0.35rem; color: var(--accent-yellow);
+        }
+        #slide-en .slide-en-right-caption p {
+            font-size: clamp(0.92rem, 1.22vw, 1.08rem); line-height: 1.48; margin: 0;
+            color: rgba(248,250,252,0.88);
+        }
+        #slide-en .slide-en-right .diagram-panel { flex: 1; min-height: 0; margin-top: 0; }
+        #slide-dipole .grid-2-dipole { flex: 1; min-height: 0; grid-template-columns: 1fr 1.2fr; }
+        #slide-dipole .slide-dipole-left h2 { font-size: clamp(1rem, 1.4vw, 1.2rem); margin: 0.5rem 0 0.3rem; color: var(--accent-yellow); }
+        #slide-dipole .slide-dipole-left h2:first-of-type { margin-top: 0; }
+        #slide-dipole .mol-example {
+            background: rgba(0,0,0,0.22); border-radius: 10px; padding: 0.55rem 0.7rem;
+            border: 1px solid rgba(255,255,255,0.1); margin-bottom: 0.45rem;
+        }
+        #slide-dipole .mol-example p { font-size: clamp(0.88rem, 1.1vw, 1rem); margin-bottom: 0.2rem; }
+        #slide-dipole .mol-example .mu-val { color: #f87171; font-weight: 800; font-size: clamp(0.95rem, 1.2vw, 1.08rem); }
+        #slide-dipole .slide-dipole-right { display: flex; flex-direction: column; min-height: 0; padding: 0.5rem 0.65rem; }
+        #slide-dipole .slide-dipole-right h2 { font-size: clamp(0.95rem, 1.3vw, 1.15rem); margin: 0 0 0.4rem; color: var(--accent-yellow); text-align: center; flex-shrink: 0; }
+        #slide-dipole .en-table-wrap { flex: 1; min-height: 0; overflow: auto; }
+        #slide-dipole .en-periodic { width: 100%; border-collapse: collapse; font-size: clamp(0.58rem, 0.72vw, 0.68rem); }
+        #slide-dipole .en-periodic th, #slide-dipole .en-periodic td { border: 1px solid rgba(255,255,255,0.12); padding: 0.12rem 0.08rem; text-align: center; vertical-align: middle; }
+        #slide-dipole .en-periodic th { background: rgba(56,189,248,0.12); color: var(--accent-blue); font-weight: 600; }
+        #slide-dipole .en-periodic .en-sym { display: block; font-weight: 700; color: var(--accent-cyan); line-height: 1.1; }
+        #slide-dipole .en-periodic .en-val { display: block; color: #f87171; font-size: 0.92em; line-height: 1.1; }
+        #slide-dipole .en-periodic .en-empty { background: rgba(0,0,0,0.15); }
+        #slide-dipole .en-periodic .en-p-label { background: rgba(167,139,250,0.1); color: #c4b5fd; font-weight: 700; width: 1.8rem; }
+        #slide-dipole .en-sub-table { margin-top: 0.45rem; font-size: clamp(0.55rem, 0.68vw, 0.65rem); }
+        .mol-btn {
+            padding: 0.4rem 0.7rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.06); color: #fff; cursor: pointer; font-size: 0.85rem;
+            font-weight: 600; transition: 0.2s; touch-action: manipulation;
+        }
+        .mol-btn.active { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); }
+        .mol-btn-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; flex-shrink: 0; }
+        #slide-mol .mol-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; flex: 1; min-height: 0; }
+        #slide-mol .mol-png-panel, #slide-mol .mol-pdb-panel {
+            flex: 1; min-height: 0; display: flex; flex-direction: column;
+            background: rgba(0,0,0,0.32); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.4rem; overflow: hidden;
+        }
+        #slide-mol .mol-img-box { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+        #slide-mol .mol-img-box img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+        #slide-mol #pdb-viewer-wrap { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+        #slide-mol #pdb-viewer { width: 100%; height: 100%; min-height: 200px; }
+        #slide-mol .mol-desc-panel { flex-shrink: 0; max-height: 28%; margin-top: 0.5rem; }
+        .status-pill {
+            text-align: center; padding: 0.45rem; border-radius: 10px; font-size: 0.88rem; font-weight: 700; flex-shrink: 0;
+        }
+        .pill-polar { background: rgba(248,113,113,0.15); border: 1px solid var(--accent-red); color: #fca5a5; }
+        .pill-nonpolar { background: rgba(52,211,153,0.12); border: 1px solid var(--accent-green); color: #6ee7b7; }
+        #canvas-bp { display: block; width: 100%; flex: 1; min-height: 160px; border-radius: 12px; background: rgba(0,0,0,0.35); }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+        .quiz-options li { font-size: clamp(0.86rem, 1.1vw, 0.98rem); padding: 0.3rem 0.45rem; margin-bottom: 0.12rem; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+        .quiz-options li span.opt-label { color: var(--accent-blue); font-weight: 700; min-width: 2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-blue); color: #0f172a; border: none; padding: 0.6rem 1.3rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 0.92rem;
+            align-self: flex-start; margin-top: 0.35rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .imf-bar { display: flex; align-items: center; gap: 0.5rem; margin: 0.35rem 0; font-size: 0.82rem; }
+        .imf-bar .bar { flex: 1; height: 14px; border-radius: 7px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .imf-bar .fill { height: 100%; border-radius: 7px; transition: width 0.5s ease; }
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 16px 32px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 8px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 16px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 45px; height: 9vh; max-height: 72px; position: relative;
+            font-size: clamp(0.78rem, 1.1vw, 1rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot {
+            width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; box-shadow: 0 0 0 4px rgba(56,189,248,0.12); }
+        .panel p, .panel li { color: rgba(248,250,252,0.92); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slide-mol .mol-split { grid-template-columns: 1fr; }
+            
+            .game-columns { padding: 12px 16px; }
+        }
+    
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0.8rem 1.2rem;
+    box-sizing: border-box;
+    background: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+    background-size: 30px 30px;
+}
+
+.slide {
+    position: relative !important;
+    inset: auto !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+h1 {
+    font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+    margin-bottom: 0.45rem;
+    padding-bottom: 0.25rem;
+    flex-shrink: 0;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel {
+    background: var(--glass);
+    border: 1.5px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 0.75rem 0.9rem;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+
+.scroll-panel {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+.scroll-panel::-webkit-scrollbar { width: 5px; }
+.scroll-panel::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.25); border-radius: 3px; }
+
+#slide-mol .mol-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    flex: 1;
+    min-height: 0;
+}
+#slide-mol #pdb-viewer-wrap {
+    width: 100%;
+    height: 100%;
+    min-height: 180px;
+    position: relative;
+    flex: 1;
+}
+#slide-mol #pdb-viewer {
+    width: 100%;
+    height: 100%;
+}
+
+#slide-molview iframe {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
+    border: none;
+    border-radius: 12px;
+}
+
+#noble-model, #alkane-model {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    min-height: 160px;
+}
+#canvas-noble-boil, #canvas-noble-melt, #canvas-boil, #canvas-melt {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    min-height: 160px;
+}
+
+#canvas-bp, #canvas-mp {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    min-height: 180px;
+}
+
+    </style>
+</head>
+<body>
+<div class="slide slide-intro active">
+                <h1>綜合範例與思考</h1>
+                <div class="grid-2">
+                    <div class="quiz-item">
+                        <h2>範例 1</h2>
+                        <p>下列何者為<strong>極性分子</strong>？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> CO₂</li>
+                            <li><span class="opt-label">(B)</span> BF₃</li>
+                            <li><span class="opt-label">(C)</span> NH₃</li>
+                            <li><span class="opt-label">(D)</span> CCl₄</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans1">
+                            <h2 style="color:var(--accent-green);">解答：(C) NH₃</h2>
+                            <p>CO₂ 直線對稱、BF₃ 平面三角對稱、CCl₄ 四面體對稱 → 鍵偶極抵消。</p>
+                            <p>NH₃ 三角錐形，孤對電子使結構不對稱 → 分子偶極 ≠ 0。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans1', this)">關閉</button>
+                        </div>
+                    </div>
+                    <div class="quiz-item">
+                        <h2>範例 2</h2>
+                        <p>沸點：CH₄ &lt; NH₃ &lt; H₂O，主因為何？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 僅分子量不同</li>
+                            <li><span class="opt-label">(B)</span> H₂O 可形成氫鍵</li>
+                            <li><span class="opt-label">(C)</span> CH₄ 為離子鍵</li>
+                            <li><span class="opt-label">(D)</span> NH₃ 無分子間作用力</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans2">
+                            <h2 style="color:var(--accent-green);">解答：(B)</h2>
+                            <p>H₂O 分子間氫鍵強；NH₃ 亦可形成氫鍵但較弱；CH₄ 僅倫敦分散力。</p>
+                            <button type="button" class="btn-action" onclick="toggleAns('ans2', this)">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <script>
+
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.style.display === 'flex';
+    el.style.display = open ? 'none' : 'flex';
+    if (btn) btn.textContent = open ? '顯示解答' : '關閉';
+}
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch(() => {});
+        }
+    });
+    </script>
+</body>
+</html>

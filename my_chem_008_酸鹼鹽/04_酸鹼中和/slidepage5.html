@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>8-4 酸鹼中和與滴定 · 範例 1：強酸強鹼滴定計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.5; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.95rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+        .tag-blue { background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        /* Solution box toggle animation */
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; font-size: 0.85rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid rgba(255,255,255,0.15); padding: 0.3rem 0.4rem; text-align: center;
+        }
+        .data-table th { background: rgba(34,211,238,0.15); color: var(--accent-cyan); }
+        .data-table tr.eq-pt { background: rgba(248,113,113,0.15); font-weight: bold; }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.65rem 0.85rem; line-height: 1.55;
+        }
+        .step-block.eq { border-left-color: var(--accent-red); background: rgba(248,113,113,0.06); }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.06); }
+        .step-block.yellow { border-left-color: var(--accent-yellow); background: rgba(251,191,36,0.06); }
+
+        #s5-chart-wrap {
+            width: 100%; height: 160px; position: relative; margin-top: 4px;
+            background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>8-4 酸鹼中和與滴定 · 範例 1：強酸強鹼滴定計算 (HCl + NaOH)</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目、資料表與曲線模擬 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.4rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span class="tag tag-yellow">範例 1</span>
+                                <h2 style="color: var(--accent-yellow); margin: 0;">強酸強鹼滴定 pH 變化與曲線</h2>
+                            </div>
+                            <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">一題一頁 · 標準範例</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 0.65rem 0.85rem;">
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>題目說明：</strong><br>
+                                有一水溶液含 <span style="color:var(--accent-cyan); font-weight:bold;">$0.1\,\mathrm{M}\ \mathrm{HCl}\ 50\,\mathrm{mL}$</span>，加入指示劑後，以滴定管逐次滴入 <span style="color:var(--accent-blue); font-weight:bold;">$0.1\,\mathrm{M}\ \mathrm{NaOH}$</span>，反應式為：
+                                $$\mathrm{HCl_{(aq)} + NaOH_{(aq)} \longrightarrow NaCl_{(aq)} + H_2O_{(l)}}$$
+                                試求當加入 $\mathrm{NaOH}$ 體積為 <strong>0 mL、25 mL、49 mL、50 mL、51 mL、75 mL、100 mL</strong> 時的 $[\mathrm{H^+}]、[\mathrm{OH^-}]$ 與 $\mathrm{pH}$ 值。
+                            </p>
+                        </div>
+
+                        <!-- 滴定數據對照表 -->
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>加入 NaOH (mL)</th>
+                                    <th>$[\mathrm{H^+}]$ (M)</th>
+                                    <th>$[\mathrm{OH^-}]$ (M)</th>
+                                    <th>$\mathrm{pH}$ 值</th>
+                                    <th>階段備註</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>0</td><td>$10^{-1}$</td><td>$10^{-13}$</td><td><strong>1.00</strong></td><td>滴定前（純強酸）</td></tr>
+                                <tr><td>25</td><td>$3.33 \times 10^{-2}$</td><td>$3.00 \times 10^{-13}$</td><td><strong>1.48</strong></td><td>半當量點（酸過量）</td></tr>
+                                <tr><td>49</td><td>$1.01 \times 10^{-3}$</td><td>$9.90 \times 10^{-12}$</td><td><strong>3.00</strong></td><td>接近當量點</td></tr>
+                                <tr class="eq-pt"><td style="color:var(--accent-red)">50 ★</td><td>$1.00 \times 10^{-7}$</td><td>$1.00 \times 10^{-7}$</td><td style="color:var(--accent-red)"><strong>7.00</strong></td><td>⭐ 當量點（中性點）</td></tr>
+                                <tr><td>51</td><td>$1.01 \times 10^{-11}$</td><td>$9.90 \times 10^{-4}$</td><td><strong>11.00</strong></td><td>過當量點（突躍結束）</td></tr>
+                                <tr><td>75</td><td>$5.00 \times 10^{-13}$</td><td>$2.00 \times 10^{-2}$</td><td><strong>12.30</strong></td><td>強鹼主導</td></tr>
+                                <tr><td>100</td><td>$3.00 \times 10^{-13}$</td><td>$3.33 \times 10^{-2}$</td><td><strong>12.52</strong></td><td>強鹼過量飽和趨勢</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- 滴定曲線圖表 -->
+                        <div id="s5-chart-wrap">
+                            <canvas id="s5-canvas" style="width:100%; height:100%; display:block;"></canvas>
+                        </div>
+
+                        <!-- 顯示詳解按鈕 -->
+                        <div style="margin-top: auto; padding-top: 0.3rem;">
+                            <button class="btn-action" onclick="toggleSolution('s5-solution')" style="width: 100%; padding: 8px 18px; font-size: 0.96rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設空白，點擊展開） -->
+                    <div class="panel" style="background: rgba(255,255,255,0.02); position: relative;">
+                        <!-- 預設提示 -->
+                        <div id="solution-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.45); text-align: center; gap: 0.8rem;">
+                            <div style="font-size: 2.4rem;">💡</div>
+                            <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent-cyan);">點擊左下方「💡 顯示詳解 / 隱藏」查看計算詳解</div>
+                            <p style="font-size: 0.88rem; max-width: 320px; line-height: 1.6;">
+                                詳細拆解強酸強鹼滴定四個關鍵階段：滴定前、當量點前、當量點（完全中和）及過量鹼的濃度推導與極大突躍範圍分析。
+                            </p>
+                        </div>
+
+                        <!-- 詳解內容盒 -->
+                        <div id="s5-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.4rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>✓</span> 完整計算步驟詳解
+                                </h2>
+                                <span class="tag" style="background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4);">強酸 + 強鹼</span>
+                            </div>
+
+                            <!-- 階段 1：滴定前 -->
+                            <div class="step-block">
+                                <strong style="color: var(--accent-cyan);">① 滴定前（加入 0 mL NaOH）：</strong><br>
+                                溶液僅有 $0.1\,\mathrm{M}\ \mathrm{HCl}$，強酸 $100\%$ 完全解離：
+                                $$[\mathrm{H^+}] = 0.1\,\mathrm{M} = 10^{-1}\,\mathrm{M} \implies \mathbf{pH = 1.00}$$
+                                $$[\mathrm{OH^-}] = \frac{10^{-14}}{10^{-1}} = 10^{-13}\,\mathrm{M}$$
+                            </div>
+
+                            <!-- 階段 2：當量點前 -->
+                            <div class="step-block yellow">
+                                <strong style="color: var(--accent-yellow);">② 當量點前（加入 25 mL 與 49 mL）：</strong><br>
+                                初始 $\mathrm{HCl} = 0.1 \times 50 = 5\,\mathrm{mmol}$。<br>
+                                • <strong>加入 25 mL 時</strong>：$\mathrm{NaOH} = 0.1 \times 25 = 2.5\,\mathrm{mmol}$。
+                                剩餘 $\mathrm{HCl} = 5 - 2.5 = 2.5\,\mathrm{mmol}$，總體積 $V = 50+25 = 75\,\mathrm{mL}$：
+                                $$[\mathrm{H^+}] = \frac{2.5\,\mathrm{mmol}}{75\,\mathrm{mL}} \approx 3.33 \times 10^{-2}\,\mathrm{M} \implies \mathbf{pH = 1.48}$$
+                                • <strong>加入 49 mL 時</strong>：$\mathrm{NaOH} = 4.9\,\mathrm{mmol}$，剩餘 $\mathrm{HCl} = 0.1\,\mathrm{mmol}$，$V = 99\,\mathrm{mL}$：
+                                $$[\mathrm{H^+}] = \frac{0.1\,\mathrm{mmol}}{99\,\mathrm{mL}} \approx 1.01 \times 10^{-3}\,\mathrm{M} \implies \mathbf{pH \approx 3.00}$$
+                            </div>
+
+                            <!-- 階段 3：當量點 -->
+                            <div class="step-block eq">
+                                <strong style="color: var(--accent-red);">③ 當量點（加入 50 mL NaOH ★）：</strong><br>
+                                $\mathrm{NaOH}$ 莫耳數 $= 0.1 \times 50 = 5\,\mathrm{mmol}$，與 $\mathrm{HCl}$ 恰好完全中和！<br>
+                                溶液中只存在 $\mathrm{NaCl}$ 與 $\mathrm{H_2O}$。因 $\mathrm{Na^+}$ 與 $\mathrm{Cl^-}$ 均<strong>不水解</strong>：
+                                $$[\mathrm{H^+}] = [\mathrm{OH^-}] = 1.0 \times 10^{-7}\,\mathrm{M} \implies \mathbf{pH = 7.00 \ (中性)}$$
+                            </div>
+
+                            <!-- 階段 4：當量點後 -->
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">④ 當量點後（加入 51 mL 與 75 mL）：</strong><br>
+                                • <strong>加入 51 mL 時</strong>：$\mathrm{NaOH}$ 過量 $5.1 - 5 = 0.1\,\mathrm{mmol}$，總體積 $V = 101\,\mathrm{mL}$：
+                                $$[\mathrm{OH^-}] = \frac{0.1\,\mathrm{mmol}}{101\,\mathrm{mL}} \approx 9.90 \times 10^{-4}\,\mathrm{M} \implies \mathrm{pOH \approx 3.00} \implies \mathbf{pH \approx 11.00}$$
+                                • <strong>加入 75 mL 時</strong>：$\mathrm{NaOH}$ 過量 $2.5\,\mathrm{mmol}$，$V = 125\,\mathrm{mL}$：
+                                $$[\mathrm{OH^-}] = \frac{2.5}{125} = 2.0 \times 10^{-2}\,\mathrm{M} \implies \mathrm{pOH = 1.70} \implies \mathbf{pH = 12.30}$$
+                            </div>
+
+                            <!-- 核心觀念歸納 -->
+                            <div style="background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.9rem; line-height: 1.6;">
+                                <span style="color: var(--accent-purple); font-weight: bold;">⭐ 考點歸納（突躍特徵與指示劑選用）：</span><br>
+                                在當量點前後僅加入 $2\,\mathrm{mL}\ \mathrm{NaOH}$（$49\,\mathrm{mL} \to 51\,\mathrm{mL}$），溶液之 $\mathrm{pH}$ 值由 $3$ 暴增至 $11$，突躍範圍高達 <strong>8 個 pH 單位</strong>！<br>
+                                由於突躍跨越酸性、中性與鹼性區，變色範圍落在此區間之指示劑（如<strong>酚酞</strong> $8.2\sim 10.0$、<strong>溴瑞香草藍</strong> $6.0\sim 7.6$、<strong>甲基紅</strong> $4.2\sim 6.3$）均可用於滴定終點判斷。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    const placeholder = document.getElementById('solution-placeholder');
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+        if (placeholder) placeholder.style.display = 'flex';
+    } else {
+        el.classList.add('revealed');
+        if (placeholder) placeholder.style.display = 'none';
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+
+// 繪製滴定曲線
+function drawS5Chart() {
+    const canvas = document.getElementById('s5-canvas');
+    if (!canvas) return;
+    const wrap = document.getElementById('s5-chart-wrap');
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const ml = 38, mr = 15, mt = 12, mb = 28;
+    const pw = W - ml - mr, ph = H - mt - mb;
+    const py = (p) => mt + ph * (1 - p / 14);
+    const vx = (v) => ml + pw * (v / 100);
+
+    // 突躍區域背景 (pH 3~11)
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.08)';
+    ctx.fillRect(ml, py(11), pw, py(3) - py(11));
+
+    // 格線
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+    for (let p = 0; p <= 14; p += 2) {
+        ctx.beginPath(); ctx.moveTo(ml, py(p)); ctx.lineTo(W - mr, py(p)); ctx.stroke();
+    }
+    for (let v = 0; v <= 100; v += 25) {
+        ctx.beginPath(); ctx.moveTo(vx(v), mt); ctx.lineTo(vx(v), H - mb); ctx.stroke();
+    }
+
+    // 軸線
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(ml, mt); ctx.lineTo(ml, H - mb); ctx.lineTo(W - mr, H - mb); ctx.stroke();
+
+    // 標籤
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    for (let p = 0; p <= 14; p += 2) ctx.fillText(p, ml - 4, py(p) + 3);
+    ctx.textAlign = 'center';
+    for (let v = 0; v <= 100; v += 25) ctx.fillText(v, vx(v), H - mb + 12);
+    ctx.fillText('NaOH (mL)', ml + pw / 2, H - 2);
+
+    // 當量點虛線 (V=50)
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)'; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(vx(50), mt); ctx.lineTo(vx(50), H - mb); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 滴定曲線
+    const pts = [
+        { v: 0, p: 1 }, { v: 10, p: 1.18 }, { v: 25, p: 1.48 }, { v: 40, p: 1.95 },
+        { v: 48, p: 2.7 }, { v: 49, p: 3.0 }, { v: 49.8, p: 4.0 }, { v: 50, p: 7.0 },
+        { v: 50.2, p: 10.0 }, { v: 51, p: 11.0 }, { v: 52, p: 11.3 }, { v: 60, p: 11.96 },
+        { v: 75, p: 12.3 }, { v: 100, p: 12.52 }
+    ];
+
+    ctx.strokeStyle = 'var(--accent-cyan)';
+    ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    pts.forEach((pt, idx) => {
+        const x = vx(pt.v), y = py(pt.p);
+        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // 當量點紅星
+    const eqX = vx(50), eqY = py(7);
+    ctx.beginPath(); ctx.arc(eqX, eqY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#f87171'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#f87171'; ctx.font = 'bold 10px sans-serif';
+    ctx.fillText('當量點 (50 mL, pH 7)', eqX + 58, eqY - 4);
+}
+
+window.addEventListener('resize', drawS5Chart);
+window.addEventListener('DOMContentLoaded', () => setTimeout(drawS5Chart, 200));
+setTimeout(drawS5Chart, 400);
+</script>
+</body>
+</html>

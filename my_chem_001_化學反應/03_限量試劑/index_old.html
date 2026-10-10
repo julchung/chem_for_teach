@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>化學計量與限量試劑 - 互動式一頁教學系統</title>
+    <!-- MathJax for rendering chemical equations and formulas -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                renderActions: {
+                    addMenu: []
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.75);
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --border-glow: rgba(56, 189, 248, 0.25);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #c084fc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+
+
+        /* 投影片直向滿版堆疊容器 */
+        #presentation-stream {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            width: 100%;
+            min-height: 100vh;
+            height: 100vh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            padding: 3.5rem 5vw 3rem 5vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* 非例題投影片：讓一般內容在垂直方向自然居中 */
+        .slide.centered-slide {
+            justify-content: center;
+        }
+
+        @media (max-width: 900px) {
+            .slide {
+                padding: 4.5rem 1.5rem 2rem 1.5rem;
+                height: auto;
+                min-height: 100vh;
+                scroll-snap-align: none;
+            }
+        }
+
+        /* 標題與內文排版風格 */
+        .slide h1 {
+            color: var(--accent-blue);
+            font-size: clamp(1.8rem, 2.8vw, 2.6rem);
+            margin-bottom: 1.2rem;
+            text-align: center;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.25);
+            padding-bottom: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        .slide h2 {
+            color: var(--accent-yellow);
+            font-size: clamp(1.3rem, 1.8vw, 1.6rem);
+            margin-top: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .slide p,
+        .slide li {
+            font-size: clamp(1.05rem, 1.35vw, 1.3rem);
+            line-height: 1.7;
+            margin-bottom: 0.6rem;
+        }
+
+        .slide ul,
+        .slide ol {
+            margin-left: 1.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 5px solid var(--accent-green);
+            padding: clamp(0.6rem, 1.4vw, 1.1rem);
+            border-radius: 0 12px 12px 0;
+            margin: 1rem 0;
+            font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 0.8rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .flex-col {
+            flex: 1 1 380px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            padding: 1.4rem;
+            border-radius: 14px;
+            overflow-x: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-red {
+            color: var(--accent-red);
+        }
+
+        .text-blue {
+            color: var(--accent-blue);
+        }
+
+        .text-green {
+            color: var(--accent-green);
+        }
+
+        .text-yellow {
+            color: var(--accent-yellow);
+        }
+
+        .text-purple {
+            color: var(--accent-purple);
+        }
+
+        /* ====================================================
+           例題統一排版規格：左題右空 (50% / 50%) + 解答面板
+        ==================================================== */
+        .example-split-container {
+            width: 100%;
+            max-width: 1460px;
+            margin: 0 auto;
+            height: calc(100vh - 130px);
+            min-height: 580px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(14px);
+        }
+
+        @media (max-width: 960px) {
+            .example-split-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: unset;
+                margin-bottom: 2rem;
+            }
+        }
+
+        /* 左半邊 (50%)：題目資訊與問題描述 */
+        .example-left-problem {
+            padding: clamp(1.4rem, 2.2vw, 2.2rem);
+            border-right: 1px solid var(--border-subtle);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        @media (max-width: 960px) {
+            .example-left-problem {
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+        }
+
+        .problem-badge {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            gap: 6px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            color: var(--accent-yellow);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .problem-title {
+            font-size: clamp(1.35rem, 1.8vw, 1.7rem);
+            color: #fff;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .problem-body {
+            font-size: clamp(1rem, 1.2vw, 1.15rem);
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .problem-body ol {
+            margin-left: 1.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .problem-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 右半邊 (50%)：留空手寫演算區 + 顯示隱藏解答 */
+        .example-right-workspace {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: rgba(2, 6, 23, 0.65);
+            overflow: hidden;
+            min-height: 480px;
+        }
+
+        .workspace-header {
+            padding: 12px 18px;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            z-index: 15;
+            flex-shrink: 0;
+        }
+
+        .workspace-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ws-tip {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-mini {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #e2e8f0;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-mini:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+        }
+
+        .btn-toggle-answer {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-toggle-answer:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.6);
+        }
+
+        .btn-toggle-answer.active-shown {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 手寫繪圖空白區 (預設) */
+        .workspace-draw-container {
+            flex: 1;
+            position: relative;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 26px 26px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .workspace-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: crosshair;
+            z-index: 5;
+        }
+
+        .workspace-watermark {
+            color: rgba(255, 255, 255, 0.13);
+            font-size: 1.15rem;
+            user-select: none;
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.8;
+            padding: 1rem;
+        }
+
+        /* 右側解答浮現面板 (點擊顯示時切換) */
+        .workspace-solution-panel {
+            position: absolute;
+            inset: 52px 0 0 0;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(20px);
+            z-index: 20;
+            padding: clamp(1.2rem, 2vw, 1.8rem);
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeInSolution 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .workspace-solution-panel.open {
+            display: flex;
+        }
+
+        @keyframes fadeInSolution {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .solution-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .solution-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .solution-ans-box {
+            background: rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            border-radius: 12px;
+            padding: 1rem 1.4rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+
+        /* 經典初中末表格法樣式 */
+        .chem-table {
+            width: 100%;
+            text-align: center;
+            font-size: clamp(0.95rem, 1.2vw, 1.15rem);
+            border-collapse: collapse;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            margin-top: 0.6rem;
+        }
+
+        .chem-table th,
+        .chem-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .chem-table thead tr {
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .chem-table tbody tr.row-change {
+            background: rgba(250, 204, 21, 0.05);
+            color: var(--accent-yellow);
+        }
+
+        .chem-table tbody tr.row-end {
+            background: rgba(0, 0, 0, 0.25);
+            font-weight: bold;
+        }
+
+        /* 滾動提示按鈕 */
+        .scroll-hint-down {
+            margin-top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 8px 18px;
+            border-radius: 20px;
+            animation: bounceDown 2s infinite ease-in-out;
+            text-decoration: none;
+        }
+
+        /* ═════════════════════════════════════════════════════════════
+           單元檢核測驗 (左右雙欄緊湊排版 + 確定作答後台檢核系統)
+           ═════════════════════════════════════════════════════════════ */
+        .quiz-container-full {
+            max-width: 1260px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        .quiz-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 860px) {
+            .quiz-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-card {
+            background: rgba(19, 27, 46, 0.82);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .quiz-card:hover {
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .quiz-q {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+            line-height: 1.45;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .quiz-opt {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            user-select: none;
+        }
+
+        .quiz-opt:hover {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.35);
+            transform: translateX(3px);
+        }
+
+        /* 學生點選時的高亮狀態（未提交檢核前） */
+        .quiz-opt.selected {
+            background: rgba(56, 189, 248, 0.2) !important;
+            border-color: var(--accent-blue) !important;
+            color: #38bdf8 !important;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+        }
+
+        /* 檢核通過時全體呈現綠色標記 */
+        .quiz-opt.verified-pass {
+            background: rgba(52, 211, 153, 0.25) !important;
+            border-color: var(--accent-green) !important;
+            color: #34d399 !important;
+        }
+
+        /* 底部操作與反饋控制欄 */
+        .quiz-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px 18px;
+            margin-top: 4px;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .quiz-feedback-msg {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .quiz-feedback-msg.fail {
+            color: #fb7185;
+            font-weight: 700;
+            animation: shake 0.4s ease;
+        }
+
+        .quiz-feedback-msg.success {
+            color: #34d399;
+            font-weight: 700;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-6px);
+            }
+
+            75% {
+                transform: translateX(6px);
+            }
+        }
+
+        .btn-submit-exam {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: #0f172a;
+            border: none;
+            padding: 10px 26px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .btn-submit-exam:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.5);
+            background: linear-gradient(135deg, #0369a1, #0ea5e9);
+            color: #fff;
+        }
+
+        .btn-submit-exam:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit-exam:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <!-- 投影片直向滿版串流容器 -->
+    <main id="presentation-stream">
+
+
+        <!-- Slide 1: 封面 -->
+        <section class="slide centered-slide" id="slide-1" data-index="1">
+            <div style="margin: auto; text-align: center; max-width: 900px;">
+                <span class="problem-badge" style="margin-bottom: 1.5rem; font-size: 1.05rem; padding: 6px 18px;">⚗️
+                    高中化學核心概念</span>
+                <h1 style="border: none; font-size: clamp(2.6rem, 5.5vw, 4.2rem); margin-bottom: 1.5rem;">化學計量與限量試劑</h1>
+                <p style="font-size: clamp(1.4rem, 2.5vw, 2rem); color: var(--accent-green); font-weight: 600;">
+                    Limiting Reagents & Chemical Stoichiometry
+                </p>
+                <p style="margin-top: 2.5rem; color: rgba(255,255,255,0.7); font-size: 1.15rem; line-height: 1.8;">
+                    採用一頁式滾動設計，滑鼠滾輪或觸控滑動即可流暢翻頁。<br>
+                    例題採「左題右空」統一格式，右半邊支援直接手寫演算與一鍵展開詳解。
+                </p>
+                <a href="#slide-2" class="scroll-hint-down">
+                    <span>開始學習 · 向下滾動</span>
+                    <span>↓</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Slide 2: 化學反應式寫法的概念 (1/2) -->
+        <section class="slide" id="slide-2" data-index="2">
+            <h1>化學反應式寫法的概念 (1/2)</h1>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <h2 class="text-blue">1. 反應物與生成物</h2>
+                    <p>化學反應式用來表示化學反應的物質轉換過程：</p>
+                    <ul>
+                        <li><strong>反應物 (Reactants)</strong>：寫在箭號的<strong class="text-yellow">左邊</strong>，是反應開始時投入的物質。
+                        </li>
+                        <li><strong>生成物 (Products)</strong>：寫在箭號的<strong class="text-yellow">右邊</strong>，是反應結束後產生的新物質。
+                        </li>
+                        <li><strong>箭號 ($\rightarrow$)</strong>：表示反應進行的方向。</li>
+                    </ul>
+                </div>
+                <div class="flex-col">
+                    <h2 class="text-green">2. 物質的狀態標示</h2>
+                    <p>為了清楚表達反應條件與相態，常在化學式右下角以括號標註：</p>
+                    <ul
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; list-style-type: none; margin-left: 0; margin-top: 0.5rem;">
+                        <li style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;"><strong
+                                class="text-yellow">(s)</strong>：固體 (Solid)</li>
+                        <li style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;"><strong
+                                class="text-yellow">(l)</strong>：液體 (Liquid)</li>
+                        <li style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;"><strong
+                                class="text-yellow">(g)</strong>：氣體 (Gas)</li>
+                        <li style="background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 8px;"><strong
+                                class="text-yellow">(aq)</strong>：水溶液 (Aqueous)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: 化學反應式寫法的概念 (2/2) -->
+        <section class="slide" id="slide-3" data-index="3">
+            <h1>化學反應式寫法的概念 (2/2)</h1>
+            <div class="flex-row" style="margin-top: 1rem;">
+                <div class="flex-col"
+                    style="background: rgba(56, 189, 248, 0.08); border: 2px solid var(--accent-blue);">
+                    <h2 class="text-yellow">3. 質量守恆與平衡係數</h2>
+                    <p>根據<strong>質量守恆定律</strong>，化學反應前後原子的種類與數目必須保持恆定不變。</p>
+                    <ul style="margin-top: 1rem;">
+                        <li>我們透過在各化學式前方加上<strong>平衡係數</strong>來達成原子個數平衡。</li>
+                        <li>平衡係數代表反應時各物質參與反應的<strong>莫耳數比（或分子數比）</strong>，並非質量比。</li>
+                        <li>平衡係數通常化為最簡整數比，且係數「1」通常習慣省略不寫。</li>
+                    </ul>
+                    <div class="formula-box" style="font-size: clamp(1.4rem, 2.2vw, 2.2rem); margin-top: 1.5rem;">
+                        $$\text{例： } 2\text{H}_{2(g)} + \text{O}_{2(g)} \rightarrow 2\text{H}_2\text{O}_{(l)}$$
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: 化學反應方程式平衡 -->
+        <section class="slide" id="slide-4" data-index="4">
+            <h1>化學反應方程式平衡的核心法則</h1>
+            <div class="flex-row">
+                <div class="flex-col" style="border-left: 5px solid var(--accent-yellow);">
+                    <h2 class="text-yellow" style="font-size: 1.8rem;">原子不滅 (質量守恆)</h2>
+                    <p style="margin-top: 0.8rem;">
+                        化學反應僅涉及化學鍵的破壞與重新結合，原子本身不會憑空產生，也不會無故消滅。
+                    </p>
+                    <div class="formula-box" style="border-left-color: var(--accent-yellow); margin-top: 1.2rem;">
+                        $$\sum \text{反應前各元素原子數} = \sum \text{反應後各元素原子數}$$
+                    </div>
+                </div>
+                <div class="flex-col" style="border-left: 5px solid var(--accent-blue);">
+                    <h2 class="text-blue" style="font-size: 1.8rem;">電荷守恆 (氧化還原/離子反應)</h2>
+                    <p style="margin-top: 0.8rem;">
+                        在涉及離子的水溶液或氧化還原反應中，反應物淨電荷總和必須嚴格等於生成物淨電荷總和。
+                    </p>
+                    <div class="formula-box" style="border-left-color: var(--accent-blue); margin-top: 1.2rem;">
+                        $$\sum \text{反應前離子總電荷} = \sum \text{反應後離子總電荷}$$
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: 限量試劑與過量試劑 -->
+        <section class="slide" id="slide-5" data-index="5">
+            <h1>限量試劑與過量試劑的定義</h1>
+            <p style="text-align: center; color: var(--accent-yellow); font-size: 1.2rem; margin-bottom: 1.2rem;">
+                在實際反應中，反應物的莫耳數比例往往不剛好等於方程式的係數比！
+            </p>
+            <div class="flex-row">
+                <div class="flex-col" style="border-top: 4px solid var(--accent-red);">
+                    <h2 class="text-red">🚨 限量試劑 (Limiting Reagent)</h2>
+                    <ul style="line-height: 1.8; margin-top: 0.6rem;">
+                        <li>在反應進行過程中<strong>最先被完全消耗殆盡</strong>的反應物。</li>
+                        <li>一旦限量試劑耗盡，整體反應即刻終止。</li>
+                        <li><strong>生成物的最大理論產量，完全由限量試劑決定！</strong></li>
+                    </ul>
+                </div>
+                <div class="flex-col" style="border-top: 4px solid var(--accent-green);">
+                    <h2 class="text-green">📦 過量試劑 (Excess Reagent)</h2>
+                    <ul style="line-height: 1.8; margin-top: 0.6rem;">
+                        <li>當限量試劑完全反應結束後，<strong>仍有剩餘未耗盡</strong>的反應物。</li>
+                        <li>過量試劑在反應結束後會殘留於反應系統或容器中。</li>
+                        <li><strong>剩餘量 = 初始投入量 $-$ 依限量試劑消耗的量。</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: 尋找限量試劑的黃金三步驟 -->
+        <section class="slide" id="slide-6" data-index="6">
+            <h1>尋找限量試劑的黃金三步驟</h1>
+            <div
+                style="background: rgba(30, 41, 59, 0.9); padding: 2rem; border-radius: 16px; border: 1px solid var(--border-glow); max-width: 1100px; margin: 0 auto; width: 100%;">
+                <ol style="font-size: clamp(1.15rem, 1.6vw, 1.45rem); line-height: 2; margin-left: 2rem;">
+                    <li>
+                        <strong class="text-yellow">步驟一 · 化為莫耳：</strong>
+                        無論題目給予的是質量 ($W$, g)、粒子數 (個) 或氣體體積 (L)，第一步永遠換算為<strong>莫耳數 ($n = \frac{W}{M}$)</strong>。
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <strong class="text-blue">步驟二 · 除以係數：</strong>
+                        將各反應物的「初莫耳數」，分別除以平衡方程式中各自的「平衡係數 ($c$)」。
+                        <div class="formula-box" style="margin: 0.8rem 0; width: 80%;">
+                            $$\text{判定比值} = \frac{\text{反應物實際初莫耳數 }(n)}{\text{該物質平衡係數 }(c)}$$
+                        </div>
+                    </li>
+                    <li style="margin-top: 1rem;">
+                        <strong class="text-red">步驟三 · 比小尋限：</strong>
+                        比較所有反應物的 $\frac{n}{c}$ 比值，<strong>比值最小者即為「限量試劑」</strong>！後續所有生成物與消耗量皆以此為基準計算。
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Slide 7: 經典範例 1 (左題右空 + 答案切換) -->
+        <section class="slide" id="slide-7" data-index="7">
+            <div class="example-split-container">
+                <!-- 左半邊 (50%)：題目 -->
+                <div class="example-left-problem">
+                    <span class="problem-badge">📐 經典例題 1</span>
+                    <h2 class="problem-title">哈柏法製氨之限量試劑與反應計算</h2>
+
+                    <div class="problem-body">
+                        <p>在密閉高壓反應容器中放入 <strong>5 莫耳氮氣 ($\text{N}_2$)</strong> 與 <strong>12 莫耳氫氣
+                                ($\text{H}_2$)</strong>，在高溫催化下進行哈柏法製氨反應：</p>
+
+                        <div class="formula-box" style="font-size: 1.4rem; margin: 0.8rem 0;">
+                            $$1\text{N}_{2(g)} + 3\text{H}_{2(g)} \rightarrow 2\text{NH}_{3(g)}$$
+                        </div>
+
+                        <p style="font-weight: 600; color: var(--accent-yellow); margin-top: 1rem;">請計算並回答下列問題：</p>
+                        <ol>
+                            <li>誰是此反應的<strong>限量試劑</strong>？誰是<strong>過量試劑</strong>？</li>
+                            <li>完全反應後，最多可生成多少莫耳的<strong>氨氣 ($\text{NH}_3$)</strong>？</li>
+                            <li>反應結束後，過量試劑<strong>剩餘多少莫耳</strong>？</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- 右半邊 (50%)：留空手寫草稿區 + 點擊顯示解答 -->
+                <div class="example-right-workspace">
+                    <div class="workspace-header">
+                        <div class="workspace-controls">
+                            <span class="ws-tip">✎ 手寫演算區</span>
+                            <button class="btn-mini" onclick="clearCanvas('canvas-ex1')">🗑 清除筆跡</button>
+                        </div>
+                        <button class="btn-toggle-answer" data-target="solution-ex1">
+                            <span>💡</span>
+                            <span class="btn-text">顯示答案與解析</span>
+                        </button>
+                    </div>
+
+                    <!-- 手寫畫布空間 (預設留空，支援直接筆記) -->
+                    <div class="workspace-draw-container">
+                        <div class="workspace-watermark">
+                            草稿演算空間 · 支援觸控筆與滑鼠手寫標記<br>
+                            點擊右上角「💡 顯示答案與解析」按鈕查看詳解
+                        </div>
+                        <canvas class="workspace-canvas" id="canvas-ex1"></canvas>
+                    </div>
+
+                    <!-- 答案與解析面板 (點擊展開) -->
+                    <div class="workspace-solution-panel" id="solution-ex1">
+                        <div class="solution-card">
+                            <h3 class="text-yellow">步驟 1：找出限量試劑 (比小尋限)</h3>
+                            <p>將反應物初莫耳數除以方程式平衡係數：</p>
+                            <ul style="margin: 0.6rem 0 0.6rem 1.4rem; line-height: 1.8;">
+                                <li>$\text{N}_2$ 比值：$\frac{5 \text{ mol}}{1} = 5$</li>
+                                <li>$\text{H}_2$ 比值：$\frac{12 \text{ mol}}{3} = 4$</li>
+                            </ul>
+                            <p style="color: var(--accent-red); font-weight: 600;">
+                                ∵ $4 < 5$，故比值較小的 <strong class="text-red">$\text{H}_2$ 為限量試劑</strong>！完全耗盡。
+                            </p>
+                        </div>
+
+                        <div class="solution-card">
+                            <h3 class="text-blue">步驟 2：反應初、中、末 (三段表格法)</h3>
+                            <table class="chem-table">
+                                <thead>
+                                    <tr>
+                                        <th>狀態 (mol)</th>
+                                        <th>$\text{N}_2$ (係數1)</th>
+                                        <th>$\text{H}_2$ (係數3, 限量)</th>
+                                        <th>$\text{NH}_3$ (係數2)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>初 (Initial)</td>
+                                        <td>$5$</td>
+                                        <td>$12$</td>
+                                        <td>$0$</td>
+                                    </tr>
+                                    <tr class="row-change">
+                                        <td>中 (Change)</td>
+                                        <td>$-4$ <small style="opacity:0.8;">($12 \times \frac{1}{3}$)</small></td>
+                                        <td style="color: var(--accent-red);">$-12$ <small
+                                                style="opacity:0.8;">(耗盡)</small></td>
+                                        <td>$+8$ <small style="opacity:0.8;">($12 \times \frac{2}{3}$)</small></td>
+                                    </tr>
+                                    <tr class="row-end">
+                                        <td>末 (Final)</td>
+                                        <td style="color: var(--accent-green);">$1$ (剩餘)</td>
+                                        <td style="color: var(--accent-red);">$0$ (耗盡)</td>
+                                        <td style="color: var(--accent-blue); font-size:1.25rem;">$8$ (生成)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="solution-ans-box">
+                            <p>📘 正確答案總結：</p>
+                            <p>(1) 限量試劑為 $\text{H}_2$；過量試劑為 $\text{N}_2$</p>
+                            <p>(2) 最多可生成 $8\text{ mol}$ 的 $\text{NH}_3$</p>
+                            <p>(3) 反應完全後，過量試劑 $\text{N}_2$ 剩餘 $1\text{ mol}$</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: 理論產量與產率 -->
+        <section class="slide" id="slide-8" data-index="8">
+            <h1>理論產量與產率 (Percent Yield)</h1>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <h2 class="text-yellow">理論產量 (Theoretical Yield)</h2>
+                    <p>依據化學反應方程式與<strong>限量試劑</strong>之莫耳數，在「100% 理想完全反應」下所能得到之生成物最大計算量。</p>
+                    <p style="opacity: 0.8; margin-top: 0.5rem;">例如前一題中，理論上最多生成 8 莫耳氨氣。</p>
+                </div>
+                <div class="flex-col">
+                    <h2 class="text-blue">實際產量 (Actual Yield)</h2>
+                    <p>在真實實驗操作或工業生產中，經分離純化後真正稱重測得之產物量。</p>
+                    <p style="opacity: 0.8; margin-top: 0.5rem;">受限於副反應、產物溢失或化學平衡限制，<strong>實際產量通常小於理論產量</strong>。</p>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <h2 class="text-green">產率計算公式</h2>
+                <div class="formula-box" style="font-size: clamp(1.4rem, 2.2vw, 2.2rem); padding: 1.2rem;">
+                    $$\text{產率 (%)} = \frac{\text{實際產量}}{\text{理論產量}} \times 100\%$$
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 9: 精選例題 2 (左題右空 + 答案切換) -->
+        <section class="slide" id="slide-9" data-index="9">
+            <div class="example-split-container">
+                <!-- 左半邊 (50%)：題目 -->
+                <div class="example-left-problem">
+                    <span class="problem-badge">📐 精選例題 2</span>
+                    <h2 class="problem-title">水合成反應與產率綜合計算</h2>
+
+                    <div class="problem-body">
+                        <p>將 <strong>4 莫耳氫氣 ($\text{H}_2$)</strong> 與 <strong>3 莫耳氧氣 ($\text{O}_2$)</strong>
+                            注入密閉容器中，點火使其完全燃燒化合為水：</p>
+
+                        <div class="formula-box" style="font-size: 1.4rem; margin: 0.8rem 0;">
+                            $$2\text{H}_{2(g)} + \text{O}_{2(g)} \rightarrow 2\text{H}_2\text{O}_{(g)}$$
+                        </div>
+
+                        <p style="font-weight: 600; color: var(--accent-yellow); margin-top: 1rem;">請計算並回答下列問題：</p>
+                        <ol>
+                            <li>何者為<strong>限量試劑</strong>？何者為<strong>過量試劑</strong>？</li>
+                            <li>理論上最多可生成多少莫耳的水？剩餘哪一種反應物多少莫耳？</li>
+                            <li>若實際冷凝收集到 <strong>3.2 莫耳</strong>的水，求此反應之<strong>產率為多少 \%</strong>？</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- 右半邊 (50%)：留空手寫草稿區 + 點擊顯示解答 -->
+                <div class="example-right-workspace">
+                    <div class="workspace-header">
+                        <div class="workspace-controls">
+                            <span class="ws-tip">✎ 手寫演算區</span>
+                            <button class="btn-mini" onclick="clearCanvas('canvas-ex2')">🗑 清除筆跡</button>
+                        </div>
+                        <button class="btn-toggle-answer" data-target="solution-ex2">
+                            <span>💡</span>
+                            <span class="btn-text">顯示答案與解析</span>
+                        </button>
+                    </div>
+
+                    <!-- 手寫畫布空間 (預設留空) -->
+                    <div class="workspace-draw-container">
+                        <div class="workspace-watermark">
+                            草稿演算空間 · 支援觸控筆與滑鼠手寫標記<br>
+                            點擊右上角「💡 顯示答案與解析」按鈕查看詳解
+                        </div>
+                        <canvas class="workspace-canvas" id="canvas-ex2"></canvas>
+                    </div>
+
+                    <!-- 答案與解析面板 -->
+                    <div class="workspace-solution-panel" id="solution-ex2">
+                        <div class="solution-card">
+                            <h3 class="text-yellow">步驟 1：比值尋找限量試劑</h3>
+                            <ul style="margin: 0.5rem 0 0.5rem 1.4rem; line-height: 1.8;">
+                                <li>$\text{H}_2$ 比值：$\frac{4 \text{ mol}}{2} = 2$</li>
+                                <li>$\text{O}_2$ 比值：$\frac{3 \text{ mol}}{1} = 3$</li>
+                            </ul>
+                            <p style="color: var(--accent-red); font-weight: 600;">
+                                ∵ $2 < 3$，故比值較小的 <strong class="text-red">$\text{H}_2$ 為限量試劑</strong>！完全反應耗盡。
+                            </p>
+                        </div>
+
+                        <div class="solution-card">
+                            <h3 class="text-blue">步驟 2：三段式計量表格</h3>
+                            <table class="chem-table">
+                                <thead>
+                                    <tr>
+                                        <th>狀態 (mol)</th>
+                                        <th>$\text{H}_2$ (係數2, 限量)</th>
+                                        <th>$\text{O}_2$ (係數1)</th>
+                                        <th>$\text{H}_2\text{O}$ (係數2)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>初 (Initial)</td>
+                                        <td>$4$</td>
+                                        <td>$3$</td>
+                                        <td>$0$</td>
+                                    </tr>
+                                    <tr class="row-change">
+                                        <td>中 (Change)</td>
+                                        <td style="color: var(--accent-red);">$-4$ (耗盡)</td>
+                                        <td>$-2$ <small style="opacity:0.8;">($4 \times \frac{1}{2}$)</small></td>
+                                        <td>$+4$ <small style="opacity:0.8;">($4 \times \frac{2}{2}$)</small></td>
+                                    </tr>
+                                    <tr class="row-end">
+                                        <td>末 (Final)</td>
+                                        <td style="color: var(--accent-red);">$0$ (耗盡)</td>
+                                        <td style="color: var(--accent-green);">$1$ (剩餘)</td>
+                                        <td style="color: var(--accent-blue); font-size:1.2rem;">$4$ (理論產量)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="solution-card">
+                            <h3 class="text-green">步驟 3：產率計算</h3>
+                            <p>理論最大產量為 $4.0\text{ mol}$，實際產量為 $3.2\text{ mol}$：</p>
+                            <div class="formula-box" style="margin: 0.6rem 0; font-size: 1.3rem;">
+                                $$\text{產率} = \frac{3.2\text{ mol}}{4.0\text{ mol}} \times 100\% = 80\%$$
+                            </div>
+                        </div>
+
+                        <div class="solution-ans-box">
+                            <p>📘 正確答案總結：</p>
+                            <p>(1) 限量試劑為 $\text{H}_2$；過量試劑為 $\text{O}_2$</p>
+                            <p>(2) 理論上最多生成 $4\text{ mol}$ 水；剩餘 $\text{O}_2$ 共 $1\text{ mol}$</p>
+                            <p>(3) 反應產率為 $80\%$</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═════════════════════════════════════════════════════════════
+             Slide 10: 單元通關核心檢核題 (左右雙欄緊湊排版 + 確定作答後台檢核)
+             ═════════════════════════════════════════════════════════════ -->
+        <section class="slide" id="slide-10" data-index="10" style="padding-top: 1.5rem; padding-bottom: 2.5rem;">
+            <div class="quiz-container-full">
+                <!-- 標頭與簡潔核心題幹 -->
+                <div class="quiz-scenario-box">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                        <span class="problem-badge"
+                            style="background: rgba(52, 211, 153, 0.2); border-color: rgba(52, 211, 153, 0.4); color: #34d399; margin-bottom: 0;">
+                            🏆 單元 1-2 · 核心通關檢核
+                        </span>
+                        <span style="font-size: 0.88rem; color: #38bdf8;">
+                            📌 請完成左右共 4 小題作答，點擊右下角「確定作答」提交檢核
+                        </span>
+                    </div>
+                    <p style="font-size: 0.96rem; line-height: 1.6; color: #f8fafc; margin-bottom: 0;">
+                        <strong class="text-yellow">【核心題幹】</strong>
+                        利用電石 $\text{CaC}_2$ 與水作用，生成乙炔 $\text{C}_2\text{H}_2$ 與氫氧化鈣 $\text{Ca(OH)}_2$。<br>
+                        <small style="color: #94a3b8; font-size: 0.88rem;">
+                            （參考原子量：$\text{Ca}=40, \text{C}=12, \text{H}=1, \text{O}=16$；式量與分子量：$\text{CaC}_2=64,
+                            \text{H}_2\text{O}=18, \text{C}_2\text{H}_2=26, \text{Ca(OH)}_2=74$）
+                        </small>
+                    </p>
+                </div>
+
+                <!-- 左右雙欄網格 -->
+                <div class="quiz-grid-layout">
+                    <!-- 左欄：第 (1) 題 & 第 (2) 題 -->
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- 小題 1 -->
+                        <div class="quiz-card" data-q="1" data-ans="0">
+                            <div class="quiz-q">
+                                <span class="text-cyan">(1)</span> 請寫出反應方程式並平衡，其最簡整數係數比為何？
+                            </div>
+                            <div class="quiz-options">
+                                <button type="button" class="quiz-opt" data-idx="0">A. $\text{CaC}_2 +
+                                    2\text{H}_2\text{O} \rightarrow \text{Ca(OH)}_2 + \text{C}_2\text{H}_2$（係數比 $1 : 2
+                                    \rightarrow 1 : 1$）</button>
+                                <button type="button" class="quiz-opt" data-idx="1">B. $\text{CaC}_2 +
+                                    \text{H}_2\text{O} \rightarrow \text{Ca(OH)}_2 + \text{C}_2\text{H}_2$（係數比 $1 : 1
+                                    \rightarrow 1 : 1$）</button>
+                                <button type="button" class="quiz-opt" data-idx="2">C. $2\text{CaC}_2 +
+                                    \text{H}_2\text{O} \rightarrow 2\text{Ca(OH)}_2 + \text{C}_2\text{H}_2$（係數比 $2 : 1
+                                    \rightarrow 2 : 1$）</button>
+                                <button type="button" class="quiz-opt" data-idx="3">D. $\text{CaC}_2 +
+                                    2\text{H}_2\text{O} \rightarrow 2\text{Ca(OH)}_2 + \text{C}_2\text{H}_2$（係數比 $1 : 2
+                                    \rightarrow 2 : 1$）</button>
+                            </div>
+                        </div>
+
+                        <!-- 小題 2 -->
+                        <div class="quiz-card" data-q="2" data-ans="0">
+                            <div class="quiz-q">
+                                <span class="text-cyan">(2)</span> 若有 $\text{CaC}_2$ 3.2 克和水 0.9 克反應，何者為限量試劑？
+                            </div>
+                            <div class="quiz-options">
+                                <button type="button" class="quiz-opt" data-idx="0">A. 水（$\text{H}_2\text{O}$）</button>
+                                <button type="button" class="quiz-opt" data-idx="1">B. 電石（$\text{CaC}_2$）</button>
+                                <button type="button" class="quiz-opt" data-idx="2">C. 兩者恰好同時耗盡，無限量試劑</button>
+                                <button type="button" class="quiz-opt" data-idx="3">D. 氫氧化鈣（$\text{Ca(OH)}_2$）</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：第 (3) 題 & 第 (4) 題 -->
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- 小題 3 -->
+                        <div class="quiz-card" data-q="3" data-ans="1">
+                            <div class="quiz-q">
+                                <span class="text-cyan">(3)</span> 承(2)，可產生乙炔多少克？
+                            </div>
+                            <div class="quiz-options">
+                                <button type="button" class="quiz-opt" data-idx="0">A. 1.30 克</button>
+                                <button type="button" class="quiz-opt" data-idx="1">B. 0.65 克</button>
+                                <button type="button" class="quiz-opt" data-idx="2">C. 0.025 克</button>
+                                <button type="button" class="quiz-opt" data-idx="3">D. 0.50 克</button>
+                            </div>
+                        </div>
+
+                        <!-- 小題 4 -->
+                        <div class="quiz-card" data-q="4" data-ans="0">
+                            <div class="quiz-q">
+                                <span class="text-cyan">(4)</span> 若實驗上獲得乙炔共 0.5 克，則產率為何？
+                            </div>
+                            <div class="quiz-options">
+                                <button type="button" class="quiz-opt" data-idx="0">A. 約 76.9%</button>
+                                <button type="button" class="quiz-opt" data-idx="1">B. 約 65.0%</button>
+                                <button type="button" class="quiz-opt" data-idx="2">C. 約 50.0%</button>
+                                <button type="button" class="quiz-opt" data-idx="3">D. 約 85.0%</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部操作列：左側即時狀態反饋，右側「確定作答」按鈕 -->
+                <div class="quiz-action-bar">
+                    <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                        <span>💡 請點選每道題目的選項，作答完成後點擊右側按鈕進行檢核。</span>
+                    </div>
+                    <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+                        確定作答 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═════════════════════════════════════════════════════════════
+                 解鎖成功橫幅 (檢核通過後自動顯示)
+                 ═════════════════════════════════════════════════════════════ -->
+            <div id="section-complete-banner" style="
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                min-height: 46vh;
+                padding: 3rem 2rem;
+                background: radial-gradient(ellipse at center, rgba(52, 211, 153, 0.18) 0%, rgba(11, 17, 32, 0) 70%);
+                border-top: 1px solid rgba(52, 211, 153, 0.25);
+                margin-top: 2rem;
+                border-radius: 20px;
+            ">
+                <div style="font-size: 4rem; margin-bottom: 0.8rem; animation: pulse 1.5s ease-in-out infinite;">🏆
+                </div>
+                <h2
+                    style="color: #34d399; font-size: clamp(1.8rem, 3.2vw, 2.4rem); font-weight: 800; margin-bottom: 0.5rem;">
+                    單元檢核通過！
+                </h2>
+                <p style="color: #6ee7b7; font-size: 1.15rem; margin-bottom: 0.3rem;">
+                    恭喜你 4 題全數答對！已通過單元 1-2 核心檢核 🎉
+                </p>
+                <p style="color: #94a3b8; font-size: 0.95rem;">
+                    下一單元已自動解鎖，請從左側目錄切換繼續學習
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                    <div
+                        style="background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.4); border-radius: 12px; padding: 12px 22px; color: #34d399; font-weight: 700;">
+                        ✅ 1-2 化學計量與限量試劑 — 通關
+                    </div>
+                    <div
+                        style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 12px 22px; color: #38bdf8; font-weight: 700;">
+                        🔓 1-3 反應熱加成性與赫士定律 — 已解鎖
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 2. 例題「顯示 / 隱藏答案」切換控制
+        document.querySelectorAll('.btn-toggle-answer').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.dataset.target;
+                const panel = document.getElementById(targetId);
+                const btnText = btn.querySelector('.btn-text');
+
+                if (!panel) return;
+
+                const isOpen = panel.classList.toggle('open');
+                btn.classList.toggle('active-shown', isOpen);
+
+                if (isOpen) {
+                    btnText.textContent = '🙈 隱藏答案 (切回草稿)';
+                    // 確保 MathJax 公式完美重新渲染
+                    if (window.MathJax && MathJax.typesetPromise) {
+                        MathJax.typesetPromise([panel]).catch(err => console.log(err));
+                    }
+                } else {
+                    btnText.textContent = '💡 顯示答案與解析';
+                }
+            });
+        });
+
+        // 3. 例題右側手寫草稿畫布模組
+        const canvases = {};
+
+        function initCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+            let lastX = 0, lastY = 0;
+
+            function resize() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                if (rect.width === 0 || rect.height === 0) return;
+
+                // 保存既有筆跡
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                if (canvas.width > 0 && canvas.height > 0) {
+                    tempCtx.drawImage(canvas, 0, 0);
+                }
+
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+
+                // 貼回筆跡
+                if (tempCanvas.width > 0) {
+                    ctx.drawImage(tempCanvas, 0, 0, rect.width, rect.height);
+                }
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return [clientX - rect.left, clientY - rect.top];
+            }
+
+            function start(e) {
+                isDrawing = true;
+                [lastX, lastY] = getPos(e);
+            }
+
+            function move(e) {
+                if (!isDrawing) return;
+                const [x, y] = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+                [lastX, lastY] = [x, y];
+            }
+
+            function end() {
+                isDrawing = false;
+            }
+
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, { passive: false });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, { passive: false });
+            canvas.addEventListener('touchend', end);
+
+            canvases[canvasId] = { canvas, ctx, resize };
+        }
+
+        function clearCanvas(canvasId) {
+            const item = canvases[canvasId];
+            if (item) {
+                item.ctx.clearRect(0, 0, item.canvas.width, item.canvas.height);
+            }
+        }
+
+        // 初始化例題畫布
+        window.addEventListener('DOMContentLoaded', () => {
+            initCanvas('canvas-ex1');
+            initCanvas('canvas-ex2');
+        });
+
+        // ═════════════════════════════════════════════════════════════
+        // 4. 核心檢核題：選擇題點選、確定作答後台檢核與解鎖邏輯
+        // ═════════════════════════════════════════════════════════════
+        const quizCards = document.querySelectorAll('.quiz-card');
+        const submitBtn = document.getElementById('btn-submit-exam');
+        const feedbackMsg = document.getElementById('quiz-feedback-msg');
+        let selectedAnswers = {}; // 紀錄每題選擇的選項索引 { '1': 0, '2': 1, ... }
+        let isPassed = false;
+
+        // 選項點擊：單選標記（未提交前僅高亮選取，不透露對錯）
+        quizCards.forEach(card => {
+            const qId = card.dataset.q;
+            const opts = card.querySelectorAll('.quiz-opt');
+
+            opts.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (isPassed) return; // 通過後鎖定
+
+                    // 清除該題其他選項的選取狀態
+                    opts.forEach(o => o.classList.remove('selected'));
+
+                    // 標記當前選中
+                    opt.classList.add('selected');
+                    selectedAnswers[qId] = parseInt(opt.dataset.idx, 10);
+
+                    // 若先前有錯誤提示，點擊後重置提示訊息
+                    if (feedbackMsg && feedbackMsg.classList.contains('fail')) {
+                        feedbackMsg.className = 'quiz-feedback-msg';
+                        feedbackMsg.innerHTML = '<span>✏️ 答案已更新，作答完成後請點擊「確定作答」。</span>';
+                    }
+                });
+            });
+        });
+
+        // 點擊「確定作答」按鈕：後台檢核
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                if (isPassed) return;
+
+                // 1. 檢查是否 4 題都有作答
+                const answeredKeys = Object.keys(selectedAnswers);
+                if (answeredKeys.length < quizCards.length) {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = '<span>⚠️ 尚有題目未作答！請完成全部 4 小題後再提交檢核。</span>';
+                    return;
+                }
+
+                // 2. 進行後台檢核（不呈現詳解）
+                let allCorrect = true;
+                let correctCount = 0;
+
+                quizCards.forEach(card => {
+                    const qId = card.dataset.q;
+                    const correctIdx = parseInt(card.dataset.ans, 10);
+                    const userAns = selectedAnswers[qId];
+
+                    if (userAns === correctIdx) {
+                        correctCount++;
+                    } else {
+                        allCorrect = false;
+                    }
+                });
+
+                // 3. 判定反饋
+                if (allCorrect) {
+                    // 通過！
+                    isPassed = true;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '檢核通過 ✅';
+
+                    // 視覺反饋
+                    quizCards.forEach(card => {
+                        const opts = card.querySelectorAll('.quiz-opt');
+                        opts.forEach(o => {
+                            o.style.cursor = 'default';
+                            if (o.classList.contains('selected')) {
+                                o.classList.add('verified-pass');
+                            }
+                        });
+                    });
+
+                    feedbackMsg.className = 'quiz-feedback-msg success';
+                    feedbackMsg.innerHTML = '<span>🎉 檢核通過！4 題全部答對，單元已成功通關解鎖！</span>';
+
+                    // 向外層 SPA 發送通關解鎖訊號
+                    notifySectionComplete();
+                } else {
+                    // 不通過：反饋未通過，清除作答區答案，呈現能再次檢核狀態，不呈現詳解
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = '<span>❌ 檢核未通過（作答有誤）！已清除作答區答案，請重新檢查並再次作答。</span>';
+
+                    // 清除作答區之答案，恢復初始可點選作答狀態
+                    selectedAnswers = {};
+                    quizCards.forEach(card => {
+                        card.querySelectorAll('.quiz-opt').forEach(o => {
+                            o.classList.remove('selected');
+                        });
+                    });
+                }
+            });
+        }
+
+        function notifySectionComplete() {
+            // 1. 向外層 SPA (portal.js) 發送單元通關訊號
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'SECTION_COMPLETE' }, '*');
+            }
+
+            // 2. 在本頁面顯示通關橫幅並平滑滾動至該處
+            const banner = document.getElementById('section-complete-banner');
+            if (banner) {
+                banner.style.display = 'flex';
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+    <!-- Chem Whiteboard Scroll Sync Bridge -->
+    <script id="__chem_scroll_bridge">
+        (function () {
+            if (window.__chemScrollBridgeInstalled) return;
+            window.__chemScrollBridgeInstalled = true;
+
+            function getScrollPos() {
+                var sy = window.scrollY || window.pageYOffset || 0;
+                var sx = window.scrollX || window.pageXOffset || 0;
+                if (document.documentElement) {
+                    sy = Math.max(sy, document.documentElement.scrollTop || 0);
+                    sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+                }
+                if (document.body) {
+                    sy = Math.max(sy, document.body.scrollTop || 0);
+                    sx = Math.max(sx, document.body.scrollLeft || 0);
+                }
+                var stream = document.getElementById('presentation-stream') ||
+                    document.getElementById('presentation-area') ||
+                    document.getElementById('slides-container') ||
+                    document.getElementById('app');
+                if (stream) {
+                    sy = Math.max(sy, stream.scrollTop || 0);
+                    sx = Math.max(sx, stream.scrollLeft || 0);
+                }
+                return { sx: sx, sy: sy };
+            }
+
+            function reportScroll() {
+                if (window.parent && window.parent !== window) {
+                    var pos = getScrollPos();
+                    window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+                }
+            }
+
+            // 監聽各種觸發捲動之事件
+            window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+            document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+            window.addEventListener('wheel', function () {
+                requestAnimationFrame(reportScroll);
+                setTimeout(reportScroll, 40);
+                setTimeout(reportScroll, 120);
+            }, { capture: true, passive: true });
+            window.addEventListener('touchmove', function () {
+                requestAnimationFrame(reportScroll);
+                setTimeout(reportScroll, 40);
+            }, { capture: true, passive: true });
+            window.addEventListener('keydown', function (e) {
+                if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+                    requestAnimationFrame(reportScroll);
+                    setTimeout(reportScroll, 60);
+                    setTimeout(reportScroll, 180);
+                }
+            }, { passive: true });
+
+            // 監聽來自母頁面 (index.html) 的命令
+            window.addEventListener('message', function (e) {
+                if (!e.data) return;
+                if (e.data.type === '__chem_scroll_by') {
+                    var dy = e.data.deltaY || 0;
+                    var dx = e.data.deltaX || 0;
+                    window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+                    if (document.documentElement) document.documentElement.scrollTop += dy;
+                    if (document.body) document.body.scrollTop += dy;
+                    var stream = document.getElementById('presentation-stream') ||
+                        document.getElementById('presentation-area') ||
+                        document.getElementById('slides-container') ||
+                        document.getElementById('app');
+                    if (stream) stream.scrollTop += dy;
+                    reportScroll();
+                } else if (e.data.type === '__chem_get_scroll') {
+                    reportScroll();
+                }
+            });
+
+            // 初始時與載入後回報
+            reportScroll();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', reportScroll);
+            }
+            window.addEventListener('load', reportScroll);
+        })();
+    </script>
+
+</body>
+
+</html>

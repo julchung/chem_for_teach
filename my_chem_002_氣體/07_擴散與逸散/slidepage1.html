@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>2-7 擴散與逸散 · 概念定義與微觀動態演示</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+html,body{
+  width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow:hidden;
+  background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;}
+#slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
+.slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
+h1{
+  color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.35rem;
+  display:flex;align-items:center;gap:.55rem;
+  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
+}
+h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(1.02rem,1.25vw,1.22rem);margin-bottom:.2rem;font-weight:700;flex-shrink:0;}
+p,li{font-size:clamp(.9rem,1.04vw,1.04rem);line-height:1.58;}
+strong{color:var(--cyan);font-weight:700;}
+em{color:var(--yellow);font-style:normal;font-weight:600;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;flex:1;min-height:0;overflow:hidden;}
+.panel{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;
+  padding:.85rem 1.1rem;backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow-y:auto;gap:.6rem;
+}
+.panel::-webkit-scrollbar{width:4px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.82rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
+.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
+.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
+.tag-p{background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.4);color:var(--purple);}
+.rule-card{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:10px;padding:.65rem .95rem;}
+.rule-card p{font-size:clamp(.94rem,1.06vw,1.06rem);line-height:1.62;margin:0;}
+.rule-card.p{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.25);}
+.rule-card.g{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.25);}
+.step-block{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--blue);
+  border-radius:9px;padding:.58rem .95rem;line-height:1.6;font-size:clamp(.9rem,1.02vw,1.02rem);
+}
+.step-block.p{border-left-color:var(--purple);background:rgba(167,139,250,.04);}
+.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
+.canvas-wrapper{
+  width:100%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);
+  border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;
+  gap:6px;margin-top:.15rem;
+}
+.demo-canvas{
+  width:100%;height:125px;background:#030712;border-radius:6px;display:block;
+}
+.btn-reset-demo{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
+  color:var(--sub);border-radius:6px;padding:3px 12px;font-size:.78rem;cursor:pointer;
+  transition:.2s;align-self:flex-end;
+}
+.btn-reset-demo:hover{background:rgba(255,255,255,.16);color:#fff;}
+@media(max-width:900px){.grid2{grid-template-columns:1fr!important;overflow-y:auto;}html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}}
+</style>
+</head>
+
+<body><div id="app"><div id="slides-container"><div class="slide active">
+<h1>2-7 擴散與逸散 · 概念定義與微觀動態演示</h1>
+
+<div class="grid2">
+  <!-- 左：擴散 (Diffusion) -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-b">概念一</span>
+        <h2 style="color:var(--blue);margin:0;">擴散 (Diffusion)</h2>
+      </div>
+      <span style="font-size:.82rem;color:rgba(255,255,255,.5);">有介質粒子碰撞</span>
+    </div>
+
+    <div class="rule-card">
+      <p>
+        氣體分子因<strong>自身熱運動</strong>，由<strong>高濃度</strong>自發性向<strong>低濃度</strong>區域散開，最終達成各處均勻分布的物理現象。
+      </p>
+    </div>
+
+    <div class="step-block">
+      <strong style="color:var(--blue);">📌 現象與生活實例：</strong><br>
+      • 香水在房間內逐漸瀰漫、氨氣擴散到空氣中。<br>
+      • 氣體分子行進時<strong>頻繁與空氣分子碰撞</strong>，路徑為隨機曲折的布朗運動。
+    </div>
+
+    <div class="step-block g">
+      <strong style="color:var(--green);">⚡ 微觀特性分析：</strong><br>
+      • 需要介質傳播環境（如大氣環境）。<br>
+      • 由於分子間碰撞阻礙，淨位移前進速率<strong>遠小於</strong>分子的均方根運動速率。
+    </div>
+
+    <!-- 擴散 Canvas 動畫（緊接於文字說明下方） -->
+    <div class="canvas-wrapper">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span style="font-size:.84rem;color:var(--blue);font-weight:700;">▼ 擴散微觀動態模擬（高濃度散開）</span>
+        <button class="btn-reset-demo" onclick="initDiffusion()">重設模擬 ↺</button>
+      </div>
+      <canvas id="diffusion-canvas" class="demo-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- 右：逸散 (Effusion) -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-p">概念二</span>
+        <h2 style="color:var(--purple);margin:0;">逸散 (Effusion)</h2>
+      </div>
+      <span style="font-size:.82rem;color:rgba(255,255,255,.5);">通過微小孔隙</span>
+    </div>
+
+    <div class="rule-card p">
+      <p>
+        氣體分子經由<strong>極微小孔徑（孔徑小於氣體平均自由徑）</strong>，穿透進入另一空間或真空中，期間分子間碰撞可忽略。
+      </p>
+    </div>
+
+    <div class="step-block p">
+      <strong style="color:var(--purple);">📌 現象與科技應用：</strong><br>
+      • 灌滿氦氣的橡膠氣球經由微孔緩慢漏氣。<br>
+      • 鈾同位素濃縮：利用 $^{235}\text{UF}_6$ 與 $^{238}\text{UF}_6$ 的逸散速率差進行氣體離心分離。
+    </div>
+
+    <div class="step-block" style="border-left-color:var(--yellow);background:rgba(251,191,36,.04);">
+      <strong style="color:var(--yellow);">⚡ 格銳目定律的精準適用：</strong><br>
+      • 逸散不受外側氣體分子碰撞反向阻礙。<br>
+      • 逸散速率純粹取決於<strong>碰撞微孔機率</strong>與<strong>分子自身運動速率</strong>，格銳目定律能極為嚴格吻合。
+    </div>
+
+    <!-- 逸散 Canvas 動畫（緊接於文字說明下方） -->
+    <div class="canvas-wrapper">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span style="font-size:.84rem;color:var(--purple);font-weight:700;">▼ 逸散微觀動態模擬（微孔小隙逸出）</span>
+        <button class="btn-reset-demo" onclick="initEffusion()">重設模擬 ↺</button>
+      </div>
+      <canvas id="effusion-canvas" class="demo-canvas"></canvas>
+    </div>
+  </div>
+</div>
+
+</div></div></div>
+
+<script>
+// ── Canvas 微觀模擬腳本 ──
+const diffCanvas = document.getElementById('diffusion-canvas');
+const effCanvas  = document.getElementById('effusion-canvas');
+let diffParticles = [], effParticles = [];
+let diffAnimId, effAnimId;
+
+class Particle {
+  constructor(c, x, y, color, size, vx, vy) {
+    this.c = c; this.ctx = c.getContext('2d');
+    this.x = x; this.y = y; this.color = color;
+    this.size = size; this.vx = vx; this.vy = vy;
+  }
+  update(mode) {
+    this.x += this.vx; this.y += this.vy;
+    const w = this.c.width, h = this.c.height;
+    if (mode === 'diff') {
+      if (this.x - this.size < 0 || this.x + this.size > w) this.vx *= -1;
+      if (this.y - this.size < 0 || this.y + this.size > h) this.vy *= -1;
+    } else {
+      // 逸散模式：中央有微孔隔板
+      const mid = w / 2;
+      const holeTop = h * 0.4, holeBottom = h * 0.6;
+      if (this.x - this.size < 0 || this.x + this.size > w) this.vx *= -1;
+      if (this.y - this.size < 0 || this.y + this.size > h) this.vy *= -1;
+      const nextX = this.x + this.vx;
+      if ((this.x < mid && nextX >= mid) || (this.x > mid && nextX <= mid)) {
+        if (this.y < holeTop || this.y > holeBottom) this.vx *= -1;
+      }
+    }
+  }
+  draw() {
+    this.ctx.beginPath();
+    this.ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    this.ctx.fillStyle = this.color;
+    this.ctx.fill();
+  }
+}
+
+window.initDiffusion = function() {
+  if (!diffCanvas) return;
+  diffCanvas.width = diffCanvas.offsetWidth || 340;
+  diffCanvas.height = diffCanvas.offsetHeight || 130;
+  diffParticles = [];
+  for (let i = 0; i < 45; i++) {
+    const a = Math.random() * Math.PI * 2, spd = 1.3 + Math.random() * 0.7;
+    diffParticles.push(new Particle(
+      diffCanvas,
+      15 + Math.random() * 30,
+      diffCanvas.height / 2 + (Math.random() - 0.5) * 35,
+      '#38bdf8',
+      3.5,
+      Math.cos(a) * spd,
+      Math.sin(a) * spd
+    ));
+  }
+};
+
+window.initEffusion = function() {
+  if (!effCanvas) return;
+  effCanvas.width = effCanvas.offsetWidth || 340;
+  effCanvas.height = effCanvas.offsetHeight || 130;
+  effParticles = [];
+  const mid = effCanvas.width / 2;
+  for (let i = 0; i < 45; i++) {
+    const a = Math.random() * Math.PI * 2, spd = 1.3 + Math.random() * 0.7;
+    effParticles.push(new Particle(
+      effCanvas,
+      10 + Math.random() * (mid - 25),
+      Math.random() * effCanvas.height,
+      '#c084fc',
+      3.5,
+      Math.cos(a) * spd,
+      Math.sin(a) * spd
+    ));
+  }
+};
+
+function loop() {
+  if (diffCanvas) {
+    const ctx = diffCanvas.getContext('2d');
+    ctx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+    diffParticles.forEach(p => { p.update('diff'); p.draw(); });
+  }
+  if (effCanvas) {
+    const ctx = effCanvas.getContext('2d');
+    ctx.clearRect(0, 0, effCanvas.width, effCanvas.height);
+    const mid = effCanvas.width / 2;
+    // 繪製微孔隔板
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(mid, 0); ctx.lineTo(mid, effCanvas.height * 0.4);
+    ctx.moveTo(mid, effCanvas.height * 0.6); ctx.lineTo(mid, effCanvas.height);
+    ctx.stroke();
+    // 標示微孔字樣
+    ctx.fillStyle = 'rgba(251,191,36,0.85)';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('微孔', mid - 11, effCanvas.height * 0.53);
+
+    effParticles.forEach(p => { p.update('eff'); p.draw(); });
+  }
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('load', () => {
+  initDiffusion();
+  initEffusion();
+  loop();
+});
+window.addEventListener('resize', () => {
+  initDiffusion();
+  initEffusion();
+});
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body></html>

@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>酸鹼滴定曲線模擬器 - Blogger 全螢幕版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+:root{
+  --bg:#0b0f1e;
+  --surface:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.1);
+  --text:#f1f5f9;
+  --muted:#94a3b8;
+  --accent:#818cf8;
+  --accent2:#c084fc;
+  --btn:#6366f1;
+  --r-lg:1.25rem;
+  --r-md:.75rem;
+  --shadow:0 8px 32px rgba(0,0,0,.5);
+}
+
+/* Massive Blogger Override - Target everything possible */
+html, body {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important; /* Lock background scrolling */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#main, #content, .main-inner, .column-center-outer, .column-center-inner, 
+.post-body, .region-inner, .content-inner, .columns, .post, .post-outer,
+.main-wrapper, .content-outer, .centered, .island, .post-wrapper, .body-pane, .post-outer-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide sidebars and navbar strictly */
+.sidebar, .sidebar-wrapper, .sidebar-container, #sidebar, 
+.column-right-outer, .column-left-outer, .navbar, #navbar, 
+.header-outer, .footer-outer, .tabs-outer {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  visibility: hidden !important;
+}
+
+body{
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(140deg,#0b0f1e 0%,#1e1b4b 100%);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+  overflow-x: hidden; /* Prevent horizontal scroll from 100vw */
+}
+
+/* Fixed Overlay Strategy - Force app to cover everything */
+.app {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999;
+  overflow-y: auto;
+  background: linear-gradient(140deg,#0b0f1e 0%,#1e1b4b 100%);
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+
+/* Header */
+.hdr{
+  background:rgba(15,20,50,.75);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:100;
+}
+.hdr-inner{
+  /* Remove max-width constraint for full-screen feel */
+  width:100%;
+  padding:.9rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+}
+.brand{display:flex;align-items:center;gap:.75rem}
+.brand-icon{font-size:1.75rem}
+.brand h1{
+  font-family:'Outfit',sans-serif;font-size:1.35rem;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.subtitle{font-size:.75rem;color:var(--muted)}
+
+.nav-group {
+  display:flex;
+  align-items:center;
+  gap:1rem;
+}
+
+#status{
+  font-size:.8rem;padding:.35rem .85rem;border-radius:999px;
+  background:rgba(129,140,248,.15);border:1px solid rgba(129,140,248,.3);
+  color:var(--accent);white-space:nowrap;
+  transition: all 0.2s ease;
+}
+#status.stale {
+  background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.4);
+  color:#fbbf24;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Grid */
+.grid{
+  /* Remove max-width constraint for full-screen feel */
+  width:100%;
+  padding:1.5rem 1.25rem;
+  display:grid;grid-template-columns: 1fr 2fr 1fr;gap:1.25rem;
+  flex: 0 0 auto; /* Allow content to grow naturally */
+}
+/* Glass panel */
+.glass{
+  background:var(--surface);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow);
+}
+.panel{padding:1.25rem;display:flex;flex-direction:column;gap:.9rem;align-self:start}
+.sec-title{
+  font-family:'Outfit',sans-serif;font-size:1.05rem;
+  border-bottom:1px solid var(--border);padding-bottom:.5rem;margin-bottom:.25rem;
+}
+/* Fields */
+.lbl{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.35rem}
+select,input[type=number],input[type=text]{
+  width:100%;padding:.65rem .85rem;
+  background:rgba(0,0,0,.25);
+  border:1px solid var(--border);border-radius:var(--r-md);
+  color:var(--text);font-size:.9rem;outline:none;
+  transition:border-color .18s;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+}
+select:focus,input:focus{border-color:var(--accent)}
+.sel-wrap{position:relative}
+.sel-wrap::after{
+  content:'\25be';position:absolute;right:.85rem;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:var(--muted);font-size:1.1rem;
+}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.ka-box{
+  background:rgba(0,0,0,.15);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:.85rem;
+  display:flex;flex-direction:column;gap:.65rem;
+}
+.ka-title{font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:.15rem}
+.ka-row{display:flex;align-items:center;gap:.5rem}
+.ka-lbl{font-size:.88rem;color:var(--text);white-space:nowrap;min-width:2.8rem;font-weight:500}
+.hidden{display:none!important}
+/* Presets */
+.preset-row{display:flex;flex-wrap:wrap;gap:.4rem}
+.preset-btn{
+  padding:.3rem .65rem;font-size:.78rem;border-radius:999px;
+  border:1px solid var(--border);background:rgba(129,140,248,.1);
+  color:var(--text);cursor:pointer;transition:background .15s,border-color .15s;
+}
+.preset-btn:hover{background:rgba(129,140,248,.25);border-color:var(--accent)}
+/* Buttons */
+.action-stack{display:flex;flex-direction:column;gap:.6rem;margin-top:.25rem}
+.btn-primary{
+  padding:.8rem;border:none;border-radius:var(--r-md);
+  background:var(--btn);color:#fff;font-size:1rem;font-weight:700;
+  cursor:pointer;letter-spacing:.025em;transition:background .18s,transform .1s;
+}
+.btn-primary:hover{background:#4f46e5}
+.btn-primary:active{transform:scale(.97)}
+.exp-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.btn-sec{
+  padding:.6rem;border:1px solid var(--border);border-radius:var(--r-md);
+  background:rgba(255,255,255,.06);color:var(--text);font-size:.85rem;
+  cursor:pointer;transition:background .15s;
+}
+.btn-sec:hover:not(:disabled){background:rgba(255,255,255,.12)}
+.btn-sec:disabled{opacity:.45;cursor:not-allowed}
+/* Display area */
+.display{display:flex;flex-direction:column;gap:1.25rem}
+.chart-hdr{margin-bottom:.65rem; text-align: center;}
+.chart-t{font-family:'Outfit',sans-serif;font-size:1.05rem;display:block}
+.chart-sub{font-size:.8rem;color:var(--muted)}
+.zone-legend{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem; justify-content: center;}
+.zone-chip{
+  font-size:.72rem;padding:.2rem .6rem;border-radius:999px;
+  background:var(--clr);border:1px solid rgba(255,255,255,.1);
+}
+.chart-wrap{
+  position:relative;
+  width: 100%;
+  max-width: 800px; /* Wider for 3-col layout */
+  margin: 0 auto;
+  aspect-ratio: 1 / 1; /* Square ratio */
+  height: auto;
+  max-height: 55vh;
+}
+/* EQ info */
+.eq-grid{display:flex;flex-wrap:wrap;gap:.6rem}
+.eq-chip{
+  background:rgba(129,140,248,.12);border:1px solid rgba(129,140,248,.3);
+  border-radius:var(--r-md);padding:.5rem .85rem;font-size:.82rem;line-height:1.5;
+}
+.eq-chip strong{color:var(--accent)}
+/* Table */
+.t-hd{font-size:.95rem;margin-bottom:.75rem}
+.t-wrap{max-height:calc(100vh - 240px);overflow-y:auto;border-radius:var(--r-md);background:rgba(0,0,0,.2)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:.55rem .75rem;text-align:center;border-bottom:1px solid var(--border)}
+th{background:rgba(0,0,0,.4);position:sticky;top:0;font-weight:600;font-size:.78rem;color:var(--muted)}
+.eq-row{background:rgba(219,39,119,.15)!important} /* Highlight Equivalence Points */
+/* Footer */
+.footer{
+  text-align:center;padding:1.5rem;font-size:.78rem;color:var(--muted);
+  border-top:1px solid var(--border);margin-top:auto;
+}
+/* Error toast */
+.err-toast{
+  display:none;position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+  background:#ef4444;color:#fff;padding:.75rem 1.25rem;border-radius:.75rem;
+  font-size:.88rem;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+/* Responsive */
+@media(max-width:1200px){
+  .grid{grid-template-columns: 1.2fr 2fr; padding: 1rem;}
+  .grid > .results { grid-column: span 2; }
+}
+@media(max-width:850px){
+  .grid{grid-template-columns:1fr;padding:1rem}
+  .chart-wrap{height:350px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- Header -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="brand">
+      <span class="brand-icon">⚗️</span>
+      <div>
+        <h1>酸鹼滴定曲線模擬器</h1>
+        <p class="subtitle">電荷平衡 · 數值求解 · 支援一/二/三元酸</p>
+      </div>
+    </div>
+    
+    <div class="nav-group">
+      <div id="status">請設定參數後計算</div>
+      <!-- Return to Blog Button -->
+      <a href="javascript:history.back()" class="back-btn" title="返回部落格頁面">
+        <span>&#x21a9;</span> 返回部落格
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Grid -->
+<main class="grid">
+
+  <!-- Control Panel -->
+  <aside class="panel glass">
+    <h2 class="sec-title">⚙️ 實驗設定</h2>
+
+    <div class="fld">
+      <label class="lbl" for="acid-type">酸的類型</label>
+      <div class="sel-wrap">
+        <select id="acid-type">
+          <option value="monoprotic">一元酸（Monoprotic）</option>
+          <option value="diprotic">二元酸（Diprotic）</option>
+          <option value="triprotic">三元酸（Triprotic）</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="ka-section" class="ka-box">
+      <div class="ka-title">解離常數（100% 解離請輸入 SB）</div>
+      <div class="ka-row" id="ka1-row">
+        <label class="ka-lbl" for="ka1">Ka₁</label>
+        <input type="text" id="ka1" value="1.8e-5" placeholder="輸入數值或 SB">
+      </div>
+      <div class="ka-row hidden" id="ka2-row">
+        <label class="ka-lbl" for="ka2">Ka₂</label>
+        <input type="text" id="ka2" value="" placeholder="輸入數值或 SB">
+      </div>
+      <div class="ka-row hidden" id="ka3-row">
+        <label class="ka-lbl" for="ka3">Ka₃</label>
+        <input type="text" id="ka3" value="" placeholder="輸入數值">
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="fld">
+        <label class="lbl" for="acid-conc">酸濃度 (M)</label>
+        <input type="number" id="acid-conc" value="0.1" min="0.001" step="0.01">
+      </div>
+      <div class="fld">
+        <label class="lbl" for="acid-vol">酸體積 (mL)</label>
+        <input type="number" id="acid-vol" value="25" min="1" step="1">
+      </div>
+    </div>
+
+    <div class="fld">
+      <label class="lbl" for="base-conc">強鹼 NaOH 濃度 (M)</label>
+      <input type="number" id="base-conc" value="0.1" min="0.001" step="0.01">
+    </div>
+
+    <div class="fld">
+      <label class="lbl">快速範例</label>
+      <div class="preset-row">
+        <button class="preset-btn" data-preset="acetic">醋酸</button>
+        <button class="preset-btn" data-preset="oxalic">草酸</button>
+        <button class="preset-btn" data-preset="phosphoric">磷酸</button>
+        <button class="preset-btn" data-preset="carbonic">碳酸</button>
+        <button class="preset-btn" data-preset="hcl">鹽酸</button>
+      </div>
+    </div>
+
+    <div class="action-stack">
+      <button id="calc-btn" class="btn-primary">▶ 開始計算</button>
+      <div class="exp-row">
+        <button id="img-btn" class="btn-sec" disabled>📷 匯出圖片</button>
+        <button id="csv-btn" class="btn-sec" disabled>📊 匯出 CSV</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Display Area (Middle Column) -->
+  <section class="display">
+
+    <!-- Chart -->
+    <div class="card glass">
+      <div class="chart-hdr">
+        <span class="chart-t" id="chart-title">滴定曲線</span>
+        <span class="chart-sub" id="chart-sub">設定實驗條件後點擊「開始計算」</span>
+      </div>
+      <div class="zone-legend">
+        <span class="zone-chip" style="--clr:rgba(220,38,38,.22)">酸性 pH 0–5</span>
+        <span class="zone-chip" style="--clr:rgba(250,204,21,.2)">中性 pH 5–9</span>
+        <span class="zone-chip" style="--clr:rgba(99,102,241,.22)">鹼性 pH 9–14</span>
+        <span class="zone-chip" style="--clr:rgba(244,114,182,.3)">✕ 當量點</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="myChart"></canvas>
+      </div>
+    </div>
+
+    <!-- EQ Points -->
+    <div id="eq-card" class="card glass hidden">
+      <h3 class="t-hd">📍 當量點資訊</h3>
+      <div id="eq-grid" class="eq-grid"></div>
+    </div>
+  </section>
+
+  <!-- Results Area (Right Column) -->
+  <aside class="results display">
+    <!-- Data Table -->
+    <div class="card glass">
+      <h3 class="t-hd">📋 滴定數據記錄</h3>
+      <div class="t-wrap">
+        <table>
+          <thead>
+            <tr><th>加入體積 (mL)</th><th>pH 值</th><th>[H⁺] (M)</th></tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td class="empty" colspan="3">尚無數據</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer class="footer">
+  酸鹼滴定曲線模擬器 · 使用電荷平衡方程式 + 二分法數值求解 · Blogger 全螢幕優化版
+</footer>
+</div>
+
+<div id="err-toast" class="err-toast"></div>
+
+<script>
+(function() {
+  var Kw = 1e-14;
+
+  function chargeBalance(h, Ca, Cb, ka1, ka2, ka3) {
+    var oh = Kw / h;
+    var alphaSum;
+    if (ka1 > 0 && ka2 === 0) {
+      var D = h + ka1; alphaSum = ka1 / D;
+    } else if (ka1 > 0 && ka2 > 0 && ka3 === 0) {
+      var D = h * h + ka1 * h + ka1 * ka2;
+      alphaSum = (ka1 * h / D) + 2 * (ka1 * ka2 / D);
+    } else if (ka1 > 0 && ka2 > 0 && ka3 > 0) {
+      var D = h*h*h + ka1*h*h + ka1*ka2*h + ka1*ka2*ka3;
+      alphaSum = (ka1*h*h/D) + 2*(ka1*ka2*h/D) + 3*(ka1*ka2*ka3/D);
+    } else {
+      alphaSum = 0;
+    }
+    return h + Cb - oh - Ca * alphaSum;
+  }
+
+  function bisect(f) {
+    var phLo = -1.0, phHi = 15.0;
+    var fLo = f(Math.pow(10, -phLo));
+    var fHi = f(Math.pow(10, -phHi));
+    if (fLo * fHi > 0) return null;
+    for (var i = 0; i < 150; i++) {
+      var phMid = (phLo + phHi) / 2;
+      var hMid  = Math.pow(10, -phMid);
+      var fMid  = f(hMid);
+      if (Math.abs(fMid) < 1e-12 || (phHi - phLo) < 1e-10) return hMid;
+      if (fLo * fMid < 0) { phHi = phMid; fHi = fMid; }
+      else                 { phLo = phMid; fLo = fMid; }
+    }
+    return Math.pow(10, -(phLo + phHi) / 2);
+  }
+
+  window.TitrationEngine = {
+    calculate: function(params) {
+      var acidType = params.acidType;
+      var acidStrength = params.acidStrength;
+      var acidConc = params.acidConc;
+      var acidVol = params.acidVol;
+      var baseConc = params.baseConc;
+      var kaValues = params.kaValues;
+
+      var eqVol = acidConc * acidVol / baseConc;
+      var maxFactor = (acidType === 'diprotic') ? 3.1 : (acidType === 'triprotic' ? 4.1 : 2.1);
+      var maxVol = eqVol * maxFactor;
+      var steps = 400;
+      var stepSize = maxVol / steps;
+
+      var ka1, ka2, ka3;
+      if (acidStrength === 'strong') {
+        ka1 = 1e8;
+        ka2 = (acidType !== 'monoprotic') ? 1e8 : 0;
+        ka3 = (acidType === 'triprotic') ? 1e8 : 0;
+      } else {
+        ka1 = kaValues[0];
+        ka2 = (acidType !== 'monoprotic') ? (kaValues[1] || 0) : 0;
+        ka3 = (acidType === 'triprotic') ? (kaValues[2] || 0) : 0;
+      }
+
+      var volumes = [];
+      for (var i = 0; i <= steps; i++) volumes.push(i * stepSize);
+      var eqs = [eqVol];
+      if (acidType === 'diprotic') eqs.push(2*eqVol);
+      if (acidType === 'triprotic') eqs.push(2*eqVol, 3*eqVol);
+      eqs.forEach(function(v) {
+        if (!volumes.some(function(u) { return Math.abs(u - v) < 0.0001; })) volumes.push(v);
+      });
+      volumes.sort(function(a, b) { return a - b; });
+
+      var results = [];
+      for (var j = 0; j < volumes.length; j++) {
+        var v = volumes[j];
+        var pt = this._calcPt(v, acidStrength, acidType, acidConc, acidVol, baseConc, ka1, ka2, ka3);
+        if (pt) results.push(pt);
+      }
+      return results;
+    },
+    calcAt: function(vBase, params) {
+      var acidStrength = params.acidStrength;
+      var acidType = params.acidType;
+      var kaValues = params.kaValues;
+      var ka1, ka2, ka3;
+      if (acidStrength === 'strong') {
+        ka1 = 1e8; ka2 = (acidType !== 'monoprotic') ? 1e8 : 0; ka3 = (acidType === 'triprotic') ? 1e8 : 0;
+      } else {
+        ka1 = kaValues[0];
+        ka2 = (acidType !== 'monoprotic') ? (kaValues[1] || 0) : 0;
+        ka3 = (acidType === 'triprotic') ? (kaValues[2] || 0) : 0;
+      }
+      return this._calcPt(vBase, acidStrength, acidType, params.acidConc, params.acidVol, params.baseConc, ka1, ka2, ka3);
+    },
+    _calcPt: function(vBase, acidStrength, acidType, acidConc, acidVol, baseConc, ka1, ka2, ka3) {
+      var Vt = acidVol + vBase;
+      var Cb = (baseConc * vBase) / Vt;
+      var Ca = (acidConc * acidVol) / Vt;
+      var h;
+      if (acidStrength === 'strong' && acidType === 'monoprotic') {
+        var excess = Cb - Ca;
+        if (excess < -1e-15) h = 0.5 * (-excess + Math.sqrt(excess*excess + 4*Kw));
+        else if (excess > 1e-15) h = Kw / (0.5 * (excess + Math.sqrt(excess*excess + 4*Kw)));
+        else h = Math.sqrt(Kw);
+      } else {
+        h = bisect(function(hh) { return chargeBalance(hh, Ca, Cb, ka1, ka2, ka3); });
+      }
+      if (!h || h <= 0) return null;
+      var pH = -Math.log10(h);
+      return { volume: parseFloat(vBase.toFixed(4)), pH: parseFloat(pH.toFixed(3)), hPlus: h.toExponential(4) };
+    }
+  };
+})();
+
+(function() {
+  var chartInst = null, titData = [];
+  var PRESETS = {
+    acetic:     { acidType:'monoprotic', acidConc:0.1, acidVol:25, baseConc:0.1, ka1:'1.8e-5',  ka2:'',        ka3:'' },
+    oxalic:     { acidType:'diprotic',   acidConc:0.1, acidVol:25, baseConc:0.1, ka1:'5.36e-2', ka2:'5.37e-5', ka3:'' },
+    carbonic:   { acidType:'diprotic',   acidConc:0.1, acidVol:25, baseConc:0.1, ka1:'4.3e-7',  ka2:'4.7e-11', ka3:'' },
+    phosphoric: { acidType:'triprotic',  acidConc:0.1, acidVol:25, baseConc:0.1, ka1:'7.5e-3',  ka2:'6.2e-8',  ka3:'3.6e-13' },
+    hcl:        { acidType:'monoprotic', acidConc:0.1, acidVol:25, baseConc:0.1, ka1:'SB',      ka2:'',        ka3:'' }
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function isSB(s) { return typeof s === 'string' && s.trim().toUpperCase() === 'SB'; }
+
+  function syncKa() {
+    var t = $('acid-type').value;
+    $('ka2-row').classList.toggle('hidden', t === 'monoprotic');
+    $('ka3-row').classList.toggle('hidden', t !== 'triprotic');
+  }
+
+  function setPreset(key) {
+    var p = PRESETS[key]; if(!p) return;
+    $('acid-type').value = p.acidType; $('acid-conc').value = p.acidConc;
+    $('acid-vol').value = p.acidVol; $('base-conc').value = p.baseConc;
+    $('ka1').value = p.ka1; $('ka2').value = p.ka2; $('ka3').value = p.ka3;
+    syncKa();
+  }
+
+  function setStale() {
+    var s = $('status');
+    s.textContent = '\u26a0 \u8a08\u7b97\u6578\u503c\u5c1a\u672a\u66f4\u65b0';
+    s.classList.add('stale');
+  }
+
+  function run() {
+    var acidType = $('acid-type').value, acidConc = parseFloat($('acid-conc').value);
+    var acidVol = parseFloat($('acid-vol').value), baseConc = parseFloat($('base-conc').value);
+    var ka1S = $('ka1').value.trim(), ka2S = $('ka2').value.trim(), ka3S = $('ka3').value.trim();
+    
+    var ka1 = isSB(ka1S) ? 1e8 : Number(ka1S);
+    var ka2 = isSB(ka2S) ? 1e8 : (Number(ka2S) || 0);
+    var ka3 = isSB(ka3S) ? 1e8 : (Number(ka3S) || 0);
+    var strength = isSB(ka1S) ? 'strong' : 'weak';
+
+    var params = { acidType, acidStrength: strength, acidConc, acidVol, baseConc, kaValues:[ka1, ka2, ka3] };
+    titData = window.TitrationEngine.calculate(params);
+    
+    renderChart(titData, params);
+    renderTable(titData, params);
+    renderEqInfo(params, titData);
+    
+    $('img-btn').disabled = $('csv-btn').disabled = false;
+    var s = $('status');
+    s.textContent = '\u2713 \u5df2\u66f4\u65b0\u66f2\u7dda';
+    s.classList.remove('stale');
+  }
+
+  function renderChart(data, params) {
+    var ctx = $('myChart').getContext('2d');
+    var xy = data.map(function(d) { return { x: d.volume, y: d.pH }; });
+    var eqVol = params.acidConc * params.acidVol / params.baseConc;
+    var eqPts = [eqVol];
+    if(params.acidType==='diprotic') eqPts.push(2*eqVol);
+    if(params.acidType==='triprotic') eqPts.push(2*eqVol, 3*eqVol);
+    
+    var markers = eqPts.map(function(v) {
+      var best = data.reduce(function(a, b) { return Math.abs(a.volume - v) <= Math.abs(b.volume - v) ? a : b; });
+      return { x: best.volume, y: best.pH };
+    });
+
+    // Custom background zones plugin
+    var bgPlugin = {
+      id: 'bgPlugin',
+      beforeDraw: function(chart) {
+        var ctx = chart.ctx, chartArea = chart.chartArea, scales = chart.scales;
+        var zones = [
+          {yMin: 0, yMax: 5, color: 'rgba(239, 68, 68, 0.08)'},  // Acidic
+          {yMin: 5, yMax: 9, color: 'rgba(252, 211, 77, 0.06)'},  // Transition
+          {yMin: 9, yMax: 14, color: 'rgba(99, 102, 241, 0.08)'}  // Basic
+        ];
+        ctx.save();
+        zones.forEach(function(z) {
+          var t = scales.y.getPixelForValue(z.yMax);
+          var b = scales.y.getPixelForValue(z.yMin);
+          ctx.fillStyle = z.color;
+          ctx.fillRect(chartArea.left, t, chartArea.width, b - t);
+        });
+        ctx.restore();
+      }
+    };
+
+    if(chartInst) chartInst.destroy();
+    chartInst = new Chart(ctx, {
+      type: 'line',
+      plugins: [bgPlugin],
+      data: {
+        datasets: [
+          { label:'pH', data:xy, borderColor:'#818cf8', borderWidth:2.5, pointRadius:0, pointHoverRadius:5, fill:false, tension:0.1 },
+          { label:'\u7576\u91cf\u9ede', data:markers, type:'scatter', borderColor:'#f472b6', backgroundColor:'#f472b6', pointRadius:7, pointStyle:'crossRot', showLine:false }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        scales: {
+          x: { 
+            type:'linear', 
+            title:{display:true, text:'NaOH \u9ad4\u7a4d (mL)', color:'#94a3b8'},
+            grid: { color: 'rgba(255,255,255,0.08)' }
+          },
+          y: { 
+            min:0, max:14, 
+            title:{display:true, text:'pH', color:'#94a3b8'},
+            grid: { color: 'rgba(255,255,255,0.08)' }
+          }
+        },
+        plugins: { 
+          legend:{labels:{color:'#94a3b8'}}
+        }
+      }
+    });
+  }
+
+  function renderEqInfo(params, data) {
+    var eqVol = params.acidConc * params.acidVol / params.baseConc;
+    var pts = [eqVol];
+    if(params.acidType==='diprotic') pts.push(2*eqVol);
+    if(params.acidType==='triprotic') pts.push(2*eqVol, 3*eqVol);
+    
+    var grid=$('eq-grid'); grid.innerHTML='';
+    pts.forEach(function(v, i) {
+      var best = data.reduce(function(a, b) { return Math.abs(a.volume - v) < Math.abs(b.volume - v) ? a : b; });
+      var div=document.createElement('div'); div.className='eq-chip';
+      div.innerHTML='\u7b2c '+(i+1)+' \u7576\u91cf\u9ede<br><strong>'+v.toFixed(2)+' mL</strong><br>pH ≈ '+best.pH;
+      grid.appendChild(div);
+    });
+    $('eq-card').classList.remove('hidden');
+  }
+
+  function renderTable(data, params) {
+    var tbody = $('tbody'); tbody.innerHTML='';
+    var eqUnit = params.acidConc * params.acidVol / params.baseConc;
+    var protons = (params.acidType === 'triprotic') ? 3 : (params.acidType === 'diprotic' ? 2 : 1);
+    
+    var rawSamples = [0, 0.5, 1, 2];
+    var eqs = [];
+    for (var i = 1; i <= protons; i++) {
+      var eq = i * eqUnit;
+      var half = (i - 0.5) * eqUnit;
+      eqs.push(parseFloat(eq.toFixed(2)));
+      rawSamples.push(eq, eq - 1, eq + 1, half, half - 1, half + 1);
+    }
+    rawSamples.push(parseFloat((protons * eqUnit + 10).toFixed(2)));
+    
+    var samples = [];
+    rawSamples.forEach(function(v) {
+      if (v >= 0) {
+        var rv = parseFloat(v.toFixed(2));
+        if (samples.indexOf(rv) === -1) samples.push(rv);
+      }
+    });
+    samples.sort(function(a, b) { return a - b; });
+    
+    samples.forEach(function(v) {
+      var pt = window.TitrationEngine.calcAt(v, params);
+      if(!pt) return;
+      var isEq = eqs.indexOf(v) !== -1;
+      var tr = document.createElement('tr');
+      if (isEq) tr.className = 'eq-row';
+      tr.innerHTML='<td>'+v+'</td><td>'+pt.pH+'</td><td>'+pt.hPlus+'</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Aggressively clear Blogger container constraints
+    try {
+      var parents = [];
+      var curr = document.querySelector('.app');
+      while(curr && curr.tagName !== 'HTML') {
+        parents.push(curr);
+        curr = curr.parentElement;
+      }
+      parents.forEach(function(p) {
+        p.style.width = '100%';
+        p.style.maxWidth = '100%';
+        p.style.margin = '0';
+        p.style.padding = '0';
+        p.style.overflow = 'visible';
+      });
+    } catch(e) {}
+
+    var inputs = ['acid-type','acid-conc','acid-vol','base-conc','ka1','ka2','ka3'];
+    inputs.forEach(function(id) {
+      $(id).addEventListener('input', setStale);
+      $(id).addEventListener('change', setStale);
+    });
+
+    $('acid-type').addEventListener('change', syncKa);
+    document.querySelectorAll('.preset-btn').forEach(function(b) {
+      b.addEventListener('click', function() { setPreset(b.dataset.preset); setStale(); });
+    });
+    $('calc-btn').addEventListener('click', run);
+    setPreset('acetic'); run();
+  });
+})();
+</script>
+</body>
+</html>

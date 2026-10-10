@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 範例 1：溶液蒸氣壓計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.25rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.92rem, 1.05vw, 1.1rem); line-height: 1.7; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.1rem; flex: 1; min-height: 0; align-items: stretch;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.8rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35); padding: 10px 22px;
+            font-size: 1rem; transition: all 0.2s; align-self: flex-start;
+        }
+        .btn-action:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        .calc-step {
+            background: rgba(0,0,0,0.3); border-radius: 10px;
+            padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-blue);
+            margin-bottom: 0.6rem;
+        }
+        .formula-box {
+            background: rgba(255,255,255,0.05); padding: 0.5rem 0.8rem;
+            border-radius: 6px; font-size: 1.12rem; margin: 4px 0; color: #fff;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-3 拉午耳定律 &middot; 實戰演練：範例 1</h1>
+
+        <div class="grid-2">
+            <!-- 左欄：題目內容 -->
+            <div class="panel" style="justify-content:space-between;">
+                <div>
+                    <h2 style="color:var(--accent-yellow); font-size:1.3rem; margin-bottom:0.8rem;">📝 題目內容</h2>
+                    <div style="font-size:1.05rem; line-height:1.75; color:#f8fafc;">
+                        <p>在 $25^\circ\text{C}$ 時純水的飽和蒸氣壓為 $23.8\text{ mmHg}$。若將 $180\text{ 克}$ 葡萄糖 ($\text{C}_6\text{H}_{12}\text{O}_6$) 完全溶於 $162.0\text{ 克}$ 水中，試求：<br><br>
+                        (1) 該葡萄糖水溶液中，水的莫耳分率為何？<br>
+                        (2) 該溶液在 $25^\circ\text{C}$ 時之蒸氣壓為多少 $\text{mmHg}$？<br>
+                        (3) 蒸氣壓下降量 $\Delta P$ 為多少 $\text{mmHg}$？<br><br>
+                        <span style="color:#94a3b8; font-size:0.92rem;">（已知原子量：$\text{H}=1.0,\ \text{C}=12.0,\ \text{O}=16.0$；葡萄糖分子量 $= 180$）</span></p>
+                    </div>
+                </div>
+
+                <div style="padding-top:1rem;">
+                    <button class="btn-action" onclick="toggleSolution('solution-box')">
+                        💡 顯示詳解 / 隱藏
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右欄：詳解（預設留空供板書註解，點擊後呈現） -->
+            <div class="panel" style="background:rgba(255,255,255,0.02);">
+                <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
+                    <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 範例詳解</h2>
+
+                    <div class="calc-step">
+                        <div style="font-size:1rem; color:var(--accent-blue); font-weight:700;">1. 計算溶質與溶劑的莫耳數：</div>
+                        <div class="formula-box">
+                            $$n_{葡萄糖} = \frac{180\text{ g}}{180\text{ g/mol}} = 1.0\text{ mol}$$
+                            $$n_{水} = \frac{162.0\text{ g}}{18.0\text{ g/mol}} = 9.0\text{ mol}$$
+                        </div>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-cyan);">
+                        <div style="font-size:1rem; color:var(--accent-cyan); font-weight:700;">2. 計算各成分之莫耳分率：</div>
+                        <div class="formula-box">
+                            $$X_{水} = \frac{n_{水}}{n_{水} + n_{葡萄糖}} = \frac{9.0}{9.0 + 1.0} = 0.90$$
+                            $$X_{葡萄糖} = 1 - 0.90 = 0.10$$
+                        </div>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-green);">
+                        <div style="font-size:1rem; color:var(--accent-green); font-weight:700;">3. 套用拉午耳定律求溶液蒸氣壓：</div>
+                        <div class="formula-box">
+                            $$P_{溶液} = P^\circ \cdot X_{水} = 23.8 \times 0.90 = \mathbf{21.42\text{ mmHg}}$$
+                        </div>
+                        <div style="font-size:0.92rem; color:#cbd5e1; margin-top:4px;">
+                            <strong>蒸氣壓下降量：</strong><br>
+                            $$\Delta P = P^\circ \cdot X_{葡萄糖} = 23.8 \times 0.10 = \mathbf{2.38\text{ mmHg}}$$
+                            （驗證：$P = 23.8 - 2.38 = 21.42\text{ mmHg}$，完全吻合）
+                        </div>
+                    </div>
+
+                    <div style="margin-top:0.4rem; padding:0.6rem 1rem; background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); border-radius:8px;">
+                        <span style="color:#34d399; font-weight:800; font-size:1.15rem;">🎯 答案：(1) 0.90 ｜ (2) 21.42 mmHg ｜ (3) 2.38 mmHg</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

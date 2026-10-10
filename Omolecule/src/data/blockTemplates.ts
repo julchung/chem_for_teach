@@ -121,21 +121,6 @@ export const LEWIS_TEMPLATES: BlockTemplate[] = [
   },
 ];
 
-export const GROUP_SINGLE_TEMPLATES: BlockTemplate[] = [
-  {
-    id: 'grp_CH3',
-    label: 'CH₃',
-    element: 'C',
-    description: '甲基',
-    smilesAtom: 'C',
-    color: '#555555',
-    category: 'group',
-    displayMode: 'structure',
-    lonePairs: [],
-    ports: [{ id: 'right', dir: 'right', bondType: 'single' }],
-  }
-];
-
 export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   {
     id: '_C_carbonyl',
@@ -156,7 +141,7 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   },
   {
     id: '_C_aldehyde',
-    label: 'C',
+    label: 'CH',
     element: 'C',
     description: '醛基碳',
     smilesAtom: 'C',
@@ -172,7 +157,7 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   },
   {
     id: '_C_mid',
-    label: 'C',
+    label: 'CH₂',
     element: 'C',
     description: '亞甲基 (乙基中段)',
     smilesAtom: 'C',
@@ -188,7 +173,7 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   },
   {
     id: '_C_tail',
-    label: 'C',
+    label: 'CH₃',
     element: 'C',
     description: '甲基 (乙基末端)',
     smilesAtom: 'C',
@@ -218,7 +203,7 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   },
   {
     id: '_O_hydroxyl',
-    label: 'O',
+    label: 'OH',
     element: 'O',
     description: '羥基氧',
     smilesAtom: 'O',
@@ -233,7 +218,7 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
   },
   {
     id: '_N_amide',
-    label: 'N',
+    label: 'NH₂',
     element: 'N',
     description: '醯胺氮',
     smilesAtom: 'N',
@@ -246,11 +231,25 @@ export const INTERNAL_TEMPLATES: BlockTemplate[] = [
       { id: 'left', dir: 'left', bondType: 'single' },
     ],
   },
+  {
+    id: '_C_phenyl',
+    label: 'C₆H₅',
+    element: 'C',
+    description: '苯基 (Phenyl)',
+    smilesAtom: 'c1ccccc1',
+    color: '#333333',
+    category: 'group',
+    displayMode: 'structure',
+    lonePairs: [],
+    paletteHidden: true,
+    ports: [
+      { id: 'left', dir: 'left', bondType: 'single' },
+    ],
+  },
 ];
 
 export const ALL_TEMPLATES: BlockTemplate[] = [
   ...LEWIS_TEMPLATES,
-  ...GROUP_SINGLE_TEMPLATES,
   ...INTERNAL_TEMPLATES,
 ];
 

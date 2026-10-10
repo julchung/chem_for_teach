@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-4 包利不相容原理 (Pauli Exclusion Principle)</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(1rem, 1.15vw, 1.15rem);
+      line-height: 1.8;
+    }
+    .core-card {
+      background: rgba(248, 113, 113, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      border-left: 4px solid #f87171;
+    }
+    .compare-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+      flex: 1;
+    }
+    .compare-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid #334155;
+    }
+    .box-correct {
+      border-color: rgba(52, 211, 153, 0.5);
+      background: rgba(52, 211, 153, 0.05);
+    }
+    .box-wrong {
+      border-color: rgba(248, 113, 113, 0.5);
+      background: rgba(248, 113, 113, 0.05);
+    }
+    .arrow-box {
+      width: 72px;
+      height: 72px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 10px;
+      font-size: 3rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .tag-result {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .quantum-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">4-4 電子組態</span>
+      <h1>包利不相容原理 (Pauli Exclusion Principle)</h1>
+    </div>
+    <div class="subtitle">電子自旋 · 軌域容量極限 · 四個量子數不重複</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Core Definition -->
+    <div class="card">
+      <div class="card-title">🔬 原理定義與核心推論</div>
+
+      <div class="info-card">
+        <strong style="color:#38bdf8; font-size:1.15rem;">包利不相容原理定義：</strong><br>
+        在同一原子中，<strong>絕不可能存在兩個電子擁有完全相同的四個量子數</strong> $(n, l, m_l, m_s)$。
+      </div>
+
+      <div class="core-card">
+        <p style="font-size:1.1rem; font-weight:700; color:#f87171; margin-bottom:8px;">🎯 兩大核心推論：</p>
+        <ul style="margin-left: 22px; font-size: clamp(0.95rem, 1.1vw, 1.05rem); line-height: 1.9;">
+          <li>
+            <strong>軌域容量限制：</strong><br>
+            任一單一空間軌域（由 $n, l, m_l$ 唯一決定）中，<strong>最多只能容納 2 個電子</strong>。
+          </li>
+          <li>
+            <strong>自旋方向相反：</strong><br>
+            若同一個軌域內填入 2 個電子，它們的自旋量子數 $m_s$ 必須分別為 $+\frac{1}{2}$（$\uparrow$）與 $-\frac{1}{2}$（$\downarrow$），即<strong>自旋方向必須相反成對</strong>。
+          </li>
+        </ul>
+      </div>
+
+      <div class="quantum-card">
+        💡 <strong>量子數檢查範例：</strong><br>
+        若 Helium 原子的 1s 軌域填入兩個電子：<br>
+        • 電子 1：$(n=1, l=0, m_l=0, m_s=+\frac{1}{2})$<br>
+        • 電子 2：$(n=1, l=0, m_l=0, m_s=-\frac{1}{2})$<br>
+        前三個量子數相同，但第四個自旋量子數不同，完全符合包利原理！若填入第三個電子，必定會與前兩者之一產生四量子數完全相同，因此<strong>絕不允許</strong>！
+      </div>
+    </div>
+
+    <!-- Right Column: Visual Comparison -->
+    <div class="card">
+      <div class="card-title">📊 軌域自旋配置圖示對比</div>
+
+      <div class="compare-box">
+        <!-- Correct -->
+        <div class="compare-item box-correct">
+          <div class="arrow-box" style="border: 3px solid #34d399; background: rgba(52,211,153,0.15); color: #34d399;">
+            &#8645;
+          </div>
+          <div>
+            <div class="tag-result" style="color: #34d399;">✅ 正確配置（合乎包利原理）</div>
+            <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: 4px;">
+              軌域內 2 個電子自旋方向相反（一上一下），四個量子數各異。
+            </div>
+          </div>
+        </div>
+
+        <!-- Incorrect 1 -->
+        <div class="compare-item box-wrong">
+          <div class="arrow-box" style="border: 3px solid #f87171; background: rgba(248,113,113,0.15); color: #f87171;">
+            &#8648;
+          </div>
+          <div>
+            <div class="tag-result" style="color: #f87171;">❌ 錯誤配置（違反包利原理）</div>
+            <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: 4px;">
+              自旋同向（兩者均為 $+\frac{1}{2}$），導致四個量子數完全相同，<strong>自然界中不可能存在</strong>！
+            </div>
+          </div>
+        </div>
+
+        <!-- Incorrect 2 -->
+        <div class="compare-item box-wrong">
+          <div class="arrow-box" style="border: 3px solid #f87171; background: rgba(248,113,113,0.15); color: #f87171; font-size:2.4rem;">
+            &#8645;&#8593;
+          </div>
+          <div>
+            <div class="tag-result" style="color: #f87171;">❌ 錯誤配置（違反包利原理）</div>
+            <div style="color: #cbd5e1; font-size: 0.95rem; margin-top: 4px;">
+              同一軌域填入超過 2 個電子（此處填入 3 個），必定有電子四個量子數重複。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

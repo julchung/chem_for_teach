@@ -1,0 +1,604 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-3 反應熱加成性與赫士定律 · 範例：利用生成熱求反應熱 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 1.9vw, 1.8rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.1rem, 1.35vw, 1.35rem); margin-bottom: 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.95rem, 1.1vw, 1.08rem); line-height: 1.7; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 1rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .card-box {
+            background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.75rem 1rem;
+        }
+
+        /* 拖曳標籤樣式 */
+        .draggable-tag {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(56, 189, 248, 0.45);
+            border-radius: 10px;
+            padding: 9px 12px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            user-select: none;
+        }
+        .draggable-tag:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(34,211,238,0.25);
+        }
+        .draggable-tag.dragging {
+            opacity: 0.45;
+            border-style: dashed;
+            border-color: var(--accent-yellow);
+        }
+
+        /* 放置區域 */
+        .dropzone {
+            flex: 1;
+            min-height: 52px;
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .dropzone-add {
+            border: 2px dashed rgba(52, 211, 153, 0.55);
+            background: rgba(52, 211, 153, 0.05);
+        }
+        .dropzone-sub {
+            border: 2px dashed rgba(248, 113, 113, 0.55);
+            background: rgba(248, 113, 113, 0.05);
+        }
+        .dropzone.drag-over {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: #fff !important;
+            box-shadow: 0 0 14px rgba(255,255,255,0.3);
+        }
+
+        /* 放入區塊內的方程式項目 */
+        .dropped-item {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 4px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1.02rem;
+            cursor: grab;
+            transition: 0.18s;
+        }
+        .dropped-item:hover {
+            border-color: var(--accent-yellow);
+            background: rgba(251, 191, 36, 0.1);
+        }
+        .dropped-item .btn-del {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0 4px;
+            margin-left: 8px;
+            border-radius: 4px;
+            transition: 0.15s;
+        }
+        .dropped-item .btn-del:hover {
+            color: var(--accent-red);
+            background: rgba(248, 113, 113, 0.2);
+        }
+
+        /* 按鈕樣式 */
+        .btn-pill {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #f8fafc;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.18s;
+        }
+        .btn-pill:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+        }
+        .btn-pill.btn-sub-action:hover {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+            color: #fff;
+        }
+        .btn-pill.btn-add-action:hover {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: #0f172a;
+        }
+
+        /* 計算結果展示區 */
+        #calc-result {
+            background: rgba(0, 0, 0, 0.45);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        #calc-result.success-match {
+            border-color: var(--accent-green);
+            background: rgba(52, 211, 153, 0.12);
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>1-3 反應熱加成性與赫士定律 · 範例：利用生成熱求反應熱</h1>
+                
+                <!-- 題目說明條 -->
+                <div style="background: rgba(251,191,36,0.08); border-left: 4.5px solid var(--accent-yellow); border-radius: 8px; padding: 0.55rem 0.95rem; margin-bottom: 0.5rem; flex-shrink: 0;">
+                    <div style="font-size: 1.06rem; color: #f8fafc; line-height: 1.6;">
+                        <strong style="color: var(--accent-yellow);">題目：</strong>
+                        已知 $\mathrm{C_2H_2}$、$\mathrm{CH_4}$、$\mathrm{C_4H_{10}}$ 的標準莫耳生成熱分別為 $\Delta H_1$、$\Delta H_2$、$\Delta H_3$，
+                        試求目標反應：
+                        <span style="display: inline-block; padding: 2px 10px; background: rgba(56,189,248,0.18); border-radius: 6px; font-weight: 700; color: var(--accent-cyan); margin-left: 6px;">
+                            $\displaystyle \mathrm{C_2H_{2(g)} + 2\,CH_{4(g)} \longrightarrow C_4H_{10(g)}}$
+                        </span>
+                        之反應熱 $\Delta H = ?$
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- 左欄：互動計算區 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h2 style="color: var(--accent-blue); margin: 0;">
+                                <span>🧮</span> 赫士定律方程式疊加運算區
+                            </h2>
+                            <button id="btn-reset-calc" class="btn-pill" style="border-color: rgba(255,255,255,0.4);">
+                                ⟲ 重新計算
+                            </button>
+                        </div>
+
+                        <!-- 加法區塊 (+) -->
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                            <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-green); width: 28px; text-align: center; line-height: 1.2;">+</div>
+                            <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); line-height: 1.2;">(</div>
+                            <div id="dropzone-add" class="dropzone dropzone-add" data-zone="add">
+                                <!-- 放置進來的方程式 -->
+                            </div>
+                            <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); line-height: 1.2;">)</div>
+                        </div>
+
+                        <!-- 減法區塊 (-) -->
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                            <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent-red); width: 28px; text-align: center; line-height: 1.2;">−</div>
+                            <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); line-height: 1.2;">(</div>
+                            <div id="dropzone-sub" class="dropzone dropzone-sub" data-zone="sub">
+                                <!-- 放置進來的方程式 -->
+                            </div>
+                            <div style="font-size: 2.2rem; color: rgba(255,255,255,0.4); line-height: 1.2;">)</div>
+                        </div>
+
+                        <hr style="border: none; border-top: 1.5px solid rgba(255,255,255,0.18); margin: 0.2rem 0;">
+
+                        <!-- 即時動態運算結果區 -->
+                        <div id="calc-result">
+                            <div id="calc-result-eq" style="opacity: 0.55; font-size: 1.05rem; line-height: 1.6;">
+                                (拖曳右方方程式標籤至加/減區塊即可自動化簡疊加；亦可直接點擊「+ 加」或「− 減」按鈕)
+                            </div>
+                            <div id="calc-result-dh" style="margin-top: 6px; font-size: 1.35rem; font-weight: 700; color: var(--accent-yellow);"></div>
+                            <div id="calc-result-badge" style="display: none; margin-top: 6px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：可拖曳方程式庫 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h2 style="color: var(--accent-yellow); margin: 0;">
+                                <span>📋</span> 可用生成熱方程式
+                            </h2>
+                            <span style="font-size: 0.8rem; color: #94a3b8;">拖曳或點擊按鈕加入</span>
+                        </div>
+
+                        <p style="font-size: 0.92rem; color: #94a3b8; line-height: 1.5; margin-bottom: 0.2rem;">
+                            💡 請思考：利用【生生 － 反生】，方程式該如何加減才能消去成分元素單質？
+                        </p>
+
+                        <!-- 方程式 1 -->
+                        <div class="draggable-tag" draggable="true" data-id="c2h2">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <strong style="font-size: 1.05rem; color: var(--accent-cyan);">$\mathrm{C_2H_2}$ 的莫耳生成熱 (式1)</strong>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-pill btn-add-action" onclick="quickAdd('c2h2', 'add')">+ 加</button>
+                                    <button class="btn-pill btn-sub-action" onclick="quickAdd('c2h2', 'sub')">− 減</button>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.02rem; color: var(--accent-yellow); padding: 2px 0;">
+                                $\displaystyle \mathrm{2\,C_{(s)} + H_{2(g)} \longrightarrow C_2H_{2(g)}} \quad \Delta H_1$
+                            </div>
+                        </div>
+
+                        <!-- 方程式 2 -->
+                        <div class="draggable-tag" draggable="true" data-id="ch4">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <strong style="font-size: 1.05rem; color: var(--accent-cyan);">$\mathrm{CH_4}$ 的莫耳生成熱 (式2)</strong>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-pill btn-add-action" onclick="quickAdd('ch4', 'add')">+ 加</button>
+                                    <button class="btn-pill btn-sub-action" onclick="quickAdd('ch4', 'sub')">− 減</button>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.02rem; color: var(--accent-yellow); padding: 2px 0;">
+                                $\displaystyle \mathrm{C_{(s)} + 2\,H_{2(g)} \longrightarrow CH_{4(g)}} \quad \Delta H_2$
+                            </div>
+                        </div>
+
+                        <!-- 方程式 3 -->
+                        <div class="draggable-tag" draggable="true" data-id="c4h10">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <strong style="font-size: 1.05rem; color: var(--accent-cyan);">$\mathrm{C_4H_{10}}$ 的莫耳生成熱 (式3)</strong>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn-pill btn-add-action" onclick="quickAdd('c4h10', 'add')">+ 加</button>
+                                    <button class="btn-pill btn-sub-action" onclick="quickAdd('c4h10', 'sub')">− 減</button>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.02rem; color: var(--accent-yellow); padding: 2px 0;">
+                                $\displaystyle \mathrm{4\,C_{(s)} + 5\,H_{2(g)} \longrightarrow C_4H_{10(g)}} \quad \Delta H_3$
+                            </div>
+                        </div>
+
+                        <!-- 最佳解答指引小卡 -->
+                        <div style="background: rgba(52,211,153,0.06); border: 1px dashed rgba(52,211,153,0.35); border-radius: 8px; padding: 0.55rem 0.85rem; margin-top: auto;">
+                            <span style="color: var(--accent-green); font-weight: 700; font-size: 0.94rem;">🎯 目標組合提示：</span>
+                            <span style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.6;">
+                                由【生生 － 反生】：式(3)在加區，式(1)在減區，式(2)放 2 次在減區，即可完全抵消 $\mathrm{C}$ 與 $\mathrm{H_2}$！
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 方程式基本定義與元素成分
+const eqData = {
+    c2h2: {
+        title: "C₂H₂ 生成熱",
+        latex: "\\mathrm{2\\,C_{(s)} + H_{2(g)} \\longrightarrow C_2H_{2(g)}} \\quad \\Delta H_1",
+        c: 2, h2: 1, c2h2: 1, ch4: 0, c4h10: 0, dh: "\\Delta H_1"
+    },
+    ch4: {
+        title: "CH₄ 生成熱",
+        latex: "\\mathrm{C_{(s)} + 2\\,H_{2(g)} \\longrightarrow CH_{4(g)}} \\quad \\Delta H_2",
+        c: 1, h2: 2, c2h2: 0, ch4: 1, c4h10: 0, dh: "\\Delta H_2"
+    },
+    c4h10: {
+        title: "C₄H₁₀ 生成熱",
+        latex: "\\mathrm{4\\,C_{(s)} + 5\\,H_{2(g)} \\longrightarrow C_4H_{10(g)}} \\quad \\Delta H_3",
+        c: 4, h2: 5, c2h2: 0, ch4: 0, c4h10: 1, dh: "\\Delta H_3"
+    }
+};
+
+let stateCalc = {
+    add: { c2h2: 0, ch4: 0, c4h10: 0 },
+    sub: { c2h2: 0, ch4: 0, c4h10: 0 }
+};
+
+const draggables = document.querySelectorAll('.draggable-tag');
+const dropzones = document.querySelectorAll('.dropzone');
+
+// 設置可拖曳標籤事件
+draggables.forEach(draggable => {
+    draggable.addEventListener('dragstart', (e) => {
+        draggable.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', draggable.getAttribute('data-id'));
+    });
+
+    draggable.addEventListener('dragend', () => {
+        draggable.classList.remove('dragging');
+    });
+});
+
+// 快速點擊按鈕直接加入
+function quickAdd(id, zoneType) {
+    const zone = document.getElementById(zoneType === 'add' ? 'dropzone-add' : 'dropzone-sub');
+    stateCalc[zoneType][id]++;
+    addEquationToZone(zone, id, zoneType);
+}
+
+function addEquationToZone(zone, id, zoneType) {
+    const eqDiv = document.createElement('div');
+    eqDiv.className = 'dropped-item';
+    eqDiv.title = '可拖曳至另一區塊，或點擊右側 × 刪除';
+    eqDiv.draggable = true;
+    
+    eqDiv.innerHTML = `
+        <span>$\\displaystyle ${eqData[id].latex}$</span>
+        <span class="btn-del" title="刪除此式">×</span>
+    `;
+
+    // 刪除按鈕
+    eqDiv.querySelector('.btn-del').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        stateCalc[zoneType][id]--;
+        eqDiv.remove();
+        updateCalculation();
+    });
+    
+    // 內部拖曳（可在加/減區間移動或拖出刪除）
+    eqDiv.addEventListener('dragstart', (ev) => {
+        eqDiv.style.opacity = '0.4';
+        ev.dataTransfer.effectAllowed = 'move';
+        eqDiv.dataset.uniqueId = Date.now() + Math.random().toString();
+        ev.dataTransfer.setData('text/plain', `move:${id}:${zoneType}:${eqDiv.dataset.uniqueId}`);
+    });
+
+    eqDiv.addEventListener('dragend', (ev) => {
+        eqDiv.style.opacity = '1';
+        if (ev.dataTransfer.dropEffect === 'none') {
+            stateCalc[zoneType][id]--;
+            eqDiv.remove();
+            updateCalculation();
+        }
+    });
+
+    zone.appendChild(eqDiv);
+    MathJax.typesetPromise([eqDiv]).then(() => {
+        updateCalculation();
+    });
+}
+
+dropzones.forEach(zone => {
+    zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        const data = e.dataTransfer.getData('text/plain');
+        if (!data) return;
+
+        const zoneType = zone.dataset.zone;
+
+        if (data.startsWith('move:')) {
+            const parts = data.split(':');
+            const id = parts[1];
+            const fromZone = parts[2];
+            const uniqueId = parts[3];
+            
+            if (fromZone === zoneType) {
+                return; // 同區放置不變
+            } else {
+                const oldElement = document.querySelector(`div[data-unique-id="${uniqueId}"]`);
+                if (oldElement) {
+                    oldElement.remove();
+                    stateCalc[fromZone][id]--;
+                }
+                stateCalc[zoneType][id]++;
+                addEquationToZone(zone, id, zoneType);
+                return;
+            }
+        }
+
+        const id = data;
+        if (!eqData[id]) return;
+        stateCalc[zoneType][id]++;
+        addEquationToZone(zone, id, zoneType);
+    });
+});
+
+function updateCalculation() {
+    let rC = 0, rH2 = 0, rC2H2 = 0, rCH4 = 0, rC4H10 = 0;
+    let pC = 0, pH2 = 0, pC2H2 = 0, pCH4 = 0, pC4H10 = 0;
+    let dhParts = [];
+
+    // 計算加區
+    for (let id in stateCalc.add) {
+        let c = stateCalc.add[id];
+        if (c > 0) {
+            rC += c * eqData[id].c;
+            rH2 += c * eqData[id].h2;
+            if(id==='c2h2') pC2H2 += c;
+            if(id==='ch4') pCH4 += c;
+            if(id==='c4h10') pC4H10 += c;
+            dhParts.push(c === 1 ? `+\\Delta H_${id==='c2h2'?1:id==='ch4'?2:3}` : `+${c}\\,\\Delta H_${id==='c2h2'?1:id==='ch4'?2:3}`);
+        }
+    }
+
+    // 計算減區（反向）
+    for (let id in stateCalc.sub) {
+        let c = stateCalc.sub[id];
+        if (c > 0) {
+            pC += c * eqData[id].c;
+            pH2 += c * eqData[id].h2;
+            if(id==='c2h2') rC2H2 += c;
+            if(id==='ch4') rCH4 += c;
+            if(id==='c4h10') rC4H10 += c;
+            dhParts.push(c === 1 ? `-\\Delta H_${id==='c2h2'?1:id==='ch4'?2:3}` : `-${c}\\,\\Delta H_${id==='c2h2'?1:id==='ch4'?2:3}`);
+        }
+    }
+
+    let isEmpty = true;
+    for (let id in stateCalc.add) if (stateCalc.add[id] > 0) isEmpty = false;
+    for (let id in stateCalc.sub) if (stateCalc.sub[id] > 0) isEmpty = false;
+
+    const resultBox = document.getElementById('calc-result');
+    const eqContainer = document.getElementById('calc-result-eq');
+    const dhContainer = document.getElementById('calc-result-dh');
+    const badgeContainer = document.getElementById('calc-result-badge');
+
+    if (isEmpty) {
+        eqContainer.innerHTML = "(拖曳右方方程式標籤至加/減區塊即可自動化簡疊加；亦可直接點擊「+ 加」或「− 減」按鈕)";
+        eqContainer.style.opacity = '0.55';
+        eqContainer.style.fontSize = '1.05rem';
+        dhContainer.innerHTML = "";
+        badgeContainer.style.display = 'none';
+        resultBox.classList.remove('success-match');
+        return;
+    }
+
+    // 正負對消
+    let net_C = pC - rC;
+    if (net_C > 0) { pC = net_C; rC = 0; } else { rC = -net_C; pC = 0; }
+    
+    let net_H2 = pH2 - rH2;
+    if (net_H2 > 0) { pH2 = net_H2; rH2 = 0; } else { rH2 = -net_H2; pH2 = 0; }
+
+    let net_C2H2 = pC2H2 - rC2H2;
+    if (net_C2H2 > 0) { pC2H2 = net_C2H2; rC2H2 = 0; } else { rC2H2 = -net_C2H2; pC2H2 = 0; }
+
+    let net_CH4 = pCH4 - rCH4;
+    if (net_CH4 > 0) { pCH4 = net_CH4; rCH4 = 0; } else { rCH4 = -net_CH4; pCH4 = 0; }
+
+    let net_C4H10 = pC4H10 - rC4H10;
+    if (net_C4H10 > 0) { pC4H10 = net_C4H10; rC4H10 = 0; } else { rC4H10 = -net_C4H10; pC4H10 = 0; }
+
+    let rStr = [];
+    if(rC > 0) rStr.push(rC === 1 ? `\\mathrm{C_{(s)}}` : `${rC}\\,\\mathrm{C_{(s)}}`);
+    if(rH2 > 0) rStr.push(rH2 === 1 ? `\\mathrm{H_{2(g)}}` : `${rH2}\\,\\mathrm{H_{2(g)}}`);
+    if(rC2H2 > 0) rStr.push(rC2H2 === 1 ? `\\mathrm{C_2H_{2(g)}}` : `${rC2H2}\\,\\mathrm{C_2H_{2(g)}}`);
+    if(rCH4 > 0) rStr.push(rCH4 === 1 ? `\\mathrm{CH_{4(g)}}` : `${rCH4}\\,\\mathrm{CH_{4(g)}}`);
+    if(rC4H10 > 0) rStr.push(rC4H10 === 1 ? `\\mathrm{C_4H_{10(g)}}` : `${rC4H10}\\,\\mathrm{C_4H_{10(g)}}`);
+
+    let pStr = [];
+    if(pC > 0) pStr.push(pC === 1 ? `\\mathrm{C_{(s)}}` : `${pC}\\,\\mathrm{C_{(s)}}`);
+    if(pH2 > 0) pStr.push(pH2 === 1 ? `\\mathrm{H_{2(g)}}` : `${pH2}\\,\\mathrm{H_{2(g)}}`);
+    if(pC2H2 > 0) pStr.push(pC2H2 === 1 ? `\\mathrm{C_2H_{2(g)}}` : `${pC2H2}\\,\\mathrm{C_2H_{2(g)}}`);
+    if(pCH4 > 0) pStr.push(pCH4 === 1 ? `\\mathrm{CH_{4(g)}}` : `${pCH4}\\,\\mathrm{CH_{4(g)}}`);
+    if(pC4H10 > 0) pStr.push(pC4H10 === 1 ? `\\mathrm{C_4H_{10(g)}}` : `${pC4H10}\\,\\mathrm{C_4H_{10(g)}}`);
+
+    let rFinal = rStr.length > 0 ? rStr.join(" + ") : "0";
+    let pFinal = pStr.length > 0 ? pStr.join(" + ") : "0";
+
+    let eqStr = `\\[ \\displaystyle ${rFinal} \\longrightarrow ${pFinal} \\]`;
+
+    let dhString = dhParts.join(" ");
+    if (dhString.startsWith("+")) dhString = dhString.substring(1);
+    if (dhString === "") dhString = "0";
+
+    eqContainer.innerHTML = eqStr;
+    eqContainer.style.opacity = '1';
+    eqContainer.style.fontSize = '1.35rem';
+    dhContainer.innerHTML = `\\[ \\mathbf{\\Delta H = ${dhString}} \\]`;
+
+    // 檢驗是否成功拼出目標反應 C2H2 + 2 CH4 -> C4H10
+    const isTargetMatched = (rC === 0 && rH2 === 0 && rC2H2 === 1 && rCH4 === 2 && rC4H10 === 0 &&
+                             pC === 0 && pH2 === 0 && pC2H2 === 0 && pCH4 === 0 && pC4H10 === 1);
+
+    if (isTargetMatched) {
+        resultBox.classList.add('success-match');
+        badgeContainer.style.display = 'block';
+        badgeContainer.innerHTML = `
+            <span style="display: inline-block; padding: 4px 14px; background: rgba(52,211,153,0.25); border: 1.5px solid var(--accent-green); border-radius: 20px; color: var(--accent-green); font-size: 1.05rem; font-weight: 800;">
+                🎉 恭喜！已精準拼湊出目標反應式！
+            </span>
+        `;
+    } else {
+        resultBox.classList.remove('success-match');
+        badgeContainer.style.display = 'none';
+    }
+
+    MathJax.typesetPromise([resultBox]);
+}
+
+// 重新計算按鈕
+document.getElementById('btn-reset-calc').addEventListener('click', () => {
+    stateCalc.add = { c2h2: 0, ch4: 0, c4h10: 0 };
+    stateCalc.sub = { c2h2: 0, ch4: 0, c4h10: 0 };
+    document.getElementById('dropzone-add').innerHTML = '';
+    document.getElementById('dropzone-sub').innerHTML = '';
+    updateCalculation();
+});
+</script>
+</body>
+</html>

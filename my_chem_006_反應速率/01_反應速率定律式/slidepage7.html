@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>化學反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：反應速率定義、速率定律式、級數關係互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Slide 3 全畫面表格 */
+        table.orders-table { height: 100%; table-layout: fixed; }
+        table.orders-table th, table.orders-table td {
+            padding: 1.1rem 0.9rem; line-height: 1.6; vertical-align: middle;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        table.orders-table th { background: rgba(56,189,248,0.15); color: var(--accent-blue); font-size: 1em; }
+        table.orders-table tr { height: calc(100% / 7); }
+        
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+            .game-columns { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-zero-order">
+                <h1>零級反應：公式導證與函數圖形</h1>
+                <div class="grid-2">
+                    <!-- 左欄：公式導證與半生期 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.35rem; padding:0.7rem 0.9rem; overflow-y:auto; min-height:0;">
+                        <h2 style="margin-bottom:0.2rem; font-size:1.05rem;">速率定律積分導證</h2>
+                        <div class="info-card" style="margin:0.2rem 0; padding:0.35rem 0.6rem; border-color:var(--accent-blue);">
+                            <p style="margin:0; font-weight:bold; font-size:0.9rem;">微分速率定律式：</p>
+                            <div class="formula-box" style="margin:0.2rem 0; padding:0.2rem; font-size:1.05rem;">$$-\frac{d[A]}{dt} = k \quad \Rightarrow \quad d[A] = -k\,dt$$</div>
+                        </div>
+                        <p style="margin:0.1rem 0; font-size:0.9rem;">兩邊積分 ($\int_{[A]_0}^{[A]_t} d[A] = -k \int_0^t dt$) 解得：</p>
+                        <div class="highlight-box" style="text-align:center; margin:0.2rem 0; padding:0.3rem 0.6rem;">
+                            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-yellow);">$$[A]_t = -kt + [A]_0$$</div>
+                        </div>
+                        <h2 style="margin-top:0.4rem; margin-bottom:0.2rem; font-size:1.05rem;">半生期 ($t_{1/2}$)</h2>
+                        <p style="margin:0.1rem 0; font-size:0.9rem;">當 $t = t_{1/2}$ 時，$[A]_t = \frac{1}{2}[A]_0$，代入上式解得：</p>
+                        <div class="formula-box" style="margin:0.2rem 0; padding:0.25rem; font-size:1.08rem;">$$t_{1/2} = \frac{[A]_0}{2k}$$</div>
+                        <p style="color:var(--accent-green); font-weight:bold; margin-top:0.25rem; font-size:0.92rem; line-height:1.4;">※ 結論：零級反應的半生期與初濃度 $[A]_0$ <strong>成正比</strong>（初濃度越大，半生期越長）。</p>
+                    </div>
+
+                    <!-- 右欄：函數圖形特徵（垂直均勻分佈、放大易讀） -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.8rem 1rem; gap:0.55rem; height:100%; min-height:0; overflow:hidden;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+                            <h2 style="margin:0; font-size:1.15rem; color:var(--accent-yellow);">📈 函數圖形特徵與動態關聯</h2>
+                            <span style="font-size:0.8rem; color:#94a3b8; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">零級反應特徵</span>
+                        </div>
+
+                        <!-- 上半部：R 與 log R 雙圖並排 (flex: 1) -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem; flex:1; min-height:0;">
+                            <!-- ① R vs [A] -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.03); border-radius:10px; padding:0.4rem 0.6rem; border:1px solid rgba(255,255,255,0.08); min-height:0;">
+                                <p style="margin:0 0 4px 0; font-weight:bold; font-size:0.88rem; color:var(--accent-red); display:flex; justify-content:space-between; align-items:center;">
+                                    <span>① R vs [A]</span>
+                                    <span style="font-size:0.8rem; color:#cbd5e1; font-weight:normal;">水平線 (R = k)</span>
+                                </p>
+                                <svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block;">
+                                    <line x1="42" y1="95" x2="295" y2="95" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="42" y1="12" x2="42"  y2="95" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="295,95 285,90 285,100" fill="#cbd5e1"/>
+                                    <polygon points="42,12 37,22 47,22" fill="#cbd5e1"/>
+                                    <text x="290" y="85" fill="#cbd5e1" font-size="14" font-weight="bold" text-anchor="end">[A]</text>
+                                    <text x="50"  y="24" fill="#cbd5e1" font-size="14" font-weight="bold">R</text>
+                                    <line x1="42" y1="52" x2="280" y2="52" stroke="var(--accent-red)" stroke-width="3.5"/>
+                                    <circle cx="42" cy="52" r="4.5" fill="var(--accent-red)"/>
+                                    <text x="275" y="44" fill="var(--accent-red)" font-size="13" font-weight="bold" text-anchor="end">R = k (定值)</text>
+                                    <text x="14"  y="57" fill="#fbbf24" font-size="13" font-weight="bold">k</text>
+                                </svg>
+                            </div>
+                            <!-- ② log R vs log [A] -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.03); border-radius:10px; padding:0.4rem 0.6rem; border:1px solid rgba(255,255,255,0.08); min-height:0;">
+                                <p style="margin:0 0 4px 0; font-weight:bold; font-size:0.88rem; color:var(--accent-purple); display:flex; justify-content:space-between; align-items:center;">
+                                    <span>② log R vs log [A]</span>
+                                    <span style="font-size:0.8rem; color:#cbd5e1; font-weight:normal;">斜率 = 0</span>
+                                </p>
+                                <svg viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block;">
+                                    <line x1="48" y1="95" x2="295" y2="95" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="48" y1="12" x2="48"  y2="95" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="295,95 285,90 285,100" fill="#cbd5e1"/>
+                                    <polygon points="48,12 43,22 53,22" fill="#cbd5e1"/>
+                                    <text x="290" y="85" fill="#cbd5e1" font-size="14" font-weight="bold" text-anchor="end">log [A]</text>
+                                    <text x="56"  y="24" fill="#cbd5e1" font-size="14" font-weight="bold">log R</text>
+                                    <line x1="48" y1="52" x2="280" y2="52" stroke="var(--accent-purple)" stroke-width="3.5"/>
+                                    <circle cx="48" cy="52" r="4.5" fill="var(--accent-purple)"/>
+                                    <text x="275" y="44" fill="var(--accent-purple)" font-size="13" font-weight="bold" text-anchor="end">斜率 m = 0</text>
+                                    <text x="10"  y="57" fill="#fbbf24" font-size="12" font-weight="bold">log k</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- 下半部：[A] vs t 核心半生期關係圖 (flex: 1.4) -->
+                        <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.03); border-radius:10px; padding:0.5rem 0.7rem; border:1px solid rgba(255,255,255,0.08); flex:1.4; min-height:0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; flex-shrink:0;">
+                                <p style="margin:0; font-weight:bold; font-size:0.92rem; color:var(--accent-cyan);">③ [A] vs 時間 t（一次直線，斜率 = -k）</p>
+                                <span style="font-size:0.8rem; color:var(--accent-green); font-weight:600;">半生期逐漸減半：t₁/₂ ➜ ½t₁/₂</span>
+                            </div>
+                            <svg viewBox="0 0 340 165" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block;">
+                                <!-- 坐標軸 -->
+                                <line x1="52" y1="135" x2="320" y2="135" stroke="#cbd5e1" stroke-width="2.2"/>
+                                <line x1="52" y1="10"  x2="52"  y2="135" stroke="#cbd5e1" stroke-width="2.2"/>
+                                <polygon points="320,135 310,130 310,140" fill="#cbd5e1"/>
+                                <polygon points="52,10 47,20 57,20" fill="#cbd5e1"/>
+                                <text x="315" y="125" fill="#cbd5e1" font-size="14" font-weight="bold" text-anchor="end">時間 t</text>
+                                <text x="60"  y="22"  fill="#cbd5e1" font-size="14" font-weight="bold">[A]</text>
+                                
+                                <!-- 主斜線 [A]t = -kt + [A]0: (52, 22) -> (275, 135) -->
+                                <line x1="52" y1="22" x2="275" y2="135" stroke="var(--accent-blue)" stroke-width="3.5"/>
+                                <text x="210" y="68" fill="var(--accent-yellow)" font-size="13" font-weight="bold">斜率 = -k</text>
+                                
+                                <!-- [A]0 點 (52, 22) -->
+                                <circle cx="52" cy="22" r="5.5" fill="#38bdf8"/>
+                                <circle cx="52" cy="22" r="3" fill="#fff"/>
+                                <text x="44" y="27" fill="var(--accent-green)" font-size="13" font-weight="bold" text-anchor="end">[A]₀</text>
+                                
+                                <!-- 1/2 [A]0 (163.5, 78.5) -->
+                                <line x1="52" y1="78.5" x2="163.5" y2="78.5" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4"/>
+                                <line x1="163.5" y1="78.5" x2="163.5" y2="135" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4"/>
+                                <circle cx="163.5" cy="78.5" r="5" fill="#34d399"/>
+                                <circle cx="163.5" cy="78.5" r="2.5" fill="#fff"/>
+                                <text x="44" y="83" fill="#cbd5e1" font-size="13" font-weight="bold" text-anchor="end">½[A]₀</text>
+                                
+                                <!-- 1/4 [A]0 (219.25, 106.75) -->
+                                <line x1="52" y1="106.75" x2="219.25" y2="106.75" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4"/>
+                                <line x1="219.25" y1="106.75" x2="219.25" y2="135" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4"/>
+                                <circle cx="219.25" cy="106.75" r="5" fill="#a78bfa"/>
+                                <circle cx="219.25" cy="106.75" r="2.5" fill="#fff"/>
+                                <text x="44" y="111" fill="#cbd5e1" font-size="13" font-weight="bold" text-anchor="end">¼[A]₀</text>
+                                
+                                <!-- 半生期括弧 1: 52 到 163.5 -->
+                                <path d="M 54 140 Q 107.75 152 161.5 140" fill="none" stroke="var(--accent-green)" stroke-width="2"/>
+                                <text x="107.75" y="156" fill="var(--accent-green)" font-size="13" font-weight="bold" text-anchor="middle">t₁/₂</text>
+                                
+                                <!-- 半生期括弧 2: 163.5 到 219.25 (減半) -->
+                                <path d="M 165.5 140 Q 191.3 152 217.2 140" fill="none" stroke="var(--accent-purple)" stroke-width="2"/>
+                                <text x="191.3" y="156" fill="var(--accent-purple)" font-size="12" font-weight="bold" text-anchor="middle">½t₁/₂</text>
+                            </svg>
+                        </div>
+                        
+                        <!-- 底部結論提示框 (flex-shrink: 0) -->
+                        <div class="highlight-box" style="margin:0; flex-shrink:0; text-align:center; padding:0.4rem 0.8rem; border-color:var(--accent-blue); background:rgba(56,189,248,0.1);">
+                            <p style="margin:0; font-weight:bold; font-size:0.95rem; color:var(--accent-yellow);">⚡ 重點記憶：零級反應 $t_{1/2} \propto [A]_0$，初濃度越大半生期越長，連續半生期依次減半</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+window.toggleSolution = function() {};
+window.updateSlides = function() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise().catch(() => {});
+    }
+};
+</script>
+
+</body>
+</html>

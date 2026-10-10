@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9-1 氧化數 · Rule 02 電負度參考與趨勢</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --accent: #8b5cf6;
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --cyan: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      background-image: radial-gradient(rgba(236, 72, 153, 0.08) 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: clamp(18px, 2vw, 26px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-title {
+      font-size: clamp(1.1rem, 1.3vw, 1.3rem);
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+
+    .en-ladder {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid #334155;
+    }
+
+    .ladder-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ladder-name {
+      width: 70px;
+      font-weight: bold;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+    }
+    .ladder-track {
+      flex: 1;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 9px;
+      overflow: hidden;
+      position: relative;
+    }
+    .ladder-fill {
+      height: 100%;
+      border-radius: 9px;
+      transition: width 1s ease-out;
+    }
+    .ladder-val {
+      width: 40px;
+      text-align: right;
+      font-weight: bold;
+      color: var(--cyan);
+      font-family: monospace;
+      font-size: 1rem;
+    }
+
+    .trend-diagram {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .contrast-box {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .contrast-col {
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .contrast-col h4 {
+      color: var(--secondary);
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+    }
+
+    .tip-box {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 4px solid var(--warning);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      color: #fde68a;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header class="header-bar">
+    <div>
+      <div class="badge">9-1 氧化數 · Rule 02</div>
+      <h1><span>⚡</span> 電負度 (Electronegativity) 參考與趨勢</h1>
+      <div class="subtitle">Electronegativity Trends &amp; Oxidation State Assignment</div>
+    </div>
+  </header>
+
+  <main class="main-grid">
+    <!-- Left Column: Pauling Scale -->
+    <div class="card">
+      <div class="card-title">📊 常見非金屬元素鮑林電負度排行</div>
+
+      <p style="color:var(--text-muted); font-size: 0.95rem;">
+        電負度愈高，在共價鍵中吸引電子之能力愈強，愈傾向具有<strong>負的氧化數</strong>。
+      </p>
+
+      <div class="en-ladder">
+        <div class="ladder-bar">
+          <div class="ladder-name">氟 (F)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 100%; background: linear-gradient(90deg, #ec4899, #ef4444);"></div></div>
+          <div class="ladder-val">4.0</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">氧 (O)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 87.5%; background: linear-gradient(90deg, #a855f7, #ec4899);"></div></div>
+          <div class="ladder-val">3.5</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">氮 (N)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 75%; background: linear-gradient(90deg, #6366f1, #a855f7);"></div></div>
+          <div class="ladder-val">3.0</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">氯 (Cl)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 75%; background: linear-gradient(90deg, #3b82f6, #6366f1);"></div></div>
+          <div class="ladder-val">3.0</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">溴 (Br)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 70%; background: linear-gradient(90deg, #06b6d4, #3b82f6);"></div></div>
+          <div class="ladder-val">2.8</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">碳 (C) / 硫 (S)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 62.5%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div></div>
+          <div class="ladder-val">2.5</div>
+        </div>
+        <div class="ladder-bar">
+          <div class="ladder-name">氫 (H) / 磷 (P)</div>
+          <div class="ladder-track"><div class="ladder-fill" style="width: 52.5%; background: linear-gradient(90deg, #eab308, #10b981);"></div></div>
+          <div class="ladder-val">2.1</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        🔑 <strong>速記口訣：</strong><br>
+        「<strong>佛仰氮綠嗅碳硫點清</strong>」<br>
+        \(\text{F (4.0)} > \text{O (3.5)} > \text{N (3.0)} \approx \text{Cl (3.0)} > \text{Br (2.8)} > \text{C (2.5)} \approx \text{S (2.5)} \approx \text{I (2.5)} > \text{H (2.1)} \approx \text{P (2.1)}\)
+      </div>
+    </div>
+
+    <!-- Right Column: Contrast Example -->
+    <div class="card">
+      <div class="card-title">🔍 經典對照：電負度如何逆轉氧化數？</div>
+
+      <div class="contrast-box">
+        <strong>比較實例：\(\text{OF}_2\) 與 \(\text{OCl}_2\) 中的氧原子</strong>
+        <p style="font-size:0.95rem; color:#cbd5e1;">
+          氧通常在化合物中為 \(-2\)，但當氧碰上電負度更高的「元素之王」氟時，結果完全翻轉！
+        </p>
+
+        <div class="contrast-grid">
+          <div class="contrast-col">
+            <h4>\(\text{OF}_2\) 二氟化氧</h4>
+            <div style="font-size:0.9rem; color:#94a3b8;">
+              電負度：\(\text{F (4.0)} > \text{O (3.5)}\)<br>
+              共用電子全歸 F 吸引<br>
+              <div style="margin-top:8px; padding:6px; background:#1e293b; border-radius:6px; color:#38bdf8; font-weight:bold;">
+                \(\text{F} = -1\)<br>
+                \(\text{O} = +2\) ⚡ (罕見正值)
+              </div>
+            </div>
+          </div>
+
+          <div class="contrast-col">
+            <h4>\(\text{OCl}_2\) 一氧化二氯</h4>
+            <div style="font-size:0.9rem; color:#94a3b8;">
+              電負度：\(\text{O (3.5)} > \text{Cl (3.0)}\)<br>
+              共用電子全歸 O 吸引<br>
+              <div style="margin-top:8px; padding:6px; background:#1e293b; border-radius:6px; color:#34d399; font-weight:bold;">
+                \(\text{O} = -2\)<br>
+                \(\text{Cl} = +1\)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trend-diagram">
+        <strong style="color:#c7d2fe;">🌐 週期表趨勢指南</strong>
+        <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6;">
+          • <strong>同週期由左至右：</strong>有效核電荷增加，原子半徑減小，電負度<strong>增大</strong>（金屬性減弱，非金屬性增強）。<br>
+          • <strong>同族由上至下：</strong>電子層數增加，屏蔽效應增大，電負度<strong>減小</strong>。<br>
+          • 惰性氣體（8A族）通常不具備一般成鍵電負度數值。
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

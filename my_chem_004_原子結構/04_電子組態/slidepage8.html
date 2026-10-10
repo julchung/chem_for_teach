@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>範例 1：激發態電子組態判斷</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(18px, 2.2vw, 28px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+    .problem-box {
+      background: #0f172a;
+      border-left: 4px solid #3b82f6;
+      padding: 20px;
+      border-radius: 0 12px 12px 0;
+      font-size: clamp(1rem, 1.2vw, 1.2rem);
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .option-item {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: clamp(1rem, 1.15vw, 1.15rem);
+      font-weight: 600;
+    }
+    .toggle-btn {
+      margin-top: auto;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .toggle-btn:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-2px);
+    }
+    /* Right column solution styling */
+    .solution-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 22px;
+      animation: fadeIn 0.3s ease;
+      flex: 1;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .step-box {
+      border-left: 3px solid #10b981;
+      padding-left: 14px;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.8;
+    }
+    .step-title {
+      font-weight: 700;
+      color: #34d399;
+      margin-bottom: 6px;
+    }
+    .answer-tag {
+      background: #064e3b;
+      color: #6ee7b7;
+      border: 1px solid #059669;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">範例 01</span>
+      <h1 style="display:inline-block; margin-left: 10px;">激發態電子組態判斷</h1>
+    </div>
+    <div class="subtitle">基態、激發態與奧夫堡規則的能量關係</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Problem & Toggle Button ONLY -->
+    <div class="card">
+      <div class="card-title">📝 題目內容</div>
+      
+      <div class="problem-box">
+        下列電子組態，哪一組表示其原子在<strong>激發態</strong>中？
+        
+        <div class="options-grid">
+          <div class="option-item">(A) $1s^2 2s^2 2p^6 3s^2$</div>
+          <div class="option-item">(B) $1s^2 2s^2 2p^6 3s^1 3p^1$</div>
+          <div class="option-item">(C) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^1$</div>
+          <div class="option-item">(D) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^2 3d^{10} 4p^1$</div>
+        </div>
+      </div>
+
+      <button class="toggle-btn" id="btn-toggle">
+        <span>👁️ 顯示詳解答案</span>
+      </button>
+    </div>
+
+    <!-- Right Column: Blank until toggled -->
+    <div class="card">
+      <div class="card-title">💡 詳解與步驟分析</div>
+
+      <div class="solution-panel" id="solution-panel">
+        <div class="step-box">
+          <div class="step-title">步驟一：基態與激發態的定義回顧</div>
+          • <strong>基態 (Ground State)：</strong>電子依奧夫堡規則由低能階軌域依序填寫，能量最低、最安定的狀態。<br>
+          • <strong>激發態 (Excited State)：</strong>電子吸收能量後，由較低能階軌域躍遷至較高能階軌域（內層或低能階未填滿即出現較高能階電子，且未違反包利原理）。
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">步驟二：逐項檢驗選項</div>
+          • <strong>(A) $1s^2 2s^2 2p^6 3s^2$：</strong>電子數為 12，依低能階循序填滿，為鎂 (Mg) 的<strong>基態</strong>。<br>
+          • <strong>(B) $1s^2 2s^2 2p^6 3s^1 3p^1$：</strong>電子數亦為 12，但 3s 軌域容量為 2，尚未填滿即有電子填入較高能階之 3p，表示 1 個電子吸熱躍遷，為<strong>激發態</strong>！<br>
+          • <strong>(C) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^1$：</strong>電子數為 19，能量 4s < 3d，故 4s 先填，為鉀 (K) 的<strong>基態</strong>。<br>
+          • <strong>(D) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^2 3d^{10} 4p^1$：</strong>電子數為 31，填寫順序符合 4s < 3d < 4p，為鎵 (Ga) 的<strong>基態</strong>。
+        </div>
+
+        <div class="answer-tag">
+          🎯 正確答案：(B) $1s^2 2s^2 2p^6 3s^1 3p^1$
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const btnToggle = document.getElementById('btn-toggle');
+    const panel = document.getElementById('solution-panel');
+    let isShown = false;
+
+    btnToggle.addEventListener('click', () => {
+      isShown = !isShown;
+      panel.style.display = isShown ? 'flex' : 'none';
+      btnToggle.innerHTML = isShown ? '<span>🙈 隱藏詳解答案</span>' : '<span>👁️ 顯示詳解答案</span>';
+      if (isShown && window.MathJax) {
+        MathJax.typesetPromise();
+      }
+    });
+  </script>
+</body>
+</html>

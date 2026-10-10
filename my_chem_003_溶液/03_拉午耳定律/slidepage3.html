@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 蒸氣壓的測量 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.85rem, 0.98vw, 1.02rem); line-height: 1.6; }
+        ul { margin-left: 1.2rem; }
+        strong { color: var(--accent-cyan); }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1.05fr 1.15fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .info-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+        .info-card.yellow { border-color: var(--accent-yellow); border-left: 4px solid var(--accent-yellow); background: rgba(251,191,36,0.08); }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.35);
+            border-left: 4px solid var(--accent-green);
+            padding: 0.7rem 1.2rem; border-radius: 8px;
+            font-size: 1.15rem; color: #fff; margin: 4px 0;
+        }
+
+        .btn-liquid-group {
+            display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;
+        }
+        .btn-liq {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            color: #cbd5e1; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.2s; font-weight: 600;
+        }
+        .btn-liq:hover { background: rgba(56,189,248,0.18); border-color: var(--accent-blue); color: #fff; }
+        .btn-liq.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #0f172a; font-weight: 700; }
+
+        .svg-container {
+            flex: 1; min-height: 250px;
+            background: rgba(15,23,42,0.6); border: 1.5px solid rgba(56,189,248,0.25);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; padding: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-3 拉午耳定律 &middot; 蒸氣壓的測量（托里切利測量法）</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：原理說明 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、托里切利測量法原理</h2>
+                    <p>利用倒立充滿水銀的玻璃管（氣壓計），管頂為<strong>托里切利真空</strong>，水銀柱高即為外界大氣壓（$760\text{ mmHg}$）。</p>
+                </div>
+
+                <div class="formula-box">
+                    $$P_{vap} = h_{真空} - h_{加入液體} = \Delta h\ (\text{mmHg})$$
+                </div>
+
+                <div class="info-card">
+                    <h2 style="color:var(--accent-cyan); margin-bottom:0.3rem;">🧪 實驗步驟與關鍵細節</h2>
+                    <ul style="margin-left:1.2rem; display:flex; flex-direction:column; gap:5px;">
+                        <li><strong>由管底注入微量液體：</strong>由於液體密度小於水銀（$\rho_{Hg} = 13.6\text{ g/cm}^3$），注入後會迅速浮至水銀柱頂端。</li>
+                        <li><strong>頂端汽化產生蒸氣壓：</strong>在真空空間中液體迅速蒸發，直到達成<em>液氣動態平衡</em>。</li>
+                        <li><strong>必須殘留微量液體：</strong>管頂水銀面上必須有微量未蒸發的液相共存，才能確保氣相分壓確實達到<em>飽和蒸氣壓</em>。</li>
+                    </ul>
+                </div>
+
+                <div class="info-card yellow">
+                    <h2 style="color:var(--accent-yellow); margin-bottom:0.3rem;">📊 常見液體 25°C 飽和蒸氣壓比較</h2>
+                    <p style="font-size:0.9rem; line-height:1.6;">
+                        <strong>乙醚 ($470\text{ mmHg}$)</strong> ＞ <strong>乙醇 ($59\text{ mmHg}$)</strong> ＞ <strong>純水 ($23.8\text{ mmHg}$)</strong><br>
+                        <span style="color:#94a3b8;">分子間引力愈小，揮發度愈高，水銀柱下降量 $\Delta h$ 愈大！</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：互動式水銀柱對照模擬 -->
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="color:var(--accent-cyan); margin:0;">二、注入不同液體之水銀柱高度模擬</h2>
+                </div>
+
+                <div class="btn-liquid-group">
+                    <button class="btn-liq active" onclick="setLiquid('pure')">管(A) 托里切利真空</button>
+                    <button class="btn-liq" onclick="setLiquid('water')">注入純水 (24 mmHg)</button>
+                    <button class="btn-liq" onclick="setLiquid('ethanol')">注入乙醇 (59 mmHg)</button>
+                    <button class="btn-liq" onclick="setLiquid('ether')">注入乙醚 (470 mmHg)</button>
+                </div>
+
+                <div class="svg-container">
+                    <svg width="100%" height="100%" viewBox="0 0 460 330" style="font-family: inherit;">
+                        <defs>
+                            <linearGradient id="mercuryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#64748b;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#cbd5e1;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#475569;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:rgba(255,255,255,0.3);stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:rgba(255,255,255,0.05);stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:rgba(255,255,255,0.25);stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 水銀槽 A -->
+                        <path d="M50,270 Q50,305 90,305 L130,305 Q170,305 170,270 Z" fill="url(#mercuryGrad)" stroke="#fff" stroke-width="1.5" />
+                        <ellipse cx="110" cy="270" rx="60" ry="10" fill="#94a3b8" stroke="#fff" />
+                        
+                        <!-- 玻璃管 A (真空基準) -->
+                        <path d="M98,40 Q98,30 110,30 Q122,30 122,40 L122,280 L98,280 Z" fill="url(#glassGrad)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" />
+                        <!-- 水銀柱 A (高 760mmHg 基準) -->
+                        <rect x="100" y="70" width="20" height="205" fill="url(#mercuryGrad)" />
+                        <text x="110" y="322" fill="#38bdf8" font-size="13" font-weight="700" text-anchor="middle">(A) 基準：真空</text>
+                        <text x="110" y="55" fill="#fde68a" font-size="11" text-anchor="middle">托里切利真空</text>
+                        <text x="75" y="75" fill="#fff" font-size="12" text-anchor="end">760 mm</text>
+
+                        <!-- 水銀槽 B -->
+                        <path d="M260,270 Q260,305 300,305 L340,305 Q380,305 380,270 Z" fill="url(#mercuryGrad)" stroke="#fff" stroke-width="1.5" />
+                        <ellipse cx="320" cy="270" rx="60" ry="10" fill="#94a3b8" stroke="#fff" />
+
+                        <!-- 玻璃管 B -->
+                        <path d="M308,40 Q308,30 320,30 Q332,30 332,40 L332,280 L308,280 Z" fill="url(#glassGrad)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" />
+                        <!-- 動態水銀柱 B -->
+                        <rect id="hg-bar-b" x="310" y="70" width="20" height="205" fill="url(#mercuryGrad)" style="transition: all 0.5s ease;" />
+                        <!-- 頂端微量液體層 -->
+                        <rect id="liq-layer-b" x="310" y="65" width="20" height="5" fill="#38bdf8" opacity="0.9" style="transition: all 0.5s ease;" />
+                        
+                        <text id="label-tube-b" x="320" y="322" fill="#34d399" font-size="13" font-weight="700" text-anchor="middle">(B) 加入液體後</text>
+
+                        <!-- 基準虛線 -->
+                        <line x1="120" y1="70" x2="310" y2="70" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4,4" />
+                        <line id="comp-line-b" x1="120" y1="70" x2="310" y2="70" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4,4" style="transition: all 0.5s ease;" />
+
+                        <!-- 壓差指示線 -->
+                        <g id="diff-indicator" style="display:none;">
+                            <line id="diff-line" x1="215" y1="70" x2="215" y2="85" stroke="var(--accent-yellow)" stroke-width="2.5" />
+                            <line x1="208" y1="70" x2="222" y2="70" stroke="var(--accent-yellow)" stroke-width="2" />
+                            <line id="diff-bottom-tick" x1="208" y1="85" x2="222" y2="85" stroke="var(--accent-yellow)" stroke-width="2" />
+                            <text id="diff-text" x="226" y="80" fill="var(--accent-yellow)" font-size="13" font-weight="bold">Δh = 24 mmHg</text>
+                        </g>
+
+                        <!-- 當前狀態文字說明 -->
+                        <text id="status-desc" x="320" y="55" fill="#f87171" font-size="11" text-anchor="middle" font-weight="bold">蒸氣壓 P = 0</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const LIQUIDS = {
+    pure: { name: '真空基準', drop: 0, p: 0, color: 'transparent', desc: '真空空間（無蒸氣壓）' },
+    water: { name: '純水', drop: 15, p: 23.8, color: '#38bdf8', desc: '水蒸氣空間 (Psat = 23.8 mmHg)' },
+    ethanol: { name: '乙醇', drop: 36, p: 59, color: '#a78bfa', desc: '乙醇蒸氣空間 (Psat = 59 mmHg)' },
+    ether: { name: '乙醚', drop: 125, p: 470, color: '#fb923c', desc: '乙醚易揮發 (Psat = 470 mmHg)' }
+};
+
+function setLiquid(key) {
+    document.querySelectorAll('.btn-liq').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    const data = LIQUIDS[key];
+    const topY = 70 + data.drop;
+    const hgHeight = 205 - data.drop;
+
+    const barB = document.getElementById('hg-bar-b');
+    const liqB = document.getElementById('liq-layer-b');
+    const compLine = document.getElementById('comp-line-b');
+    const diffGroup = document.getElementById('diff-indicator');
+    const diffLine = document.getElementById('diff-line');
+    const diffTick = document.getElementById('diff-bottom-tick');
+    const diffText = document.getElementById('diff-text');
+    const statusDesc = document.getElementById('status-desc');
+
+    barB.setAttribute('y', topY);
+    barB.setAttribute('height', hgHeight);
+
+    if (data.drop === 0) {
+        liqB.setAttribute('opacity', '0');
+        diffGroup.style.display = 'none';
+        statusDesc.textContent = '托里切利真空';
+        statusDesc.setAttribute('fill', '#fde68a');
+    } else {
+        liqB.setAttribute('y', topY - 5);
+        liqB.setAttribute('fill', data.color);
+        liqB.setAttribute('opacity', '0.9');
+
+        diffGroup.style.display = 'block';
+        diffLine.setAttribute('y2', topY);
+        diffTick.setAttribute('y1', topY);
+        diffTick.setAttribute('y2', topY);
+        diffText.setAttribute('y', 70 + data.drop / 2 + 5);
+        diffText.textContent = `Δh = ${data.p} mmHg`;
+
+        statusDesc.textContent = data.desc;
+        statusDesc.setAttribute('fill', '#34d399');
+    }
+
+    compLine.setAttribute('y1', topY);
+    compLine.setAttribute('y2', topY);
+}
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-8 互動挑戰：觀念連連看 | 高中化學</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-dark: #070a16;
+      --text-main: #f0f4ff;
+      --accent-blue: #60a5fa;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-yellow: #fbbf24;
+      --accent-purple: #c084fc;
+      --accent-cyan: #22d3ee;
+      --accent-orange: #fb923c;
+    }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.7;
+    }
+    .formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-left: 5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .highlight-box {
+      background: rgba(251, 191, 36, 0.08);
+      border-left: 4px solid #fbbf24;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fde68a;
+      line-height: 1.7;
+    }
+    .atom-val-circle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+    }
+    .atom-val-circle:hover {
+      transform: scale(1.15);
+    }
+    
+  .game-item {
+    display: flex; align-items: center; background: rgba(30, 41, 59, 0.85);
+    border: 1px solid #334155; border-radius: 12px; padding: 12px 18px;
+    font-size: 1.05rem; color: #f8fafc; font-weight: 600; position: relative;
+    transition: all 0.25s ease;
+  }
+  .game-item:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+  .dot {
+    width: 20px; height: 20px; border-radius: 50%; background: #38bdf8;
+    border: 3px solid #fff; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0; box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+  }
+  .dot:hover { transform: scale(1.3); }
+  .dot.active { transform: scale(1.4); background: #fbbf24; border-color: #fff; box-shadow: 0 0 16px #fbbf24; }
+  .dot.matched { background: #34d399 !important; border-color: #fff !important; cursor: default; box-shadow: 0 0 12px #34d399; }
+  .dot.active-hover { transform: scale(1.4); background: #fbbf24; box-shadow: 0 0 16px #fbbf24; }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-6px);} 40%,80%{transform:translateX(6px);} }
+
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">4-8 互動練習</span>
+      <h1>互動挑戰：觀念連連看</h1>
+    </div>
+    <div class="subtitle">電負度核心概念拖曳配對練習</div>
+  </div>
+
+  
+<div style="display: flex; flex-direction: column; flex: 1; gap: 14px;">
+  <div class="card" style="padding: 12px 20px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <p style="font-size: 1.05rem; line-height: 1.6;">
+        點擊或拖曳左側藍色圓點，連線至右側相對應之化學正確觀念。全部配對成功即可通關！
+      </p>
+      <button class="btn-action-outline" onclick="resetGame()" style="background:transparent;border:1px solid #38bdf8;color:#38bdf8;padding:6px 16px;border-radius:8px;font-weight:700;cursor:pointer;">重新挑戰 ↺</button>
+    </div>
+  </div>
+
+  <div class="card" style="flex: 1; min-height: 480px; position: relative; background: rgba(15, 23, 42, 0.7); overflow: hidden; padding: 20px;">
+    <svg id="game-svg" style="position: absolute; top:0; left:0; width: 100%; height: 100%; pointer-events: none;"></svg>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; min-height: 420px; gap: 40px; align-items: stretch;">
+      <div id="left-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 12px;"></div>
+      <div id="right-column" style="display: flex; flex-direction: column; justify-content: space-around; gap: 12px;"></div>
+    </div>
+
+    <div id="game-feedback" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #10b981; color: #0b1120; padding: 24px 48px; border-radius: 16px; font-size: 1.8rem; font-weight: 900; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5); z-index: 100;">
+      🎉 恭喜全部連線配對正確！
+    </div>
+  </div>
+</div>
+
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  
+<script>
+  var gamePool = [
+    { q: '同族元素由上而下', a: '電負度逐漸減小' },
+    { q: '同週期元素由左至右', a: '電負度逐漸增大' },
+    { q: '全週期表電負度最大元素', a: '氟 (F = 4.0)' },
+    { q: '鍵結兩原子電負度相差極大', a: '易形成離子鍵' },
+    { q: '金屬元素的鮑林電負度', a: '通常小於 2.0' },
+    { q: '非金屬元素的鮑林電負度', a: '通常大於 2.0' },
+    { q: '共價鍵結成鍵電子對', a: '強烈偏向電負度大者' },
+    { q: '電負度標度的創立者', a: '鮑林 (L. Pauling)' },
+    { q: '全表電負度最小的元素', a: '銫 (Cs) 與鍅 (Fr)' },
+    { q: '非極性共價鍵', a: '兩原子電負度相同 (ΔEN = 0)' },
+    { q: '極性共價鍵', a: '兩原子電負度不同 (0 < ΔEN < 1.9)' },
+    { q: '第18族惰性氣體', a: '閉殼組態通常不討論常規電負度' },
+    { q: '鹵素元素電負度順序', a: 'F > Cl > Br > I' },
+    { q: '第二週期主族電負度順序', a: 'F > O > N > C' }
+  ];
+
+  var connections = [];
+  var isDraggingLine = false;
+  var dragStartDot = null;
+  var activeHoveredDot = null;
+
+  function initGame() {
+    var lCol = document.getElementById('left-column');
+    var rCol = document.getElementById('right-column');
+    if (!lCol || !rCol) return;
+
+    connections = [];
+    document.getElementById('game-feedback').style.display = 'none';
+
+    var tempPool = [].concat(gamePool).sort(() => Math.random() - 0.5);
+    var selectedPairs = tempPool.slice(0, 5);
+
+    var questions = selectedPairs.map((item, idx) => ({ text: item.q, pairIndex: idx }));
+    var answers = selectedPairs.map((item, idx) => ({ text: item.a, pairIndex: idx }));
+
+    var shuffledQs = [].concat(questions).sort(() => Math.random() - 0.5);
+    var shuffledAns = [].concat(answers).sort(() => Math.random() - 0.5);
+
+    lCol.innerHTML = '';
+    rCol.innerHTML = '';
+
+    shuffledQs.forEach((q, i) => {
+      var div = document.createElement('div');
+      div.className = 'game-item';
+      div.style.justifyContent = 'space-between';
+      div.innerHTML = `<span>${q.text}</span><div class="dot" data-side="left" data-pair="${q.pairIndex}" id="dot-l-${i}"></div>`;
+      lCol.appendChild(div);
+    });
+
+    shuffledAns.forEach((a, i) => {
+      var div = document.createElement('div');
+      div.className = 'game-item';
+      div.style.justifyContent = 'flex-start';
+      div.style.gap = '14px';
+      div.innerHTML = `<div class="dot" data-side="right" data-pair="${a.pairIndex}" id="dot-r-${i}"></div><span>${a.text}</span>`;
+      rCol.appendChild(div);
+    });
+
+    addGameDragListeners();
+    drawConnections();
+  }
+
+  function getPointerCoords(e, rect) {
+    var clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+    var clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - rect.left, y: clientY - rect.top, clientX, clientY };
+  }
+
+  function getDotCenter(dot, rect) {
+    var r = dot.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - rect.left, y: r.top + r.height / 2 - rect.top };
+  }
+
+  function updateTempLine(e) {
+    var svg = document.getElementById('game-svg');
+    if (!svg || !dragStartDot) return;
+
+    var rect = svg.getBoundingClientRect();
+    var pointer = getPointerCoords(e, rect);
+    var startCenter = getDotCenter(dragStartDot, rect);
+
+    var oppositeSide = (dragStartDot.dataset.side === 'left') ? 'right' : 'left';
+    var oppositeDots = document.querySelectorAll(`.dot[data-side="${oppositeSide}"]`);
+    var hoveredDot = null;
+
+    oppositeDots.forEach(dot => {
+      if (dot.classList.contains('matched')) return;
+      var dotRect = dot.getBoundingClientRect();
+      var dx = pointer.clientX - (dotRect.left + dotRect.width / 2);
+      var dy = pointer.clientY - (dotRect.top + dotRect.height / 2);
+      if (Math.sqrt(dx * dx + dy * dy) < 45) hoveredDot = dot;
+    });
+
+    oppositeDots.forEach(dot => {
+      dot.classList.toggle('active-hover', dot === hoveredDot);
+    });
+
+    activeHoveredDot = hoveredDot;
+
+    var endX = hoveredDot ? getDotCenter(hoveredDot, rect).x : pointer.x;
+    var endY = hoveredDot ? getDotCenter(hoveredDot, rect).y : pointer.y;
+    var strokeColor = '#38bdf8';
+
+    if (hoveredDot) {
+      strokeColor = (dragStartDot.dataset.pair === hoveredDot.dataset.pair) ? '#34d399' : '#f87171';
+    }
+
+    var x1 = startCenter.x, y1 = startCenter.y, x2 = endX, y2 = endY;
+    var pull = Math.min(100, Math.max(40, Math.abs(x2 - x1) * 0.4));
+    var cx1 = x1 + (dragStartDot.dataset.side === 'left' ? pull : -pull);
+    var cx2 = x2 + (dragStartDot.dataset.side === 'left' ? -pull : pull);
+    var pathD = `M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`;
+
+    var tempPath = document.getElementById('temp-path');
+    if (!tempPath) {
+      tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tempPath.id = 'temp-path';
+      tempPath.setAttribute('stroke-width', '4');
+      tempPath.setAttribute('fill', 'none');
+      tempPath.setAttribute('stroke-linecap', 'round');
+      tempPath.setAttribute('stroke-dasharray', '8, 4');
+      svg.appendChild(tempPath);
+    }
+    tempPath.setAttribute('d', pathD);
+    tempPath.setAttribute('stroke', strokeColor);
+  }
+
+  function addGameDragListeners() {
+    document.querySelectorAll('.dot').forEach(dot => {
+      var startDrag = e => {
+        if (dot.classList.contains('matched')) return;
+        if (e.type === 'touchstart') e.preventDefault();
+        isDraggingLine = true;
+        dragStartDot = dot;
+        dot.classList.add('active');
+        updateTempLine(e);
+      };
+      dot.addEventListener('mousedown', startDrag);
+      dot.addEventListener('touchstart', startDrag, { passive: false });
+    });
+  }
+
+  window.addEventListener('mousemove', e => { if (isDraggingLine) updateTempLine(e); });
+  window.addEventListener('touchmove', e => { if (isDraggingLine) updateTempLine(e); }, { passive: false });
+
+  window.addEventListener('mouseup', endDrag);
+  window.addEventListener('touchend', endDrag);
+
+  function endDrag() {
+    if (!isDraggingLine || !dragStartDot) return;
+    isDraggingLine = false;
+
+    if (activeHoveredDot) {
+      if (dragStartDot.dataset.pair === activeHoveredDot.dataset.pair) {
+        connections.push({
+          lId: dragStartDot.dataset.side === 'left' ? dragStartDot.id : activeHoveredDot.id,
+          rId: dragStartDot.dataset.side === 'right' ? dragStartDot.id : activeHoveredDot.id
+        });
+        dragStartDot.classList.add('matched');
+        activeHoveredDot.classList.add('matched');
+        dragStartDot.parentElement.style.opacity = '0.65';
+        activeHoveredDot.parentElement.style.opacity = '0.65';
+        drawConnections();
+
+        if (connections.length === 5) {
+          document.getElementById('game-feedback').style.display = 'block';
+        }
+      } else {
+        var sItem = dragStartDot.parentElement;
+        var eItem = activeHoveredDot.parentElement;
+        sItem.style.animation = 'shake 0.4s ease';
+        eItem.style.animation = 'shake 0.4s ease';
+        setTimeout(() => { sItem.style.animation = ''; eItem.style.animation = ''; }, 400);
+      }
+    }
+
+    dragStartDot.classList.remove('active');
+    if (activeHoveredDot) activeHoveredDot.classList.remove('active-hover');
+    var tempPath = document.getElementById('temp-path');
+    if (tempPath) tempPath.remove();
+    dragStartDot = null;
+    activeHoveredDot = null;
+  }
+
+  function drawConnections() {
+    var svg = document.getElementById('game-svg');
+    if (!svg) return;
+    var rect = svg.getBoundingClientRect();
+    var html = '';
+
+    connections.forEach(c => {
+      var dotL = document.getElementById(c.lId);
+      var dotR = document.getElementById(c.rId);
+      if (!dotL || !dotR) return;
+      var r1 = getDotCenter(dotL, rect);
+      var r2 = getDotCenter(dotR, rect);
+      var pull = Math.min(100, Math.max(40, Math.abs(r2.x - r1.x) * 0.4));
+      var d = `M ${r1.x} ${r1.y} C ${r1.x + pull} ${r1.y}, ${r2.x - pull} ${r2.y}, ${r2.x} ${r2.y}`;
+      html += `<path d="${d}" stroke="#34d399" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+    });
+    svg.innerHTML = html;
+  }
+
+  function resetGame() {
+    connections = [];
+    initGame();
+  }
+
+  window.addEventListener('resize', drawConnections);
+  window.addEventListener('DOMContentLoaded', initGame);
+  setTimeout(initGame, 100);
+</script>
+
+</body>
+</html>

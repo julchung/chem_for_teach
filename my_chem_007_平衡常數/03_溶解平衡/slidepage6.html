@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>實戰演練 · 範例 4 - 加入強電解質產生共同離子求 Ksp | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>實戰演練 · 範例 4</h1>
+                <div class="grid-2" style="height: 100%; gap: 1.1rem; align-items: stretch;">
+                    <!-- 左欄：例題題目與操作 -->
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; position: relative;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.5rem;">
+                            <span class="tag tag-yellow">範例 4</span>
+                            <h2 style="color: var(--accent-yellow); font-size: 1.25rem; margin: 0;">加入強電解質產生共同離子求 Ksp</h2>
+                        </div>
+                        
+                        <div style="font-size: 1.05rem; line-height: 1.7; flex: 1;">
+                            <p style="font-size:1.15rem; line-height:1.8; color:rgba(255,255,255,0.95);">
+若過氯酸鋰 $LiClO_4$ 可在水中完全解離。在 $1$ 升之飽和過氯酸銣 $RbClO_4$ 溶液中加入 $3.00$ 莫耳之過氯酸鋰時，可測量出溶液中銣離子 $Rb^+$ 之濃度會減為原有濃度的百分之一，則過氯酸銣的 $K_{sp}$ 值為多大？
+</p>
+<div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.2rem; font-size:1.1rem; color:#f8fafc;">
+    <div>(A) $3.00 \times 10^{-2}$</div>
+    <div>(B) $9.00 \times 10^{-2}$</div>
+    <div>(C) $3.00 \times 10^{-4}$</div>
+    <div>(D) $9.00 \times 10^{-4}$</div>
+</div>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.8rem;">
+                            <button class="btn-action" onclick="toggleSolution('solution-box')" style="padding: 10px 22px; font-size: 1rem; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設隱藏，點擊按鈕後展開） -->
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem; position: relative; background: rgba(255,255,255,0.03);">
+                        <div id="solution-placeholder"></div>
+                        <div id="solution-box" class="solution-card">
+                            <h2 style="color: var(--accent-green); font-size: 1.3rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>💡</span> 範例解析
+                            </h2>
+                            <div style="font-size: 1.05rem; line-height: 1.7; display: flex; flex-direction: column; gap: 0.8rem;">
+                                <p style="color:#f8fafc;"><strong>正確答案：</strong> <span style="color:var(--accent-green); font-size:1.3rem; font-weight:bold;">(D)</span></p>
+                                <div style="background:rgba(255,255,255,0.05); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0; border-left: 4px solid var(--accent-cyan);">
+    <p><strong>1. 初狀態（原飽和溶液）：</strong></p>
+    <p>設原飽和 $RbClO_4$ 之溶解度為 $s$：</p>
+    <p>$RbClO_{4(s)} \rightleftharpoons Rb^+_{(aq)} + ClO_4^-_{(aq)}$</p>
+    <p>$K_{sp} = [Rb^+][ClO_4^-] = s \times s = s^2$ &nbsp; ... (式 1)</p>
+</div>
+<div style="background:rgba(255,255,255,0.05); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0;">
+    <p><strong>2. 加入共同離子後的狀態：</strong></p>
+    <p>加入 $3.00\ \text{mol}$ $LiClO_4$ 於 $1\ \text{L}$ 溶液中，提供 $[ClO_4^-] \approx 3.00\ M$。</p>
+    <p>由題目得知此時 $[Rb^+]' = \dfrac{s}{100}$。</p>
+    <p>此時總過氯酸根濃度 $[ClO_4^-]' = 3.00 + \dfrac{s}{100} \approx 3.00\ M$（因為 $s$ 極小，可忽略）。</p>
+</div>
+<div style="background:rgba(52,211,153,0.08); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0; border:1px solid rgba(52,211,153,0.3);">
+    <p><strong>3. 聯立平衡常數求解：</strong></p>
+    <p>定溫下 $K_{sp}$ 為常數：</p>
+    <p>$K_{sp} = [Rb^+]'[ClO_4^-]' = \left(\dfrac{s}{100}\right) \times 3.00$</p>
+    <p>結合式 1：$s^2 = \dfrac{3.00s}{100} \Rightarrow s = \dfrac{3.00}{100} = 3.00 \times 10^{-2}\ M$</p>
+    <p>故 $K_{sp} = s^2 = (3.00 \times 10^{-2})^2 = \mathbf{9.00 \times 10^{-4}}$。選 <strong>(D)</strong>。</p>
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>

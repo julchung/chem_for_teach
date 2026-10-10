@@ -317,10 +317,8 @@ export function Canvas({
       setDragClientPos({ x: e.clientX, y: e.clientY });
       const { x, y } = getCanvasCoords(e.clientX, e.clientY);
       const { gridX, gridY } = getGridCoords(x - dragOffset.x, y - dragOffset.y);
-      if (!dragCurrentGrid || dragCurrentGrid.x !== gridX || dragCurrentGrid.y !== gridY) {
+        // Only update visual position - do NOT auto-bond during drag
         setDragCurrentGrid({ x: gridX, y: gridY });
-        tryAutoBond(draggingId, { x: gridX, y: gridY });
-      }
     }
   }, [isPanning, lastPanPos, groupDragActive, isDrawingSelBox, selBox, draggingId, getCanvasCoords, getGridCoords, dragOffset, state.blocks, tryAutoBond, dragCurrentGrid]);
 
@@ -364,6 +362,8 @@ export function Canvas({
         );
         if (!occupied) {
           onMove(draggingId, dragCurrentGrid.x, dragCurrentGrid.y);
+          // Bond ONLY after drop at final position
+          tryAutoBond(draggingId, { x: dragCurrentGrid.x, y: dragCurrentGrid.y });
         }
       }
     }

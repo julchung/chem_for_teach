@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4-1 湯木生陰極射線實驗 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.98rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.85rem, 0.96vw, 1rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1fr 1.3fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .sci-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 20px; padding: 2px 10px; width: fit-content;
+        }
+        .sci-year { font-weight: 800; color: var(--accent-yellow); font-size: 0.85rem; }
+        .sci-name { font-weight: 700; color: var(--accent-blue); font-size: 0.85rem; }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.35); border-left: 4px solid var(--accent-cyan);
+            padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 1.15rem; color: #fff;
+            text-align: center; margin: 3px 0;
+        }
+        .info-card {
+            background: rgba(30, 41, 59, 0.7); border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 0.55rem 0.85rem;
+        }
+
+        .canv-wrap {
+            position: relative; width: 100%; flex: 1; min-height: 250px;
+            background: rgba(6, 12, 26, 0.8); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        .btn-mode {
+            padding: 5px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.2s; border: 1.5px solid transparent;
+        }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>4-1 原子結構近代史 &middot; 湯木生陰極射線實驗 (1897)</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：實驗原理與陰極射線性質 -->
+            <div class="panel">
+                <div class="sci-badge">
+                    <span class="sci-year">1897</span>
+                    <span class="sci-name">J.J. Thomson (湯木生)</span>
+                </div>
+
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、陰極射線的六大關鍵特徵</h2>
+                    <ul style="margin-left:1.2rem; font-size:0.86rem; color:#cbd5e1; line-height:1.6;">
+                        <li>✦ <strong>直線進行</strong>：由陰極射出，在障礙物後留下清晰陰影。</li>
+                        <li>✦ <strong>具質量與動量</strong>：撞擊輕質小葉輪能帶動其旋轉。</li>
+                        <li>✦ <strong>帶負電荷</strong>：在電場中向<strong>正極板</strong>偏折。</li>
+                        <li>✦ <strong>磁場偏折</strong>：遵循安培右手開掌定則（受羅倫茲力偏轉）。</li>
+                        <li>✦ <strong>獨立性</strong>：更換陰極金屬或充填稀薄氣體，射線性質<strong>均相同</strong>。</li>
+                        <li>✦ <strong>螢光與游離</strong>：撞擊硫化鋅螢光屏會發光，能使周遭氣體游離。</li>
+                    </ul>
+                </div>
+
+                <div class="formula-box">
+                    $$\dfrac{e}{m} \approx 1.76 \times 10^8 \text{ 庫侖/克 (C/g)}$$
+                </div>
+
+                <div class="info-card">
+                    <span style="font-weight:700; color:var(--accent-blue); font-size:0.88rem;">💡 電場與磁場正交平衡求荷質比：</span>
+                    <p style="font-size:0.82rem; color:#cbd5e1; margin-top:2px;">
+                        湯木生同時施加相互垂直的電場 $E$ 與磁場 $B$，調整兩者強度使電場力與磁力抵消（$qE = qvB \implies v = \dfrac{E}{B}$），射線不偏折。撤去電場後量測單獨磁場之曲率半徑，精確計算出電子的<strong>荷質比</strong>。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：陰極射線管動態模擬 -->
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="color:var(--accent-cyan); margin:0;">🔬 陰極射線管 (CRT) 互動模擬</h2>
+                    <div style="display:flex; gap:6px;">
+                        <button id="tm-btn0" class="btn-mode" onclick="setThomsonMode(0)" style="background:#34d399; color:#000;">無場</button>
+                        <button id="tm-btn1" class="btn-mode" onclick="setThomsonMode(1)" style="background:rgba(248,113,113,0.2); border-color:#f87171; color:#f87171;">電場</button>
+                        <button id="tm-btn2" class="btn-mode" onclick="setThomsonMode(2)" style="background:rgba(168,85,247,0.2); border-color:#a855f7; color:#a855f7;">磁場</button>
+                    </div>
+                </div>
+
+                <div class="canv-wrap">
+                    <canvas id="c-thomson"></canvas>
+                </div>
+
+                <div style="font-size:0.83rem; color:#94a3b8; text-align:center; line-height:1.5;">
+                    💡 點選上方模式按鈕：觀察電子束在<strong>電場（偏向正極板）</strong>與<strong>磁場（向下偏折）</strong>中的受力行為。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let thomsonMode = 0;
+let tmAF = null;
+
+function setThomsonMode(n) {
+    thomsonMode = n;
+    const colors = ['#34d399', '#f87171', '#a855f7'];
+    const bgs = ['rgba(52,211,153,0.25)', 'rgba(248,113,113,0.25)', 'rgba(168,85,247,0.25)'];
+    [0, 1, 2].forEach(i => {
+        const b = document.getElementById('tm-btn' + i);
+        if (!b) return;
+        if (i === n) {
+            b.style.background = colors[n];
+            b.style.color = '#000';
+            b.style.borderColor = 'transparent';
+        } else {
+            b.style.background = bgs[i];
+            b.style.color = colors[i];
+            b.style.borderColor = colors[i];
+        }
+    });
+}
+
+function drawObliqueMagnet(ctx, midX, TY, TR2, stage) {
+    const aw = 18;
+    const dy_depth = -6;
+    const dx_depth = 8;
+    const sx = midX - 38;
+    const sy_top = TY - TR2 - 20;
+    const sy_bot = TY + TR2 * 0.2;
+    const nx = midX + 22;
+    const ny_top = TY - TR2 + 10;
+    const ny_bot = TY + TR2 * 0.85;
+
+    if (stage === 'behind') {
+        ctx.save();
+        const sgFront = ctx.createLinearGradient(sx, sy_top, sx, sy_bot);
+        sgFront.addColorStop(0, '#5f6775'); sgFront.addColorStop(1, '#2d333f');
+        ctx.fillStyle = sgFront;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy_top); ctx.lineTo(sx + aw, sy_top);
+        ctx.lineTo(sx + aw, sy_bot); ctx.lineTo(sx, sy_bot);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#1e232d';
+        ctx.beginPath();
+        ctx.moveTo(sx + aw, sy_top);
+        ctx.lineTo(sx + aw + dx_depth, sy_top + dy_depth);
+        ctx.lineTo(sx + aw + dx_depth, sy_bot + dy_depth);
+        ctx.lineTo(sx + aw, sy_bot);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#11151c';
+        ctx.beginPath();
+        ctx.moveTo(sx, sy_top); ctx.lineTo(sx + dx_depth, sy_top + dy_depth);
+        ctx.lineTo(sx + aw + dx_depth, sy_top + dy_depth); ctx.lineTo(sx + aw, sy_top);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('S', sx + aw/2 + dx_depth*0.5, sy_top + dy_depth*0.5 - 1);
+        ctx.restore();
+
+        ctx.save();
+        const cx = midX - 8;
+        const cy = TY + TR2 * 1.35;
+        ctx.fillStyle = '#11151c';
+        ctx.beginPath();
+        ctx.moveTo(sx + dx_depth, sy_bot + dy_depth);
+        ctx.quadraticCurveTo(cx + dx_depth, cy + dy_depth, nx + dx_depth, ny_bot + dy_depth);
+        ctx.lineTo(nx + aw + dx_depth, ny_bot + dy_depth);
+        ctx.quadraticCurveTo(cx + aw + dx_depth, cy + aw + dy_depth, sx + aw + dx_depth, sy_bot + dy_depth);
+        ctx.closePath(); ctx.fill();
+
+        const yokeG = ctx.createLinearGradient(sx, sy_bot, nx, ny_bot);
+        yokeG.addColorStop(0, '#3a414e'); yokeG.addColorStop(0.5, '#737f94'); yokeG.addColorStop(1, '#4e5666');
+        ctx.fillStyle = yokeG;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy_bot); ctx.quadraticCurveTo(cx, cy, nx, ny_bot);
+        ctx.lineTo(nx + aw, ny_bot); ctx.quadraticCurveTo(cx + aw, cy + aw, sx + aw, sy_bot);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+    }
+
+    if (stage === 'infront') {
+        ctx.save();
+        const ngFront = ctx.createLinearGradient(nx, ny_top, nx, ny_bot);
+        ngFront.addColorStop(0, '#f8fafc'); ngFront.addColorStop(0.5, '#94a3b8'); ngFront.addColorStop(1, '#475569');
+        ctx.fillStyle = ngFront;
+        ctx.beginPath();
+        ctx.moveTo(nx, ny_top); ctx.lineTo(nx + aw, ny_top);
+        ctx.lineTo(nx + aw, ny_bot); ctx.lineTo(nx, ny_bot);
+        ctx.closePath(); ctx.fill();
+
+        const ngSide = ctx.createLinearGradient(nx + aw, ny_top, nx + aw + dx_depth, ny_bot);
+        ngSide.addColorStop(0, '#475569'); ngSide.addColorStop(1, '#1e293b');
+        ctx.fillStyle = ngSide;
+        ctx.beginPath();
+        ctx.moveTo(nx + aw, ny_top);
+        ctx.lineTo(nx + aw + dx_depth, ny_top + dy_depth);
+        ctx.lineTo(nx + aw + dx_depth, ny_bot + dy_depth);
+        ctx.lineTo(nx + aw, ny_bot);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#b91c1c';
+        ctx.beginPath();
+        ctx.moveTo(nx, ny_top); ctx.lineTo(nx + dx_depth, ny_top + dy_depth);
+        ctx.lineTo(nx + aw + dx_depth, ny_top + dy_depth); ctx.lineTo(nx + aw, ny_top);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('N', nx + aw/2 + dx_depth*0.5, ny_top + dy_depth*0.5 - 1);
+        ctx.restore();
+    }
+}
+
+function initThomson() {
+    const c = document.getElementById('c-thomson');
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    const w = Math.floor(r.width) || c.clientWidth || 500;
+    const h = Math.floor(r.height) || c.clientHeight || 280;
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+
+    let t = 0;
+    const TL = w * 0.08, TR = w * 0.92, TY = h * 0.54, TR2 = h * 0.27, EP = TR2 * 0.38;
+    const midX = TL + (TR - TL) * 0.52;
+
+    function ellipsePath(cx, cy, rx, ry) {
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#060c1a';
+        ctx.fillRect(0, 0, w, h);
+        const mode = thomsonMode;
+        const deflect = mode === 1 ? -TR2 * 0.5 : mode === 2 ? TR2 * 0.5 : 0;
+
+        if (mode === 1) {
+            const px = midX - w * 0.14, pw = w * 0.28;
+            const pg = ctx.createLinearGradient(0, TY + TR2 + 6, 0, TY + TR2 + 28);
+            pg.addColorStop(0, '#4d1e1e'); pg.addColorStop(1, '#991b1b');
+            ctx.fillStyle = pg;
+            ctx.beginPath(); ctx.roundRect(px, TY + TR2 + 6, pw, 22, 4); ctx.fill();
+            ctx.strokeStyle = '#f87171'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = '#fca5a5'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('⊖', px + pw/2, TY + TR2 + 22);
+        }
+        if (mode === 2) {
+            drawObliqueMagnet(ctx, midX, TY, TR2, 'behind');
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(TL, TY); ctx.lineTo(TR, TY);
+        ctx.ellipse(TR, TY, EP, TR2, 0, -Math.PI/2, Math.PI/2);
+        ctx.lineTo(TL, TY + TR2);
+        ctx.ellipse(TL, TY, EP, TR2, 0, Math.PI/2, -Math.PI/2, true);
+        ctx.closePath();
+        const bg = ctx.createLinearGradient(0, TY, 0, TY + TR2);
+        bg.addColorStop(0, 'rgba(110,150,200,0.95)'); bg.addColorStop(0.5, 'rgba(60,95,155,0.97)'); bg.addColorStop(1, 'rgba(25,45,100,1)');
+        ctx.fillStyle = bg; ctx.fill(); ctx.restore();
+
+        const cg = ctx.createRadialGradient(TL + EP + 6, TY, 1, TL + EP + 6, TY, TR2 * 0.55);
+        cg.addColorStop(0, '#fff8e0'); cg.addColorStop(0.25, '#ff9900'); cg.addColorStop(0.6, '#cc3300'); cg.addColorStop(1, 'rgba(150,20,0,0)');
+        ellipsePath(TL + EP + 6, TY, EP * 0.6, TR2 * 0.52); ctx.fillStyle = cg; ctx.fill();
+
+        ctx.save();
+        ctx.fillStyle = '#14532d'; ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 1.5;
+        ellipsePath(TL + EP + 30, TY, EP * 0.75, TR2 * 0.8); ctx.fill(); ctx.stroke();
+        ellipsePath(TL + EP + 30, TY, EP * 0.14, TR2 * 0.11); ctx.fillStyle = '#00000099'; ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = '#1e3a5f'; ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5;
+        ellipsePath(TR - EP - 20, TY, EP * 0.62, TR2 * 0.77); ctx.fill(); ctx.stroke();
+        ellipsePath(TR - EP - 20, TY, EP * 0.12, TR2 * 0.1); ctx.fillStyle = 'rgba(0,0,0,0.85)'; ctx.fill();
+        ctx.restore();
+
+        const sg = ctx.createRadialGradient(TR - EP - 4, TY, 0, TR - EP - 4, TY, TR2 * 0.8);
+        sg.addColorStop(0, 'rgba(120,255,120,0.5)'); sg.addColorStop(0.6, 'rgba(60,200,60,0.2)'); sg.addColorStop(1, 'rgba(20,100,20,0.05)');
+        ellipsePath(TR - EP - 4, TY, EP * 0.65, TR2 * 0.82); ctx.fillStyle = sg; ctx.fill();
+
+        t += 0.035;
+        const beamStartX = TL + EP + 45, beamEndX = TR - EP - 8;
+        const animFrac = (t * 0.7) % 1;
+        const ex = beamStartX + (beamEndX - beamStartX) * animFrac;
+        let ey2 = TY;
+        if (ex > midX && mode !== 0) {
+            const f = (ex - midX) / (beamEndX - midX);
+            ey2 = TY + deflect * f * f;
+        }
+
+        ctx.save();
+        ctx.shadowColor = '#00ff44'; ctx.shadowBlur = 16;
+        ctx.beginPath(); ctx.moveTo(beamStartX, TY);
+        if (mode === 0) {
+            ctx.lineTo(beamEndX, TY);
+        } else {
+            ctx.lineTo(midX, TY);
+            ctx.quadraticCurveTo(midX + (beamEndX - midX) * 0.5, TY + deflect * 0.5, beamEndX, TY + deflect);
+        }
+        ctx.strokeStyle = 'rgba(0,255,60,0.22)'; ctx.lineWidth = 10; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(beamStartX, TY);
+        if (mode === 0) {
+            ctx.lineTo(beamEndX, TY);
+        } else {
+            ctx.lineTo(midX, TY);
+            ctx.quadraticCurveTo(midX + (beamEndX - midX) * 0.5, TY + deflect * 0.5, beamEndX, TY + deflect);
+        }
+        ctx.strokeStyle = '#00ff55'; ctx.lineWidth = 2.5; ctx.stroke();
+
+        ctx.beginPath(); ctx.arc(ex, ey2, 4, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 12; ctx.fill();
+        ctx.restore();
+
+        const hitY = TY + (mode !== 0 ? deflect : 0);
+        const hg = ctx.createRadialGradient(TR - EP - 4, hitY, 0, TR - EP - 4, hitY, 12);
+        hg.addColorStop(0, 'rgba(100,255,100,0.95)'); hg.addColorStop(1, 'rgba(0,200,50,0)');
+        ctx.save(); ctx.shadowColor = '#00ff44'; ctx.shadowBlur = 18;
+        ellipsePath(TR - EP - 4, hitY, 10, 8); ctx.fillStyle = hg; ctx.fill(); ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(TL, TY); ctx.lineTo(TR, TY);
+        ctx.ellipse(TR, TY, EP, TR2, 0, Math.PI/2, -Math.PI/2, true);
+        ctx.lineTo(TL, TY - TR2);
+        ctx.ellipse(TL, TY, EP, TR2, 0, -Math.PI/2, Math.PI/2, false);
+        ctx.closePath();
+        const tg = ctx.createLinearGradient(0, TY - TR2, 0, TY);
+        tg.addColorStop(0, 'rgba(225,240,255,0.88)'); tg.addColorStop(0.2, 'rgba(175,210,245,0.6)');
+        tg.addColorStop(0.55, 'rgba(110,165,220,0.38)'); tg.addColorStop(1, 'rgba(70,120,185,0.18)');
+        ctx.fillStyle = tg; ctx.fill();
+        ctx.restore();
+
+        function drawCap(cx, leftGlow) {
+            const cg2 = ctx.createLinearGradient(cx - EP, TY, cx + EP, TY);
+            cg2.addColorStop(0, 'rgba(70,95,145,0.9)'); cg2.addColorStop(0.5, 'rgba(145,175,215,0.9)'); cg2.addColorStop(1, 'rgba(70,95,145,0.9)');
+            ctx.save(); ellipsePath(cx, TY, EP, TR2); ctx.fillStyle = cg2; ctx.fill();
+            ctx.strokeStyle = 'rgba(180,210,245,0.65)'; ctx.lineWidth = 1.5; ctx.stroke();
+            if (leftGlow) {
+                const lg = ctx.createRadialGradient(cx, TY, 0, cx, TY, EP * 0.85);
+                lg.addColorStop(0, 'rgba(255,120,0,0.82)'); lg.addColorStop(0.45, 'rgba(200,50,0,0.5)'); lg.addColorStop(1, 'rgba(140,0,0,0)');
+                ellipsePath(cx, TY, EP * 0.82, TR2 * 0.82); ctx.fillStyle = lg; ctx.fill();
+            }
+            ctx.restore();
+        }
+        drawCap(TL, true); drawCap(TR, false);
+
+        ctx.strokeStyle = 'rgba(175,210,245,0.65)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(TL, TY - TR2); ctx.lineTo(TR, TY - TR2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(TL, TY + TR2); ctx.lineTo(TR, TY + TR2); ctx.stroke();
+
+        function drawPillLabel(text, x, y, targetX, targetY, color) {
+            ctx.save();
+            ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(targetX, targetY, 3, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+            ctx.beginPath(); ctx.moveTo(targetX, targetY); ctx.lineTo(x, y + (y > targetY ? -8 : 8)); ctx.stroke();
+            ctx.font = 'bold 10px sans-serif';
+            const tw = ctx.measureText(text).width + 12;
+            const th = 20;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(x - tw/2, y - th/2, tw, th, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+            ctx.restore();
+        }
+
+        drawPillLabel('陰極 ⊖', TL + EP*0.5, TY - TR2 - 35, TL + EP*0.5, TY - TR2, '#f87171');
+        drawPillLabel('準直孔', TL + EP + 30, TY - TR2 - 18, TL + EP + 30, TY - TR2*0.8, '#4ade80');
+        drawPillLabel('陽極 ⊕', TR - EP - 35, TY - TR2 - 35, TR - EP - 20, TY - TR2, '#60a5fa');
+        drawPillLabel('螢光屏', TR - EP + 15, TY - TR2 - 18, TR - EP + 5, TY - TR2*0.7, '#4ade80');
+
+        if (mode === 1) {
+            const px = midX - w * 0.14, pw = w * 0.28;
+            const ptg = ctx.createLinearGradient(0, TY - TR2 - 30, 0, TY - TR2 - 10);
+            ptg.addColorStop(0, '#1e4d8c'); ptg.addColorStop(1, '#2563eb');
+            ctx.fillStyle = ptg; ctx.beginPath(); ctx.roundRect(px, TY - TR2 - 28, pw, 18, 3); ctx.fill();
+            ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.fillStyle = '#bfdbfe'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('⊕', px + pw/2, TY - TR2 - 15);
+
+            ctx.fillStyle = 'rgba(250,204,21,0.9)'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('⚡ 上(+)板吸引負電電子 → 電子束向上偏折', midX, h * 0.96);
+        }
+        if (mode === 2) {
+            drawObliqueMagnet(ctx, midX, TY, TR2, 'infront');
+            ctx.fillStyle = 'rgba(250,204,21,0.9)'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('🧲 磁場受羅倫茲力 → 電子束向下偏折', midX, h * 0.96);
+        }
+        if (mode === 0) {
+            ctx.fillStyle = 'rgba(52,211,153,0.9)'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('✨ 無電場磁場 → 陰極射線直線傳播', midX, h * 0.96);
+        }
+
+        tmAF = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+window.addEventListener('load', () => {
+    initThomson();
+});
+window.addEventListener('resize', () => {
+    if (tmAF) cancelAnimationFrame(tmAF);
+    initThomson();
+});
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

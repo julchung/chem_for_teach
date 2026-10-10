@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2-1 氣體通性與水銀壓力計 · 閉口式水銀壓力計 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --mercury: #94a3b8;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.3vw, 1.25rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.88rem, 1.02vw, 1.02rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.55rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .formula-box {
+            background: rgba(0,0,0,0.4); border-radius: 10px; border-left: 4.5px solid var(--accent-yellow);
+            padding: 0.55rem 0.9rem; text-align: center;
+            font-size: 1.25rem; flex-shrink: 0;
+        }
+
+        .card-box {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.9rem;
+        }
+
+        .manometer-svg {
+            width: 100%;
+            max-width: 250px;
+            height: 190px;
+            margin: 0 auto;
+            display: block;
+        }
+        .dimension-line { stroke: var(--accent-yellow); stroke-width: 2; stroke-dasharray: 4; }
+        .label-text { fill: white; font-family: sans-serif; font-size: 13px; }
+
+        .table-compare {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.25);
+            font-size: 0.86rem;
+            margin-top: 0.2rem;
+        }
+        .table-compare th {
+            background: rgba(167,139,250,0.18);
+            color: var(--accent-purple);
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            font-weight: 700;
+            text-align: center;
+        }
+        .table-compare td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #e2e8f0;
+            text-align: center;
+        }
+        .table-compare tr:last-child td { border-bottom: none; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>2-1 氣體通性與水銀壓力計 · 閉口式水銀壓力計 (Closed Manometer)</h1>
+                <div class="grid-2">
+                    <!-- 左欄：閉口式基本原理與公式 -->
+                    <div class="panel">
+                        <h2 style="color: var(--accent-yellow); display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🔒</span> 封閉真空端之構造與絕對壓力判定
+                        </h2>
+
+                        <div class="card-box" style="border-left: 4px solid var(--accent-yellow);">
+                            <h3 style="color: var(--accent-yellow); font-size: 1.02rem; margin-bottom: 0.35rem;">
+                                1. 核心構造與真空原理
+                            </h3>
+                            <p style="font-size: 0.88rem; line-height: 1.6;">
+                                閉口式壓力計的封閉右管在製造時已徹底抽成<strong>高度真空 (Vacuum, $P \approx 0$)</strong>。<br>
+                                當左端連接待測氣體時，氣體施力將水銀推入右管，水銀柱所形成之<strong>兩管高度差 $h$</strong>，即為待測氣體的<strong>絕對壓力 (Absolute Pressure)</strong>！
+                            </p>
+                            <div class="formula-box" style="margin: 0.4rem 0;">
+                                $$P_{\text{gas}} = h \text{ (cmHg 或 mmHg)}$$
+                            </div>
+                        </div>
+
+                        <div class="card-box" style="border-left: 4px solid var(--accent-purple);">
+                            <h3 style="color: var(--accent-purple); font-size: 1.02rem; margin-bottom: 0.35rem;">
+                                2. 高中大考必考兩大物理特性
+                            </h3>
+                            <ul style="margin-left: 1.2rem; font-size: 0.88rem; line-height: 1.65; color: #cbd5e1;">
+                                <li>
+                                    <strong style="color: #fff;">完全無關外界大氣壓：</strong>不論將此裝置帶至聖母峰頂或深海潛艇中，只要容器內氣體不變，$h$ <strong>絕不改變</strong>！
+                                </li>
+                                <li>
+                                    <strong style="color: #fff;">待測氣室抽成真空：</strong>若將待測氣體全數抽空 ($P_{\text{gas}} = 0$)，左右兩管水銀柱液面將會<strong>完全等高 ($h = 0$)</strong>！
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：SVG 圖示與開閉口對照表 -->
+                    <div class="panel">
+                        <h2 style="color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📐</span> 閉口式圖解與開閉雙計比較
+                        </h2>
+
+                        <!-- 向量圖：閉口式 -->
+                        <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:0.35rem; display:flex; justify-content:center;">
+                            <svg viewBox="0 0 210 210" class="manometer-svg">
+                                <!-- 氣室容器 -->
+                                <path d="M 20,175 L 80,175 L 58,110 L 42,110 Z" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                <ellipse cx="50" cy="175" rx="30" ry="5" fill="none" stroke="white" stroke-width="2" />
+                                <rect x="42" y="100" width="16" height="10" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#334155" stroke="white" stroke-width="1" />
+                                <!-- 玻璃導管 -->
+                                <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                <!-- 閉口端：頂端圓弧封閉 -->
+                                <path d="M 120,70 V 160 A 20,20 0 0 0 160,160 V 30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                <circle cx="160" cy="30" r="6" fill="rgba(255,255,255,0.1)" />
+                                <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                <!-- 水銀柱：左低右高 -->
+                                <path d="M 120,135 V 160 A 20,20 0 0 0 160,160 V 90" fill="none" stroke="var(--mercury)" stroke-width="10" />
+                                <!-- 標註 -->
+                                <text x="50" y="150" text-anchor="middle" class="label-text" style="font-size: 15px; fill: var(--accent-yellow); font-weight: bold;">Pgas</text>
+                                <text x="160" y="24" text-anchor="middle" class="label-text" style="font-size: 12px; fill: var(--accent-red); font-weight: bold;">Vacuum (0)</text>
+                                <line x1="110" y1="135" x2="195" y2="135" class="dimension-line" />
+                                <line x1="160" y1="90" x2="195" y2="90" class="dimension-line" />
+                                <path d="M 185,135 V 90" stroke="var(--accent-yellow)" stroke-width="1.5" />
+                                <text x="192" y="115" class="label-text" style="fill: var(--accent-yellow); font-weight:bold;">h</text>
+                            </svg>
+                        </div>
+
+                        <!-- 開閉口式比較表 -->
+                        <table class="table-compare">
+                            <thead>
+                                <tr>
+                                    <th>比較項目</th>
+                                    <th>開口式壓力計</th>
+                                    <th>閉口式壓力計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>封閉端氣壓</strong></td>
+                                    <td>大氣壓 $P_{\text{atm}}$</td>
+                                    <td style="color:var(--accent-green); font-weight:700;">真空 ($0$)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>計算關係式</strong></td>
+                                    <td>$P_{\text{gas}} = P_{\text{atm}} \pm h$</td>
+                                    <td style="color:var(--accent-yellow); font-weight:700;">$P_{\text{gas}} = h$</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>外壓改變影響</strong></td>
+                                    <td style="color:var(--accent-red);">有影響（$h$ 隨外壓變動）</td>
+                                    <td style="color:var(--accent-green);">完全無影響</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>8-2 酸鹼理論 · 核心通關檢核</title>
+    <meta name="description" content="選修化學三：酸鹼學說核心連連看通關檢核與章節解鎖">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.2rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 960px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* 標頭情境框 (公版標準格式) */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.1rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid var(--accent-purple);
+            background: rgba(167,139,250,0.15);
+            color: var(--accent-purple);
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+
+        /* 測驗卡片外框 */
+        .quiz-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 連連看互動區 */
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .match-game-cols {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            gap: 28px;
+            z-index: 2;
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 45%;
+        }
+
+        .match-item {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            touch-action: none;
+            font-size: 0.98rem;
+            color: #f1f5f9;
+            min-height: 48px;
+        }
+
+        .match-item:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.selected {
+            border-color: #fbbf24 !important;
+            background: rgba(251, 191, 36, 0.18) !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .match-item.connected {
+            border-color: #34d399;
+            background: rgba(52, 211, 153, 0.12);
+        }
+
+        .match-item.match-wrong {
+            border-color: #f87171 !important;
+            background: rgba(248, 113, 113, 0.2) !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .match-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid #fff;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .match-item.selected .match-dot {
+            background: #fbbf24;
+            transform: scale(1.3);
+            box-shadow: 0 0 8px #fbbf24;
+        }
+
+        .match-item.connected .match-dot {
+            background: #34d399;
+            border-color: #34d399;
+        }
+
+        /* SVG 畫布 (放底層拉線) */
+        #match-svg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 操作按鈕列 */
+        .match-btn-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            border: none;
+            padding: 9px 24px;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-check:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #cbd5e1;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        /* 通關慶祝橫幅 */
+        #section-complete-banner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 211, 238, 0.2));
+            border: 2px solid var(--accent-green);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35);
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            70% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .complete-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #34d399;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.6);
+        }
+
+        .complete-desc {
+            font-size: 1.05rem;
+            color: #e2e8f0;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .next-sec-btn {
+            background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
+            color: #0f172a;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 18px rgba(34, 211, 238, 0.5);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .next-sec-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 24px rgba(34, 211, 238, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .match-game-cols { gap: 14px; }
+            .match-item { font-size: 0.88rem; padding: 6px 8px; min-height: 44px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="quiz-container-full">
+
+        <!-- 標頭說明框 -->
+        <div class="quiz-scenario-box">
+            <span class="problem-badge">8-2 核心通關挑戰</span>
+            <h1 style="color:var(--accent-cyan); font-size:1.45rem; margin-bottom:0.4rem; font-weight:800;">
+                🎯 酸鹼學說概念連連看挑戰
+            </h1>
+            <p style="color:var(--text-sub); font-size:0.95rem; line-height:1.6;">
+                請點擊左側「化學概念 / 物質」與右側對應的「學說定義 / 特徵」，將兩端正確連接配對。完成全部 8 組連線後點擊「提交驗證」，全對即可通過檢核並解鎖 <strong>8-3 水的解離與 pH 值</strong>！
+            </p>
+        </div>
+
+        <!-- 連連看卡片 -->
+        <div class="quiz-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                <div style="font-weight:700; color:var(--accent-yellow); font-size:1.05rem; display:flex; align-items:center; gap:8px;">
+                    <span>⚡</span> <span>概念配對區（已連線：<span id="connected-count" style="color:var(--accent-cyan); font-size:1.2rem;">0</span> / 8 組）</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-reset" onclick="resetConnections()">清空重連</button>
+                    <button class="btn-reset" onclick="newQuestionPool()">換一組題目 🎲</button>
+                </div>
+            </div>
+
+            <!-- 連連看本體 -->
+            <div class="match-game-wrapper" id="match-wrapper">
+                <svg id="match-svg-canvas"></svg>
+
+                <div class="match-game-cols">
+                    <!-- 左欄：核心名詞或物質 -->
+                    <div class="match-col" id="col-left"></div>
+
+                    <!-- 右欄：定義或特徵說明 -->
+                    <div class="match-col" id="col-right"></div>
+                </div>
+            </div>
+
+            <!-- 回饋訊息與提交按鈕 -->
+            <div class="match-btn-row">
+                <div id="quiz-feedback-msg" style="font-size:0.96rem; color:var(--text-sub);">
+                    <span>💡 請依序點選左欄項目與右欄定義進行配對。</span>
+                </div>
+                <button class="btn-check" onclick="checkAnswers()">
+                    <span>驗證答案並解鎖</span>
+                    <span>➔</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 通關大賀橫幅 -->
+        <div id="section-complete-banner">
+            <div style="font-size: 3rem;">🏆</div>
+            <div class="complete-title">恭喜通關！掌握酸鹼三大學說！</div>
+            <div class="complete-desc">
+                太優秀了！你已清楚釐清阿瑞尼斯解離說、布忍斯特-羅瑞質子說與路易斯電子說之定義、包含關係與共軛酸鹼對！下個章節已成功為你解鎖！
+            </div>
+            <a href="../03_酸鹼的解離與水解/index.html" class="next-sec-btn" id="btn-next-chapter">
+                <span>前往 8-3 酸鹼的解離與水解</span>
+                <span>🚀</span>
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(() => {
+    // 8-2 酸鹼理論專屬題庫池 (隨機抽取 8 組)
+    const GAME_POOL = [
+        { formula: "阿瑞尼斯酸", name: "水溶液中解離釋出 $\\mathrm{H^+}$" },
+        { formula: "阿瑞尼斯鹼", name: "水溶液中解離釋出 $\\mathrm{OH^-}$" },
+        { formula: "布-羅酸", name: "質子提供者 (Proton Donor)" },
+        { formula: "布-羅鹼", name: "質子接受者 (Proton Acceptor)" },
+        { formula: "路易斯酸", name: "電子對接受者 (具有空軌域)" },
+        { formula: "路易斯鹼", name: "電子對提供者 (具有孤對電子)" },
+        { formula: "兩性物質", name: "既可提供亦可接受質子 (如 $\\mathrm{H_2O, HCO_3^-}$)" },
+        { formula: "配位共價鍵", name: "路易斯酸鹼結合時所形成的化學鍵" },
+        { formula: "$\\mathrm{BF_3}$", name: "缺八隅體之路易斯酸經典實例" },
+        { formula: "$\\mathrm{NH_3}$", name: "具孤對電子的布-羅鹼與路易斯鹼" },
+        { formula: "$\\mathrm{H_3O^+}$", name: "$\\mathrm{H_2O}$ 的共軛酸 (水合氫離子)" },
+        { formula: "$\\mathrm{OH^-}$", name: "$\\mathrm{H_2O}$ 的共軛鹼 (氫氧根離子)" },
+        { formula: "$\\mathrm{CH_3COO^-}$", name: "醋酸 $\\mathrm{CH_3COOH}$ 的共軛鹼" },
+        { formula: "$\\mathrm{[Cu(NH_3)_4]^{2+}}$", name: "金屬陽離子與配位基形成之錯離子" }
+    ];
+
+    const GAME_COUNT = 8;
+    let currentQuestions = [];
+    let userConnections = []; // { leftId, rightId }
+    let selectedLeft = null;
+    let selectedRight = null;
+    let isPassed = false;
+
+    const colLeft = document.getElementById('col-left');
+    const colRight = document.getElementById('col-right');
+    const svgCanvas = document.getElementById('match-svg-canvas');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const connectedCountEl = document.getElementById('connected-count');
+    const completeBanner = document.getElementById('section-complete-banner');
+
+    window.newQuestionPool = function() {
+        isPassed = false;
+        userConnections = [];
+        selectedLeft = null;
+        selectedRight = null;
+        completeBanner.style.display = 'none';
+
+        // 隨機抽 8 題
+        const shuffled = [...GAME_POOL].sort(() => Math.random() - 0.5);
+        currentQuestions = shuffled.slice(0, GAME_COUNT).map((item, i) => ({
+            id: i,
+            formula: item.formula,
+            name: item.name
+        }));
+
+        const leftItems = [...currentQuestions];
+        const rightItems = [...currentQuestions].sort(() => Math.random() - 0.5);
+
+        colLeft.innerHTML = '';
+        colRight.innerHTML = '';
+
+        leftItems.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<span>${item.formula}</span><div class="match-dot"></div>`;
+            el.onclick = () => onSelectLeft(el, item.id);
+            colLeft.appendChild(el);
+        });
+
+        rightItems.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<div class="match-dot"></div><span>${item.name}</span>`;
+            el.onclick = () => onSelectRight(el, item.id);
+            colRight.appendChild(el);
+        });
+
+        updateConnections();
+        if (window.MathJax) {
+            window.MathJax.typesetPromise([colLeft, colRight]);
+        }
+        reportIframeHeight();
+    };
+
+    function onSelectLeft(el, id) {
+        if (isPassed) return;
+        if (selectedLeft === id) {
+            selectedLeft = null;
+            el.classList.remove('selected');
+            return;
+        }
+
+        colLeft.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedLeft = id;
+
+        if (selectedRight !== null) {
+            connectPair(selectedLeft, selectedRight);
+        }
+    }
+
+    function onSelectRight(el, id) {
+        if (isPassed) return;
+        if (selectedRight === id) {
+            selectedRight = null;
+            el.classList.remove('selected');
+            return;
+        }
+
+        colRight.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedRight = id;
+
+        if (selectedLeft !== null) {
+            connectPair(selectedLeft, selectedRight);
+        }
+    }
+
+    function connectPair(leftId, rightId) {
+        // 移除左邊或右邊原本已有的連線
+        userConnections = userConnections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+        userConnections.push({ leftId, rightId });
+
+        selectedLeft = null;
+        selectedRight = null;
+        colLeft.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+        colRight.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+
+        updateConnections();
+    }
+
+    window.resetConnections = function() {
+        if (isPassed) return;
+        userConnections = [];
+        selectedLeft = null;
+        selectedRight = null;
+        colLeft.querySelectorAll('.match-item').forEach(i => {
+            i.classList.remove('selected', 'connected', 'match-wrong');
+        });
+        colRight.querySelectorAll('.match-item').forEach(i => {
+            i.classList.remove('selected', 'connected', 'match-wrong');
+        });
+        updateConnections();
+        feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新點選兩端項目進行配對。</span>';
+    };
+
+    function updateConnections() {
+        svgCanvas.innerHTML = '';
+        connectedCountEl.textContent = userConnections.length;
+
+        colLeft.querySelectorAll('.match-item').forEach(el => el.classList.remove('connected'));
+        colRight.querySelectorAll('.match-item').forEach(el => el.classList.remove('connected'));
+
+        const wrapperRect = document.getElementById('match-wrapper').getBoundingClientRect();
+
+        userConnections.forEach(conn => {
+            const leftEl = colLeft.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = colRight.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+
+            if (leftEl && rightEl) {
+                leftEl.classList.add('connected');
+                rightEl.classList.add('connected');
+
+                const leftDot = leftEl.querySelector('.match-dot').getBoundingClientRect();
+                const rightDot = rightEl.querySelector('.match-dot').getBoundingClientRect();
+
+                const x1 = leftDot.left + leftDot.width / 2 - wrapperRect.left;
+                const y1 = leftDot.top + leftDot.height / 2 - wrapperRect.top;
+                const x2 = rightDot.left + rightDot.width / 2 - wrapperRect.left;
+                const y2 = rightDot.top + rightDot.height / 2 - wrapperRect.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#38bdf8');
+                line.setAttribute('stroke-width', '3');
+                line.setAttribute('stroke-linecap', 'round');
+                svgCanvas.appendChild(line);
+            }
+        });
+    }
+
+    window.addEventListener('resize', updateConnections);
+
+    window.checkAnswers = function() {
+        if (isPassed) return;
+
+        if (userConnections.length < GAME_COUNT) {
+            feedbackMsg.innerHTML = '<span style="color:#f87171;">⚠️ 尚有項目未完成配對，請完成所有 8 組連線後再提交！</span>';
+            return;
+        }
+
+        let wrongCount = 0;
+        userConnections.forEach(conn => {
+            const isCorrect = (conn.leftId === conn.rightId);
+            const leftEl = colLeft.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = colRight.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+
+            if (!isCorrect) {
+                wrongCount++;
+                if (leftEl) leftEl.classList.add('match-wrong');
+                if (rightEl) rightEl.classList.add('match-wrong');
+            } else {
+                if (leftEl) leftEl.classList.remove('match-wrong');
+                if (rightEl) rightEl.classList.remove('match-wrong');
+            }
+        });
+
+        if (wrongCount === 0) {
+            isPassed = true;
+            feedbackMsg.innerHTML = '<span style="color:#34d399;font-weight:bold;">🎉 太厲害了！全部配對正確！章節已解鎖！</span>';
+            completeBanner.style.display = 'flex';
+            notifySectionComplete();
+            reportIframeHeight();
+        } else {
+            feedbackMsg.innerHTML = `<span style="color:#f87171;">❌ 共有 ${wrongCount} 組配對錯誤（已用紅色標出），請點「重連」再次挑戰！</span>`;
+        }
+    };
+
+    // 通關通知外層母網頁 SPA 並寫入 localStorage
+    function notifySectionComplete() {
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: 'ch8_s2',
+            sectionFolder: '02_酸鹼理論',
+            nextSectionId: 'ch8_s3',
+            timestamp: Date.now()
+        };
+        try {
+            window.parent.postMessage(payload, '*');
+            localStorage.setItem('chem_progress_ch8_s2', 'PASSED');
+            localStorage.setItem('chem_unlocked_ch8_s3', 'true');
+        } catch(e) {}
+    }
+
+    // 回報 iframe 高度以防捲軸截斷
+    function reportIframeHeight() {
+        setTimeout(() => {
+            const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'RESIZE_IFRAME', height: h }, '*');
+            }
+        }, 100);
+    }
+
+    window.addEventListener('load', () => {
+        newQuestionPool();
+    });
+})();
+</script>
+</body>
+</html>

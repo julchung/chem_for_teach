@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>化學反應類型與質量守恆 - 互動教學系統</title>
+  <!-- MathJax 化學式與數學公式渲染 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      },
+      svg: { fontCache: 'global' },
+      options: {
+        renderActions: {
+          addMenu: []
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0b1120;
+      --bg-panel: rgba(30, 41, 59, 0.75);
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --border-glow: rgba(56, 189, 248, 0.25);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #f87171;
+      --accent-yellow: #fbbf24;
+      --accent-purple: #c084fc;
+      --accent-cyan: #22d3ee;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', Helvetica, Arial, sans-serif;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+
+    /* 投影片直向滿版堆疊容器 */
+    #presentation-stream {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      padding: 3.5rem 5vw 3rem 5vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .slide.centered-slide {
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .slide {
+        padding: 4.5rem 1.5rem 2rem 1.5rem;
+        height: auto;
+        min-height: 100vh;
+        scroll-snap-align: none;
+      }
+    }
+
+    /* 標題與內文排版風格 */
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 0.8rem;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .slide-title {
+      font-size: clamp(1.6rem, 3.2vw, 2.4rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .slide-subtitle {
+      font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    /* 網格與面板 */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.2rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.5rem 1.8rem;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .formula-box {
+      background: rgba(15, 23, 42, 0.9);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 12px;
+      padding: 1rem 1.4rem;
+      margin: 0.8rem 0;
+      font-size: 1.15rem;
+      text-align: center;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .formula-box.green {
+      border-left-color: var(--accent-green);
+    }
+
+    .formula-box.yellow {
+      border-left-color: var(--accent-yellow);
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-right: 6px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .tag-blue { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+    .tag-green { background: rgba(52, 211, 153, 0.2); color: var(--accent-green); }
+    .tag-yellow { background: rgba(251, 191, 36, 0.2); color: var(--accent-yellow); }
+    .tag-purple { background: rgba(192, 132, 252, 0.2); color: var(--accent-purple); }
+
+    /* 互動式反應卡片 */
+    .rxn-tab-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.2rem;
+    }
+
+    .rxn-tab {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rxn-tab:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+    }
+
+    .rxn-tab.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(168, 85, 247, 0.3));
+      border-color: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+
+    .rxn-content-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 1.4rem;
+      line-height: 1.7;
+    }
+
+    /* 互動平衡器 */
+    .balancer-container {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-glow);
+      border-radius: 18px;
+      padding: 1.6rem;
+      box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin: 1.4rem 0;
+    }
+
+    .coeff-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 8px;
+      border-radius: 10px;
+    }
+
+    .btn-step {
+      background: rgba(56, 189, 248, 0.25);
+      border: none;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .btn-step:hover {
+      background: var(--accent-blue);
+      color: #0b1120;
+    }
+
+    .coeff-num {
+      min-width: 24px;
+      text-align: center;
+      color: var(--accent-yellow);
+      font-size: 1.3rem;
+    }
+
+    .atom-counts-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-top: 1.2rem;
+    }
+
+    .atom-side {
+      background: rgba(0,0,0,0.3);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .atom-count-pill {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 12px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      font-size: 0.95rem;
+    }
+
+    .atom-count-pill.match {
+      background: rgba(52, 211, 153, 0.18);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #6ee7b7;
+    }
+
+    .atom-count-pill.diff {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
+    }
+
+    .status-banner {
+      margin-top: 1.2rem;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .status-banner.balanced {
+      background: rgba(52, 211, 153, 0.25);
+      color: #34d399;
+      border: 1px solid #34d399;
+    }
+
+    .status-banner.unbalanced {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+
+    /* ═════════════════════════════════════════════════════════════
+       單元檢核測驗 (左右雙欄緊湊排版 + 確定作答後台檢核系統)
+       ═════════════════════════════════════════════════════════════ */
+    .quiz-container-full {
+      max-width: 1260px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .quiz-scenario-box {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .quiz-grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 860px) {
+      .quiz-grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .quiz-card {
+      background: rgba(19, 27, 46, 0.82);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .quiz-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .quiz-q {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .quiz-opt {
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+
+    .quiz-opt:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateX(3px);
+    }
+
+    /* 學生點選時的高亮狀態（未提交檢核前） */
+    .quiz-opt.selected {
+      background: rgba(56, 189, 248, 0.2) !important;
+      border-color: var(--accent-blue) !important;
+      color: #38bdf8 !important;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    /* 檢核通過時全體呈現綠色標記 */
+    .quiz-opt.verified-pass {
+      background: rgba(52, 211, 153, 0.25) !important;
+      border-color: var(--accent-green) !important;
+      color: #34d399 !important;
+    }
+
+    /* 底部操作與反饋控制欄 */
+    .quiz-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 10px 18px;
+      margin-top: 6px;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .quiz-feedback-msg {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .quiz-feedback-msg.fail {
+      color: #fb7185;
+      font-weight: 700;
+      animation: shake 0.4s ease;
+    }
+
+    .quiz-feedback-msg.success {
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .btn-submit-exam {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #0f172a;
+      border: none;
+      padding: 10px 26px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .btn-submit-exam:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(56, 189, 248, 0.5);
+      background: linear-gradient(135deg, #0369a1, #0ea5e9);
+      color: #fff;
+    }
+
+    .btn-submit-exam:active {
+      transform: translateY(0);
+    }
+
+    .btn-submit-exam:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="presentation-stream">
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SLIDE 1: 單元導讀與核心概念
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="slide centered-slide" id="slide-1">
+    <div class="slide-badge">單元 1-1 · 核心觀念</div>
+    <h1 class="slide-title">化學反應本質與質量守恆定律</h1>
+    <p class="slide-subtitle">化學反應是原子重新排列組合的奇妙過程，探索反應前後不變的守恆法則</p>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title" style="color: var(--accent-blue);">
+          <span>⚛️</span> 化學反應的微觀實質
+        </div>
+        <p style="color: #cbd5e1; line-height: 1.7; margin-bottom: 1rem;">
+          在化學反應過程中，舊有的化學鍵斷裂，新的化學鍵生成。反應前後原子的<strong>種類</strong>與<strong>個數</strong>保持絕對不變，因此系統<strong>總質量必恆等</strong>（質量守恆定律）。
+        </p>
+
+        <div class="formula-box green">
+          $$\sum m_{\text{反應物}} = \sum m_{\text{生成物}}$$
+        </div>
+
+        <ul style="list-style: none; padding: 0; margin-top: 0.5rem; line-height: 1.8;">
+          <li><span class="tag-badge tag-green">必守恆項目</span> 原子種類、原子總數、總質量、電荷數</li>
+          <li><span class="tag-badge tag-yellow">不一定守恆</span> 分子總數、氣體總莫耳數、氣體總體積</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" style="color: var(--accent-cyan);">
+          <span>🏷️</span> 化學方程式與物態標記
+        </div>
+        <p style="color: #cbd5e1; line-height: 1.7; margin-bottom: 1rem;">
+          化學方程式利用化學式、箭號及係數描述化學變化。物質右下角括號內標記其物理狀態：
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem;">
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+            <strong style="color: var(--accent-yellow);">(s) Solid</strong>
+            <p style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">固態，如 $\text{Fe}(s)$、$\text{NaCl}(s)$</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+            <strong style="color: var(--accent-blue);">(l) Liquid</strong>
+            <p style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">純液態，如 $\text{H}_2\text{O}(l)$、$\text{Br}_2(l)$</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+            <strong style="color: var(--accent-green);">(g) Gas</strong>
+            <p style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">氣態，如 $\text{O}_2(g)$、$\text{CO}_2(g)$</p>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+            <strong style="color: var(--accent-purple);">(aq) Aqueous</strong>
+            <p style="font-size: 0.88rem; color: #94a3b8; margin-top: 4px;">水溶液，如 $\text{HCl}(aq)$、$\text{CuSO}_4(aq)$</p>
+          </div>
+        </div>
+
+        <div class="formula-box" style="font-size: 0.95rem;">
+          $$\text{箭號 } (\rightarrow) \text{ 代表進行方向；條件如加熱 } (\Delta) \text{ 或催化劑置於箭號上下}$$
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SLIDE 2: 五大化學反應基本類型
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="slide" id="slide-2">
+    <div class="slide-badge">單元 1-1 · 分類體系</div>
+    <h2 class="slide-title">五大化學反應基本類型</h2>
+    <p class="slide-subtitle">點擊不同反應標籤，探索化學反應的典型模式與微觀重組機制</p>
+
+    <div class="rxn-tab-group">
+      <button class="rxn-tab active" data-target="synthesis">1. 化合反應 (Synthesis)</button>
+      <button class="rxn-tab" data-target="decomp">2. 分解反應 (Decomposition)</button>
+      <button class="rxn-tab" data-target="single">3. 單置換反應 (Single Displacement)</button>
+      <button class="rxn-tab" data-target="double">4. 雙置換反應 (Double Displacement)</button>
+      <button class="rxn-tab" data-target="combustion">5. 燃燒反應 (Combustion)</button>
+    </div>
+
+    <div class="rxn-content-card" id="rxn-display">
+      <!-- 預設化合反應 -->
+      <h3 style="color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 8px;">🔗 化合反應 (Synthesis / Combination)</h3>
+      <p style="color: #94a3b8; margin-bottom: 12px;">兩種或多種物質結合成一種新物質的反應：$A + B \rightarrow AB$</p>
+      <div class="formula-box green">$$2\text{H}_2(g) + \text{O}_2(g) \rightarrow 2\text{H}_2\text{O}(l) \quad (\Delta H < 0)$$</div>
+      <div style="background: rgba(0,0,0,0.25); border-radius: 10px; padding: 12px; margin-top: 10px;">
+        <strong style="color: var(--accent-yellow);">常見實例：</strong>
+        <p style="color: #cbd5e1; margin-top: 4px;">金屬氧化（如 $2\text{Mg} + \text{O}_2 \rightarrow 2\text{MgO}$ 燃燒釋放強烈白光）、工業哈伯法合成氨（$\text{N}_2 + 3\text{H}_2 \rightleftharpoons 2\text{NH}_3$）。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SLIDE 3: 方程式平衡技巧與方法
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="slide" id="slide-3">
+    <div class="slide-badge">單元 1-1 · 核心解題技巧</div>
+    <h2 class="slide-title">化學方程式平衡雙法：觀察法與代數法</h2>
+    <p class="slide-subtitle">遵循「原子守恆」，循序決定各分子係數之最簡整數比</p>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-title" style="color: var(--accent-green);">
+          <span>🔍</span> 觀察法 (Inspection Method)
+        </div>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 12px;">適用於多數一般反應，速度快、直觀：</p>
+        <ol style="color: #e2e8f0; line-height: 1.8; padding-left: 1.4rem;">
+          <li><strong>定基準：</strong>先選出分子式結構最複雜、原子數最多的物質，將其係數暫定為 <strong>1</strong>。</li>
+          <li><strong>平衡單一出現元素：</strong>先平衡在左右兩邊各僅出現一次的原子（如碳、金屬原子）。</li>
+          <li><strong>留最後：</strong>將單質分子（如 $\text{O}_2$、$\text{H}_2$）留至最後平衡。</li>
+          <li><strong>去分母化整：</strong>若出現分數係數，全式同乘分母最小公倍數，化為最簡整數比。</li>
+        </ol>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" style="color: var(--accent-purple);">
+          <span>📐</span> 代數法 (Algebraic Method)
+        </div>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 12px;">適用於元素分散於多項物質、或較複雜之方程式：</p>
+        <ol style="color: #e2e8f0; line-height: 1.8; padding-left: 1.4rem;">
+          <li><strong>設未知數：</strong>在各物質前設代數係數 $a, b, c, d \dots$。</li>
+          <li><strong>列守恆方程式：</strong>針對每一種元素（如 $\text{Cu}, \text{H}, \text{N}, \text{O}$）依「左側總原子數 = 右側總原子數」列出聯立方程式。</li>
+          <li><strong>令某係數為 1：</strong>因係數為相對比值，令其中一項為 1 即可求解其餘代數。</li>
+          <li><strong>化簡整數：</strong>通分消除分母得到最簡整數比。</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SLIDE 4: 互動式方程式平衡實驗室
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="slide" id="slide-4">
+    <div class="slide-badge">單元 1-1 · 互動實作</div>
+    <h2 class="slide-title">動手平衡方程式：即時原子守恆檢驗器</h2>
+    <p class="slide-subtitle">動手點擊 [+] 與 [-] 調整係數，即時觀察反應物與生成物之原子數量是否達成守恆！</p>
+
+    <div class="balancer-container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="color: var(--accent-cyan); font-weight: 700;">演練題目：丙烷完全燃燒反應</span>
+        <button id="btn-reset-bal" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 12px; border-radius: 8px; cursor: pointer;">重置係數</button>
+      </div>
+
+      <!-- 方程式與係數控制器 -->
+      <div class="equation-row">
+        <div class="coeff-control">
+          <button class="btn-step" data-target="c1" data-delta="-1">-</button>
+          <span class="coeff-num" id="val-c1">1</span>
+          <button class="btn-step" data-target="c1" data-delta="1">+</button>
+        </div>
+        <span>$\text{C}_3\text{H}_8$</span>
+
+        <span style="color: var(--accent-blue);">+</span>
+
+        <div class="coeff-control">
+          <button class="btn-step" data-target="c2" data-delta="-1">-</button>
+          <span class="coeff-num" id="val-c2">1</span>
+          <button class="btn-step" data-target="c2" data-delta="1">+</button>
+        </div>
+        <span>$\text{O}_2$</span>
+
+        <span style="color: var(--accent-yellow);">$\rightarrow$</span>
+
+        <div class="coeff-control">
+          <button class="btn-step" data-target="c3" data-delta="-1">-</button>
+          <span class="coeff-num" id="val-c3">1</span>
+          <button class="btn-step" data-target="c3" data-delta="1">+</button>
+        </div>
+        <span>$\text{CO}_2$</span>
+
+        <span style="color: var(--accent-blue);">+</span>
+
+        <div class="coeff-control">
+          <button class="btn-step" data-target="c4" data-delta="-1">-</button>
+          <span class="coeff-num" id="val-c4">1</span>
+          <button class="btn-step" data-target="c4" data-delta="1">+</button>
+        </div>
+        <span>$\text{H}_2\text{O}$</span>
+      </div>
+
+      <!-- 左右原子數量對比 -->
+      <div class="atom-counts-box">
+        <div class="atom-side">
+          <h4 style="color: var(--accent-blue); margin-bottom: 8px; font-size: 0.95rem;">⬅️ 左側反應物原子總數</h4>
+          <div class="atom-count-pill" id="pill-c-left"><span>碳 (C):</span> <strong id="cnt-c-l">3</strong></div>
+          <div class="atom-count-pill" id="pill-h-left"><span>氫 (H):</span> <strong id="cnt-h-l">8</strong></div>
+          <div class="atom-count-pill" id="pill-o-left"><span>氧 (O):</span> <strong id="cnt-o-l">2</strong></div>
+        </div>
+
+        <div class="atom-side">
+          <h4 style="color: var(--accent-green); margin-bottom: 8px; font-size: 0.95rem;">➡️ 右側生成物原子總數</h4>
+          <div class="atom-count-pill" id="pill-c-right"><span>碳 (C):</span> <strong id="cnt-c-r">1</strong></div>
+          <div class="atom-count-pill" id="pill-h-right"><span>氫 (H):</span> <strong id="cnt-h-r">2</strong></div>
+          <div class="atom-count-pill" id="pill-o-right"><span>氧 (O):</span> <strong id="cnt-o-r">3</strong></div>
+        </div>
+      </div>
+
+      <div class="status-banner unbalanced" id="bal-status">
+        ⚠️ 尚未平衡！請調整係數使得 C、H、O 各原子數完全相等
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SLIDE 5: 課堂學習檢核 (Checkpoint 左右雙欄緊湊排版 + 確定作答後台檢核)
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="slide" id="slide-5" style="padding-top: 1.5rem; padding-bottom: 2.5rem;">
+    <div class="quiz-container-full">
+      <!-- 標頭情境框 -->
+      <div class="quiz-scenario-box">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+          <span class="slide-badge" style="margin-bottom: 0; background: rgba(52, 211, 153, 0.2); border-color: rgba(52, 211, 153, 0.4); color: #34d399;">
+            🏆 單元 1-1 · 核心通關檢核
+          </span>
+          <span style="font-size: 0.88rem; color: #38bdf8;">
+            📌 請完成左右題目作答，點擊右下角「確定作答」提交檢核
+          </span>
+        </div>
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-bottom: 4px;">
+          化學反應類型與質量守恆核心概念檢核
+        </h2>
+        <p style="font-size: 0.92rem; color: #94a3b8; margin-bottom: 0;">
+          測試您對化學反應守恆本質、原子守恆定律與方程式平衡的掌握程度。全數答對即可解鎖下一單元！
+        </p>
+      </div>
+
+      <!-- 左右雙欄網格 -->
+      <div class="quiz-grid-layout">
+        <!-- 左欄：題目 1 -->
+        <div class="quiz-card" data-q="1" data-ans="0">
+          <div class="quiz-q">
+            <span class="text-cyan">(1)</span> 在一個密閉容器中進行一般化學反應，反應前後下列各物理量何者「必然」守恆？
+          </div>
+          <div class="quiz-options">
+            <button type="button" class="quiz-opt" data-idx="0">A. 原子的種類與總個數</button>
+            <button type="button" class="quiz-opt" data-idx="1">B. 分子的總個數</button>
+            <button type="button" class="quiz-opt" data-idx="2">C. 同溫同壓下的氣體總體積</button>
+            <button type="button" class="quiz-opt" data-idx="3">D. 反應前後各物質的化學性質</button>
+          </div>
+        </div>
+
+        <!-- 右欄：題目 2 -->
+        <div class="quiz-card" data-q="2" data-ans="2">
+          <div class="quiz-q">
+            <span class="text-cyan">(2)</span> 鐵在潮濕空氣中生鏽反應：$a\,\text{Fe} + b\,\text{O}_2 + c\,\text{H}_2\text{O} \rightarrow d\,\text{Fe(OH)}_3$，平衡後的最小整數係數中，$b$ 的數值為何？
+          </div>
+          <div class="quiz-options">
+            <button type="button" class="quiz-opt" data-idx="0">A. 1</button>
+            <button type="button" class="quiz-opt" data-idx="1">B. 2</button>
+            <button type="button" class="quiz-opt" data-idx="2">C. 3</button>
+            <button type="button" class="quiz-opt" data-idx="3">D. 4</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部操作列：左側即時狀態反饋，右側「確定作答」按鈕 -->
+      <div class="quiz-action-bar">
+        <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+          <span>💡 請點選每道題目的選項，作答完成後點擊右側按鈕進行檢核。</span>
+        </div>
+        <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+          確定作答 🚀
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       解鎖成功橫幅 (答對所有核心檢核題後顯示)
+       ═════════════════════════════════════════════════════════════ -->
+  <div id="section-complete-banner" style="
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 60vh;
+    padding: 4rem 2rem;
+    background: radial-gradient(ellipse at center, rgba(52,211,153,0.15) 0%, rgba(11,17,32,0) 70%);
+    border-top: 1px solid rgba(52,211,153,0.25);
+  ">
+    <div style="font-size: 4rem; margin-bottom: 1rem; animation: pulse 1.5s ease-in-out infinite;">🏆</div>
+    <h2 style="color: #34d399; font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; margin-bottom: 0.6rem;">
+      單元通關！
+    </h2>
+    <p style="color: #6ee7b7; font-size: 1.15rem; margin-bottom: 0.4rem;">
+      恭喜你完成本單元所有核心檢核題 🎉
+    </p>
+    <p style="color: #94a3b8; font-size: 1rem;">
+      下一單元已自動解鎖，請從左側目錄繼續學習
+    </p>
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+      <div style="background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.4); border-radius: 12px; padding: 14px 24px; color: #34d399; font-weight: 700;">
+        ✅ 化學反應類型與質量守恆 — 已完成
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+</style>
+
+<script>
+  // ── 1. 反應類型切換邏輯 ──
+  const rxnData = {
+    synthesis: {
+      title: "🔗 化合反應 (Synthesis / Combination)",
+      sub: "兩種或多種物質結合成一種新物質的反應：$A + B \\rightarrow AB$",
+      formula: "$$2\\text{H}_2(g) + \\text{O}_2(g) \\rightarrow 2\\text{H}_2\\text{O}(l)$$",
+      detail: "<strong style='color: var(--accent-yellow);'>常見實例：</strong>金屬與氧氣化合產生氧化物（如 $2\\text{Mg} + \\text{O}_2 \\rightarrow 2\\text{MgO}$）；非金屬氧化（如 $\\text{S} + \\text{O}_2 \\rightarrow \\text{SO}_2$）。"
+    },
+    decomp: {
+      title: "💥 分解反應 (Decomposition)",
+      sub: "一種化合物在加熱、通電或催化劑作用下分解為兩種或以上物質：$AB \\rightarrow A + B$",
+      formula: "$$2\\text{KClO}_3(s) \\xrightarrow{\\text{MnO}_2, \\,\\Delta} 2\\text{KCl}(s) + 3\\text{O}_2(g)$$",
+      detail: "<strong style='color: var(--accent-yellow);'>常見實例：</strong>碳酸鈣高溫煅燒（$\\text{CaCO}_3 \\rightarrow \\text{CaO} + \\text{CO}_2$）、電解水（$2\\text{H}_2\\text{O} \\xrightarrow{\\text{電解}} 2\\text{H}_2 + \\text{O}_2$）。"
+    },
+    single: {
+      title: "🔄 單置換反應 (Single Displacement)",
+      sub: "由一種單質與一種化合物反應，置換出另一種單質：$A + BC \\rightarrow AC + B$",
+      formula: "$$\\text{Zn}(s) + 2\\text{HCl}(aq) \\rightarrow \\text{ZnCl}_2(aq) + \\text{H}_2(g)$$",
+      detail: "<strong style='color: var(--accent-yellow);'>活性規律：</strong>活性較強的金屬置換活性較弱的金屬離子或酸中的氫離子（如 $\\text{Fe} + \\text{CuSO}_4 \\rightarrow \\text{FeSO}_4 + \\text{Cu}$）。"
+    },
+    double: {
+      title: "🤝 雙置換反應 (Double Displacement)",
+      sub: "兩種化合物相互交換成分生成兩種新化合物：$AB + CD \\rightarrow AD + CB$",
+      formula: "$$\\text{AgNO}_3(aq) + \\text{NaCl}(aq) \\rightarrow \\text{AgCl}(s)\\downarrow + \\text{NaNO}_3(aq)$$",
+      detail: "<strong style='color: var(--accent-yellow);'>反應驅動力：</strong>通常伴隨生成<strong>沉澱</strong>（$\\text{AgCl}$）、<strong>弱電解質水</strong>（酸鹼中和 $\\text{HCl} + \\text{NaOH} \\rightarrow \\text{NaCl} + \\text{H}_2\\text{O}$）或<strong>氣體</strong>。"
+    },
+    combustion: {
+      title: "🔥 燃燒反應 (Combustion)",
+      sub: "物質與氧化劑（通常為氧氣）進行劇烈放熱、發光的化學反應：",
+      formula: "$$\\text{C}_3\\text{H}_8(g) + 5\\text{O}_2(g) \\rightarrow 3\\text{CO}_2(g) + 4\\text{H}_2\\text{O}(l) \\quad (\\Delta H = -2220\\text{ kJ})$$",
+      detail: "<strong style='color: var(--accent-yellow);'>特徵：</strong>有機烴類完全燃燒產物必為 $\\text{CO}_2$ 與 $\\text{H}_2\\text{O}$；氧氣不足時則發生不完全燃燒產生毒性氣體 $\\text{CO}$ 與碳黑粒。"
+    }
+  };
+
+  document.querySelectorAll('.rxn-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.rxn-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const d = rxnData[tab.dataset.target];
+      if (d) {
+        const box = document.getElementById('rxn-display');
+        box.innerHTML = `
+          <h3 style="color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 8px;">${d.title}</h3>
+          <p style="color: #94a3b8; margin-bottom: 12px;">${d.sub}</p>
+          <div class="formula-box green">${d.formula}</div>
+          <div style="background: rgba(0,0,0,0.25); border-radius: 10px; padding: 12px; margin-top: 10px;">
+            ${d.detail}
+          </div>
+        `;
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise([box]);
+        }
+      }
+    });
+  });
+
+  // ── 2. 互動平衡器邏輯 (丙烷燃燒) ──
+  const coeffs = { c1: 1, c2: 1, c3: 1, c4: 1 };
+
+  function updateBalancer() {
+    const cL = coeffs.c1 * 3;
+    const hL = coeffs.c1 * 8;
+    const oL = coeffs.c2 * 2;
+
+    const cR = coeffs.c3 * 1;
+    const hR = coeffs.c4 * 2;
+    const oR = coeffs.c3 * 2 + coeffs.c4 * 1;
+
+    document.getElementById('val-c1').textContent = coeffs.c1;
+    document.getElementById('val-c2').textContent = coeffs.c2;
+    document.getElementById('val-c3').textContent = coeffs.c3;
+    document.getElementById('val-c4').textContent = coeffs.c4;
+
+    document.getElementById('cnt-c-l').textContent = cL;
+    document.getElementById('cnt-h-l').textContent = hL;
+    document.getElementById('cnt-o-l').textContent = oL;
+
+    document.getElementById('cnt-c-r').textContent = cR;
+    document.getElementById('cnt-h-r').textContent = hR;
+    document.getElementById('cnt-o-r').textContent = oR;
+
+    const cMatch = cL === cR;
+    const hMatch = hL === hR;
+    const oMatch = oL === oR;
+
+    document.getElementById('pill-c-left').className = 'atom-count-pill ' + (cMatch ? 'match' : 'diff');
+    document.getElementById('pill-c-right').className = 'atom-count-pill ' + (cMatch ? 'match' : 'diff');
+    document.getElementById('pill-h-left').className = 'atom-count-pill ' + (hMatch ? 'match' : 'diff');
+    document.getElementById('pill-h-right').className = 'atom-count-pill ' + (hMatch ? 'match' : 'diff');
+    document.getElementById('pill-o-left').className = 'atom-count-pill ' + (oMatch ? 'match' : 'diff');
+    document.getElementById('pill-o-right').className = 'atom-count-pill ' + (oMatch ? 'match' : 'diff');
+
+    const statusEl = document.getElementById('bal-status');
+    if (cMatch && hMatch && oMatch) {
+      statusEl.className = 'status-banner balanced';
+      statusEl.innerHTML = `🎉 恭喜完全平衡！最簡整數係數比：${coeffs.c1} : ${coeffs.c2} : ${coeffs.c3} : ${coeffs.c4}！`;
+    } else {
+      statusEl.className = 'status-banner unbalanced';
+      statusEl.innerHTML = `⚠️ 尚未平衡！當前 C(${cL} vs ${cR})、H(${hL} vs ${hR})、O(${oL} vs ${oR})`;
+    }
+  }
+
+  document.querySelectorAll('.btn-step').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.target;
+      const delta = parseInt(btn.dataset.delta, 10);
+      coeffs[key] = Math.max(1, Math.min(12, coeffs[key] + delta));
+      updateBalancer();
+    });
+  });
+
+  const resetBtn = document.getElementById('btn-reset-bal');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      coeffs.c1 = 1; coeffs.c2 = 1; coeffs.c3 = 1; coeffs.c4 = 1;
+      updateBalancer();
+    });
+  }
+
+  updateBalancer();
+
+  // ── 3. 測驗互動邏輯（選擇題點選、確定作答後台檢核與解鎖） ──
+  const quizCards = document.querySelectorAll('.quiz-card');
+  const submitBtn = document.getElementById('btn-submit-exam');
+  const feedbackMsg = document.getElementById('quiz-feedback-msg');
+  let selectedAnswers = {}; // 紀錄每題選擇的選項索引 { '1': 0, '2': 2 }
+  let isPassed = false;
+
+  // 選項點擊：單選標記（未提交前僅高亮選取，不透露對錯）
+  quizCards.forEach(card => {
+    const qId = card.dataset.q;
+    const opts = card.querySelectorAll('.quiz-opt');
+
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (isPassed) return; // 通過後鎖定
+
+        // 清除該題其他選項的選取狀態
+        opts.forEach(o => o.classList.remove('selected'));
+
+        // 標記當前選中
+        opt.classList.add('selected');
+        selectedAnswers[qId] = parseInt(opt.dataset.idx, 10);
+
+        // 若先前有錯誤提示，點擊後重置提示訊息
+        if (feedbackMsg && feedbackMsg.classList.contains('fail')) {
+          feedbackMsg.className = 'quiz-feedback-msg';
+          feedbackMsg.innerHTML = '<span>✏️ 答案已更新，作答完成後請點擊「確定作答」。</span>';
+        }
+      });
+    });
+  });
+
+  // 點擊「確定作答」按鈕：後台檢核
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => {
+      if (isPassed) return;
+
+      // 1. 檢查是否所有題目皆已作答
+      const answeredKeys = Object.keys(selectedAnswers);
+      if (answeredKeys.length < quizCards.length) {
+        feedbackMsg.className = 'quiz-feedback-msg fail';
+        feedbackMsg.innerHTML = '<span>⚠️ 尚有題目未作答！請完成全部題目後再提交檢核。</span>';
+        return;
+      }
+
+      // 2. 進行後台檢核（不呈現詳解）
+      let allCorrect = true;
+      let correctCount = 0;
+
+      quizCards.forEach(card => {
+        const qId = card.dataset.q;
+        const correctIdx = parseInt(card.dataset.ans, 10);
+        const userAns = selectedAnswers[qId];
+
+        if (userAns === correctIdx) {
+          correctCount++;
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      // 3. 判定反饋
+      if (allCorrect) {
+        // 通過！
+        isPassed = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '檢核通過 ✅';
+
+        // 視覺反饋
+        quizCards.forEach(card => {
+          const opts = card.querySelectorAll('.quiz-opt');
+          opts.forEach(o => {
+            o.style.cursor = 'default';
+            if (o.classList.contains('selected')) {
+              o.classList.add('verified-pass');
+            }
+          });
+        });
+
+        feedbackMsg.className = 'quiz-feedback-msg success';
+        feedbackMsg.innerHTML = '<span>🎉 檢核通過！題目全數答對，單元已成功通關解鎖！</span>';
+
+        // 向外層 SPA 發送通關解鎖訊號
+        notifySectionComplete();
+      } else {
+        // 不通過：反饋未通過，清除作答區答案，呈現能再次檢核狀態，不呈現詳解
+        feedbackMsg.className = 'quiz-feedback-msg fail';
+        feedbackMsg.innerHTML = '<span>❌ 檢核未通過（作答有誤）！已清除作答區答案，請重新檢查並再次作答。</span>';
+
+        // 清除作答區之答案，恢復初始可點選作答狀態
+        selectedAnswers = {};
+        quizCards.forEach(card => {
+          card.querySelectorAll('.quiz-opt').forEach(o => {
+            o.classList.remove('selected');
+          });
+        });
+      }
+    });
+  }
+
+  function notifySectionComplete() {
+    // 1. 向外層 SPA (portal.js) 發送單元通關訊號
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'SECTION_COMPLETE' }, '*');
+    }
+
+    // 2. 在本頁面顯示通關橫幅並平滑滾動至該處
+    const banner = document.getElementById('section-complete-banner');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // ── 4. 滾動座標即時雙向連動 (使母頁手寫板完全同步跟隨章節) ──
+  (function() {
+    if (window.__chemScrollBridgeInstalled) return;
+    window.__chemScrollBridgeInstalled = true;
+
+    function getScrollPos() {
+      var sy = window.scrollY || window.pageYOffset || 0;
+      var sx = window.scrollX || window.pageXOffset || 0;
+      if (document.documentElement) {
+        sy = Math.max(sy, document.documentElement.scrollTop || 0);
+        sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+      }
+      if (document.body) {
+        sy = Math.max(sy, document.body.scrollTop || 0);
+        sx = Math.max(sx, document.body.scrollLeft || 0);
+      }
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) {
+        sy = Math.max(sy, stream.scrollTop || 0);
+        sx = Math.max(sx, stream.scrollLeft || 0);
+      }
+      return { sx: sx, sy: sy };
+    }
+
+    function reportScroll() {
+      if (window.parent && window.parent !== window) {
+        var pos = getScrollPos();
+        window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+      }
+    }
+
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('wheel', function() {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 40);
+      setTimeout(reportScroll, 120);
+    }, { capture: true, passive: true });
+    window.addEventListener('touchmove', function() {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 40);
+    }, { capture: true, passive: true });
+    window.addEventListener('keydown', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 60);
+        setTimeout(reportScroll, 180);
+      }
+    }, { passive: true });
+
+    window.addEventListener('message', function(e) {
+      if (!e.data) return;
+      if (e.data.type === '__chem_scroll_by') {
+        var dy = e.data.deltaY || 0;
+        var dx = e.data.deltaX || 0;
+        window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+        if (document.documentElement) document.documentElement.scrollTop += dy;
+        if (document.body) document.body.scrollTop += dy;
+        var stream = document.getElementById('presentation-stream') ||
+                     document.getElementById('presentation-area') ||
+                     document.getElementById('slides-container') ||
+                     document.getElementById('app');
+        if (stream) stream.scrollTop += dy;
+        reportScroll();
+      } else if (e.data.type === '__chem_get_scroll') {
+        reportScroll();
+      }
+    });
+
+    reportScroll();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', reportScroll);
+    }
+    window.addEventListener('load', reportScroll);
+  })();
+</script>
+
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>

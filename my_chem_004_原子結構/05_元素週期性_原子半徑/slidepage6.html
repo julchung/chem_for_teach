@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-5 互動比較：觀察原子半徑變化</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.7;
+    }
+    .formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-left: 5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">互動 02</span>
+      <h1>互動比較：觀察原子半徑變化</h1>
+    </div>
+    <div class="subtitle">雙軸滑桿拖曳 · 即時動態渲染第三週期與第一族原子球體大小</div>
+  </div>
+
+  
+<div class="main-grid">
+  <!-- Period 3 Slider -->
+  <div class="card">
+    <div class="card-title">➡️ 同週期比較（第三週期：Na ~ Cl）</div>
+    <div style="font-size: 0.9rem; color: #94a3b8;">
+      拖曳滑桿選擇元素，觀察原子半徑隨原子序增加向內收縮之動態：
+    </div>
+    <div style="padding: 10px 0;">
+      <input type="range" id="period-slider" min="0" max="6" value="0" style="width: 100%; accent-color: #38bdf8; cursor: pointer;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+        <span>Na</span><span>Mg</span><span>Al</span><span>Si</span><span>P</span><span>S</span><span>Cl</span>
+      </div>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,23,42,0.6); border-radius: 14px; border: 1px solid #334155; padding: 20px;">
+      <div id="period-atom" style="width: 93px; height: 93px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fbbf24, #b45309); font-size: 1.1rem; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(251,191,36,0.6); transition: all 0.3s ease;">Na</div>
+      <div id="period-info" style="margin-top: 16px; text-align: center; font-size: 1rem; color: #cbd5e1;"></div>
+    </div>
+  </div>
+
+  <!-- Group IA Slider -->
+  <div class="card">
+    <div class="card-title">⬇️ 同族比較（第 IA 族鹼金屬：Li ~ Cs）</div>
+    <div style="font-size: 0.9rem; color: #94a3b8;">
+      拖曳滑桿選擇元素，觀察原子半徑隨電子層數增加顯著放大之動態：
+    </div>
+    <div style="padding: 10px 0;">
+      <input type="range" id="group-slider" min="0" max="4" value="0" style="width: 100%; accent-color: #34d399; cursor: pointer;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+        <span>Li</span><span>Na</span><span>K</span><span>Rb</span><span>Cs</span>
+      </div>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15,23,42,0.6); border-radius: 14px; border: 1px solid #334155; padding: 20px;">
+      <div id="group-atom" style="width: 76px; height: 76px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #34d399, #047857); font-size: 1rem; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(52,211,153,0.6); transition: all 0.3s ease;">Li</div>
+      <div id="group-info" style="margin-top: 16px; text-align: center; font-size: 1rem; color: #cbd5e1;"></div>
+    </div>
+  </div>
+</div>
+
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  
+<script>
+  const periodElements = [
+    {sym:'Na', Z:11, r:186, color:'#fbbf24', shells:3},
+    {sym:'Mg', Z:12, r:160, color:'#34d399', shells:3},
+    {sym:'Al', Z:13, r:143, color:'#fb923c', shells:3},
+    {sym:'Si', Z:14, r:117, color:'#94a3b8', shells:3},
+    {sym:'P',  Z:15, r:110, color:'#60a5fa', shells:3},
+    {sym:'S',  Z:16, r:104, color:'#f87171', shells:3},
+    {sym:'Cl', Z:17, r:99,  color:'#c084fc', shells:3}
+  ];
+
+  const groupElements = [
+    {sym:'Li', Z:3,  r:152, color:'#34d399', shells:2},
+    {sym:'Na', Z:11, r:186, color:'#fbbf24', shells:3},
+    {sym:'K',  Z:19, r:227, color:'#60a5fa', shells:4},
+    {sym:'Rb', Z:37, r:248, color:'#f87171', shells:5},
+    {sym:'Cs', Z:55, r:265, color:'#c084fc', shells:6}
+  ];
+
+  function updatePeriod(idx) {
+    const el = periodElements[idx];
+    const atom = document.getElementById('period-atom');
+    const info = document.getElementById('period-info');
+    const sz = Math.round(el.r * 0.5);
+    atom.style.width = sz + 'px';
+    atom.style.height = sz + 'px';
+    atom.style.background = `radial-gradient(circle at 35% 35%, ${el.color}, rgba(15,23,42,0.95))`;
+    atom.style.boxShadow = `0 0 20px ${el.color}`;
+    atom.textContent = el.sym;
+    info.innerHTML = `
+      <strong style="font-size:1.2rem; color:${el.color};">${el.sym}</strong>（Z=${el.Z}）<br>
+      原子半徑：<span style="color:#fef08a; font-weight:700;">${el.r} pm</span> ｜ 電子層數：${el.shells} 層
+    `;
+  }
+
+  function updateGroup(idx) {
+    const el = groupElements[idx];
+    const atom = document.getElementById('group-atom');
+    const info = document.getElementById('group-info');
+    const sz = Math.round(el.r * 0.5);
+    atom.style.width = sz + 'px';
+    atom.style.height = sz + 'px';
+    atom.style.background = `radial-gradient(circle at 35% 35%, ${el.color}, rgba(15,23,42,0.95))`;
+    atom.style.boxShadow = `0 0 20px ${el.color}`;
+    atom.textContent = el.sym;
+    info.innerHTML = `
+      <strong style="font-size:1.2rem; color:${el.color};">${el.sym}</strong>（Z=${el.Z}）<br>
+      原子半徑：<span style="color:#fef08a; font-weight:700;">${el.r} pm</span> ｜ 電子層數：${el.shells} 層
+    `;
+  }
+
+  document.getElementById('period-slider').addEventListener('input', e => updatePeriod(parseInt(e.target.value)));
+  document.getElementById('group-slider').addEventListener('input', e => updateGroup(parseInt(e.target.value)));
+
+  updatePeriod(0);
+  updateGroup(0);
+</script>
+
+</body>
+</html>

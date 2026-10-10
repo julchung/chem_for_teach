@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-1 化學反應與守恆 · 範例 2：代數法平衡複雜化學反應式 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.95rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 4.5px solid var(--accent-purple);
+            padding: 0.65rem 0.9rem; text-align: center;
+            font-size: 1.15rem; flex-shrink: 0;
+        }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-purple); border-radius: 8px;
+            padding: 0.6rem 0.85rem; line-height: 1.6;
+        }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+        .step-block.blue { border-left-color: var(--accent-blue); background: rgba(56,189,248,0.05); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>1-1 化學反應與守恆 · 範例 2：代數法平衡複雜化學反應式</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目呈現 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.4rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span class="tag tag-yellow">範例 2</span>
+                                <h2 style="color: var(--accent-yellow); margin: 0;">銅與稀硝酸反應之代數法聯立求解</h2>
+                            </div>
+                            <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">一題一頁 · 代數法演練</span>
+                        </div>
+
+                        <div style="background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.28); border-radius: 8px; padding: 0.8rem 1rem;">
+                            <p style="font-size: 1.05rem; line-height: 1.8; color: #f8fafc;">
+                                <strong>題目說明：</strong><br>
+                                銅金屬溶於稀硝酸中，生成硝酸銅藍色溶液、無色一氧化氮氣體與水：
+                                $$a\,\mathrm{Cu} + b\,\mathrm{HNO_3} \longrightarrow c\,\mathrm{Cu(NO_3)_2} + d\,\mathrm{NO} + e\,\mathrm{H_2O}$$
+                                試利用<strong>「代數法」</strong>求解最簡整數係數比 $(a, b, c, d, e)$，並求出反應物之係數比值 $\dfrac{b}{a}$ 為何？
+                            </p>
+                        </div>
+
+                        <!-- 題目特色與提示 -->
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 0.75rem 1rem;">
+                            <strong style="color: var(--accent-cyan); font-size: 0.95rem; display: block; margin-bottom: 0.35rem;">
+                                💡 為何此題適合使用代數法？
+                            </strong>
+                            <p style="font-size: 0.92rem; color: #cbd5e1; line-height: 1.7;">
+                                反應物中只有一種含氮物質 ($\mathrm{HNO_3}$)，但生成物中<strong>氮元素分散於 $\mathrm{Cu(NO_3)_2}$ 與 $\mathrm{NO}$ 兩處</strong>，且<strong>氧元素分散於三種生成物中</strong>！<br>
+                                此類化學式若以觀察法易陷入反覆試誤，列出元素原子守恆聯立方程組，能確保精準無誤定解。
+                            </p>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.3rem;">
+                            <button class="btn-action" onclick="toggleSolution('s5-solution')" style="width: 100%; padding: 9px 18px; font-size: 0.98rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設留空白，點擊開合） -->
+                    <div class="panel scroll-panel" style="background: rgba(255,255,255,0.025); position: relative;">
+                        <!-- 預設留空 -->
+
+                        <!-- 詳解內容盒 -->
+                        <div id="s5-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(167,139,250,0.3); padding-bottom: 0.4rem;">
+                                <h2 style="color: var(--accent-purple); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>✓</span> 完整代數法聯立求解步驟
+                                </h2>
+                                <span class="tag" style="background: rgba(167,139,250,0.15); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.4);">
+                                    $b/a = 8/3$
+                                </span>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-cyan);">Step 1：依四大元素原子守恆列聯立方程式</strong><br>
+                                反應式：$a\,\mathrm{Cu} + b\,\mathrm{HNO_3} \rightarrow c\,\mathrm{Cu(NO_3)_2} + d\,\mathrm{NO} + e\,\mathrm{H_2O}$
+                                <ul style="margin-left: 1.2rem; margin-top: 0.3rem; line-height: 1.6; font-size: 0.92rem;">
+                                    <li>(1) $\mathrm{Cu}$ 守恆：$a = c$</li>
+                                    <li>(2) $\mathrm{H}$ 守恆：$b = 2e$</li>
+                                    <li>(3) $\mathrm{N}$ 守恆：$b = 2c + d$</li>
+                                    <li>(4) $\mathrm{O}$ 守恆：$3b = 6c + d + e$</li>
+                                </ul>
+                            </div>
+
+                            <div class="step-block blue">
+                                <strong style="color: var(--accent-blue);">Step 2：令基準變數 $a = 1$</strong><br>
+                                由 (1) 式可得：$c = a = \mathbf{1}$。
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-yellow);">Step 3：代入求解其餘未知數</strong><br>
+                                將 $b = 2e$ 與 $c = 1$ 代入 (3) 式：
+                                $$2e = 2(1) + d \implies d = 2e - 2$$
+                                將 $b = 2e, c = 1, d = 2e - 2$ 一併代入 (4) 式：
+                                $$3(2e) = 6(1) + (2e - 2) + e$$
+                                $$6e = 4 + 3e \implies 3e = 4 \implies \mathbf{e = \frac{4}{3}}$$
+                                代回求出 $b$ 與 $d$：
+                                $$b = 2e = 2 \times \frac{4}{3} = \mathbf{\frac{8}{3}}$$
+                                $$d = 2\left(\frac{4}{3}\right) - 2 = \mathbf{\frac{2}{3}}$$
+                            </div>
+
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">Step 4：通分消去分母化簡</strong><br>
+                                各係數比為：
+                                $$(a, b, c, d, e) = \left(1, \frac{8}{3}, 1, \frac{2}{3}, \frac{4}{3}\right)$$
+                                同乘分母 <strong>3</strong> 得最簡整數比：
+                                $$\mathbf{(a, b, c, d, e) = (3, 8, 3, 2, 4)}$$
+                                平衡後之完整方程式為：
+                                $$\mathbf{3\,Cu + 8\,HNO_3 \longrightarrow 3\,Cu(NO_3)_2 + 2\,NO + 4\,H_2O}$$
+                                <strong>所求比值：</strong> $\dfrac{b}{a} = \dfrac{8}{3}$。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+    } else {
+        el.classList.add('revealed');
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+</script>
+</body>
+</html>

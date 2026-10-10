@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9-1 氧化數 · Rule 03 恆定規則 (優先指派順序)</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #ec4899;
+      --accent: #8b5cf6;
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --cyan: #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+    }
+
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, var(--cyan), var(--primary));
+      color: #0f172a;
+      font-size: 0.85rem;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      font-weight: 800;
+    }
+
+    h1 {
+      font-size: clamp(1.4rem, 2.2vw, 2.1rem);
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 1rem);
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: clamp(16px, 2.5vw, 28px);
+      flex: 1;
+    }
+
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      padding: clamp(18px, 2vw, 26px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-title {
+      font-size: clamp(1.1rem, 1.3vw, 1.3rem);
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+
+    .priority-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .p-item {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .p-rank {
+      background: rgba(99, 102, 241, 0.2);
+      color: #c7d2fe;
+      font-weight: 900;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .p-content strong { color: #f8fafc; font-size: 1.05rem; display: block; }
+    .p-content small { color: var(--text-muted); font-size: 0.85rem; }
+
+    .p-val {
+      font-size: 1.3rem;
+      font-weight: 900;
+      font-family: monospace;
+      color: var(--cyan);
+      background: #0f172a;
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+
+    .flow-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #0f172a;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .case-box {
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 10px 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="header-bar">
+    <div>
+      <div class="badge">9-1 氧化數 · Rule 03</div>
+      <h1><span>🔒</span> 恆定規則 (最高指派優先權)</h1>
+      <div class="subtitle">Fixed Oxidation States &amp; High Priority Elements</div>
+    </div>
+  </header>
+
+  <main class="main-grid">
+    <!-- Left Column: Fixed States List -->
+    <div class="card">
+      <div class="card-title">🛡️ 化合物中氧化數不可動搖之元素</div>
+
+      <div class="priority-list">
+        <div class="p-item">
+          <div class="p-rank">Top 0</div>
+          <div class="p-content">
+            <strong>未化合之自由單質</strong>
+            <small>例：\(\text{O}_2, \text{O}_3, \text{P}_4, \text{S}_8, \text{Fe}, \text{Cu}\)</small>
+          </div>
+          <div class="p-val" style="color:#94a3b8;">0</div>
+        </div>
+
+        <div class="p-item">
+          <div class="p-rank">Top 1</div>
+          <div class="p-content">
+            <strong>氟 (F) 化合物</strong>
+            <small>電負度達 4.0 最高峰，無任何元素可奪其電子</small>
+          </div>
+          <div class="p-val" style="color:#f43f5e;">-1</div>
+        </div>
+
+        <div class="p-item">
+          <div class="p-rank">Top 2</div>
+          <div class="p-content">
+            <strong>1A 族 (鹼金屬) 化合物</strong>
+            <small>\(\text{Li, Na, K, Rb, Cs}\) 失去唯一價電子即達八隅體</small>
+          </div>
+          <div class="p-val" style="color:#38bdf8;">+1</div>
+        </div>
+
+        <div class="p-item">
+          <div class="p-rank">Top 3</div>
+          <div class="p-content">
+            <strong>2A 族 (鹼土金屬) 化合物</strong>
+            <small>\(\text{Be, Mg, Ca, Sr, Ba}\) 失去 2 個價電子</small>
+          </div>
+          <div class="p-val" style="color:#34d399;">+2</div>
+        </div>
+
+        <div class="p-item">
+          <div class="p-rank">Top 4</div>
+          <div class="p-content">
+            <strong>鋁 (Al) 化合物</strong>
+            <small>典型 3A 族金屬，化合物中恆以 \(+3\) 存在</small>
+          </div>
+          <div class="p-val" style="color:#a78bfa;">+3</div>
+        </div>
+
+        <div class="p-item">
+          <div class="p-rank">附註</div>
+          <div class="p-content">
+            <strong>常見固定金屬：\(\text{Zn}^{2+}, \text{Cd}^{2+}, \text{Ag}^+\)</strong>
+            <small>\(\text{Zn} = +2, \text{Cd} = +2, \text{Ag} = +1\)</small>
+          </div>
+          <div class="p-val" style="color:#fbbf24;">定值</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Priority Workflow & Practice -->
+    <div class="card">
+      <div class="card-title">🪜 氧化數指派標準作業程序 (SOP)</div>
+
+      <div class="flow-card">
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-num">1</div>
+            <div><strong>先定恆定金屬與氟：</strong>1A (+1)、2A (+2)、Al (+3)、F (-1)</div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">2</div>
+            <div><strong>次定氫與氧：</strong>H 通常為 +1、O 通常為 -2（注意特殊例外）</div>
+          </div>
+          <div class="flow-step">
+            <div class="step-num">3</div>
+            <div><strong>後求其他元素：</strong>利用「代數和 = 總電荷」解一元一次方程式</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-box">
+        <strong>🧪 經典實戰拆解：四氫化鋰鋁 (\(\text{LiAlH}_4\))</strong>
+        <p style="margin-top:6px; font-size:0.95rem; color:#cbd5e1; line-height:1.6;">
+          • \(\text{Li}\) 為 1A 族金屬 → 恆為 <strong>+1</strong><br>
+          • \(\text{Al}\) 為 3A 族金屬 → 恆為 <strong>+3</strong><br>
+          • 化合物為電中性（總電荷為 0）：<br>
+          \[(+1) + (+3) + 4 \times x = 0 \implies 4x = -4 \implies x = \mathbf{-1}\]
+          👉 此時 \(\text{H}\) 的氧化數為 <strong>-1</strong>（金屬氫化物）！
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

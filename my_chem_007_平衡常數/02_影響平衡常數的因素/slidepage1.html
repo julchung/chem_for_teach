@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>勒沙特略原理核心觀念 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-intro">
+    <h1>勒沙特略原理 (Le Chatelier's Principle)</h1>
+    <div class="grid-2" style="flex:1; min-height:0; margin-bottom:0.5rem;">
+        <div class="panel scroll-panel">
+            <h2>⚖️ 核心定義</h2>
+            <div class="formula-box">
+                一已達平衡的系統，若改變影響平衡的因素，<br>
+                平衡將朝<strong>減弱（抵消）該改變</strong>的方向移動，以達成<strong>新平衡</strong>。
+            </div>
+            <div class="info-card">
+                <p><strong>🚨 關鍵精神：</strong></p>
+                <ul style="margin-left:1.2rem; margin-top:0.3rem; line-height:1.7;">
+                    <li><strong>反抗外加改變：</strong>增加濃度 $\rightarrow$ 朝消耗方向移動；提高溫度 $\rightarrow$ 朝吸熱方向移動。</li>
+                    <li><strong>無法完全抵消：</strong>移動只能「減弱」外加影響，無法使系統數值完全回到原狀態。</li>
+                    <li><strong>動態平衡：</strong>新平衡時正、逆反應速率再次相等，但數值通常與舊平衡不同。</li>
+                </ul>
+            </div>
+            <div class="info-card-yellow" style="margin-top:0.4rem;">
+                <p>💡 <em>法國化學家 勒沙特略 (Henri Le Chatelier, 1884) 提出</em></p>
+            </div>
+        </div>
+        <div class="panel scroll-panel">
+            <h2>🎯 四大影響變因概覽</h2>
+            <div class="k-card">
+                <div class="k-card-title"><span class="tag tag-cyan">濃度</span>改變反應物或生成物濃度</div>
+                <div class="k-card-text">增加某物種濃度 $\rightarrow$ 平衡朝消耗該物種的方向移動。<strong>$K$ 值不變</strong>。</div>
+            </div>
+            <div class="k-card">
+                <div class="k-card-title"><span class="tag tag-blue">壓力／體積</span>改變氣體容器體積</div>
+                <div class="k-card-text">壓縮體積（增壓）$\rightarrow$ 朝氣體分子莫耳數較少的方向移動。<strong>$K$ 值不變</strong>。</div>
+            </div>
+            <div class="k-card" style="border-color: rgba(248,113,113,0.4);">
+                <div class="k-card-title"><span class="tag tag-red">溫度</span>唯一能改變 K 值的因素！</div>
+                <div class="k-card-text">升溫 $\rightarrow$ 平衡朝<strong>吸熱方向</strong>移動。<strong>$K$ 值會改變！</strong></div>
+            </div>
+            <div class="k-card" style="border-color: rgba(52,211,153,0.4);">
+                <div class="k-card-title"><span class="tag tag-green">催化劑</span>同等降低正逆反應活化能</div>
+                <div class="k-card-text">縮短達到平衡所需的時間，但<strong>不改變平衡位置，不改變 $K$ 值</strong>。</div>
+            </div>
+            <div class="info-card-purple" style="margin-top:0.4rem;">
+                <p><strong>📐 反應商 $Q$ 與平衡常數 $K$：</strong></p>
+                <p style="margin-top:0.2rem;">$Q < K \rightarrow$ 向右進行 ； $Q > K \rightarrow$ 向左進行 ； $Q = K \rightarrow$ 達成平衡。</p>
+            </div>
+        </div>
+    </div>
+    <!-- 底部：學習架構導引 -->
+    <div class="panel" style="padding:0.6rem 1rem; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; background:rgba(15,23,42,0.6);">
+        <div style="font-size:0.92rem; color:var(--accent-cyan); font-weight:700;">
+            🗺️ 本單元架構：濃度效應 $\rightarrow$ 壓力體積效應 $\rightarrow$ 溫度效應 $\rightarrow$ 催化劑 $\rightarrow$ 哈柏法應用 $\rightarrow$ 實戰範例演練
+        </div>
+        <div class="tag tag-purple">共 18 頁分頁教學 + 1 頁核心連連看通關</div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+</script>
+</body>
+</html>

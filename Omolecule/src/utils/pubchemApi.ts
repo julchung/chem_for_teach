@@ -235,9 +235,23 @@ export function translateToZh(iupacName: string): string {
 
 }
 
+/**
+ * Strip explicit [H] atoms from a SMILES string so PubChem can match it.
+ * e.g. "[H]C#C[H]" -> "C#C"
+ */
+function stripExplicitH(smiles: string): string {
+  // Remove [H] tokens and any bonds leading to them
+  return smiles
+    .replace(/\[H\]/g, '')   // remove all [H]
+    .replace(/\(\)/g, '')    // clean up empty branches left behind
+    .trim();
+}
+
 export async function fetchMoleculeInfo(smiles: string): Promise<MoleculeInfo | null> {
   try {
-    const encodedSmiles = encodeURIComponent(smiles);
+    // Strip [H] so PubChem can match the canonical SMILES
+    const canonical = stripExplicitH(smiles);
+    const encodedSmiles = encodeURIComponent(canonical || smiles);
 
     // Get CID from SMILES
     const cidResp = await fetch(
@@ -250,14 +264,19 @@ export async function fetchMoleculeInfo(smiles: string): Promise<MoleculeInfo | 
 
     // Get IUPAC name and 3D SDF in parallel
     const [propResp, sdfResp] = await Promise.all([
-      fetch(`${PUBCHEM_BASE}/compound/cid/${cid}/property/IUPACName/JSON`),
+      fetch(`${PUBCHEM_BASE}/compound/cid/${cid}/property/Title,IUPACName/JSON`),
       fetch(`${PUBCHEM_BASE}/compound/cid/${cid}/SDF?record_type=3d`),
     ]);
 
-    const propData = await propResp.json();
-    const iupacName: string =
-      propData.PropertyTable?.Properties?.[0]?.IUPACName ?? '';
-    const sdf = await sdfResp.text();
+    let iupacName = '';
+    if (propResp.ok) {
+      const propData = await propResp.json();
+      const props = propData.PropertyTable?.Properties?.[0];
+      iupacName = props?.IUPACName ?? props?.Title ?? '';
+    }
+    const sdf = sdfResp.ok ? await sdfResp.text() : '';
+
+
 
     return {
       iupacName,
@@ -270,3 +289,4 @@ export async function fetchMoleculeInfo(smiles: string): Promise<MoleculeInfo | 
     return null;
   }
 }
+

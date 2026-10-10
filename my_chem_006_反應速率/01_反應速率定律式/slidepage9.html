@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>化學反應速率 | 互動教學</title>
+    <meta name="description" content="選修化學二：反應速率定義、速率定律式、級數關係互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto !important; scrollbar-width: thin; scrollbar-color: rgba(56,189,248,0.4) transparent; }
+        .scroll-panel::-webkit-scrollbar { width: 5px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.4); border-radius: 3px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide slide-intro active" id="slide-second-order">
+                <h1>二級反應：公式導證與函數圖形</h1>
+                <div class="grid-2" style="grid-template-columns: 0.82fr 1.18fr; gap: 0.75rem; height: 100%; min-height: 0;">
+                    <!-- 左欄：公式導證與半生期 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.35rem; padding:0.7rem 0.9rem; overflow-y:auto; min-height:0;">
+                        <h2 style="margin-bottom:0.2rem; font-size:1.05rem;">速率定律積分導證</h2>
+                        <div class="info-card" style="margin:0.2rem 0; padding:0.35rem 0.6rem; border-color:var(--accent-purple);">
+                            <p style="margin:0; font-weight:bold; font-size:0.9rem;">微分速率定律式：</p>
+                            <div class="formula-box" style="margin:0.2rem 0; padding:0.2rem; font-size:1.05rem;">$$-\frac{d[A]}{dt} = k[A]^2 \quad \Rightarrow \quad \frac{d[A]}{[A]^2} = -k\,dt$$</div>
+                        </div>
+                        <p style="margin:0.1rem 0; font-size:0.9rem;">兩邊積分 ($\int_{[A]_0}^{[A]_t} \frac{d[A]}{[A]^2} = -k \int_0^t dt$)，利用 $\int x^{-2}dx = -x^{-1}$：</p>
+                        <div class="highlight-box" style="text-align:center; margin:0.2rem 0; padding:0.3rem 0.6rem;">
+                            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-yellow);">$$\frac{1}{[A]_t} = kt + \frac{1}{[A]_0}$$</div>
+                        </div>
+                        <h2 style="margin-top:0.4rem; margin-bottom:0.2rem; font-size:1.05rem;">半生期 ($t_{1/2}$)</h2>
+                        <p style="margin:0.1rem 0; font-size:0.9rem;">當 $t = t_{1/2}$ 時，$[A]_t = \frac{1}{2}[A]_0$，代入上式解得：</p>
+                        <div class="formula-box" style="margin:0.2rem 0; padding:0.25rem; font-size:1.08rem;">$$t_{1/2} = \frac{1}{k[A]_0}$$</div>
+                        <p style="color:var(--accent-green); font-weight:bold; margin-top:0.25rem; font-size:0.92rem; line-height:1.4;">※ 結論：二級反應的半生期與初濃度 $[A]_0$ <strong>成反比</strong>（初濃度越低，半生期越長；每過一個半生期，耗時加倍）。</p>
+                    </div>
+
+                    <!-- 右欄：2x2 四大函數圖形特徵 (寬幅放大自適應填滿) -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.5rem 0.7rem; gap:0.4rem; height:100%; min-height:0; overflow:hidden;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                            <h2 style="margin:0; font-size:1.15rem; color:var(--accent-yellow);">📈 函數圖形特徵</h2>
+                            <span style="font-size:0.8rem; color:#94a3b8; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);">二級反應矩陣</span>
+                        </div>
+
+                        <!-- 2x2 圖形矩陣 (自適應均勻展開) -->
+                        <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:0.5rem; flex:1; min-height:0;">
+                            <!-- ① R vs [A] (拋物線二次曲線) -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.02); border-radius:8px; padding:0.3rem 0.45rem; border:1px solid rgba(255,255,255,0.07); min-height:0;">
+                                <p style="margin:0 0 2px 0; font-weight:bold; font-size:0.86rem; color:var(--accent-red); flex-shrink:0;">① R vs [A] (拋物線二次曲線)</p>
+                                <svg viewBox="0 0 280 140" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block; background:var(--glass); border-radius:8px; border:1px solid var(--glass-border); padding:2px;">
+                                    <line x1="38" y1="115" x2="265" y2="115" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="38" y1="12"  x2="38"  y2="115" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="265,115 255,110 255,120" fill="#cbd5e1"/>
+                                    <polygon points="38,12 33,22 43,22" fill="#cbd5e1"/>
+                                    <text x="260" y="106" fill="#cbd5e1" font-size="13" font-weight="bold" text-anchor="end">[A]</text>
+                                    <text x="44"  y="24"  fill="#cbd5e1" font-size="13" font-weight="bold">R</text>
+                                    <!-- 拋物線 -->
+                                    <path d="M 38 115 Q 145 115 250 18" fill="none" stroke="var(--accent-red)" stroke-width="3.5"/>
+                                    <!-- 說明文字在左上方大片留白處，絕不疊線 -->
+                                    <text x="50" y="38" fill="var(--accent-red)" font-size="14" font-weight="bold">R = k[A]²</text>
+                                    <text x="50" y="56" fill="#94a3b8" font-size="11">二次曲線 (拋物線)</text>
+                                </svg>
+                            </div>
+
+                            <!-- ② log R vs log [A] (斜率 = 2) -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.02); border-radius:8px; padding:0.3rem 0.45rem; border:1px solid rgba(255,255,255,0.07); min-height:0;">
+                                <p style="margin:0 0 2px 0; font-weight:bold; font-size:0.86rem; color:var(--accent-purple); flex-shrink:0;">② log R vs log [A] (斜率 = 2)</p>
+                                <svg viewBox="0 0 280 140" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block; background:var(--glass); border-radius:8px; border:1px solid var(--glass-border); padding:2px;">
+                                    <line x1="38" y1="115" x2="265" y2="115" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="38" y1="12"  x2="38"  y2="115" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="265,115 255,110 255,120" fill="#cbd5e1"/>
+                                    <polygon points="38,12 33,22 43,22" fill="#cbd5e1"/>
+                                    <text x="260" y="106" fill="#cbd5e1" font-size="13" font-weight="bold" text-anchor="end">log [A]</text>
+                                    <text x="44"  y="24"  fill="#cbd5e1" font-size="13" font-weight="bold">log R</text>
+                                    <!-- 一次直線 -->
+                                    <line x1="38" y1="92" x2="225" y2="16" stroke="var(--accent-purple)" stroke-width="3.5"/>
+                                    <circle cx="38" cy="92" r="4.5" fill="var(--accent-purple)"/>
+                                    <text x="32" y="96" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="end">log k</text>
+                                    <!-- 說明文字在右下方留白處，絕不疊線 -->
+                                    <text x="145" y="76" fill="var(--accent-purple)" font-size="14" font-weight="bold">斜率 m = 2</text>
+                                    <text x="145" y="94" fill="#cbd5e1" font-size="11">截距 = log k</text>
+                                </svg>
+                            </div>
+
+                            <!-- ③ [A] vs t (雙曲線衰減，半生期加倍) -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.02); border-radius:8px; padding:0.3rem 0.45rem; border:1px solid rgba(255,255,255,0.07); min-height:0;">
+                                <p style="margin:0 0 2px 0; font-weight:bold; font-size:0.86rem; color:var(--accent-cyan); flex-shrink:0;">③ [A] vs t (雙曲線，半生期加倍)</p>
+                                <svg viewBox="0 0 280 140" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block; background:var(--glass); border-radius:8px; border:1px solid var(--glass-border); padding:2px;">
+                                    <line x1="42" y1="112" x2="265" y2="112" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="42" y1="10"  x2="42"  y2="112" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="265,112 255,107 255,117" fill="#cbd5e1"/>
+                                    <polygon points="42,10 37,20 47,20" fill="#cbd5e1"/>
+                                    <text x="260" y="104" fill="#cbd5e1" font-size="12" font-weight="bold" text-anchor="end">時間 t</text>
+                                    <text x="48"  y="20"  fill="#cbd5e1" font-size="12" font-weight="bold">[A]</text>
+                                    <!-- 嚴謹平滑雙曲線 -->
+                                    <path d="M 42,16 C 68,38 88,52 107,64 C 148,78 192,84 237,88 C 248,89 255,90 262,91" fill="none" stroke="var(--accent-cyan)" stroke-width="3.5"/>
+                                    <!-- [A]0 點 -->
+                                    <circle cx="42" cy="16" r="4.5" fill="#38bdf8"/>
+                                    <circle cx="42" cy="16" r="2.5" fill="#fff"/>
+                                    <text x="36" y="20" fill="var(--accent-green)" font-size="11" font-weight="bold" text-anchor="end">[A]₀</text>
+                                    <!-- 1/2 [A]0 點 (107, 64) -->
+                                    <line x1="42" y1="64" x2="107" y2="64" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <line x1="107" y1="64" x2="107" y2="112" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <circle cx="107" cy="64" r="4" fill="var(--accent-green)"/>
+                                    <text x="36" y="68" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="end">½[A]₀</text>
+                                    <!-- 1/4 [A]0 點 (237, 88) -->
+                                    <line x1="42" y1="88" x2="237" y2="88" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <line x1="237" y1="88" x2="237" y2="112" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <circle cx="237" cy="88" r="4" fill="var(--accent-purple)"/>
+                                    <text x="36" y="92" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="end">¼[A]₀</text>
+                                    <!-- 半生期括弧 1: 42 到 107 (寬度 65) -->
+                                    <path d="M 44 116 Q 74.5 125 105 116" fill="none" stroke="var(--accent-green)" stroke-width="1.8"/>
+                                    <text x="74.5" y="132" fill="var(--accent-green)" font-size="12" font-weight="bold" text-anchor="middle">t₁/₂</text>
+                                    <!-- 半生期括弧 2: 107 到 237 (寬度 130，完全加倍！) -->
+                                    <path d="M 109 116 Q 172 126 235 116" fill="none" stroke="var(--accent-purple)" stroke-width="1.8"/>
+                                    <text x="172" y="132" fill="var(--accent-purple)" font-size="12" font-weight="bold" text-anchor="middle">2t₁/₂ (加倍)</text>
+                                    <!-- 說明文字在右上方留白處，絕不疊線 -->
+                                    <text x="135" y="28" fill="var(--accent-yellow)" font-size="13" font-weight="bold">[A] = [A]₀/(1+k[A]₀t)</text>
+                                </svg>
+                            </div>
+
+                            <!-- ④ 1/[A] vs t (嚴謹重繪：等差刻度與加倍半生期一次直線) -->
+                            <div style="display:flex; flex-direction:column; background:rgba(255,255,255,0.02); border-radius:8px; padding:0.3rem 0.45rem; border:1px solid rgba(255,255,255,0.07); min-height:0;">
+                                <p style="margin:0 0 2px 0; font-weight:bold; font-size:0.86rem; color:var(--accent-yellow); align-self:flex-start;">④ 1/[A] vs t (一次直線，斜率 = k)</p>
+                                <svg viewBox="0 0 280 140" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; flex:1; min-height:0; display:block; background:var(--glass); border-radius:8px; border:1px solid var(--glass-border); padding:2px;">
+                                    <line x1="45" y1="114" x2="265" y2="114" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <line x1="45" y1="10"  x2="45"  y2="114" stroke="#cbd5e1" stroke-width="2.2"/>
+                                    <polygon points="265,114 255,109 255,119" fill="#cbd5e1"/>
+                                    <polygon points="45,10 40,20 50,20" fill="#cbd5e1"/>
+                                    <text x="260" y="106" fill="#cbd5e1" font-size="12" font-weight="bold" text-anchor="end">時間 t</text>
+                                    <text x="52"  y="20"  fill="#cbd5e1" font-size="12" font-weight="bold">1/[A]</text>
+                                    
+                                    <!-- 一次直線 1/[A] = kt + 1/[A]0：精確通過 (45,92), (105,70), (165,48), (225,26) -->
+                                    <line x1="45" y1="92" x2="255" y2="15" stroke="var(--accent-yellow)" stroke-width="3.5"/>
+                                    
+                                    <!-- 1/[A]0 截距點 (45, 92) -->
+                                    <circle cx="45" cy="92" r="4.5" fill="#38bdf8"/>
+                                    <circle cx="45" cy="92" r="2.5" fill="#fff"/>
+                                    <text x="39" y="96" fill="var(--accent-green)" font-size="11" font-weight="bold" text-anchor="end">1/[A]₀</text>
+                                    
+                                    <!-- 2/[A]0 點 (105, 70) 耗時 t1/2 -->
+                                    <line x1="45" y1="70" x2="105" y2="70" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <line x1="105" y1="70" x2="105" y2="114" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <circle cx="105" cy="70" r="4" fill="var(--accent-green)"/>
+                                    <text x="39" y="74" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="end">2/[A]₀</text>
+                                    
+                                    <!-- 3/[A]0 點 (165, 48) 等距參考點 -->
+                                    <line x1="45" y1="48" x2="165" y2="48" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+                                    <line x1="165" y1="48" x2="165" y2="114" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+                                    <text x="39" y="52" fill="#94a3b8" font-size="10" text-anchor="end">3/[A]₀</text>
+                                    
+                                    <!-- 4/[A]0 點 (225, 26) 總耗時 3t1/2 -->
+                                    <line x1="45" y1="26" x2="225" y2="26" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <line x1="225" y1="26" x2="225" y2="114" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3,3"/>
+                                    <circle cx="225" cy="26" r="4" fill="var(--accent-purple)"/>
+                                    <text x="39" y="30" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="end">4/[A]₀</text>
+                                    
+                                    <!-- 半生期括弧 1: 45 到 105 (長度 60) -->
+                                    <path d="M 47 118 Q 75 126 103 118" fill="none" stroke="var(--accent-green)" stroke-width="1.8"/>
+                                    <text x="75" y="133" fill="var(--accent-green)" font-size="12" font-weight="bold" text-anchor="middle">t₁/₂</text>
+                                    
+                                    <!-- 半生期括弧 2: 105 到 225 (長度 120，完全是第1段的2倍！) -->
+                                    <path d="M 107 118 Q 165 127 223 118" fill="none" stroke="var(--accent-purple)" stroke-width="1.8"/>
+                                    <text x="165" y="133" fill="var(--accent-purple)" font-size="12" font-weight="bold" text-anchor="middle">2t₁/₂ (加倍)</text>
+                                    
+                                    <!-- 說明文字放在直線左上方留白處，絕不疊線 -->
+                                    <text x="70" y="30" fill="var(--accent-yellow)" font-size="13" font-weight="bold">斜率 = k (定值)</text>
+                                    <text x="70" y="46" fill="#cbd5e1" font-size="11">1/[A] = kt + 1/[A]₀</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="highlight-box" style="margin:0; text-align:center; padding:0.35rem 0.6rem; border-color:var(--accent-purple); flex-shrink:0;">
+                            <p style="margin:0; font-weight:bold; font-size:0.95rem; color:var(--accent-yellow);">⚡ 重點記憶：濃度倒數 $1/[A]$ 與時間呈一次直線關係；每半衰一次，所需時間加倍！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+    // Clean stubs to prevent any external or inline call error
+    window.toggleSolution = function(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+    };
+    window.updateSlides = function() {};
+</script>
+</body>
+</html>

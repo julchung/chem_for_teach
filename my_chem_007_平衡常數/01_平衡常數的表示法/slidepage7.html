@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>壓力平衡常數 Kp 的表示法 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.55vw, 1.35rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.22vw, 1.12rem); line-height: 1.55; margin-bottom: 0.35rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.85rem, 1.1vw, 1.02rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.5rem 0.65rem; text-align: center; }
+        table.data-table th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+        .calc-step {
+            background: rgba(0,0,0,0.2); border-left: 4px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0; padding: 0.6rem 0.9rem; margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .step-num {
+            display: inline-block; background: var(--accent-purple); color: #0f172a;
+            width: 1.5em; height: 1.5em; border-radius: 50%; text-align: center; line-height: 1.5em;
+            font-weight: 900; font-size: 0.85rem; margin-right: 0.45rem; flex-shrink: 0;
+        }
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-kp">
+                <h1>壓力平衡常數 $K_p$ 的表示法</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>氣體反應的壓力表示法</h2>
+                        <div class="info-card">
+                            <p>對於氣相反應，可用各氣體的<strong>分壓（atm）</strong>來表示平衡常數，稱為 $K_p$：</p>
+                        </div>
+                        <div style="margin-top:0.3rem;">
+                            <div class="formula-box" style="font-size:1rem;">
+                                $\text{a}\text{A}(\text{g}) + \text{b}\text{B}(\text{g}) \rightleftharpoons \text{c}\text{C}(\text{g}) + \text{d}\text{D}(\text{g})$
+                            </div>
+                            <div class="formula-box-purple" style="margin-top:0.3rem;">
+                                $K_p = \dfrac{P_C^c \cdot P_D^d}{P_A^a \cdot P_B^b}$
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.3rem;">
+                            <p><strong>$K_p$ 與 $K_c$ 的關係：</strong>
+                                <button onclick="openKpModal()" style="margin-left:8px; padding:2px 12px; background:rgba(251,191,36,0.2); border:1px solid rgba(251,191,36,0.55); color:#fde68a; border-radius:20px; cursor:pointer; font-size:0.85rem; font-weight:600; vertical-align:middle; transition:0.2s;" onmouseover="this.style.background='rgba(251,191,36,0.4)'" onmouseout="this.style.background='rgba(251,191,36,0.2)'">完整導證過程</button>
+                            </p>
+                            <div class="formula-box-blue" style="margin-top:0.4rem; font-size:1.1rem;">
+                                $K_p = K_c \cdot (RT)^{\Delta n}$
+                            </div>
+                            <p style="margin-top:0.3rem;"><strong>其中：</strong></p>
+                            <ul style="margin-left:1rem; margin-top:0.2rem;">
+                                <li>$R = 0.082$ L·atm/(mol·K)</li>
+                                <li>$T$：絕對溫度（K）</li>
+                                <li>$\Delta n = (c+d) - (a+b)$（氣態產物 − 反應物係數差）</li>
+                            </ul>
+                        </div>
+                        <div class="info-card-red" style="margin-top:0.3rem;">
+                            <p><strong>當 $\Delta n = 0$ 時：</strong>$K_p = K_c$（兩者相等，如 $2\text{HI} \rightleftharpoons \text{H}_2 + \text{I}_2$）</p>
+                        </div>
+                    </div>
+                    <div class="panel scroll-panel">
+                        <h2>🔢 $K_p$ ↔ $K_c$ 換算範例</h2>
+                        <div class="info-card-cyan">
+                            <p><strong>例題：</strong>在 727°C（= 1000 K）時，$\text{N}_2(\text{g}) + 3\text{H}_2(\text{g}) \rightleftharpoons 2\text{NH}_3(\text{g})$</p>
+                            <p style="margin-top:0.3rem;">已知 $K_c = 6.0 \times 10^{-2}$，求 $K_p$。</p>
+                        </div>
+                        <div class="calc-step" style="margin-top:0.5rem;">
+                            <span class="step-num">1</span>
+                            <span>計算 $\Delta n$：</span>
+                            <p style="margin-top:0.2rem;">$\Delta n = 2 - (1+3) = 2 - 4 = -2$</p>
+                        </div>
+                        <div class="calc-step">
+                            <span class="step-num">2</span>
+                            <span>代入公式：</span>
+                            <div style="margin-top:0.2rem;">
+                                $K_p = K_c \cdot (RT)^{\Delta n}$
+                                <br>$= 6.0 \times 10^{-2} \times (0.082 \times 1000)^{-2}$
+                                <br>$= 6.0 \times 10^{-2} \times (82)^{-2}$
+                                <br>$= 6.0 \times 10^{-2} \times \dfrac{1}{6724}$
+                            </div>
+                        </div>
+                        <div class="calc-step">
+                            <span class="step-num">3</span>
+                            <span>結果：</span>
+                            <div class="formula-box" style="margin-top:0.3rem; font-size:1rem;">
+                                $K_p \approx 8.9 \times 10^{-6}$ atm$^{-2}$
+                            </div>
+                        </div>
+                        <div class="info-card-green" style="margin-top:0.4rem;">
+                            <p><strong>$K_p$ 的特性：</strong>同樣只與溫度有關，固體和純液體不計入 $K_p$（分壓視為常數不列入）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div><div id="kp-modal-overlay" style="
+                display:none; position:fixed; inset:0; z-index:9999;
+                background:rgba(0,0,0,0.78); backdrop-filter:blur(8px);
+                align-items:center; justify-content:center;
+            " onclick="if(event.target===this) this.style.display='none'">
+                <div id="kp-modal-box" style="
+                    background:linear-gradient(135deg,rgba(15,23,42,0.97),rgba(30,41,59,0.97));
+                    border:1px solid rgba(251,191,36,0.4);
+                    border-radius:16px; padding:1.5rem 2rem;
+                    max-width:920px; width:95%; max-height:88vh; overflow-y:auto;
+                    box-shadow:0 0 60px rgba(251,191,36,0.2);
+                    position:relative;
+                " onclick="event.stopPropagation()">
+                    <button onclick="document.getElementById('kp-modal-overlay').style.display='none'" style="
+                        position:absolute; top:1rem; right:1.2rem;
+                        background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.5);
+                        color:#f87171; border-radius:8px; padding:4px 14px;
+                        cursor:pointer; font-size:1.1rem; font-weight:bold; transition:0.2s;
+                    " onmouseover="this.style.background='rgba(239,68,68,0.4)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">✕ 關閉</button>
+
+                    <h2 style="color:#fbbf24; margin-bottom:0.6rem; font-size:1.6rem;">📐 $K_p = K_c \cdot (RT)^{\Delta n}$ 的導證</h2>
+                    <p style="color:rgba(255,255,255,0.75); margin-bottom:0.8rem; font-size:1.1rem;">從理想氣體定律出發，逐步推導 $K_p$ 與 $K_c$ 之間的關係式。</p>
+
+                    <div style="display:grid; grid-template-columns: 1.15fr 1fr; gap: 0.6rem; align-items: stretch;">
+                        <!-- Step 1 -->
+                        <div class="calc-step" style="margin:0; padding:0.5rem 0.8rem; display:flex; flex-direction:column; justify-content:center;">
+                            <div>
+                                <span class="step-num" style="font-size:1rem; width:1.8em; height:1.8em; line-height:1.8em;">1</span>
+                                <span style="font-weight:700; color:#60a5fa; font-size:1.15rem;">由理想氣體建立關係</span>
+                            </div>
+                            <span style="color:rgba(255,255,255,0.7); font-size:0.95rem; margin-top:0.2rem; margin-left: 2.3rem;">$PV = nRT \Rightarrow [X] = n/V$ 為莫耳濃度</span>
+                        </div>
+                        <div style="background:rgba(59,130,246,0.1); border-radius:8px; padding:0.4rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:1.2rem;">$\displaystyle P_X = \frac{n}{V} \cdot RT = [X] \cdot RT$</span>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="calc-step" style="margin:0; padding:0.5rem 0.8rem; display:flex; align-items:center;">
+                            <span class="step-num" style="margin-bottom:0; font-size:1rem; width:1.8em; height:1.8em; line-height:1.8em;">2</span>
+                            <span style="font-weight:700; color:#34d399; font-size:1.15rem;">寫出 $K_p$ 的定義式</span>
+                        </div>
+                        <div style="background:rgba(52,211,153,0.1); border-radius:8px; padding:0.4rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:1.2rem;">$\displaystyle K_p = \frac{P_C^{\,c} \cdot P_D^{\,d}}{P_A^{\,a} \cdot P_B^{\,b}}$</span>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="calc-step" style="margin:0; padding:0.5rem 0.8rem; display:flex; align-items:center;">
+                            <span class="step-num" style="margin-bottom:0; font-size:1rem; width:1.8em; height:1.8em; line-height:1.8em;">3</span>
+                            <span style="font-weight:700; color:#a78bfa; font-size:1.15rem;">代入 $P_X = [X] \cdot RT$</span>
+                        </div>
+                        <div style="background:rgba(139,92,246,0.1); border-radius:8px; padding:0.4rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:1.2rem;">$\displaystyle K_p = \frac{([\text{C}]\!\cdot\! RT)^c \cdot ([\text{D}]\!\cdot\! RT)^d}{([\text{A}]\!\cdot\! RT)^a \cdot ([\text{B}]\!\cdot\! RT)^b}$</span>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="calc-step" style="margin:0; padding:0.5rem 0.8rem; display:flex; align-items:center;">
+                            <span class="step-num" style="margin-bottom:0; font-size:1rem; width:1.8em; height:1.8em; line-height:1.8em;">4</span>
+                            <span style="font-weight:700; color:#f97316; font-size:1.15rem;">分離濃度項與 $(RT)$ 項</span>
+                        </div>
+                        <div style="background:rgba(249,115,22,0.1); border-radius:8px; padding:0.4rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:1.2rem;">$\displaystyle K_p = \underbrace{\frac{[\text{C}]^c [\text{D}]^d}{[\text{A}]^a [\text{B}]^b}}_{=\,K_c} \times \underbrace{(RT)^{c+d-(a+b)}}_{=(RT)^{\Delta n}}$</span>
+                        </div>
+
+                        <!-- Step 5 -->
+                        <div class="calc-step" style="margin:0; padding:0.5rem 0.8rem; display:flex; flex-direction:column; justify-content:center;">
+                            <div>
+                                <span class="step-num" style="font-size:1rem; width:1.8em; height:1.8em; line-height:1.8em;">5</span>
+                                <span style="font-weight:700; color:#fbbf24; font-size:1.15rem;">定義 $\Delta n$</span>
+                            </div>
+                            <span style="color:rgba(255,255,255,0.7); font-size:0.95rem; margin-top:0.2rem; margin-left: 2.3rem;">$\Delta n =$ 氣態產物係數和 − 反應物係數和</span>
+                        </div>
+                        <div style="background:rgba(251,191,36,0.1); border-radius:8px; padding:0.4rem; text-align:center; display:flex; align-items:center; justify-content:center;">
+                            <span style="font-size:1.2rem;">$\displaystyle \Delta n = (c+d) - (a+b)$</span>
+                        </div>
+                    </div>
+
+                    <div class="formula-box-purple" style="font-size:1.45rem; text-align:center; padding:10px; margin:0.8rem 0;">
+                        $\displaystyle \therefore\quad K_p = K_c \cdot (RT)^{\Delta n}$
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.6rem; margin-top:0.5rem;">
+                        <div style="background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); border-radius:8px; padding:0.6rem; text-align:center;">
+                            <div style="color:#60a5fa; font-weight:700; font-size:1.1rem;">$\Delta n > 0$</div>
+                            <div style="font-size:1rem; color:rgba(255,255,255,0.7); margin-top:0.3rem;">$K_p > K_c$</div>
+                        </div>
+                        <div style="background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.3); border-radius:8px; padding:0.6rem; text-align:center;">
+                            <div style="color:#34d399; font-weight:700; font-size:1.1rem;">$\Delta n = 0$</div>
+                            <div style="font-size:1rem; color:rgba(255,255,255,0.7); margin-top:0.3rem;">$K_p = K_c$</div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.6rem; text-align:center;">
+                            <div style="color:#f87171; font-weight:700; font-size:1.1rem;">$\Delta n < 0$</div>
+                            <div style="font-size:1rem; color:rgba(255,255,255,0.7); margin-top:0.3rem;">$K_p < K_c$</div>
+                        </div>
+                    </div>
+                    <p style="margin-top:0.6rem; color:#fbbf24; font-size:1rem;">💡 固體與純液體的分壓視為常數，不列入 $K_p$。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.updateSlides = function() {};
+
+function openKpModal() {
+    const overlay = document.getElementById('kp-modal-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex';
+    if (window.MathJax) MathJax.typesetPromise([overlay]);
+}
+function closeKpModal(e) {
+    const overlay = document.getElementById('kp-modal-overlay');
+    if (!overlay) return;
+    if (!e || e.target === overlay) {
+        overlay.style.display = 'none';
+    }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeKpModal(); });
+
+</script>
+</body>
+</html>

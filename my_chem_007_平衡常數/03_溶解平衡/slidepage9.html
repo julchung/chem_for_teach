@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>實戰演練 · 範例 7 - 沉澱一半時另一離子殘留百分率 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>實戰演練 · 範例 7</h1>
+                <div class="grid-2" style="height: 100%; gap: 1.1rem; align-items: stretch;">
+                    <!-- 左欄：例題題目與操作 -->
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; position: relative;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.5rem;">
+                            <span class="tag tag-yellow">範例 7</span>
+                            <h2 style="color: var(--accent-yellow); font-size: 1.25rem; margin: 0;">沉澱一半時另一離子殘留百分率</h2>
+                        </div>
+                        
+                        <div style="font-size: 1.05rem; line-height: 1.7; flex: 1;">
+                            <p style="font-size:1.15rem; line-height:1.8; color:rgba(255,255,255,0.95);">
+已知 $Ag_2CrO_4$、$AgIO_3$ 之 $K_{sp}$ 依次為 $5.0 \times 10^{-11}$、$1.0 \times 10^{-8}$。今於內含 $0.001\ M\ KIO_3$ 及 $0.01\ M\ K_2CrO_4$ 的溶液中，加入 $AgNO_3$，直至有一半 $CrO_4^{2-}$ 已沉澱時，則 $IO_3^-$ 剩下有多少百分率在溶液中？
+</p>
+<div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1.2rem; font-size:1.1rem; color:#f8fafc;">
+    <div>(A) $32\%$</div>
+    <div>(B) $15\%$</div>
+    <div>(C) $10\%$</div>
+    <div>(D) $5\%$</div>
+</div>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.8rem;">
+                            <button class="btn-action" onclick="toggleSolution('solution-box')" style="padding: 10px 22px; font-size: 1rem; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設隱藏，點擊按鈕後展開） -->
+                    <div class="panel scroll-panel" style="display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem; position: relative; background: rgba(255,255,255,0.03);">
+                        <div id="solution-placeholder"></div>
+                        <div id="solution-box" class="solution-card">
+                            <h2 style="color: var(--accent-green); font-size: 1.3rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>💡</span> 範例解析
+                            </h2>
+                            <div style="font-size: 1.05rem; line-height: 1.7; display: flex; flex-direction: column; gap: 0.8rem;">
+                                <p style="color:#f8fafc;"><strong>正確答案：</strong> <span style="color:var(--accent-green); font-size:1.3rem; font-weight:bold;">(C)</span></p>
+                                <div style="background:rgba(255,255,255,0.05); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0; border-left: 4px solid var(--accent-cyan);">
+    <p><strong>1. 計算有一半 $CrO_4^{2-}$ 沉澱時的平衡 $[Ag^+]$：</strong></p>
+    <p>原溶液中 $[CrO_4^{2-}] = 0.01\ M$。</p>
+    <p>沉澱一半時，殘留 $[CrO_4^{2-}] = \dfrac{0.01}{2} = 5.0 \times 10^{-3}\ M$。</p>
+    <p>由 $Ag_2CrO_4$ 達平衡：</p>
+    <p>$K_{sp}(Ag_2CrO_4) = [Ag^+]^2[CrO_4^{2-}] = 5.0 \times 10^{-11}$</p>
+    <p>$[Ag^+]^2 = \dfrac{5.0 \times 10^{-11}}{5.0 \times 10^{-3}} = 1.0 \times 10^{-8} \Rightarrow [Ag^+] = 1.0 \times 10^{-4}\ M$</p>
+</div>
+<div style="background:rgba(255,255,255,0.05); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0;">
+    <p><strong>2. 計算溶液中殘留的 $[IO_3^-]$：</strong></p>
+    <p>若此時 $AgIO_3$ 亦達沉澱平衡：</p>
+    <p>$K_{sp}(AgIO_3) = [Ag^+][IO_3^-] = 1.0 \times 10^{-8}$</p>
+    <p>$[IO_3^-] = \dfrac{K_{sp}(AgIO_3)}{[Ag^+]} = \dfrac{1.0 \times 10^{-8}}{1.0 \times 10^{-4}} = 1.0 \times 10^{-4}\ M$</p>
+</div>
+<div style="background:rgba(52,211,153,0.08); padding:1.2rem 1.4rem; border-radius:8px; line-height:1.8; color:#e2e8f0; border:1px solid rgba(52,211,153,0.3);">
+    <p><strong>3. 計算 $IO_3^-$ 殘留百分率：</strong></p>
+    <p>$\text{殘留百分比} = \dfrac{[IO_3^-]_\text{剩}}{[IO_3^-]_\text{初}} \times 100\% = \dfrac{1.0 \times 10^{-4}}{0.001} \times 100\% = \mathbf{10\%}$。</p>
+    <p>故選 <strong>(C) $10\%$</strong>。</p>
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>

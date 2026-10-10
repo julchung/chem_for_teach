@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4-4 電子組態 · 核心通關檢核 | 互動教學</title>
+    <meta name="description" content="選修化學：電子組態填寫規則（奧夫堡規則、包利不相容原理、洪德原則、過渡元素組態、Cr與Cu例外穩定性）核心通關檢核與章節解鎖">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%; min-height: 100vh;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative; width: 100%; min-height: 100vh;
+            padding: clamp(16px, 2.5vw, 36px) clamp(14px, 2.5vw, 32px) 4rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%; max-width: 1100px;
+            display: flex; flex-direction: column; gap: 18px;
+        }
+
+        /* 標頭情境框 */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px; padding: 1.2rem 1.6rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.88rem; padding: 0.25rem 0.9rem; border-radius: 30px;
+            font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.4);
+            background: rgba(56, 189, 248, 0.15); color: #38bdf8;
+            letter-spacing: 0.05em; display: inline-block; margin-bottom: 0.4rem;
+        }
+
+        h1 {
+            font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            font-weight: 800; color: #f8fafc; margin-top: 4px;
+        }
+
+        /* 選擇題四方田字排列佈局 */
+        .quiz-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        @media (max-width: 860px) {
+            .quiz-grid-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Quiz Card */
+        .quiz-card {
+            background: rgba(19, 27, 46, 0.88);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px; padding: 16px 20px;
+            display: flex; flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .quiz-card:hover { border-color: rgba(56, 189, 248, 0.35); }
+        .quiz-card.card-correct { border-color: rgba(52, 211, 153, 0.7) !important; box-shadow: 0 0 16px rgba(52, 211, 153, 0.18) !important; }
+        .quiz-card.card-wrong   { border-color: rgba(248, 113, 113, 0.7) !important; box-shadow: 0 0 16px rgba(248, 113, 113, 0.18) !important; }
+
+        .quiz-q-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+        }
+        .quiz-q-tag {
+            font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+            background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35);
+            color: var(--accent-blue);
+        }
+
+        .quiz-q { font-size: 0.96rem; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.6; }
+
+        .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+
+        .quiz-opt {
+            padding: 9px 13px; border-radius: 8px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+            color: var(--text-main); cursor: pointer; text-align: left;
+            font-size: 0.9rem; line-height: 1.45; transition: all 0.15s ease;
+            display: flex; align-items: center; user-select: none; font-family: inherit;
+        }
+        .quiz-opt:hover         { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.4); color: #fff; }
+        .quiz-opt.opt-selected  { background: rgba(56,189,248,0.22); border-color: var(--accent-blue); color: #fff; font-weight: 700; }
+        .quiz-opt.opt-correct   { background: rgba(52,211,153,0.25) !important; border-color: var(--accent-green) !important; color: #fff !important; font-weight: 700; }
+        .quiz-opt.opt-wrong     { background: rgba(248,113,113,0.25) !important; border-color: var(--accent-red) !important; color: #fff !important; }
+
+        .quiz-card-feedback {
+            margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+            font-size: 0.88rem; line-height: 1.6; display: none; animation: fadeIn 0.3s ease;
+        }
+        .quiz-card-feedback.fb-show { display: block; }
+        .quiz-card-feedback.fb-ok  { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+        .quiz-card-feedback.fb-err { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+
+        /* 連連看組件 */
+        .match-game-wrapper {
+            position: relative; width: 100%; min-height: 300px;
+            margin: 12px 0 6px; user-select: none;
+        }
+        .match-svg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 2;
+        }
+        .match-game-cols {
+            display: flex; justify-content: space-between;
+            position: relative; z-index: 1; gap: 40px;
+        }
+        @media (max-width: 768px) {
+            .match-game-cols { gap: 20px; }
+        }
+        .match-col { display: flex; flex-direction: column; gap: 10px; width: 46%; }
+
+        .match-item {
+            position: relative; background: rgba(30,41,59,0.95);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 10px; padding: 10px 16px;
+            color: var(--text-main); font-size: 0.88rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: space-between;
+            min-height: 52px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            line-height: 1.45;
+        }
+        .match-item:hover     { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.5); transform: translateY(-1px); }
+        .match-item.selected  { border-color: var(--accent-yellow) !important; background: rgba(251,191,36,0.15) !important; box-shadow: 0 0 12px rgba(251,191,36,0.35) !important; }
+        .match-item.connected { border-color: var(--accent-blue); background: rgba(56,189,248,0.1); }
+        .match-item.match-correct { border-color: var(--accent-green) !important; background: rgba(52,211,153,0.15) !important; box-shadow: 0 0 10px rgba(52,211,153,0.2) !important; }
+        .match-item.match-wrong   { border-color: var(--accent-red) !important; background: rgba(248,113,113,0.15) !important; box-shadow: 0 0 10px rgba(248,113,113,0.2) !important; }
+
+        .match-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #64748b; border: 2px solid #fff;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            transition: all 0.2s; z-index: 4;
+        }
+        .match-col#match-col-left  .match-dot { right: -7px; }
+        .match-col#match-col-right .match-dot { left: -7px; }
+        .match-dot.active, .match-item.connected .match-dot {
+            background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);
+            transform: translateY(-50%) scale(1.25);
+        }
+
+        /* 操作列 */
+        .quiz-action-bar {
+            background: rgba(30,41,59,0.85); border: 1.5px solid var(--glass-border);
+            border-radius: 14px; padding: 14px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .quiz-feedback-msg { font-size: 0.92rem; font-weight: 600; color: var(--accent-blue); flex: 1; min-width: 260px; }
+
+        .btn-submit-exam, .btn-retry-exam {
+            padding: 10px 24px; border-radius: 10px; font-size: 0.95rem;
+            font-weight: 700; cursor: pointer; transition: all 0.2s ease; border: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-submit-exam {
+            background: linear-gradient(135deg, #0284c7, #6366f1); color: #fff;
+            box-shadow: 0 4px 14px rgba(2,132,199,0.35);
+        }
+        .btn-submit-exam:hover:not(:disabled) {
+            filter: brightness(1.1); transform: translateY(-1px);
+        }
+        .btn-submit-exam:disabled {
+            opacity: 0.55; cursor: not-allowed; filter: grayscale(0.5);
+        }
+
+        .btn-retry-exam {
+            background: rgba(255,255,255,0.08); color: var(--accent-yellow);
+            border: 1px solid rgba(251,191,36,0.4); display: none;
+        }
+        .btn-retry-exam:hover {
+            background: rgba(251,191,36,0.15); border-color: var(--accent-yellow);
+        }
+
+        /* 通關橫幅 */
+        #section-complete-banner {
+            display: none; flex-direction: column; align-items: center;
+            text-align: center; padding: 2.2rem 1.5rem;
+            background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(15,23,42,0.95) 75%);
+            border: 2px solid rgba(52,211,153,0.35); border-radius: 20px;
+            margin-top: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-next-chapter {
+            margin-top: 1.2rem; padding: 12px 32px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: #0b1120; font-size: 1.05rem; font-weight: 800;
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+            transition: all 0.2s ease;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-next-chapter:hover { transform: scale(1.05); filter: brightness(1.15); }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 -->
+        <div class="quiz-scenario-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span class="problem-badge">🏆 CH 04-4 電子組態 · 核心通關檢核</span>
+                <span style="font-size:0.88rem; color:var(--accent-cyan);">📌 完成第 (1) 題概念配對與隨機 4 道評量題，答對率 100% 即可解鎖下一單元！</span>
+            </div>
+            <h1>電子組態・核心概念檢定</h1>
+            <p style="font-size:0.95rem; line-height:1.6; color:#94a3b8; margin-top:8px;">
+                【核心評量重點】：涵蓋<strong>奧夫堡規則（構築原則）、包利不相容原理、洪德原則、基態與激發態能量躍遷判定、過渡元素電子殼層分佈、鉻與銅的特殊半滿/全滿穩定性</strong>等核心考點。
+            </p>
+        </div>
+
+        <!-- ★ 第(1)題：概念配對連連看 -->
+        <div class="quiz-card" id="quiz-matching-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="quiz-q" style="margin:0;">
+                    <span style="color:var(--accent-cyan);">(1) 概念配對連連看</span> 請將左側四大電子填寫原理與特性，連線至右側對應的物理化學本質。
+                </div>
+                <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer;">
+                    重設連線 ↺
+                </button>
+            </div>
+
+            <div class="match-game-wrapper" id="match-game-wrapper">
+                <svg class="match-svg" id="match-svg"></svg>
+                <div class="match-game-cols">
+                    <div class="match-col" id="match-col-left"></div>
+                    <div class="match-col" id="match-col-right"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span style="font-size:0.85rem; color:#94a3b8;">點擊左側項目後，再點擊右側項目即可連線（再次點擊已連線項目可取消）</span>
+                <span id="match-count-badge" style="font-size:0.85rem; color:var(--accent-yellow); font-weight:700;">已連線：0 / 4</span>
+            </div>
+            <div class="quiz-card-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- ★ 第(2) ~ (5) 題：由題庫隨機抽取 4 題 (四方田字排列) -->
+        <div class="quiz-grid-layout" id="dynamic-questions-container">
+            <!-- 由 JavaScript 動態渲染 4 道題目 -->
+        </div>
+
+        <!-- 底部操作列與提示訊息 -->
+        <div class="quiz-action-bar">
+            <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                <span>💡 請完成上方配對與隨機 4 道評量題後，點擊「確定作答」提交檢核。</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" id="btn-retry-exam" class="btn-retry-exam">
+                    換題重測 ↺
+                </button>
+                <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+                    確定作答 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- 通關成功橫幅 -->
+        <div id="section-complete-banner">
+            <div style="font-size:3.5rem; margin-bottom:0.5rem;">🎉 🏆 🌟</div>
+            <h2 style="font-size:1.8rem; font-weight:800; color:var(--accent-green); margin-bottom:0.4rem;">
+                單元 4-4 電子組態 · 核心檢核通過！
+            </h2>
+            <p style="color:#e2e8f0; font-size:1rem; max-width:680px; line-height:1.6;">
+                太棒了！你已完全掌握奧夫堡規則、包利不相容原理、洪德原則以及過渡元素組態等高難度核心觀念！<br>
+                <strong>下一單元【4-5 元素週期性：原子半徑】已經為你解鎖！</strong>
+            </p>
+            <a href="../05_元素週期性_原子半徑/index.html" class="btn-next-chapter" id="btn-next-chapter">
+                解鎖前往：4-5 元素週期性 (原子半徑) ➔
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script>
+    // ── 題庫資料 (含原題目與截圖題目) ──
+    const QUESTION_BANK = [
+        {
+            tag: "電子組態穩定性與基態判定",
+            question: "某中性原子之電子組態為 $1s^2 2s^2 2p^5 3s^1$，則下列敘述何者<strong>錯誤</strong>？",
+            options: [
+                "(A) 此原子之原子序為 10",
+                "(B) 此種組態並非最安定者，處於激發態",
+                "(C) 此原子應獲得能量，變為 $1s^2 2s^2 2p^6$",
+                "(D) 此原子的 1s 和 2s 軌域，均已填滿電子"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 電子總數 $= 2 + 2 + 5 + 1 = 10$，原子序為 10（氖 Ne）。<br>• 氖的基態為 $1s^2 2s^2 2p^6$，題述組態為激發態。<br>• 激發態跳回最穩定的基態是放熱過程，應<strong>放出能量</strong>而非獲得能量，故 (C) 錯誤。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "過渡元素主殼層電子分佈",
+            question: "關於過渡元素釩（${}_{23}\\text{V}$）基態原子的電子組態，其 K、L、M、N 各主殼層的電子數依序為何？",
+            options: [
+                "(A) 2、8、8、5",
+                "(B) 2、8、10、3",
+                "(C) 2、8、11、2",
+                "(D) 2、8、12、1"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 釩（V，$Z=23$）基態電子組態為 $1s^2 2s^2 2p^6 3s^2 3p^6 3d^3 4s^2$。<br>• K層 ($n=1$): $2$；L層 ($n=2$): $8$；M層 ($n=3$): $2 + 6 + 3 = 11$；N層 ($n=4$): $2$。<br>• 依序為 2、8、11、2。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "洪德原則符號表示判定",
+            question: "下列哪一種 2p 軌域的電子分佈方式<strong>違反洪德原則 (Hund's Rule)</strong>？",
+            options: [
+                "(A) $p_x^1 p_y^1 p_z^1$",
+                "(B) $p_x^2 p_y^1 p_z^1$",
+                "(C) $p_x^2 p_y^1 p_z^0$",
+                "(D) $p_x^1 p_y^0 p_z^1$"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 洪德原則：電子填入同能階等價軌域時，應先以平行自旋單獨填滿各軌域。<br>• (C) 選項共有 3 個電子，$p_z$ 留空卻在 $p_x$ 提早成對，違反洪德原則。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "基態與激發態能量躍遷",
+            question: "下列有關原子或離子進行電子重組的轉變過程，何者屬於<strong>吸熱過程</strong>？",
+            options: [
+                "(A) 氫原子之電子由 4s 移至 3d",
+                "(B) 碳原子由 $1s^2 2s^2 2p_x^2$ 轉變為 $1s^2 2s^2 2p_x^1 2p_y^1$",
+                "(C) 鉻原子由 $[Ar] 3d^4 4s^2$ 轉變為 $[Ar] 3d^5 4s^1$",
+                "(D) 銅原子由 $[Ar] 3d^{10} 4s^1$ 轉變為 $[Ar] 3d^9 4s^2$"
+            ],
+            ans: 3,
+            explanation: "<strong>解析：</strong><br>• (A) 單電子氫原子軌域能量僅取決於 $n$，4s > 3d，高能至低能為放熱。<br>• (B) 激發態回到基態，放熱。<br>• (C) 激發態回到半滿穩定基態，放熱。<br>• (D) 銅基態 $[Ar] 3d^{10} 4s^1$ 躍遷為激發態需吸收能量，為<strong>吸熱過程</strong>。<br>故選 <strong>(D)</strong>。"
+        },
+        {
+            tag: "陽離子游離軌域與量子數",
+            question: "下列哪一個過渡元素形成陽離子的過程，其失去的最後一個電子之量子數為 $(3, 2, -2, +\\frac{1}{2})$？（設磁量子數與自旋量子數皆以正號優先填入）",
+            options: [
+                "(A) ${}_{23}\\text{V} \\to {}_{23}\\text{V}^+$",
+                "(B) ${}_{24}\\text{Cr} \\to {}_{24}\\text{Cr}^{2+}$",
+                "(C) ${}_{25}\\text{Mn} \\to {}_{25}\\text{Mn}^+$",
+                "(D) ${}_{27}\\text{Co} \\to {}_{27}\\text{Co}^{2+}$"
+            ],
+            ans: 1,
+            explanation: "<strong>解析：</strong><br>• 量子數 $(3, 2, -2, +\\frac{1}{2})$ 表示 3d 軌域的第 5 個電子（半滿最後填入者）。<br>• 過渡元素游離時先失 4s，再失 3d。<br>• ${}_{24}\\text{Cr} ([Ar] 4s^1 3d^5) \\to \\text{Cr}^{2+}$：先失 1 個 4s，再失 1 個 3d，失去的即為第 5 個 3d 電子！<br>故選 <strong>(B)</strong>。"
+        },
+        {
+            tag: "等電子物種組態判定",
+            question: "下列各組原子或離子中，何者具有<strong>完全相同</strong>的基態電子組態？",
+            options: [
+                "(A) ${}_{12}\\text{Mg}^{2+}$ 與 ${}_{13}\\text{Al}^{3+}$",
+                "(B) ${}_{27}\\text{Co}^{2+}$ 與 ${}_{25}\\text{Mn}$",
+                "(C) ${}_{31}\\text{Ga}^{3+}$ 與 ${}_{28}\\text{Ni}$",
+                "(D) ${}_{24}\\text{Cr}^{2+}$ 與 ${}_{26}\\text{Fe}^{2+}$"
+            ],
+            ans: 0,
+            explanation: "<strong>解析：</strong><br>• (A) $\\text{Mg}^{2+}$ 與 $\\text{Al}^{3+}$ 電子數皆為 10，基態電子組態皆為 $1s^2 2s^2 2p^6$（$[Ne]$），完全相同。<br>故選 <strong>(A)</strong>。"
+        },
+        {
+            tag: "碳原子組態能量比較",
+            question: "下列關於碳原子（$Z=6$）的電子組態能量之比較，何者<strong>正確</strong>？（軌域順序為 1s、2s、2px、2py、2pz）",
+            options: [
+                "(A) $1s^2 2s^2 2p_x^2$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量低",
+                "(B) $1s^2 2s^2 2p_x^1 2p_z^1$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量高",
+                "(C) $1s^2 2s^1 2p_x^1 2p_y^1 2p_z^1$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量高",
+                "(D) $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量與 $1s^2 2s^2 2p_y^1 2p_z^1$ 的能量不相同"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 碳原子基態組態為 $1s^2 2s^2 2p_x^1 2p_y^1$。<br>• (C) 選項 $1s^2 2s^1 2p^3$ 中 2s 電子躍遷至 2p，為激發態，能量必然高於基態。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "自旋方位與基態組態圖示",
+            question: "若以 $\\uparrow$、$\\downarrow$ 代表電子自旋方向，下列何者能正確表示氮原子（$Z=7$）的<strong>基態</strong>電子組態？",
+            options: [
+                "(A) 1s(↑↓) 2s(↑) 2px(↑↓) 2py(↓) 2pz(↓)",
+                "(B) 1s(↑↓) 2s(↑↓) 2px(↑↓) 2py(↓) 2pz( )",
+                "(C) 1s(↑↓) 2s(↓↓) 2px(↑) 2py(↑) 2pz(↑)",
+                "(D) 1s(↑↓) 2s(↑↓) 2px(↑) 2py(↑) 2pz(↑)"
+            ],
+            ans: 3,
+            explanation: "<strong>解析：</strong><br>• 氮原子基態為 $1s^2 2s^2 2p^3$。<br>• 1s、2s 填滿自旋相反，2p 三個軌域依洪德原則單填且自旋平行一致（全部 $\\uparrow$），即選項 (D)。<br>故選 <strong>(D)</strong>。"
+        },
+        {
+            tag: "氬後元素電子組態推演",
+            question: "若某中性元素之原子序比氬（Ar, $Z=18$）多 7，則其基態之電子組態為何？",
+            options: [
+                "(A) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^6 4s^1$",
+                "(B) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^7 4s^2$",
+                "(C) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^5 4s^2$",
+                "(D) $1s^2 2s^2 2p^6 3s^2 3p^5$"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 原子序 $= 18 + 7 = 25$（錳 Mn）。<br>• 基態組態：$[Ar] 4s^2 3d^5$，即 $1s^2 2s^2 2p^6 3s^2 3p^6 3d^5 4s^2$。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "最高能階電子推求原子序",
+            question: "某中性原子的基態電子組態中，最高能量的軌域及所含電子數為 $3d^6$，則該原子的原子序為何？",
+            options: [
+                "(A) 28",
+                "(B) 26",
+                "(C) 24",
+                "(D) 22"
+            ],
+            ans: 1,
+            explanation: "<strong>解析：</strong><br>• 基態組態為 $[Ar] 4s^2 3d^6$（鐵 Fe）。<br>• 電子總數 $= 18 + 2 + 6 = 26$，中性原子之原子序即為 26。<br>故選 <strong>(B)</strong>。"
+        },
+        {
+            tag: "軌域圖形違反洪德定則辨析",
+            question: "下列軌域示意圖所表示之電子組態中，何者<strong>違反洪德法則 (Hund's Rule)</strong>？",
+            options: [
+                "(A) s[↑↓] p[ ][↑][↑]",
+                "(B) s[↑↓] p[↓][ ][↓]",
+                "(C) s[↑↓] p[↑↓][↓][ ]",
+                "(D) s[↑↓] p[↓][↓][↓]"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• (C) 選項中，p 軌域有 3 個電子，第三個軌域完全空白，卻在第一個軌域提早成對，違反洪德法則！<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            tag: "鉻原子特殊基態軌域圖",
+            question: "下列哪一個軌域示意圖能正確表示<strong>基態鉻原子 (Cr, $Z=24$)</strong> 最外層軌域之電子組態？",
+            options: [
+                "(A) 4s[↑↓] 3d[↑][↑][ ][ ][ ]",
+                "(B) 4s[↑↓] 3d[↑↓][↑↓][ ][ ][ ]",
+                "(C) 4s[↑↓] 3d[↑][↓][↑][↓][ ]",
+                "(D) 4s[↑↓] 3d[↑][↑][↑][↑][ ]",
+                "(E) 4s[↑] 3d[↑][↑][↑][↑][↑]"
+            ],
+            ans: 4,
+            explanation: "<strong>解析：</strong><br>• 鉻（Cr）具有特殊的半滿穩定性，實際基態為 $[Ar] 4s^1 3d^5$。<br>• 4s 軌域填 1 個電子，3d 的 5 個軌域各填 1 個平行自旋單電子，即選項 (E)。<br>故選 <strong>(E)</strong>。"
+        }
+    ];
+
+    // ── 第 1 題連連看配對資料 ──
+    const MATCH_DATA = [
+        { id: 0, left: "奧夫堡規則 (Aufbau Principle)", right: "低能階優先填寫，依 $(n+l)$ 能量大小循序填入各軌域" },
+        { id: 1, left: "包利不相容原理 (Pauli)", right: "同一軌域最多容納 2 個電子且自旋方向必相反，四量子數不重複" },
+        { id: 2, left: "洪德原則 (Hund's Rule)", right: "等價簡併軌域優先以平行自旋單獨填滿，排斥力最小最穩定" },
+        { id: 3, left: "Cr 與 Cu 的組態例外", right: "半滿 ($d^5$) 或全滿 ($d^{10}$) 具高對稱電荷分佈，穩定性額外提高" }
+    ];
+
+    // ── 連連看互動邏輯 ──
+    const matchColLeft = document.getElementById('match-col-left');
+    const matchColRight = document.getElementById('match-col-right');
+    const matchSvg = document.getElementById('match-svg');
+    const matchCountBadge = document.getElementById('match-count-badge');
+    const fbQ1 = document.getElementById('fb-q1');
+    const btnResetMatch = document.getElementById('btn-reset-match');
+
+    let selectedLeft = null;
+    let selectedRight = null;
+    let connections = {}; // leftId -> rightId
+    let isMatchLocked = false;
+
+    function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initMatchGame() {
+        matchColLeft.innerHTML = '';
+        matchColRight.innerHTML = '';
+        connections = {};
+        selectedLeft = null;
+        selectedRight = null;
+        isMatchLocked = false;
+        fbQ1.className = 'quiz-card-feedback';
+        fbQ1.style.display = 'none';
+        document.getElementById('quiz-matching-card').className = 'quiz-card';
+
+        const shuffledRight = shuffle(MATCH_DATA);
+
+        MATCH_DATA.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<span><strong>${item.id + 1}.</strong> ${item.left}</span><div class="match-dot"></div>`;
+            el.addEventListener('click', () => onLeftItemClick(item.id, el));
+            matchColLeft.appendChild(el);
+        });
+
+        shuffledRight.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<div class="match-dot"></div><span>${item.right}</span>`;
+            el.addEventListener('click', () => onRightItemClick(item.id, el));
+            matchColRight.appendChild(el);
+        });
+
+        updateMatchBadge();
+        drawLines();
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([document.getElementById('quiz-matching-card')]).catch(e => console.log(e));
+        }
+    }
+
+    function onLeftItemClick(id, el) {
+        if (isMatchLocked) return;
+        if (selectedLeft === id) {
+            selectedLeft = null;
+            el.classList.remove('selected');
+            return;
+        }
+        document.querySelectorAll('#match-col-left .match-item').forEach(i => i.classList.remove('selected'));
+        selectedLeft = id;
+        el.classList.add('selected');
+
+        if (selectedRight !== null) {
+            makeConnection(selectedLeft, selectedRight);
+        }
+    }
+
+    function onRightItemClick(id, el) {
+        if (isMatchLocked) return;
+        if (selectedRight === id) {
+            selectedRight = null;
+            el.classList.remove('selected');
+            return;
+        }
+        document.querySelectorAll('#match-col-right .match-item').forEach(i => i.classList.remove('selected'));
+        selectedRight = id;
+        el.classList.add('selected');
+
+        if (selectedLeft !== null) {
+            makeConnection(selectedLeft, selectedRight);
+        }
+    }
+
+    function makeConnection(lId, rId) {
+        for (let k in connections) {
+            if (connections[k] === rId) delete connections[k];
+        }
+        connections[lId] = rId;
+
+        selectedLeft = null;
+        selectedRight = null;
+        document.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+
+        updateItemConnectedStyles();
+        drawLines();
+        updateMatchBadge();
+    }
+
+    function updateItemConnectedStyles() {
+        document.querySelectorAll('.match-item').forEach(el => el.classList.remove('connected'));
+        for (let lId in connections) {
+            const rId = connections[lId];
+            const lEl = document.querySelector(`#match-col-left .match-item[data-id="${lId}"]`);
+            const rEl = document.querySelector(`#match-col-right .match-item[data-id="${rId}"]`);
+            if (lEl) lEl.classList.add('connected');
+            if (rEl) rEl.classList.add('connected');
+        }
+    }
+
+    function updateMatchBadge() {
+        const count = Object.keys(connections).length;
+        matchCountBadge.textContent = `已連線：${count} / ${MATCH_DATA.length}`;
+        matchCountBadge.style.color = (count === MATCH_DATA.length) ? 'var(--accent-green)' : 'var(--accent-yellow)';
+    }
+
+    function drawLines() {
+        matchSvg.innerHTML = '';
+        const wrapperRect = document.getElementById('match-game-wrapper').getBoundingClientRect();
+
+        for (let lId in connections) {
+            const rId = connections[lId];
+            const lEl = document.querySelector(`#match-col-left .match-item[data-id="${lId}"] .match-dot`);
+            const rEl = document.querySelector(`#match-col-right .match-item[data-id="${rId}"] .match-dot`);
+            if (!lEl || !rEl) continue;
+
+            const lRect = lEl.getBoundingClientRect();
+            const rRect = rEl.getBoundingClientRect();
+
+            const x1 = lRect.left + lRect.width / 2 - wrapperRect.left;
+            const y1 = lRect.top + lRect.height / 2 - wrapperRect.top;
+            const x2 = rRect.left + rRect.width / 2 - wrapperRect.left;
+            const y2 = rRect.top + rRect.height / 2 - wrapperRect.top;
+
+            const dx = (x2 - x1) * 0.45;
+            const d = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#38bdf8');
+            path.setAttribute('stroke-width', '2.5');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('filter', 'drop-shadow(0 0 4px rgba(56,189,248,0.5))');
+            path.dataset.leftId = lId;
+            matchSvg.appendChild(path);
+        }
+    }
+
+    window.addEventListener('resize', drawLines);
+    btnResetMatch.addEventListener('click', initMatchGame);
+
+    // ── 隨機抽取 4 題選擇題 (田字四方排列) ──
+    let activeQuestions = [];
+    let userAnswers = {}; // qIndex (0..3) -> optIndex
+
+    function sampleQuestions() {
+        const shuffled = shuffle(QUESTION_BANK);
+        activeQuestions = shuffled.slice(0, 4);
+        userAnswers = {};
+    }
+
+    function renderDynamicQuestions() {
+        const container = document.getElementById('dynamic-questions-container');
+        container.innerHTML = '';
+
+        activeQuestions.forEach((q, idx) => {
+            const qNum = idx + 2; // (2) ~ (5)
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.id = `quiz-card-${idx}`;
+
+            let optHtml = '';
+            q.options.forEach((optText, oIdx) => {
+                optHtml += `<div class="quiz-opt" data-qidx="${idx}" data-oidx="${oIdx}">${optText}</div>`;
+            });
+
+            card.innerHTML = `
+                <div class="quiz-q-header">
+                    <span class="quiz-q-tag">第 (${qNum}) 題 · ${q.tag}</span>
+                </div>
+                <div class="quiz-q">${q.question}</div>
+                <div class="quiz-options">
+                    ${optHtml}
+                </div>
+                <div class="quiz-card-feedback" id="fb-card-${idx}"></div>
+            `;
+            container.appendChild(card);
+        });
+
+        // 綁定選項點擊事件
+        container.querySelectorAll('.quiz-opt').forEach(optEl => {
+            optEl.addEventListener('click', function() {
+                if (isExamSubmitted && isAllPassed) return;
+                const qIdx = parseInt(this.dataset.qidx);
+                const oIdx = parseInt(this.dataset.oidx);
+
+                userAnswers[qIdx] = oIdx;
+
+                const parent = this.parentElement;
+                parent.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('opt-selected'));
+                this.classList.add('opt-selected');
+            });
+        });
+
+        // 重新排版 MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([container]).catch(e => console.log('MathJax error:', e));
+        }
+    }
+
+    // ── 提交與重測邏輯 ──
+    const btnSubmit = document.getElementById('btn-submit-exam');
+    const btnRetry = document.getElementById('btn-retry-exam');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const completeBanner = document.getElementById('section-complete-banner');
+
+    let isExamSubmitted = false;
+    let isAllPassed = false;
+
+    btnSubmit.addEventListener('click', () => {
+        // 1. 檢核第 1 題連連看是否完整配對
+        const matchCount = Object.keys(connections).length;
+        if (matchCount < MATCH_DATA.length) {
+            alert(`請先完成第 (1) 題的概念配對連線（目前已連線 ${matchCount}/${MATCH_DATA.length} 條）！`);
+            document.getElementById('quiz-matching-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // 2. 檢核選擇題是否全作答
+        for (let i = 0; i < 4; i++) {
+            if (userAnswers[i] === undefined) {
+                alert(`請先完成第 (${i + 2}) 題的選項作答！`);
+                document.getElementById(`quiz-card-${i}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+        }
+
+        isExamSubmitted = true;
+        let errors = 0;
+
+        // ── 驗證第 1 題連連看 ──
+        let matchCorrectCount = 0;
+        const matchingCard = document.getElementById('quiz-matching-card');
+        const paths = matchSvg.querySelectorAll('path');
+
+        for (let lId in connections) {
+            const rId = connections[lId];
+            const isCorrect = (parseInt(lId) === parseInt(rId));
+            const lEl = document.querySelector(`#match-col-left .match-item[data-id="${lId}"]`);
+            const rEl = document.querySelector(`#match-col-right .match-item[data-id="${rId}"]`);
+
+            const path = Array.from(paths).find(p => p.dataset.leftId == lId);
+
+            if (isCorrect) {
+                matchCorrectCount++;
+                if (lEl) lEl.classList.add('match-correct');
+                if (rEl) rEl.classList.add('match-correct');
+                if (path) path.setAttribute('stroke', '#34d399');
+            } else {
+                if (lEl) lEl.classList.add('match-wrong');
+                if (rEl) rEl.classList.add('match-wrong');
+                if (path) path.setAttribute('stroke', '#f87171');
+            }
+        }
+
+        if (matchCorrectCount === MATCH_DATA.length) {
+            matchingCard.className = 'quiz-card card-correct';
+            fbQ1.className = 'quiz-card-feedback fb-show fb-ok';
+            fbQ1.innerHTML = '<strong>✅ 第 (1) 題配對完全正確！</strong>四大原則與物理特徵清晰對照。';
+        } else {
+            errors++;
+            matchingCard.className = 'quiz-card card-wrong';
+            fbQ1.className = 'quiz-card-feedback fb-show fb-err';
+            fbQ1.innerHTML = `<strong>❌ 第 (1) 題配對有誤（${matchCorrectCount}/${MATCH_DATA.length} 正確）：</strong>紅線標示之配對未正確，請參考正確物理意義對照修正。`;
+        }
+
+        // ── 驗證第 (2) ~ (5) 題 ──
+        activeQuestions.forEach((q, idx) => {
+            const card = document.getElementById(`quiz-card-${idx}`);
+            const fbBox = document.getElementById(`fb-card-${idx}`);
+            const chosen = userAnswers[idx];
+            const isCorrect = (chosen === q.ans);
+
+            const optEls = card.querySelectorAll('.quiz-opt');
+            optEls.forEach((el, oIdx) => {
+                el.classList.remove('opt-correct', 'opt-wrong');
+                if (oIdx === q.ans) el.classList.add('opt-correct');
+                else if (oIdx === chosen && !isCorrect) el.classList.add('opt-wrong');
+            });
+
+            if (isCorrect) {
+                card.className = 'quiz-card card-correct';
+                fbBox.className = 'quiz-card-feedback fb-show fb-ok';
+                fbBox.innerHTML = `✅ <strong>回答正確！</strong><br>${q.explanation}`;
+            } else {
+                errors++;
+                card.className = 'quiz-card card-wrong';
+                fbBox.className = 'quiz-card-feedback fb-show fb-err';
+                fbBox.innerHTML = `❌ <strong>回答錯誤！</strong>正確答案為 <strong>${q.options[q.ans].substring(0, 3)}</strong><br>${q.explanation}`;
+            }
+        });
+
+        // 重新排版 MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch(e => console.log('MathJax error:', e));
+        }
+
+        // ── 成績反饋與解鎖機制 ──
+        if (errors === 0) {
+            isAllPassed = true;
+            feedbackMsg.innerHTML = '<span style="color:var(--accent-green);">🎉 恭喜全部 5 題全數正確！核心檢核順利通關！</span>';
+            btnSubmit.style.display = 'none';
+            btnRetry.style.display = 'none';
+            completeBanner.style.display = 'flex';
+
+            // 儲存通關進度並解鎖下一節 (4-5 元素週期性_原子半徑)
+            try {
+                localStorage.setItem('chem_progress_ch4_s4', 'PASSED');
+                localStorage.setItem('chem_unlocked_ch4_s5', 'true');
+            } catch (e) {}
+
+            // 向外層 SPA 框架發送通關訊息
+            window.parent.postMessage({
+                type: 'QUIZ_PASSED',
+                sectionId: 'ch4_s4',
+                nextSection: 'ch4_s5',
+                nextUrl: '../05_元素週期性_原子半徑/index.html'
+            }, '*');
+
+            window.parent.postMessage({ type: 'SECTION_COMPLETE' }, '*');
+
+            completeBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            feedbackMsg.innerHTML = `<span style="color:var(--accent-red);">⚠️ 共有 ${errors} 題回答有誤（已標記詳解與正確答案）。請點擊「換題重測 ↺」重新抽題挑戰！</span>`;
+            btnRetry.style.display = 'inline-flex';
+            alert(`測驗未達 100% 正確（共有 ${errors} 題需再加強），各題詳解已為您展開。請點擊「換題重測 ↺」換上全新 4 題再次檢定！`);
+        }
+    });
+
+    // ── 換題重測邏輯 ──
+    btnRetry.addEventListener('click', () => {
+        isExamSubmitted = false;
+        isAllPassed = false;
+        feedbackMsg.innerHTML = '<span>請完成上方配對與隨機 4 道評量題後點擊「確定作答」</span>';
+        btnRetry.style.display = 'none';
+        btnSubmit.style.display = 'inline-flex';
+        completeBanner.style.display = 'none';
+
+        // 重新抽取 4 題並渲染 (隨機再換上四題)
+        sampleQuestions();
+        renderDynamicQuestions();
+
+        // 平滑滾動至第 2 題
+        document.getElementById('dynamic-questions-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ── 初始化 ──
+    initMatchGame();
+    sampleQuestions();
+    renderDynamicQuestions();
+</script>
+</body>
+</html>

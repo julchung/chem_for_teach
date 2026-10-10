@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>2-7 擴散與逸散 · 氣體動力論與速率分布曲線</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+html,body{
+  width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow:hidden;
+  background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;}
+#slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
+.slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
+h1{
+  color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.35rem;
+  display:flex;align-items:center;gap:.55rem;
+  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
+}
+h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(.92rem,1.15vw,1.12rem);margin-bottom:.2rem;font-weight:700;flex-shrink:0;}
+p,li{font-size:clamp(.82rem,.96vw,.95rem);line-height:1.56;}
+strong{color:var(--cyan);font-weight:700;}
+em{color:var(--yellow);font-style:normal;font-weight:600;}
+.grid2{display:grid;grid-template-columns:1.05fr 1.15fr;gap:.78rem;flex:1;min-height:0;overflow:hidden;}
+.panel{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;
+  padding:.75rem 1rem;backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow-y:auto;gap:.44rem;
+}
+.panel::-webkit-scrollbar{width:4px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.tag{display:inline-block;padding:.12rem .58rem;border-radius:10px;font-size:.8rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
+.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
+.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
+.tag-p{background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.4);color:var(--purple);}
+.rule-card{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .82rem;}
+.rule-card.g{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.25);}
+.formula-box{
+  background:rgba(0,0,0,.38);border-radius:8px;border-left:4px solid var(--cyan);
+  padding:.45rem .75rem;text-align:center;font-size:1.15rem;margin:.22rem 0;
+}
+.step-block{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--blue);
+  border-radius:8px;padding:.48rem .78rem;line-height:1.56;font-size:.86rem;
+}
+.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
+.step-block.y{border-left-color:var(--yellow);background:rgba(251,191,36,.04);}
+.svg-wrap{
+  background:rgba(15,23,42,0.7);border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;
+}
+@media(max-width:900px){.grid2{grid-template-columns:1fr!important;overflow-y:auto;}html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}}
+</style>
+</head>
+
+<body><div id="app"><div id="slides-container"><div class="slide active">
+<h1>2-7 擴散與逸散 · 氣體動力論與速率分布曲線</h1>
+
+<div class="grid2">
+  <!-- 左：氣體動力論基本假設與推導 -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
+      <div style="display:flex;align-items:center;gap:.45rem;">
+        <span class="tag tag-b">微觀假設</span>
+        <h2 style="color:var(--blue);margin:0;">氣體動力論 (KMT) 基本假設</h2>
+      </div>
+      <span style="font-size:.78rem;color:rgba(255,255,255,.45);">Clausius / Maxwell / Boltzmann</span>
+    </div>
+
+    <div class="rule-card">
+      <ul style="margin-left:1.1rem;display:flex;flex-direction:column;gap:3px;font-size:.88rem;">
+        <li><strong>粒子自身體積可忽略</strong>：與容器空間相比，分子如同質點。</li>
+        <li><strong>無規則熱運動</strong>：隨機直線運動，遵守牛頓力學定律。</li>
+        <li><strong>分子間無作用力</strong>：除碰撞瞬間外，彼此無吸引力或排斥力。</li>
+        <li><strong>完全彈性碰撞</strong>：碰撞器壁與彼此無動能損失（系統總動能守恆）。</li>
+        <li><strong>平均動能僅與絕對溫度成正比</strong>：$\overline{E_k} = \dfrac{3}{2}kT$。</li>
+      </ul>
+    </div>
+
+    <div class="step-block g">
+      <strong style="color:var(--green);">📐 氣體壓力微觀公式推導：</strong><br>
+      • 單分子對器壁碰撞力：$F = \dfrac{\Delta p}{\Delta t} = \dfrac{mv_x^2}{L}$<br>
+      • $N$ 個分子均方根速度三維空間投影（$\overline{v^2} = 3\overline{v_x^2}$）：
+      <div class="formula-box" style="font-size:1.15rem;margin:.3rem 0;border-left-color:var(--green);">
+        $$P = \frac{1}{3}\frac{Nm\overline{v^2}}{V} \implies PV = \frac{2}{3} N \left(\frac{1}{2}m\overline{v^2}\right)$$
+      </div>
+      • 與理想氣體方程式 $PV = Nk_B T$ 比對，立得：$\mathbf{\overline{E_k} = \dfrac{3}{2}kT}$！
+    </div>
+
+    <div class="step-block y">
+      <strong style="color:var(--yellow);">⚠️ 理想氣體 vs 真實氣體：</strong><br>
+      在<strong>高溫、低壓</strong>時，分子間距極大且動能極高，最符合動力論假設；反之在<strong>低溫、高壓</strong>時偏離理想氣體。
+    </div>
+  </div>
+
+  <!-- 右：Maxwell-Boltzmann 速率分布與三種速率比較 -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
+      <div style="display:flex;align-items:center;gap:.45rem;">
+        <span class="tag tag-p">統計分布</span>
+        <h2 style="color:var(--purple);margin:0;">麥克斯威－波茲曼速率分布</h2>
+      </div>
+      <span style="font-size:.78rem;color:rgba(255,255,255,.45);">$T_2 > T_1$</span>
+    </div>
+
+    <!-- 視覺化 SVG 速率分布圖 -->
+    <div class="svg-wrap">
+      <svg viewBox="0 0 420 185" style="width:100%;max-width:390px;height:auto;">
+        <!-- 坐標軸 -->
+        <line x1="50" y1="150" x2="400" y2="150" stroke="#94a3b8" stroke-width="2"/>
+        <line x1="50" y1="150" x2="50" y2="15" stroke="#94a3b8" stroke-width="2"/>
+        <!-- 箭頭 -->
+        <polygon points="400,147 408,150 400,153" fill="#94a3b8"/>
+        <polygon points="47,15 50,7 53,15" fill="#94a3b8"/>
+        <!-- 軸標籤 -->
+        <text x="390" y="166" font-size="11" fill="#cbd5e1" font-weight="700">速率 v</text>
+        <text x="25" y="22" font-size="10" fill="#cbd5e1" transform="rotate(-90 25,22)" font-weight="700">分子比例</text>
+
+        <!-- T1 曲線 (低溫：窄而高) -->
+        <path d="M 50,150 C 70,145 100,25 125,25 C 155,25 185,125 290,150" fill="none" stroke="#38bdf8" stroke-width="2.6"/>
+        <text x="135" y="32" font-size="12" fill="#38bdf8" font-weight="800">T₁ (低溫)</text>
+
+        <!-- T2 曲線 (高溫：寬而平，向右延伸) -->
+        <path d="M 50,150 C 80,148 140,75 190,75 C 240,75 300,130 380,147" fill="none" stroke="#f87171" stroke-width="2.6" stroke-dasharray="4,2"/>
+        <text x="205" y="80" font-size="12" fill="#f87171" font-weight="800">T₂ (高溫, T₂ &gt; T₁)</text>
+
+        <!-- 虛線標示最可能速率 -->
+        <line x1="125" y1="25" x2="125" y2="150" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="2,2"/>
+        <line x1="190" y1="75" x2="190" y2="150" stroke="#f87171" stroke-width="1.2" stroke-dasharray="2,2"/>
+        <text x="110" y="163" font-size="10" fill="#38bdf8">vp(T₁)</text>
+        <text x="178" y="163" font-size="10" fill="#f87171">vp(T₂)</text>
+      </svg>
+    </div>
+
+    <div class="step-block" style="border-left-color:var(--cyan);">
+      <strong style="color:var(--cyan);">📈 讀圖四大核心黃金規律：</strong><br>
+      • <strong>曲線下面積恆為 1</strong>：代表 100% 分子總量。<br>
+      • <strong>溫度升高</strong>：分布峰值<strong>向右移動（最可能速率增大）</strong>且<strong>高度變低、曲線更平展</strong>。<br>
+      • <strong>高溫效益</strong>：具備高速動能的分子比例<strong>呈現指數級巨幅增加</strong>。
+    </div>
+
+    <div class="step-block y" style="margin-top:auto;">
+      <strong style="color:var(--yellow);">⚡ 三種速率精確大小順序（必背）：</strong>
+      <div class="formula-box" style="font-size:1.05rem;margin:.25rem 0;border-left-color:var(--yellow);">
+        $$v_p < \overline{v} < v_{rms}$$
+      </div>
+      <p style="font-size:.82rem;color:var(--sub);margin:0;">
+        • 最可能速率 $v_p = \sqrt{\frac{2RT}{M}}$ (1.414)<br>
+        • 平均速率 $\overline{v} = \sqrt{\frac{8RT}{\pi M}}$ (1.596)<br>
+        • 方均根速率 $v_{rms} = \sqrt{\frac{3RT}{M}}$ (1.732)
+      </p>
+    </div>
+  </div>
+</div>
+
+</div></div></div>
+
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body></html>

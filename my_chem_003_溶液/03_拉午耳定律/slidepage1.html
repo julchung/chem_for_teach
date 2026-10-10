@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 飽和蒸氣壓 (SVP) | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.85rem, 0.98vw, 1.02rem); line-height: 1.6; }
+        ul { margin-left: 1.2rem; }
+        strong { color: var(--accent-cyan); }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .info-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+        .info-card.yellow { border-color: var(--accent-yellow); border-left: 4px solid var(--accent-yellow); background: rgba(251,191,36,0.08); }
+        .info-card.green { border-color: var(--accent-green); border-left: 4px solid var(--accent-green); background: rgba(52,211,153,0.08); }
+
+        .svg-container {
+            flex: 1; min-height: 200px;
+            background: rgba(15,23,42,0.6); border: 1.5px solid rgba(56,189,248,0.25);
+            border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; padding: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-3 拉午耳定律 &middot; 飽和蒸氣壓 (Saturated Vapor Pressure, SVP)</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：定義與特性 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-cyan);">一、飽和蒸氣壓的定義</h2>
+                    <p>在<strong>密閉容器</strong>中，液體的蒸發速率等於氣體的凝結速率時，系統達成<em>動態相平衡</em>，此時液面上方蒸氣所施加於容器與液面的壓力，稱為該溫度下的<strong>飽和蒸氣壓 ($P_{sat}$)</strong>。</p>
+                </div>
+
+                <div class="info-card green">
+                    <h2 style="color:var(--accent-green); margin-bottom:0.35rem;">⚖️ 飽和蒸氣壓的核心特性</h2>
+                    <ul style="margin-left:1.2rem; display:flex; flex-direction:column; gap:4px;">
+                        <li><strong>本質是動態平衡：</strong>分子仍持續在氣、液兩相間轉移，但<em>蒸發速率 = 凝結速率</em>，巨觀壓力維持恆定。</li>
+                        <li><strong>只與「物質本性」及「溫度」有關：</strong>
+                            <p style="color:#cbd5e1; font-size:0.9rem; margin-top:2px;">
+                                定溫下，同一純液體的飽和蒸氣壓為<strong>定值</strong>，與容器體積、液面面積、液體量多寡完全無關（前提為液氣共存）。
+                            </p>
+                        </li>
+                        <li><strong>溫度愈高，蒸氣壓愈大：</strong>分子動能增加，能克服分子間引力逃逸至氣相的分子數顯著倍增。</li>
+                        <li><strong>分子間引力愈小，蒸氣壓愈大：</strong>引力小易揮發（如乙醚 $>$ 乙醇 $>$ 水）。</li>
+                    </ul>
+                </div>
+
+                <div class="info-card yellow">
+                    <p style="margin:0; font-size:0.92rem; color:#fde68a;">
+                        ⚠️ <strong>易錯警訊：</strong>蒸氣壓不是氣體分壓的任意值！只有在「密閉」且「有殘留液體共存」的平衡狀態下，蒸氣壓力才會剛好等於飽和蒸氣壓。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：相平衡機制與沸騰條件 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-yellow);">二、蒸氣分壓與相平衡狀態判斷</h2>
+                    <p>設密閉容器中實際量測的蒸氣分壓為 $P$：</p>
+                    <ul style="margin-left:1.2rem; margin-top:4px;">
+                        <li>$P < P_{sat}$：<strong>未飽和</strong>，液體持續蒸發，無液相時僅為純氣體。</li>
+                        <li>$P = P_{sat}$：<strong>達飽和</strong>，液氣兩相共存並處於動態平衡。</li>
+                        <li>$P > P_{sat}$：<strong>過飽和（不穩定）</strong>，蒸氣會迅速凝結直至 $P = P_{sat}$。</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h2 style="color:var(--accent-blue); margin-bottom:0.3rem;">🔥 沸騰與大氣壓力的關係</h2>
+                    <p>當液體的<strong>飽和蒸氣壓 = 外界環境大氣壓力</strong>時，液體內部即可形成氣泡冒出表面，發生<strong>沸騰</strong>。外界大氣壓愈低（如高山上），沸點隨之愈低。</p>
+                </div>
+
+                <div class="svg-container">
+                    <svg width="100%" height="100%" viewBox="0 0 380 200" style="max-height:220px;">
+                        <defs>
+                            <marker id="arrowUp" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M 0 0 L 8 4 L 0 8 Z" fill="var(--accent-red)" />
+                            </marker>
+                            <marker id="arrowDown" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                                <path d="M 0 0 L 8 4 L 0 8 Z" fill="var(--accent-green)" />
+                            </marker>
+                            <linearGradient id="liquidGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="rgba(56,189,248,0.4)" />
+                                <stop offset="100%" stop-color="rgba(14,165,233,0.15)" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 密閉容器外框 -->
+                        <rect x="60" y="20" width="260" height="150" rx="10" fill="rgba(15,23,42,0.8)" stroke="rgba(255,255,255,0.4)" stroke-width="2" />
+                        <!-- 液體層 -->
+                        <rect x="62" y="100" width="256" height="68" rx="2" fill="url(#liquidGrad)" />
+                        <line x1="62" y1="100" x2="318" y2="100" stroke="var(--accent-blue)" stroke-width="2" />
+
+                        <!-- 液體分子 -->
+                        <g fill="var(--accent-cyan)">
+                            <circle cx="90" cy="125" r="5" opacity="0.9" />
+                            <circle cx="125" cy="140" r="5" opacity="0.9" />
+                            <circle cx="155" cy="120" r="5" opacity="0.9" />
+                            <circle cx="190" cy="145" r="5" opacity="0.9" />
+                            <circle cx="225" cy="125" r="5" opacity="0.9" />
+                            <circle cx="260" cy="135" r="5" opacity="0.9" />
+                            <circle cx="290" cy="120" r="5" opacity="0.9" />
+                            <circle cx="110" cy="155" r="5" opacity="0.9" />
+                            <circle cx="170" cy="158" r="5" opacity="0.9" />
+                            <circle cx="240" cy="155" r="5" opacity="0.9" />
+                        </g>
+
+                        <!-- 蒸發箭頭 (向上紅色) -->
+                        <line x1="110" y1="95" x2="110" y2="60" stroke="var(--accent-red)" stroke-width="2.5" marker-end="url(#arrowUp)" />
+                        <line x1="170" y1="95" x2="170" y2="60" stroke="var(--accent-red)" stroke-width="2.5" marker-end="url(#arrowUp)" />
+                        <text x="140" y="52" fill="var(--accent-red)" font-size="12" font-weight="700" text-anchor="middle">蒸發速率 r₁</text>
+
+                        <!-- 凝結箭頭 (向下綠色) -->
+                        <line x1="230" y1="60" x2="230" y2="95" stroke="var(--accent-green)" stroke-width="2.5" marker-end="url(#arrowDown)" />
+                        <line x1="280" y1="60" x2="280" y2="95" stroke="var(--accent-green)" stroke-width="2.5" marker-end="url(#arrowDown)" />
+                        <text x="255" y="52" fill="var(--accent-green)" font-size="12" font-weight="700" text-anchor="middle">凝結速率 r₂</text>
+
+                        <!-- 氣體分子 -->
+                        <g fill="#f87171">
+                            <circle cx="110" cy="40" r="4.5" />
+                            <circle cx="145" cy="35" r="4.5" />
+                            <circle cx="190" cy="38" r="4.5" />
+                            <circle cx="230" cy="40" r="4.5" />
+                            <circle cx="275" cy="35" r="4.5" />
+                        </g>
+
+                        <!-- 底部文字 -->
+                        <text x="190" y="190" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">
+                            動態平衡：蒸發速率 r₁ ＝ 凝結速率 r₂ （$P = P_{sat}$）
+                        </text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

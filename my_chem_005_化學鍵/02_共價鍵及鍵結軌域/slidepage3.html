@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3D 軌域重疊與共價鍵形成 | 互動教學</title>
+    <meta name="description" content="高中選修化學二 第二章：3D 軌域重疊與共價鍵形成（s-s、σ(p-p)、π(p-p)、sp²-sp²、sp-sp 鍵結模擬）">
+    
+    <style>
+        :root {
+            --bg-dark: #071018;
+            --text-main: #ecfdf5;
+            --accent-teal: #2dd4bf;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-yellow: #fde047;
+            --accent-purple: #a78bfa;
+            --accent-red: #f87171;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.14);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background-image:
+                radial-gradient(circle at 20% 35%, rgba(45, 212, 191, 0.09) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.07) 0%, transparent 50%),
+                radial-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px;
+        }
+
+        /* 3D 模擬專用全頁容器 */
+        #slide-bonding-container {
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0.6rem 1.2rem 0.8rem;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* 頁面標題列 */
+        h1 {
+            color: var(--accent-teal);
+            font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+            margin: 0.2rem 0 0.3rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            border-bottom: 2px solid rgba(45, 212, 191, 0.28);
+            padding-bottom: 0.25rem;
+            flex-shrink: 0;
+        }
+        h1::before {
+            content: "";
+            width: 7px;
+            height: 24px;
+            background: linear-gradient(var(--accent-teal), var(--accent-cyan));
+            border-radius: 4px;
+        }
+
+        /* 操作提示說明 */
+        .iframe-caption {
+            flex-shrink: 0;
+            font-size: 0.88rem;
+            color: rgba(236, 253, 245, 0.7);
+            margin-bottom: 0.45rem;
+            padding: 0.1rem 0.2rem;
+            line-height: 1.4;
+        }
+        .iframe-caption strong {
+            color: var(--accent-cyan);
+        }
+
+        /* 3D 模擬 iframe 專用滿版外框 */
+        .iframe-wrap {
+            flex: 1 1 auto;
+            width: 100%;
+            min-height: calc(100vh - 120px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1.5px solid rgba(45, 212, 191, 0.35);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+            background: #0d1117;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 3D 模擬 iframe 元素 */
+        .iframe-wrap iframe {
+            width: 100%;
+            height: 100%;
+            flex: 1 1 auto;
+            min-height: calc(100vh - 120px);
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="slide-bonding-container">
+    <h1>3D 軌域重疊與共價鍵形成</h1>
+    <p class="iframe-caption">
+        <strong>操作指引：</strong>左側面板可切換 <em>s-s、σ(p-p)、π(p-p)、sp²-sp²、sp-sp</em> 軌域鍵結模式，拖曳上方滑桿可動態拉近原子觀察軌域重疊與電子雲波函數融合｜支援滑鼠左鍵旋轉、右鍵平移、滾輪縮放 3D 視角。
+    </p>
+    <div class="iframe-wrap">
+        <iframe id="bonding-frame" src="bonding.html" title="3D 化學鍵結模擬" allow="fullscreen"></iframe>
+    </div>
+</div>
+
+<script>
+// 確保當 iframe 載入時觸發內部 3D 視窗重繪，讓 Three.js 獲取正確的高解析度寬高
+document.addEventListener('DOMContentLoaded', () => {
+    const frame = document.getElementById('bonding-frame');
+    if (frame) {
+        frame.addEventListener('load', () => {
+            try {
+                if (frame.contentWindow) {
+                    frame.contentWindow.dispatchEvent(new Event('resize'));
+                    setTimeout(() => {
+                        try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch(e) {}
+                    }, 300);
+                }
+            } catch(e) {}
+        });
+    }
+});
+
+window.addEventListener('resize', () => {
+    const frame = document.getElementById('bonding-frame');
+    if (frame && frame.contentWindow) {
+        try { frame.contentWindow.dispatchEvent(new Event('resize')); } catch(e) {}
+    }
+});
+</script>
+
+</body>
+</html>

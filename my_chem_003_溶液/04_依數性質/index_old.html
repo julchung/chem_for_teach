@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>溶液的依數性質 - 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { display: none !important; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
+
+        /* slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 4rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4rem 1.5rem 1.5rem; } }
+
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-purple { color: var(--accent-purple); }
+
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+
+        /* Drawing layer – matches whole scrollable document */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Toolbar */
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+        #btn-top { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Tables */
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+
+        /* Example question layout: left 1.3 / right 1 */
+        .ex-split-row { display: flex; gap: 2rem; margin-top: 1rem; align-items: stretch; min-height: 67vh; }
+        .ex-left  { flex: 1.3; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ex-right { flex: 1;   background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 67vh; position: relative; }
+        .ex-options { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .ex-options li { padding: 0.35rem 0; font-size: clamp(1rem, 1.4vw, 1.3rem); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ex-options li:last-child { border-bottom: none; }
+        .ex-answer-box { background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1rem 1.5rem; margin: 0.8rem 0; width: 100%; display: none; }
+        .ex-answer-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .ans-body  { color: white; font-size: 1.1rem; line-height: 1.8; }
+        .btn-show-ans { margin-top: auto; align-self: flex-start; padding: 8px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+
+        /* Game items */
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 22px; height: 22px; background: #fff; border-radius: 50%; cursor: crosshair; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .left-dot { margin-left: auto; }
+        .right-dot { margin-right: auto; }
+        .dot:hover { transform: scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+
+        /* Random Draw styles */
+        .draw-ball { width: 100%; aspect-ratio: 1/1; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">溶液的依數性質</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">沸點上升、凝固點下降與滲透壓</p>
+            <button id="btn-start" class="btn-tool primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px; width: auto; border-radius: 50px;">▶ 進入教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+
+                <!-- Section 1: Introduction -->
+                <div class="slide">
+                    <h1>溶液的依數性質 (Colligative Properties)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-yellow">什麼是依數性質？</h2>
+                            <p>溶液的某些物理性質，與溶質的<strong class="text-red">本性（種類）無關</strong>，而只決定於溶液中<strong class="text-cyan">溶質粒子的數量（濃度）</strong>，此稱為依數性質。</p>
+                            <div class="rule-card" style="margin-top: 0.5rem;">
+                                <p><strong class="text-cyan">包含以下四種性質：</strong></p>
+                                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                                    <li>蒸氣壓下降 ($\Delta P$)</li>
+                                    <li>沸點上升 ($\Delta T_b$)</li>
+                                    <li>凝固點下降 ($\Delta T_f$)</li>
+                                    <li>滲透壓 ($\pi$)</li>
+                                </ul>
+                            </div>
+                            <div class="rule-card" style="border-color: var(--accent-yellow); background: rgba(251,191,36,0.08); margin-top: 0.5rem;">
+                                <p><strong class="text-yellow">關鍵觀念：</strong>依數性質只與溶液中的粒子<strong>數目</strong>有關，與溶質的化學性質無關。電解質因解離而產生更多粒子，所以效果更大。</p>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1.2; justify-content: flex-start; align-items: center; position: relative; padding-top: 0;">
+                            <img src="1.png" alt="依數性質" style="width: 100%; max-width: 400px; max-height: 32vh; object-fit: contain; border-radius: 10px; margin-bottom: 0.5rem; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: rgba(255,255,255,0.05);">
+                            <svg width="100%" viewBox="0 0 350 220" style="max-width: 400px; max-height: 26vh;">
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-cyan)" />
+                                    </marker>
+                                </defs>
+                                <!-- Beaker 1: Pure Solvent -->
+                                <g transform="translate(40, 40)">
+                                    <ellipse cx="50" cy="120" rx="40" ry="10" fill="rgba(255,255,255,0.05)" />
+                                    <path d="M 10 50 L 10 120 A 40 10 0 0 0 90 120 L 90 50 A 40 10 0 0 1 10 50" fill="rgba(56, 189, 248, 0.2)" />
+                                    <ellipse cx="50" cy="50" rx="40" ry="10" fill="rgba(56, 189, 248, 0.4)" />
+                                    <path d="M 10 0 L 10 120 A 40 10 0 0 0 90 120 L 90 0" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round"/>
+                                    <ellipse cx="50" cy="0" rx="40" ry="10" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-dasharray="4,4"/>
+                                    <circle cx="30" cy="70" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="50" cy="90" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="70" cy="65" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="40" cy="110" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="65" cy="105" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="30" cy="50" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="50" cy="52" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="70" cy="48" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="35" cy="10" r="4" fill="var(--accent-cyan)" opacity="0.8"/>
+                                    <path d="M 35 30 L 35 15" stroke="var(--accent-cyan)" stroke-width="1.5" marker-end="url(#arrow)" />
+                                    <circle cx="65" cy="-5" r="4" fill="var(--accent-cyan)" opacity="0.8"/>
+                                    <path d="M 65 30 L 65 0" stroke="var(--accent-cyan)" stroke-width="1.5" marker-end="url(#arrow)" />
+                                    <circle cx="50" cy="-20" r="4" fill="var(--accent-cyan)" opacity="0.8"/>
+                                    <path d="M 50 20 L 50 -15" stroke="var(--accent-cyan)" stroke-width="1.5" marker-end="url(#arrow)" />
+                                    <text x="50" y="155" fill="var(--text-main)" font-size="16" text-anchor="middle" font-weight="bold">純溶劑</text>
+                                    <text x="50" y="175" fill="var(--accent-cyan)" font-size="14" text-anchor="middle">蒸氣壓較大</text>
+                                </g>
+                                <!-- Beaker 2: Solution -->
+                                <g transform="translate(210, 40)">
+                                    <ellipse cx="50" cy="120" rx="40" ry="10" fill="rgba(255,255,255,0.05)" />
+                                    <path d="M 10 50 L 10 120 A 40 10 0 0 0 90 120 L 90 50 A 40 10 0 0 1 10 50" fill="rgba(168, 85, 247, 0.2)" />
+                                    <ellipse cx="50" cy="50" rx="40" ry="10" fill="rgba(168, 85, 247, 0.4)" />
+                                    <path d="M 10 0 L 10 120 A 40 10 0 0 0 90 120 L 90 0" fill="none" stroke="var(--accent-purple)" stroke-width="2" stroke-linecap="round"/>
+                                    <ellipse cx="50" cy="0" rx="40" ry="10" fill="none" stroke="var(--accent-purple)" stroke-width="2" stroke-dasharray="4,4"/>
+                                    <circle cx="25" cy="80" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="70" cy="100" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="45" cy="110" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="40" cy="70" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="65" cy="75" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="35" cy="95" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="55" cy="90" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="30" cy="50" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="50" cy="52" r="4" fill="var(--accent-cyan)"/>
+                                    <circle cx="65" cy="48" r="6" fill="var(--accent-red)"/>
+                                    <circle cx="50" cy="10" r="4" fill="var(--accent-cyan)" opacity="0.8"/>
+                                    <path d="M 50 35 L 50 15" stroke="var(--accent-cyan)" stroke-width="1.5" marker-end="url(#arrow)" />
+                                    <text x="50" y="155" fill="var(--text-main)" font-size="16" text-anchor="middle" font-weight="bold">溶液</text>
+                                    <text x="50" y="175" fill="var(--accent-red)" font-size="14" text-anchor="middle">蒸氣壓下降</text>
+                                </g>
+                            </svg>
+                            <p style="text-align: center; margin-top: 0; margin-bottom: 0; font-size: 0.9rem; color: rgba(255,255,255,0.7);">溶質粒子阻礙溶劑蒸發，導致蒸氣壓下降</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Boiling & Freezing Point -->
+                <div class="slide">
+                    <h1>沸點上升與凝固點下降</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1;">
+                            <h2 class="text-yellow">沸點上升 ($\Delta T_b$)</h2>
+                            <p>加入非揮發性溶質後，溶液蒸氣壓下降，導致沸點比純溶劑<strong class="text-red">高</strong>。</p>
+                            <div class="formula-box">
+                                $\Delta T_b = K_b \times C_m \times i$
+                            </div>
+                            <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8);">$K_b$：莫耳沸點上升常數 (水為 $0.52\text{ }^\circ\text{C/m}$)<br>$C_m$：重量莫耳濃度<br>$i$：凡特荷夫因子 (解離出的粒子數)</p>
+                        </div>
+                        <div class="flex-col" style="flex: 1; justify-content: center; align-items: center; gap: 0.5rem; background: transparent; padding: 0;">
+                            <img src="2.png" alt="圖形2" style="width: 100%; max-height: 22vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                            <img src="3.png" alt="圖形3" style="width: 100%; max-height: 22vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        </div>
+                        <div class="flex-col" style="flex: 1;">
+                            <h2 class="text-yellow">凝固點下降 ($\Delta T_f$)</h2>
+                            <p>無論溶質是否具揮發性，溶液的凝固點均會比純溶劑<strong class="text-cyan">低</strong>。</p>
+                            <div class="formula-box" style="border-left-color: var(--accent-cyan);">
+                                $\Delta T_f = K_f \times C_m \times i$
+                            </div>
+                            <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8);">$K_f$：莫耳凝固點下降常數 (水為 $1.86\text{ }^\circ\text{C/m}$)<br>$C_m$：重量莫耳濃度<br>$i$：凡特荷夫因子</p>
+                            <img src="4.png" alt="圖形4" style="width: 100%; max-height: 22vh; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-top: 0.5rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Osmotic Pressure -->
+                <div class="slide">
+                    <h1>滲透壓 (Osmotic Pressure)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1; align-items: center;">
+                            <div style="width: 100%;">
+                                <h2 class="text-yellow">滲透作用</h2>
+                                <p>當不同濃度的兩溶液被<strong class="text-red">半透膜</strong>隔開時，溶劑可由較稀溶液滲透進入較濃溶液中的現象（水往高濃度流）。</p>
+                                <div class="formula-box" style="border-left-color: var(--accent-purple);">
+                                    $\pi = C_M \times R \times T \times i$
+                                </div>
+                                <p style="font-size: 1.1rem;">$\pi$：滲透壓 (atm) $\quad$ $C_M$：體積莫耳濃度<br>$R$：氣體常數 (0.082) $\quad$ $T$：絕對溫度 (K)</p>
+                            </div>
+                            <svg width="100%" viewBox="0 0 350 320" style="max-height: 38vh; margin-top: 1rem; flex-shrink: 0;">
+                                <defs>
+                                    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-cyan)" />
+                                    </marker>
+                                    <marker id="arrow-red-start" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 10 0 L 0 5 L 10 10 z" fill="var(--accent-red)" />
+                                    </marker>
+                                    <marker id="arrow-red-end" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-red)" />
+                                    </marker>
+                                </defs>
+                                <path d="M 60 140 L 60 200 A 90 90 0 0 0 150 290 L 150 230 A 30 30 0 0 1 120 200 L 120 140 Z" fill="rgba(56, 189, 248, 0.3)" />
+                                <path d="M 150 290 A 90 90 0 0 0 240 200 L 240 80 L 180 80 L 180 200 A 30 30 0 0 1 150 230 Z" fill="rgba(168, 85, 247, 0.3)" />
+                                <line x1="150" y1="230" x2="150" y2="290" stroke="var(--accent-yellow)" stroke-width="4" stroke-dasharray="6,4" />
+                                <text x="150" y="310" fill="var(--accent-yellow)" font-size="14" text-anchor="middle" font-weight="bold">半透膜</text>
+                                <path d="M 60 40 L 60 200 A 90 90 0 0 0 240 200 L 240 40" fill="none" stroke="var(--accent-blue)" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M 120 40 L 120 200 A 30 30 0 0 0 180 200 L 180 40" fill="none" stroke="var(--accent-blue)" stroke-width="3" stroke-linecap="round"/>
+                                <circle cx="90" cy="180" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="80" cy="220" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="110" cy="240" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="130" cy="260" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="210" cy="120" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="190" cy="150" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="220" cy="180" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="200" cy="220" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="170" cy="250" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="200" cy="100" r="6" fill="var(--accent-red)" />
+                                <circle cx="220" cy="140" r="6" fill="var(--accent-red)" />
+                                <circle cx="190" cy="190" r="6" fill="var(--accent-red)" />
+                                <circle cx="220" cy="230" r="6" fill="var(--accent-red)" />
+                                <circle cx="180" cy="270" r="6" fill="var(--accent-red)" />
+                                <path d="M 110 260 L 140 260" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arrow-cyan)" />
+                                <text x="125" y="250" fill="var(--accent-cyan)" font-size="12" text-anchor="middle">溶劑滲透</text>
+                                <text x="90" y="120" fill="var(--text-main)" font-size="16" text-anchor="middle" font-weight="bold">純水</text>
+                                <text x="210" y="60" fill="var(--text-main)" font-size="16" text-anchor="middle" font-weight="bold">溶液</text>
+                                <line x1="60" y1="140" x2="260" y2="140" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4,4" />
+                                <line x1="180" y1="80" x2="260" y2="80" stroke="rgba(255,255,255,0.4)" stroke-dasharray="4,4" />
+                                <path d="M 255 85 L 255 135" stroke="var(--accent-red)" stroke-width="2" marker-start="url(#arrow-red-start)" marker-end="url(#arrow-red-end)" />
+                                <foreignObject x="260" y="95" width="80" height="30">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="color: var(--accent-red); font-size: 16px; font-weight: bold; line-height: 1;">$\pi$</div>
+                                </foreignObject>
+                            </svg>
+                        </div>
+
+                        <div class="flex-col" style="flex: 1; align-items: center;">
+                            <div style="width: 100%;">
+                                <h2 class="text-green">逆滲透 (Reverse Osmosis)</h2>
+                                <div class="rule-card" style="background: rgba(52, 211, 153, 0.1); border-color: var(--accent-green);">
+                                    <p>若在濃度較高的一方，施加<strong class="text-yellow">大於滲透壓</strong>的外部壓力，可使溶劑分子反向滲透至純溶劑一方。</p>
+                                    <p style="margin-top: 10px; color: var(--accent-cyan);">※ 常應用於海水淡化及淨水器。</p>
+                                </div>
+                            </div>
+                            <svg width="100%" viewBox="0 0 350 320" style="max-height: 38vh; margin-top: 1rem; flex-shrink: 0;">
+                                <defs>
+                                    <marker id="arrow-cyan2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-cyan)" />
+                                    </marker>
+                                    <marker id="arrow-red-end2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-red)" />
+                                    </marker>
+                                </defs>
+                                <path d="M 60 80 L 60 200 A 90 90 0 0 0 150 290 L 150 230 A 30 30 0 0 1 120 200 L 120 80 Z" fill="rgba(56, 189, 248, 0.3)" />
+                                <path d="M 150 290 A 90 90 0 0 0 240 200 L 240 140 L 180 140 L 180 200 A 30 30 0 0 1 150 230 Z" fill="rgba(168, 85, 247, 0.3)" />
+                                <line x1="150" y1="230" x2="150" y2="290" stroke="var(--accent-yellow)" stroke-width="4" stroke-dasharray="6,4" />
+                                <text x="150" y="310" fill="var(--accent-yellow)" font-size="14" text-anchor="middle" font-weight="bold">半透膜</text>
+                                <path d="M 60 40 L 60 200 A 90 90 0 0 0 240 200 L 240 40" fill="none" stroke="var(--accent-blue)" stroke-width="3" stroke-linecap="round"/>
+                                <path d="M 120 40 L 120 200 A 30 30 0 0 0 180 200 L 180 40" fill="none" stroke="var(--accent-blue)" stroke-width="3" stroke-linecap="round"/>
+                                <rect x="182" y="120" width="56" height="20" fill="var(--accent-yellow)" rx="5" />
+                                <rect x="205" y="60" width="10" height="60" fill="var(--accent-yellow)" />
+                                <path d="M 210 20 L 210 55" stroke="var(--accent-red)" stroke-width="4" marker-end="url(#arrow-red-end2)" />
+                                <foreignObject x="150" y="0" width="120" height="30">
+                                    <div xmlns="http://www.w3.org/1999/xhtml" style="color: var(--accent-red); font-size: 16px; font-weight: bold; text-align: center; line-height: 1.2;">壓力 $> \pi$</div>
+                                </foreignObject>
+                                <circle cx="90" cy="120" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="80" cy="180" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="110" cy="220" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="130" cy="260" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="210" cy="160" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="190" cy="190" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="220" cy="220" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="170" cy="250" r="4" fill="var(--accent-cyan)" />
+                                <circle cx="200" cy="150" r="6" fill="var(--accent-red)" />
+                                <circle cx="220" cy="190" r="6" fill="var(--accent-red)" />
+                                <circle cx="190" cy="230" r="6" fill="var(--accent-red)" />
+                                <circle cx="180" cy="270" r="6" fill="var(--accent-red)" />
+                                <path d="M 190 260 L 160 260" stroke="var(--accent-cyan)" stroke-width="3" marker-end="url(#arrow-cyan2)" />
+                                <text x="175" y="250" fill="var(--accent-cyan)" font-size="12" text-anchor="middle">溶劑逆滲透</text>
+                                <text x="90" y="60" fill="var(--text-main)" font-size="16" text-anchor="middle" font-weight="bold">純水</text>
+                                <text x="250" y="180" fill="var(--text-main)" font-size="16" text-anchor="start" font-weight="bold">溶液</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Examples (left 1.3 / right 1 layout) -->
+                <div class="slide">
+                    <h1>範例題</h1>
+
+                    <!-- Ex 1 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 1：沸點上升</h2>
+                            <p>某非揮發性非電解質化合物 $1.20\text{ g}$ 溶在 $80.0\text{ g}$ 水中，測得溶液沸點為 $100.13\text{ }^\circ\text{C}$，則該化合物分子量為多少？（水的莫耳沸點上升常數為 $0.52\text{ }^\circ\text{C/m}$）</p>
+                            <ul class="ex-options">
+                                <li>(A) 50</li>
+                                <li>(B) 60</li>
+                                <li>(C) 80</li>
+                                <li>(D) 108</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-1">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-1" class="ex-answer-box">
+                                <div class="ans-label">解答：(B)</div>
+                                <div class="ans-body">
+                                    1. 沸點上升度數：$\Delta T_b = 100.13 - 100.00 = 0.13 \text{ }^\circ\text{C}$<br>
+                                    2. 由公式 $\Delta T_b = K_b \times C_m$<br>
+                                    $\quad 0.13 = 0.52 \times \dfrac{1.20 / M}{80.0 / 1000}$<br>
+                                    3. 解出分子量 $M$：<br>
+                                    $\quad 0.13 = 0.52 \times \dfrac{15}{M} \Rightarrow M = \dfrac{0.52 \times 15}{0.13} = 60$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 2 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 2：凝固點下降</h2>
+                            <p>苯的純溶劑凝固點為 $5.53\text{ }^\circ\text{C}$，將 $3.52\text{ g}$ 的非電解質溶質 X 溶於 $100\text{ g}$ 的苯中，形成的溶液其凝固點為 $4.12\text{ }^\circ\text{C}$。已知苯的凝固點下降常數為 $5.12\text{ }^\circ\text{C/m}$，求溶質 X 的分子量？</p>
+                            <ul class="ex-options">
+                                <li>(A) 128</li>
+                                <li>(B) 112</li>
+                                <li>(C) 142</li>
+                                <li>(D) 182</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-2">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-2" class="ex-answer-box">
+                                <div class="ans-label">解答：(A)</div>
+                                <div class="ans-body">
+                                    1. 凝固點下降度數：$\Delta T_f = 5.53 - 4.12 = 1.41 \text{ }^\circ\text{C}$<br>
+                                    2. 由公式 $\Delta T_f = K_f \times C_m$<br>
+                                    $\quad 1.41 = 5.12 \times \dfrac{3.52 / M}{100 / 1000}$<br>
+                                    3. 解出分子量 $M$：<br>
+                                    $\quad 1.41 = 5.12 \times \dfrac{35.2}{M}$<br>
+                                    $\quad M = \dfrac{5.12 \times 35.2}{1.41} \approx 128$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 3 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 3：滲透壓計算</h2>
+                            <p>在 $27\text{ }^\circ\text{C}$ 時，某化合物 $0.40\text{ g}$ 溶成 $100\text{ mL}$ 水溶液，其滲透壓為 $0.30\text{ atm}$，該化合物的分子量為多大？</p>
+                            <ul class="ex-options">
+                                <li>(A) 120</li>
+                                <li>(B) 133</li>
+                                <li>(C) 246</li>
+                                <li>(D) 328</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ex-ans-3">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-3" class="ex-answer-box">
+                                <div class="ans-label">解答：(D)</div>
+                                <div class="ans-body">
+                                    1. 使用滲透壓公式：$\pi = C_M RT = \dfrac{W}{M \cdot V(L)} \times R \times T$<br>
+                                    2. 將已知數值代入：<br>
+                                    $\quad 0.30 = \dfrac{0.40}{M \times 0.1} \times 0.082 \times 300$<br>
+                                    $\quad 0.30 = \dfrac{4}{M} \times 24.6 = \dfrac{98.4}{M}$<br>
+                                    3. 解出分子量 $M$：<br>
+                                    $\quad M = \dfrac{98.4}{0.30} = 328$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ex 4 -->
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <h2 class="text-yellow">範例 4：蒸氣壓與沸點上升綜合</h2>
+                            <p>稀薄的葡萄糖水溶液，$25\text{ }^\circ\text{C}$ 時之蒸氣壓為 $p$，純水的蒸氣壓為 $p_o$，依拉午耳定律該水溶液之沸點上升度數可表示為？（$K_b$ 為沸點上升常數）</p>
+                            <div style="margin-top: 1rem; background: rgba(56, 189, 248, 0.1); border-left: 4px solid var(--accent-blue); padding: 12px; font-size: 1.1rem; color: rgba(255,255,255,0.85); border-radius: 0 8px 8px 0;">
+                                💡 提示：先利用拉午耳定律找出莫耳分率 $X_B$，再利用稀薄水溶液的特性將 $X_B$ 轉換為 $C_m$。
+                            </div>
+                            <button class="btn-show-ans" data-ans="ex-ans-4" style="margin-top: 1rem;">顯示解析</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ex-ans-4" class="ex-answer-box">
+                                <div class="ans-label">解答與解析</div>
+                                <div class="ans-body">
+                                    1. 拉午耳定律：$\Delta P = p_o - p = p_o \times X_B$<br>
+                                    $\quad \Rightarrow X_B = \dfrac{p_o - p}{p_o}$<br>
+                                    2. 稀薄水溶液近似：<br>
+                                    $\quad C_m = \dfrac{1000}{18} \times X_B = \dfrac{1000(p_o - p)}{18 p_o}$<br>
+                                    3. 代入沸點上升公式（葡萄糖 $i=1$）：<br>
+                                    $\quad \Delta T_b = K_b \times \dfrac{1000(p_o - p)}{18 p_o}$
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Matching Game -->
+                <style>
+                    /* ── 單元 3-4 核心通關檢核 CSS ── */
+                    .quiz-container-full {
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        flex: 1;
+                    }
+                    .quiz-scenario-box {
+                        background: rgba(52, 211, 153, 0.08);
+                        border: 1px solid rgba(52, 211, 153, 0.25);
+                        border-radius: 12px;
+                        padding: 12px 16px;
+                    }
+                    .quiz-grid-layout {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 16px;
+                    }
+                    @media (max-width: 900px) {
+                        .quiz-grid-layout {
+                            grid-template-columns: 1fr;
+                        }
+                    }
+                    .quiz-card {
+                        background: rgba(30, 41, 59, 0.7);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 14px;
+                        padding: 14px 18px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        transition: border-color 0.2s, box-shadow 0.2s;
+                    }
+                    .quiz-card.card-correct {
+                        border-color: #34d399 !important;
+                        box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+                    }
+                    .quiz-card.card-wrong {
+                        border-color: #f87171 !important;
+                        box-shadow: 0 0 12px rgba(248, 113, 113, 0.25);
+                    }
+                    .quiz-q {
+                        font-size: 0.94rem;
+                        font-weight: 600;
+                        color: #f8fafc;
+                        line-height: 1.5;
+                    }
+                    .quiz-options {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 7px;
+                    }
+                    .quiz-opt-btn {
+                        background: rgba(15, 23, 42, 0.6);
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        border-radius: 8px;
+                        color: #cbd5e1;
+                        padding: 7px 12px;
+                        font-size: 0.88rem;
+                        text-align: left;
+                        cursor: pointer;
+                        transition: all 0.15s;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+                    .quiz-opt-btn:hover:not(:disabled) {
+                        background: rgba(56, 189, 248, 0.15);
+                        border-color: #38bdf8;
+                        color: #f8fafc;
+                    }
+                    .quiz-opt-btn.selected {
+                        background: rgba(56, 189, 248, 0.25);
+                        border-color: #38bdf8;
+                        color: #38bdf8;
+                        font-weight: 600;
+                    }
+                    .quiz-opt-btn.opt-correct {
+                        background: rgba(52, 211, 153, 0.25) !important;
+                        border-color: #34d399 !important;
+                        color: #34d399 !important;
+                        font-weight: 600;
+                    }
+                    .quiz-opt-btn.opt-wrong {
+                        background: rgba(248, 113, 113, 0.2) !important;
+                        border-color: #f87171 !important;
+                        color: #f87171 !important;
+                    }
+                    .quiz-analysis {
+                        display: none;
+                        background: rgba(15, 23, 42, 0.7);
+                        border-left: 3px solid #38bdf8;
+                        border-radius: 0 8px 8px 0;
+                        padding: 8px 12px;
+                        font-size: 0.82rem;
+                        color: #94a3b8;
+                        line-height: 1.5;
+                    }
+                    .quiz-analysis.show {
+                        display: block;
+                    }
+
+                    /* 連連看專用樣式 */
+                    .match-game-wrapper {
+                        position: relative;
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 20px;
+                        background: rgba(15, 23, 42, 0.4);
+                        border-radius: 12px;
+                        padding: 16px;
+                        min-height: 230px;
+                        touch-action: none;
+                    }
+                    .match-col {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        gap: 9px;
+                        width: 44%;
+                        z-index: 2;
+                    }
+                    .match-item {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 7px 10px;
+                        border-radius: 8px;
+                        background: rgba(30, 41, 59, 0.85);
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        font-size: 0.83rem;
+                        color: #e2e8f0;
+                        cursor: pointer;
+                        transition: all 0.15s;
+                        user-select: none;
+                        -webkit-user-select: none;
+                    }
+                    .match-item:hover {
+                        border-color: #38bdf8;
+                        background: rgba(56, 189, 248, 0.15);
+                    }
+                    .match-item.selected {
+                        border-color: #fbbf24;
+                        box-shadow: 0 0 8px rgba(251, 191, 36, 0.35);
+                        background: rgba(251, 191, 36, 0.15);
+                    }
+                    .match-item.matched-correct {
+                        border-color: #34d399;
+                        background: rgba(52, 211, 153, 0.15);
+                        color: #34d399;
+                    }
+                    .match-item.matched-wrong {
+                        border-color: #f87171;
+                        background: rgba(248, 113, 113, 0.15);
+                        color: #f87171;
+                    }
+                    .match-dot {
+                        width: 12px;
+                        height: 12px;
+                        border-radius: 50%;
+                        background: #64748b;
+                        border: 2px solid #0f172a;
+                        flex-shrink: 0;
+                        transition: background 0.15s, transform 0.15s;
+                    }
+                    .match-item:hover .match-dot,
+                    .match-item.selected .match-dot {
+                        background: #fbbf24;
+                        transform: scale(1.2);
+                    }
+                    .match-item.matched-correct .match-dot {
+                        background: #34d399;
+                    }
+                    .match-item.matched-wrong .match-dot {
+                        background: #f87171;
+                    }
+                    .match-svg {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        pointer-events: none;
+                        z-index: 1;
+                    }
+
+                    /* 檢核操作列 */
+                    .exam-action-bar {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(15, 23, 42, 0.65);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 12px;
+                        padding: 10px 18px;
+                        margin-top: 4px;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                    .btn-submit-exam {
+                        flex-shrink: 0;
+                        padding: 10px 24px;
+                        background: linear-gradient(135deg, #38bdf8, #34d399);
+                        color: #0b1120;
+                        font-size: 0.97rem;
+                        font-weight: 700;
+                        border: none;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+                        transition: all 0.2s;
+                        white-space: nowrap;
+                    }
+                    .btn-submit-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+                    .btn-submit-exam:disabled { opacity: 0.55; cursor: default; transform: none; }
+                    
+                    .btn-retry-exam {
+                        flex-shrink: 0;
+                        padding: 10px 22px;
+                        background: linear-gradient(135deg, #f59e0b, #ef4444);
+                        color: #ffffff;
+                        font-size: 0.95rem;
+                        font-weight: 700;
+                        border: none;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+                        transition: all 0.2s;
+                        white-space: nowrap;
+                    }
+                    .btn-retry-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+
+                    @keyframes collig-pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.08); }
+                    }
+                </style>
+
+                <!-- Slide 5: 核心通關檢核 -->
+                <div class="slide" id="slide-checkpoint" style="padding: 1.2rem 8% 1.5rem 8%; border: none; border-top: 3px solid var(--accent-purple);">
+                    <div class="quiz-container-full">
+                        <!-- 標頭 -->
+                        <div class="quiz-scenario-box">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                                <span class="problem-badge" style="background:rgba(52,211,153,0.2); border-color:rgba(52,211,153,0.4); color:#34d399;">
+                                    🏆 單元 3-4 · 核心通關檢核
+                                </span>
+                                <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成共 7 小題（含第(1)題連連看），點擊右下角「確定作答」提交檢核</span>
+                            </div>
+                            <p style="font-size:0.94rem; line-height:1.6; color:#f8fafc; margin:0;">
+                                <strong style="color:#fbbf24;">【稀薄溶液四大依數性質核心應用】</strong>
+                                第(1)題為概念連連看（任意拖曳或點選配對），第(2)~(7)題涵蓋蒸氣壓下降、沸點上升、凝固點下降與滲透壓之綜合計算與觀念辨析，全對即可通關解鎖下一單元。
+                            </p>
+                        </div>
+
+                        <!-- ★ 第(1)題：概念連連看（互動連線，橫跨全欄） -->
+                        <div class="quiz-card" id="quiz-matching-card" style="width:100%;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <div class="quiz-q" style="margin:0;">
+                                    <span class="text-cyan">(1) 概念配對連連看</span> 請將左側依數性質概念連線至右側對應科學特徵與公式（可拖曳或點選圓點任意連線）。
+                                </div>
+                                <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                                    重設連線 ↺
+                                </button>
+                            </div>
+                            <!-- 連連看操作區 -->
+                            <div class="match-game-wrapper" id="match-game-wrapper">
+                                <svg class="match-svg" id="match-svg"></svg>
+                                <div class="match-col" id="match-col-left"></div>
+                                <div class="match-col" id="match-col-right"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#64748b; margin-top:-4px;">
+                                <span>💡 提示：點擊左側項目再點擊右側項目，或直接從圓點拖曳至目標圓點</span>
+                                <span id="match-count-badge" style="color:#38bdf8;">已連線：0 / 5</span>
+                            </div>
+                        </div>
+
+                        <!-- 題目網格排版 (2欄並排) -->
+                        <div class="quiz-grid-layout">
+                            <!-- ★ 第(2)題：蒸氣壓下降與沸點上升推導 (螢幕截圖 1) -->
+                            <div class="quiz-card" data-q="q2" data-ans="0">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(2) 蒸氣壓下降與沸點上升關係</span> 稀薄的葡萄糖水溶液，在 $25^\circ\text{C}$ 時之蒸氣壓為 $p$，純水的蒸氣壓為 $p^\circ$，依拉午耳定律該水溶液之沸點上升度數為何？（$K_b$ 為沸點上升常數）
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> $55.5 \times K_b \times \dfrac{p^\circ - p}{p}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> $K_b \times \dfrac{p^\circ - p}{p}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> $55.5 \times K_b \times \dfrac{p - p^\circ}{p}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> $K_b \times \dfrac{p - p^\circ}{p}$
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (A)</strong><br>
+                                    1. <strong>蒸氣壓與莫耳分率</strong>：<br>
+                                    　依拉午耳定律，溶液蒸氣壓 $p = X_{水} p^\circ$。<br>
+                                    　$\dfrac{n_{溶質}}{n_{水}} = \dfrac{X_{溶質}}{X_{水}} = \dfrac{p^\circ - p}{p}$。<br>
+                                    2. <strong>重量莫耳濃度 $C_m$</strong>：<br>
+                                    　每 $1000\text{ g}$ 水含有之水莫耳數 $n_{水} = \dfrac{1000}{18} \approx 55.5\text{ mol}$。<br>
+                                    　$C_m = \dfrac{n_{溶質}}{1\text{ kg 水}} = 55.5 \times \dfrac{n_{溶質}}{n_{水}} = 55.5 \times \dfrac{p^\circ - p}{p}$。<br>
+                                    3. <strong>沸點上升公式</strong>：<br>
+                                    　$\Delta T_b = K_b \cdot C_m = 55.5 \times K_b \times \dfrac{p^\circ - p}{p}$。
+                                </div>
+                            </div>
+
+                            <!-- ★ 第(3)題：葡萄糖水沸點換算蒸氣壓 (螢幕截圖 2) -->
+                            <div class="quiz-card" data-q="q3" data-ans="0">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(3) 沸點推算 $100^\circ	ext{C}$ 時之蒸氣壓</span> 某葡萄糖水溶液沸點為 $100.52^\circ\text{C}$，已知水之 $K_b = 0.52^\circ\text{C/m}$，則此溶液在 $100^\circ\text{C}$ 時之蒸氣壓約為多大？
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> $747\text{ mmHg}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> $747\text{ atm}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> $760\text{ atm}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> $760\text{ mmHg}$
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (A) $747	ext{ mmHg}$</strong><br>
+                                    1. 由沸點上升求 $C_m$：<br>
+                                    　$\Delta T_b = 100.52 - 100 = 0.52^\circ\text{C}$ $\implies C_m = \dfrac{\Delta T_b}{K_b} = \dfrac{0.52}{0.52} = 1.0\text{ m}$。<br>
+                                    2. 求 $100^\circ\text{C}$ 時水之莫耳分率：<br>
+                                    　$1000\text{ g}$ 水含有 $55.5\text{ mol}$ 水與 $1.0\text{ mol}$ 葡萄糖。<br>
+                                    　$X_{水} = \dfrac{55.5}{55.5 + 1.0} = \dfrac{55.5}{56.5} \approx 0.9823$。<br>
+                                    3. 求 $100^\circ\text{C}$ 溶液蒸氣壓（$100^\circ\text{C}$ 純水 $P^\circ = 760	ext{ mmHg}$）：<br>
+                                    　$P = X_{水} \cdot P^\circ = \dfrac{55.5}{56.5} \times 760 \approx 746.5\text{ mmHg} \approx 747\text{ mmHg}$。
+                                </div>
+                            </div>
+
+                            <!-- ★ 第(4)題：混合電解質與非電解質沸點與凝固點 (螢幕截圖 3) -->
+                            <div class="quiz-card" data-q="q4" data-ans="0">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(4) 混合溶液沸點與凝固點計算</span> 將食鹽（$\text{NaCl}$）、果糖（$\text{C}_6\text{H}_{12}\text{O}_6$）、硝酸鉀（$\text{KNO}_3$）各 $0.01\text{ mol}$ 混合溶於 $500\text{ 克}$ 的水中，在 $1\text{ atm}$ 下此水溶液之凝固點與沸點溫度（$^\circ\text{C}$）分別為何？（水之 $K_f = 1.86^\circ\text{C/m},\ K_b = 0.52^\circ\text{C/m}$）
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> $-0.186^\circ\text{C}、100.052^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> $-0.093^\circ\text{C}、100.026^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> $-0.372^\circ\text{C}、100.104^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> $-1.86^\circ\text{C}、100.52^\circ\text{C}$
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (A)</strong><br>
+                                    1. <strong>計算總有效溶質粒子莫耳數</strong>：<br>
+                                    　• $\text{NaCl}$（$i=2$）：$0.01 \times 2 = 0.02\text{ mol}$ 粒子。<br>
+                                    　• 果糖（$i=1$）：$0.01 \times 1 = 0.01\text{ mol}$ 粒子。<br>
+                                    　• $\text{KNO}_3$（$i=2$）：$0.01 \times 2 = 0.02\text{ mol}$ 粒子。<br>
+                                    　總粒子數 $= 0.02 + 0.01 + 0.02 = 0.05\text{ mol}$。<br>
+                                    2. <strong>有效重量莫耳濃度</strong>：<br>
+                                    　$i \cdot C_m = \dfrac{0.05\text{ mol}}{0.5\text{ kg 水}} = 0.1\text{ m}$。<br>
+                                    3. <strong>凝固點與沸點</strong>：<br>
+                                    　$\Delta T_f = 1.86 \times 0.1 = 0.186^\circ\text{C} \implies T_f = 0 - 0.186 = -0.186^\circ\text{C}$。<br>
+                                    　$\Delta T_b = 0.52 \times 0.1 = 0.052^\circ\text{C} \implies T_b = 100 + 0.052 = 100.052^\circ\text{C}$。
+                                </div>
+                            </div>
+
+                            <!-- ★ 第(5)題：電解質與非電解質性質比較 (螢幕截圖 4) -->
+                            <div class="quiz-card" data-q="q5" data-ans="1">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(5) 同濃度電解質與非電解質性質比較</span> 有關甲：$0.1\text{ m NaCl}_{(aq)}$ 與乙：$0.1\text{ m }\text{C}_6\text{H}_{12}\text{O}_{6(aq)}$ 的各項性質比較，下列組合何者<strong>完全正確</strong>？
+                                    <div style="font-size:0.86rem; color:#cbd5e1; margin-top:4px; font-weight:normal; line-height:1.5; background:rgba(0,0,0,0.2); padding:6px 10px; border-radius:6px;">
+                                        (A) 導電度：甲 $>$ 乙<br>
+                                        (B) 溶劑之莫耳分率：甲 $>$ 乙<br>
+                                        (C) 沸點：甲 $>$ 乙<br>
+                                        (D) 凝固點：甲 $>$ 乙<br>
+                                        (E) 蒸氣壓：甲 $>$ 乙
+                                    </div>
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> 僅 (A)(B)
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> 僅 (A)(C)
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> 僅 (C)(D)
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> 僅 (A)(C)(E)
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (B) 僅 (A)(C) 正確</strong><br>
+                                    • 甲為強電解質（$i \approx 2$），有效濃度約 $0.2\text{ m}$；乙為非電解質（$i=1$），有效濃度 $0.1\text{ m}$。<br>
+                                    • (A) 正確：甲含大量可自由移動離子，導電度甲 $>$ 乙。<br>
+                                    • (B) 錯誤：甲之溶質解離粒子多，故水之莫耳分率應為 乙 $>$ 甲。<br>
+                                    • (C) 正確：依數性質粒子數越多沸點上升愈大，故沸點 甲 $>$ 乙。<br>
+                                    • (D) 錯誤：粒子數愈多凝固點下降愈多（凝固點更低），故凝固點 乙 $>$ 甲。<br>
+                                    • (E) 錯誤：粒子數愈多蒸氣壓下降愈大，故同溫蒸氣壓 乙 $>$ 甲。<br>
+                                    故正確項目為 (A) 與 (C)。
+                                </div>
+                            </div>
+
+                            <!-- ★ 第(6)題：U型管滲透平衡判定 (螢幕截圖 5) -->
+                            <div class="quiz-card" data-q="q6" data-ans="1">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(6) 半透膜U型管滲透平衡</span> 溶液甲為 $0.20\text{ M}$ 蔗糖水，溶液乙為 $0.30\text{ M}$ 葡萄糖水溶液，分別裝入底部有半透膜隔離之 U 型管兩邊，最初兩液面等高，則當滲透平衡時，下列敘述何者<strong>正確</strong>？
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> 乙溶液濃度大於 $0.3\text{ M}$，且溶液體積增加
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> 乙溶液濃度小於 $0.3\text{ M}$，但溶液體積增加
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> 乙溶液體積增加，但溶液濃度不變
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> 乙溶液濃度大於 $0.3\text{ M}$，但溶液體積減少
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (B)</strong><br>
+                                    1. <strong>滲透方向</strong>：<br>
+                                    　乙濃度（$0.30\text{ M}$）大於甲濃度（$0.20\text{ M}$），滲透壓 $\Pi_乙 > \Pi_甲$。<br>
+                                    　水分子自低濃度（甲）淨滲透流入高濃度（乙）。<br>
+                                    2. <strong>乙端體積與濃度變化</strong>：<br>
+                                    　乙端持續吸水，液面上升、<strong>體積增加</strong>。<br>
+                                    　乙端吸收溶劑水後被稀釋，其濃度必<strong>小於 $0.30\text{ M}$</strong>（但達平衡時產生液面差靜水壓 $\Delta h$，故乙端濃度仍大於甲端濃度）。<br>
+                                    故選 (B)。
+                                </div>
+                            </div>
+
+                            <!-- ★ 第(7)題：人體血液滲透壓換算凝固點 (螢幕截圖 6) -->
+                            <div class="quiz-card" data-q="q7" data-ans="1">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(7) 滲透壓與凝固點換算</span> 人體血液的滲透壓在 $37^\circ\text{C}$ 時約為 $7.5\text{ atm}$。在同一溫度和血液成相同滲透壓的葡萄糖水溶液，其凝固點是多少 $^\circ\text{C}$？（體積莫耳濃度視為重量莫耳濃度，$K_f = 1.86^\circ\text{C/m}$）
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt-btn" data-opt="0">
+                                        <span>(A)</span> $-1.13^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="1">
+                                        <span>(B)</span> $-0.56^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="2">
+                                        <span>(C)</span> $-0.41^\circ\text{C}$
+                                    </button>
+                                    <button type="button" class="quiz-opt-btn" data-opt="3">
+                                        <span>(D)</span> $-0.28^\circ\text{C}$
+                                    </button>
+                                </div>
+                                <div class="quiz-analysis">
+                                    💡 <strong>【解析】正解為 (B) $-0.56^\circ	ext{C}$</strong><br>
+                                    1. <strong>由滲透壓公式求濃度 $C_M$</strong>：<br>
+                                    　$\Pi = C_M \cdot R \cdot T$（葡萄糖 $i=1$）<br>
+                                    　$7.5 = C_M \times 0.082 \times (273 + 37) = C_M \times 0.082 \times 310 = C_M \times 25.42$<br>
+                                    　$C_M = \dfrac{7.5}{25.42} \approx 0.295\text{ M} \approx 0.295\text{ m}$。<br>
+                                    2. <strong>計算凝固點下降量</strong>：<br>
+                                    　$\Delta T_f = K_f \cdot C_m = 1.86 \times 0.295 \approx 0.549^\circ\text{C} \approx 0.56^\circ\text{C}$。<br>
+                                    3. <strong>凝固點</strong>：<br>
+                                    　$T_f = 0 - \Delta T_f = -0.56^\circ\text{C}$。
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 檢核操作列 -->
+                        <div class="exam-action-bar">
+                            <div id="quiz-feedback-msg-collig" style="font-size:0.95rem; font-weight:600; color:#94a3b8; display:flex; align-items:center; gap:8px;">
+                                <span>請完成上方配對與 6 道選擇題後點擊送出</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button type="button" id="btn-retry-exam-collig" class="btn-retry-exam" style="display:none;">
+                                    再試一次 ↺
+                                </button>
+                                <button type="button" id="btn-submit-exam-collig" class="btn-submit-exam">
+                                    確定作答 🚀
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 通關成功橫幅 -->
+                    <div id="section-complete-banner" style="
+                        display: none;
+                        text-align: center;
+                        padding: 3rem 2rem;
+                        background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0) 70%);
+                        border-top: 1px solid rgba(52,211,153,0.25);
+                        margin-top: 2rem;
+                        border-radius: 20px;
+                    ">
+                        <div style="font-size:4rem; margin-bottom:0.8rem; animation: collig-pulse 1.5s ease-in-out infinite;">🏆</div>
+                        <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+                        <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜你 7 題全數通過！已完成溶液依數性質核心檢核 🎉</p>
+                        <p style="color:#94a3b8; font-size:0.95rem;">下一單元已自動解鎖，請從左側目錄切換繼續學習</p>
+                        <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                            <div style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:12px 22px; color:#34d399; font-weight:700;">
+                                ✅ 3-4 依數性質 — 通關
+                            </div>
+                            <div style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:12px 22px; color:#38bdf8; font-weight:700;">
+                                🔓 下一單元 — 已解鎖
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end slides-container -->
+
+            <canvas id="drawing-layer"></canvas>
+        </div><!-- end presentation-area -->
+
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <div id="drag-handle">≡</div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+            <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:2px;">
+                <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
+            </div>
+            <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+            </div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+        </div>
+    </div><!-- end app -->
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Start overlay ──
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        btnStart.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // ── Drawing layer ──
+        let isDrawingMode = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let savedDrawing = null;
+        let lastX = 0, lastY = 0, isDrawing = false;
+
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.width  = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            restoreDrawing();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getCoords(e) {
+            // canvas is position:absolute top:0 left:0 covering the full document.
+            // getBoundingClientRect().top is negative when scrolled, so
+            // clientY - rect.top already gives the correct absolute canvas Y.
+            // Do NOT add window.scrollY again — that would double-count it.
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true; [lastX, lastY] = getCoords(e);
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = Math.max(20, penSize * 10); }
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; ctx.lineWidth = Math.max(2, penSize); }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+        function stopDrawing() {
+            if (isDrawing) { isDrawing = false; savedDrawing = canvas.toDataURL(); }
+        }
+        function restoreDrawing() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (savedDrawing) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = savedDrawing; }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // ── Toolbar interactions ──
+        const btnDraw = document.getElementById('btn-draw');
+        btnDraw.addEventListener('click', () => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            btnDraw.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            const cp = document.getElementById('color-picker');
+            const et = document.getElementById('eraser-tools');
+            if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+            if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        const btnEraser = document.getElementById('btn-eraser');
+        if (btnEraser) btnEraser.addEventListener('click', () => {
+            drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+            btnEraser.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
+                drawMode = 'pen';
+                btnEraser && btnEraser.classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            savedDrawing = null;
+        });
+
+        document.getElementById('btn-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Toolbar drag ──
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false, dragOffY = 0;
+        dragHandle.addEventListener('mousedown', (e) => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+        window.addEventListener('mousemove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('mouseup', () => isDraggingToolbar = false);
+        dragHandle.addEventListener('touchstart', (e) => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; });
+        window.addEventListener('touchmove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('touchend', () => isDraggingToolbar = false);
+
+        // ── Random Draw ──
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const btnDoDraw = document.getElementById('btn-do-draw');
+            const drawTotalInput = document.getElementById('draw-total-input');
+            let totalBalls = 40, drawBalls = [];
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = ''; drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball'; ball.textContent = i; ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball); drawBalls.push(ball);
+                }
+            }
+
+            btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+                if (!drawModal) return;
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none'; btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block'; btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+                }
+            });
+            btnCloseDraw && btnCloseDraw.addEventListener('click', () => {
+                if (drawModal) drawModal.style.display = 'none';
+                btnRandomDraw && btnRandomDraw.classList.remove('active-tool');
+            });
+            drawTotalInput && drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1;
+                drawTotalInput.value = val; totalBalls = val; renderBalls();
+            });
+
+            let drawInterval, drawTimeout;
+            btnDoDraw && btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+                const available = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (available.length === 0) { alert('所有號碼都已抽出！'); return; }
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+                const cur = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (cur.length === 0) { alert('所有號碼都已抽出！'); return; }
+                btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+                drawInterval = setInterval(() => { cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('flicker'); }, 50);
+                drawTimeout = setTimeout(() => { clearInterval(drawInterval); cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, 2000);
+            });
+        })();
+
+        // ── Show/Hide Answer buttons ──
+        document.querySelectorAll('.btn-show-ans').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // 防止預設行為
+                const ansId = btn.dataset.ans;
+                const ansBox = document.getElementById(ansId);
+                if (!ansBox) return;
+                
+                const isVisible = ansBox.classList.contains('visible');
+                if (isVisible) {
+                    ansBox.classList.remove('visible');
+                    ansBox.style.display = 'none'; // 強制隱藏
+                    btn.textContent = btn.dataset.ans.includes('4') ? '顯示解析' : '顯示解答';
+                    btn.classList.remove('shown');
+                } else {
+                    ansBox.classList.add('visible');
+                    ansBox.style.display = 'block'; // 強制顯示
+                    btn.textContent = btn.dataset.ans.includes('4') ? '隱藏解析' : '隱藏解答';
+                    btn.classList.add('shown');
+                    try {
+                        if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                            MathJax.typesetPromise([ansBox]).catch(()=>{});
+                        }
+                    } catch(err) {
+                        console.error('MathJax error:', err);
+                    }
+                }
+            });
+        });
+
+        // ── 核心通關檢核 (連連看 + 選擇題 + 即時連線 + 錯誤反饋與再試一次) ──
+        (function initColligCheckpoint() {
+            const MATCH_DATA = [
+                { id: 0, left: '依數性質定義', right: '僅取決於溶質粒子數目，與溶質種類無關' },
+                { id: 1, left: '沸點上升公式', right: '$\Delta T_b = K_b \times C_m \times i$' },
+                { id: 2, left: '凝固點下降公式', right: '$\Delta T_f = K_f \times C_m \times i$' },
+                { id: 3, left: '滲透壓凡特荷夫公式', right: '$\Pi = C_M \times R \times T \times i$' },
+                { id: 4, left: '凡特荷夫因子 $i$', right: '電解質完全解離時之離子莫耳數' }
+            ];
+
+            // 選擇題狀態
+            let selectedAnswers = {};
+            let isPassed = false;
+            let isVerified = false; // 是否已按下「確定作答」
+
+            // 連連看狀態: [{ leftId: 0, rightId: 0, status: null|'correct'|'wrong' }]
+            let connections = [];
+            let selectedItem = null; // 點選配對模式
+            let isDraggingMatch = false;
+            let dragStartItem = null;
+            let tempMatchLine = null;
+
+            const leftCol = document.getElementById('match-col-left');
+            const rightCol = document.getElementById('match-col-right');
+            const matchSvg = document.getElementById('match-svg');
+            const matchWrapper = document.getElementById('match-game-wrapper');
+            const matchCountBadge = document.getElementById('match-count-badge');
+            const resetMatchBtn = document.getElementById('btn-reset-match');
+
+            const quizCards = document.querySelectorAll('#slide-checkpoint .quiz-grid-layout .quiz-card');
+            const submitBtn = document.getElementById('btn-submit-exam-collig');
+            const retryBtn = document.getElementById('btn-retry-exam-collig');
+            const feedbackMsg = document.getElementById('quiz-feedback-msg-collig');
+
+            // 1. 初始化連連看 DOM
+            function renderMatchGame() {
+                if (!leftCol || !rightCol || !matchSvg) return;
+                leftCol.innerHTML = '';
+                rightCol.innerHTML = '';
+                matchSvg.innerHTML = '';
+                connections = [];
+                selectedItem = null;
+                isDraggingMatch = false;
+                dragStartItem = null;
+                tempMatchLine = null;
+
+                // 左側項目
+                MATCH_DATA.forEach(d => {
+                    const item = document.createElement('div');
+                    item.className = 'match-item';
+                    item.dataset.id = d.id;
+                    item.dataset.side = 'left';
+                    item.innerHTML = `
+                        <span style="flex:1;">${d.left}</span>
+                        <div class="match-dot" data-side="left" data-id="${d.id}"></div>
+                    `;
+                    leftCol.appendChild(item);
+                });
+
+                // 右側項目 (洗牌隨機順序)
+                const shuffledRight = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+                shuffledRight.forEach(d => {
+                    const item = document.createElement('div');
+                    item.className = 'match-item';
+                    item.dataset.id = d.id;
+                    item.dataset.side = 'right';
+                    item.innerHTML = `
+                        <div class="match-dot" data-side="right" data-id="${d.id}"></div>
+                        <span style="flex:1;">${d.right}</span>
+                    `;
+                    rightCol.appendChild(item);
+                });
+
+                if (window.MathJax) {
+                    MathJax.typesetPromise([leftCol, rightCol]).catch(()=>{});
+                }
+                updateMatchBadge();
+                bindMatchEvents();
+            }
+
+            // 取得圓點相對於 SVG 的座標
+            function getDotCoords(dotEl) {
+                if (!dotEl || !matchWrapper) return { x: 0, y: 0 };
+                const dotRect = dotEl.getBoundingClientRect();
+                const wrapRect = matchWrapper.getBoundingClientRect();
+                return {
+                    x: dotRect.left + dotRect.width / 2 - wrapRect.left,
+                    y: dotRect.top + dotRect.height / 2 - wrapRect.top
+                };
+            }
+
+            // 重繪所有已建立的連線
+            function redrawLines() {
+                if (!matchSvg) return;
+                const temp = tempMatchLine;
+                matchSvg.innerHTML = '';
+                if (temp) matchSvg.appendChild(temp);
+
+                connections.forEach(conn => {
+                    const lDot = leftCol.querySelector(`.match-dot[data-id="${conn.leftId}"]`);
+                    const rDot = rightCol.querySelector(`.match-dot[data-id="${conn.rightId}"]`);
+                    if (!lDot || !rDot) return;
+
+                    const p1 = getDotCoords(lDot);
+                    const p2 = getDotCoords(rDot);
+
+                    let strokeColor = '#38bdf8';
+                    let strokeDash = 'none';
+                    if (conn.status === 'correct') {
+                        strokeColor = '#34d399';
+                    } else if (conn.status === 'wrong') {
+                        strokeColor = '#f87171';
+                        strokeDash = '4,4';
+                    }
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const dx = Math.abs(p2.x - p1.x) * 0.45;
+                    const d = `M ${p1.x} ${p1.y} C ${p1.x + dx} ${p1.y}, ${p2.x - dx} ${p2.y}, ${p2.x} ${p2.y}`;
+                    path.setAttribute('d', d);
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', strokeColor);
+                    path.setAttribute('stroke-width', '3');
+                    path.setAttribute('stroke-linecap', 'round');
+                    if (strokeDash !== 'none') path.setAttribute('stroke-dasharray', strokeDash);
+                    matchSvg.appendChild(path);
+                });
+            }
+
+            // 更新已連線數量標籤
+            function updateMatchBadge() {
+                if (!matchCountBadge) return;
+                matchCountBadge.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+                if (connections.length === MATCH_DATA.length) {
+                    matchCountBadge.style.color = '#34d399';
+                } else {
+                    matchCountBadge.style.color = '#38bdf8';
+                }
+            }
+
+            // 連線建立邏輯
+            function addConnection(leftId, rightId) {
+                if (isVerified && isPassed) return;
+                leftId = parseInt(leftId);
+                rightId = parseInt(rightId);
+
+                // 移除原有的該左側或右側連線
+                connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+
+                const lItem = leftCol.querySelector(`.match-item[data-id="${leftId}"]`);
+                const rItem = rightCol.querySelector(`.match-item[data-id="${rightId}"]`);
+                if (lItem) lItem.className = 'match-item';
+                if (rItem) rItem.className = 'match-item';
+
+                connections.push({ leftId, rightId, status: null });
+                redrawLines();
+                updateMatchBadge();
+            }
+
+            // 綁定連連看互動事件
+            function bindMatchEvents() {
+                const allItems = matchWrapper.querySelectorAll('.match-item');
+                allItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (isVerified && isPassed) return;
+                        const side = item.dataset.side;
+                        const id = item.dataset.id;
+
+                        if (!selectedItem) {
+                            selectedItem = { side, id, el: item };
+                            item.classList.add('selected');
+                        } else {
+                            if (selectedItem.side === side) {
+                                selectedItem.el.classList.remove('selected');
+                                if (selectedItem.id === id) {
+                                    selectedItem = null;
+                                } else {
+                                    selectedItem = { side, id, el: item };
+                                    item.classList.add('selected');
+                                }
+                            } else {
+                                const leftId = side === 'left' ? id : selectedItem.id;
+                                const rightId = side === 'right' ? id : selectedItem.id;
+                                selectedItem.el.classList.remove('selected');
+                                selectedItem = null;
+                                addConnection(leftId, rightId);
+                            }
+                        }
+                    });
+                });
+
+                matchWrapper.addEventListener('pointerdown', (e) => {
+                    if (isVerified && isPassed) return;
+                    const dot = e.target.closest('.match-dot');
+                    const item = e.target.closest('.match-item');
+                    const targetEl = dot || item;
+                    if (!targetEl) return;
+
+                    const side = targetEl.dataset.side || (item ? item.dataset.side : null);
+                    const id = targetEl.dataset.id || (item ? item.dataset.id : null);
+                    if (!side || id === null) return;
+
+                    isDraggingMatch = true;
+                    dragStartItem = { side, id: parseInt(id) };
+
+                    const startDot = (side === 'left' ? leftCol : rightCol).querySelector(`.match-dot[data-id="${id}"]`);
+                    const p1 = getDotCoords(startDot);
+
+                    tempMatchLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    tempMatchLine.setAttribute('fill', 'none');
+                    tempMatchLine.setAttribute('stroke', '#fbbf24');
+                    tempMatchLine.setAttribute('stroke-width', '2.5');
+                    tempMatchLine.setAttribute('stroke-dasharray', '5,5');
+                    matchSvg.appendChild(tempMatchLine);
+
+                    matchWrapper._dragP1 = p1;
+                });
+
+                window.addEventListener('pointermove', (e) => {
+                    if (!isDraggingMatch || !tempMatchLine || !matchWrapper._dragP1) return;
+                    const wrapRect = matchWrapper.getBoundingClientRect();
+                    const curX = e.clientX - wrapRect.left;
+                    const curY = e.clientY - wrapRect.top;
+                    const p1 = matchWrapper._dragP1;
+
+                    const dx = Math.abs(curX - p1.x) * 0.45;
+                    const d = dragStartItem.side === 'left'
+                        ? `M ${p1.x} ${p1.y} C ${p1.x + dx} ${p1.y}, ${curX - dx} ${curY}, ${curX} ${curY}`
+                        : `M ${curX} ${curY} C ${curX + dx} ${curY}, ${p1.x - dx} ${p1.y}, ${p1.x} ${p1.y}`;
+                    tempMatchLine.setAttribute('d', d);
+                });
+
+                window.addEventListener('pointerup', (e) => {
+                    if (!isDraggingMatch) return;
+                    isDraggingMatch = false;
+                    if (tempMatchLine && matchSvg.contains(tempMatchLine)) {
+                        matchSvg.removeChild(tempMatchLine);
+                    }
+                    tempMatchLine = null;
+
+                    const elemUnder = document.elementFromPoint(e.clientX, e.clientY);
+                    if (!elemUnder) return;
+                    const targetItem = elemUnder.closest('.match-item');
+                    if (!targetItem) return;
+
+                    const targetSide = targetItem.dataset.side;
+                    const targetId = parseInt(targetItem.dataset.id);
+
+                    if (dragStartItem && targetSide !== dragStartItem.side) {
+                        const leftId = dragStartItem.side === 'left' ? dragStartItem.id : targetId;
+                        const rightId = dragStartItem.side === 'right' ? dragStartItem.id : targetId;
+                        addConnection(leftId, rightId);
+                    }
+                    dragStartItem = null;
+                });
+            }
+
+            if (resetMatchBtn) {
+                resetMatchBtn.addEventListener('click', () => {
+                    if (isVerified && isPassed) return;
+                    renderMatchGame();
+                });
+            }
+
+            // 2. 選擇題互動邏輯
+            quizCards.forEach(card => {
+                const qKey = card.dataset.q;
+                const optBtns = card.querySelectorAll('.quiz-opt-btn');
+                optBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (isVerified && isPassed) return;
+                        optBtns.forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedAnswers[qKey] = parseInt(btn.dataset.opt);
+                    });
+                });
+            });
+
+            // 3. 通關廣播通知
+            function notifyColligSectionComplete() {
+                try {
+                    window.parent.postMessage({
+                        type: 'SECTION_COMPLETE',
+                        sectionId: 'ch3_s4',
+                        chapterId: 'ch3'
+                    }, '*');
+                } catch(e) {}
+            }
+
+            // 4. 提交答案驗證
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    if (isPassed) return;
+
+                    if (connections.length < MATCH_DATA.length) {
+                        alert(`請先完成第(1)題所有概念配對連線（目前完成 ${connections.length} / ${MATCH_DATA.length} 組）！`);
+                        return;
+                    }
+
+                    let unAnswered = [];
+                    quizCards.forEach(card => {
+                        const qKey = card.dataset.q;
+                        if (selectedAnswers[qKey] === undefined) {
+                            unAnswered.push(card.querySelector('.quiz-q').textContent.trim().slice(0, 3));
+                        }
+                    });
+                    if (unAnswered.length > 0) {
+                        alert(`請完成所有選擇題後再提交！尚未作答：${unAnswered.join(', ')}`);
+                        return;
+                    }
+
+                    isVerified = true;
+                    let allCorrect = true;
+
+                    // 驗證連連看
+                    let matchCorrectCount = 0;
+                    connections.forEach(conn => {
+                        const lItem = leftCol.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+                        const rItem = rightCol.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+                        if (conn.leftId === conn.rightId) {
+                            conn.status = 'correct';
+                            matchCorrectCount++;
+                            if (lItem) lItem.className = 'match-item matched-correct';
+                            if (rItem) rItem.className = 'match-item matched-correct';
+                        } else {
+                            conn.status = 'wrong';
+                            allCorrect = false;
+                            if (lItem) lItem.className = 'match-item matched-wrong';
+                            if (rItem) rItem.className = 'match-item matched-wrong';
+                        }
+                    });
+                    redrawLines();
+
+                    const matchCard = document.getElementById('quiz-matching-card');
+                    if (matchCorrectCount === MATCH_DATA.length) {
+                        if (matchCard) {
+                            matchCard.classList.remove('card-wrong');
+                            matchCard.classList.add('card-correct');
+                        }
+                    } else {
+                        if (matchCard) {
+                            matchCard.classList.remove('card-correct');
+                            matchCard.classList.add('card-wrong');
+                        }
+                    }
+
+                    // 驗證選擇題
+                    let quizCorrectCount = 0;
+                    quizCards.forEach(card => {
+                        const qKey = card.dataset.q;
+                        const correctAns = parseInt(card.dataset.ans);
+                        const userAns = selectedAnswers[qKey];
+                        const optBtns = card.querySelectorAll('.quiz-opt-btn');
+                        const analysis = card.querySelector('.quiz-analysis');
+
+                        if (analysis) analysis.classList.add('show');
+
+                        if (userAns === correctAns) {
+                            quizCorrectCount++;
+                            card.classList.remove('card-wrong');
+                            card.classList.add('card-correct');
+                            optBtns.forEach(btn => {
+                                if (parseInt(btn.dataset.opt) === correctAns) {
+                                    btn.classList.add('opt-correct');
+                                }
+                            });
+                        } else {
+                            allCorrect = false;
+                            card.classList.remove('card-correct');
+                            card.classList.add('card-wrong');
+                            optBtns.forEach(btn => {
+                                const optVal = parseInt(btn.dataset.opt);
+                                if (optVal === userAns) btn.classList.add('opt-wrong');
+                                if (optVal === correctAns) btn.classList.add('opt-correct');
+                            });
+                        }
+                    });
+
+                    // 結算成績與回饋
+                    if (allCorrect) {
+                        isPassed = true;
+                        submitBtn.style.display = 'none';
+                        if (retryBtn) retryBtn.style.display = 'none';
+                        feedbackMsg.innerHTML = '<span style="color:#34d399; font-weight:700;">🎉 恭喜全部答對！已通過本單元核心檢核！</span>';
+
+                        const banner = document.getElementById('section-complete-banner');
+                        if (banner) {
+                            banner.style.display = 'block';
+                            setTimeout(() => {
+                                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 200);
+                        }
+
+                        notifyColligSectionComplete();
+                    } else {
+                        feedbackMsg.innerHTML = `
+                            <span style="color:#f87171; font-weight:700;">
+                                ⚠️ 部分項目有誤（連連看答對 ${matchCorrectCount}/${MATCH_DATA.length} 組，選擇題答對 ${quizCorrectCount}/${quizCards.length} 題）。
+                            </span>
+                            <span style="color:#94a3b8; font-size:0.85rem;">請點擊「再試一次」進行修正。</span>
+                        `;
+                        if (retryBtn) retryBtn.style.display = 'inline-block';
+                        submitBtn.disabled = true;
+                    }
+                });
+            }
+
+            // 5. 再試一次邏輯
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    isVerified = false;
+                    submitBtn.disabled = false;
+                    retryBtn.style.display = 'none';
+                    feedbackMsg.innerHTML = '<span>請修正標示為紅色的錯誤項目後，再次點擊「確定作答」</span>';
+
+                    // 重設連連看錯誤項
+                    connections = connections.filter(conn => conn.status === 'correct');
+                    const allItems = matchWrapper.querySelectorAll('.match-item');
+                    allItems.forEach(item => {
+                        const id = parseInt(item.dataset.id);
+                        const isCorrectlyMatched = connections.some(c => (item.dataset.side === 'left' ? c.leftId === id : c.rightId === id));
+                        if (!isCorrectlyMatched) {
+                            item.className = 'match-item';
+                        }
+                    });
+                    const matchCard = document.getElementById('quiz-matching-card');
+                    if (matchCard && connections.length < MATCH_DATA.length) {
+                        matchCard.classList.remove('card-correct', 'card-wrong');
+                    }
+                    redrawLines();
+                    updateMatchBadge();
+
+                    // 重設錯誤選擇題
+                    quizCards.forEach(card => {
+                        const qKey = card.dataset.q;
+                        const correctAns = parseInt(card.dataset.ans);
+                        const userAns = selectedAnswers[qKey];
+                        const optBtns = card.querySelectorAll('.quiz-opt-btn');
+                        const analysis = card.querySelector('.quiz-analysis');
+
+                        if (userAns !== correctAns) {
+                            card.classList.remove('card-wrong');
+                            delete selectedAnswers[qKey];
+                            optBtns.forEach(btn => {
+                                btn.classList.remove('selected', 'opt-wrong', 'opt-correct');
+                            });
+                            if (analysis) analysis.classList.remove('show');
+                        }
+                    });
+                });
+            }
+
+            // 初始化呼叫
+            renderMatchGame();
+            window.addEventListener('resize', () => {
+                redrawLines();
+            });
+        })();
+
+        // Resize canvas once on load (do NOT re-fire on scroll — that erases drawings).
+        window.addEventListener('load', resizeCanvas);
+    </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>

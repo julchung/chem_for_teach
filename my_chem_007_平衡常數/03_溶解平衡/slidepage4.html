@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>共同離子效應核心觀念 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.12rem, 1.4vw, 1.35rem); margin-bottom: 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.95rem, 1.12vw, 1.12rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        /* 左右欄比例設定：左側 41%、右側 59% */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 41fr 59fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.75rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow: hidden;
+        }
+
+        /* 左側欄位 - 4 個卡片均勻填滿高度 */
+        .left-cards-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+        .left-cards-wrap > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0.55rem 0.95rem;
+            border-radius: 10px;
+        }
+
+        .info-card {
+            background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.28);
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.28);
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.28);
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.28);
+        }
+
+        /* 右側欄位結構 - 飽滿填滿高度 */
+        .right-content-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.55rem;
+        }
+
+        /* ICE 表格美化 - 更大字體與清晰排版 */
+        .ice-table {
+            width: 100%;
+            text-align: center;
+            border-collapse: collapse;
+            font-size: clamp(0.96rem, 1.15vw, 1.15rem);
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 9px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .ice-table th {
+            padding: 0.48rem 0.5rem;
+            background: rgba(255,255,255,0.06);
+            font-weight: 700;
+        }
+        .ice-table td {
+            padding: 0.42rem 0.5rem;
+            color: rgba(255,255,255,0.9);
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .ice-table tr.eq-row {
+            background: rgba(34,211,238,0.1);
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* 挖空互動元素 - 更加醒目直觀 */
+        .blank-box {
+            display: inline-block; min-width: 56px; text-align: center;
+            border-bottom: 2px dashed rgba(255,255,255,0.7); cursor: pointer; color: transparent;
+            transition: all 0.25s ease; font-weight: bold; padding: 0.1rem 8px;
+            background: rgba(255,255,255,0.08); border-radius: 4px;
+            font-size: 1.05em;
+        }
+        .blank-box * {
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-bottom-style: solid !important;
+            border-color: var(--accent-yellow) !important;
+            background: rgba(251,191,36,0.18) !important;
+        }
+        .blank-box.revealed * {
+            opacity: 1 !important;
+            color: var(--accent-yellow) !important;
+        }
+
+        /* 解題與推導區塊 - 自適應充實填滿 */
+        .calc-box {
+            padding: 0.65rem 1rem;
+            background: rgba(0,0,0,0.35);
+            border-radius: 10px;
+            border-left: 4.5px solid var(--accent-green);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.35rem;
+            font-size: clamp(0.98rem, 1.16vw, 1.16rem);
+            flex: 1.1;
+        }
+
+        /* 數值對比方塊 - 飽滿且易讀 */
+        .compare-box {
+            padding: 0.6rem 1rem;
+            background: rgba(52,211,153,0.08);
+            border: 1px solid rgba(52,211,153,0.28);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.25rem;
+            font-size: clamp(0.95rem, 1.12vw, 1.12rem);
+            line-height: 1.55;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>7-3 溶解平衡 · 共同離子效應 (Common Ion Effect)</h1>
+                <div class="grid-2">
+                    <!-- 左方欄位：觀念引導與定性推導 (4卡片均勻填滿高度) -->
+                    <div class="panel">
+                        <h2>💡 觀念引導</h2>
+                        <div class="left-cards-wrap">
+                            <div class="info-card">
+                                <p><strong>核心定義：</strong>在難溶電解質的飽和溶液中，若加入含有<strong>共同離子</strong>的易溶強電解質，會使難溶鹽的解離平衡逆向移動，導致該難溶鹽的<strong>溶解度顯著降低</strong>，此現象稱為共同離子效應。</p>
+                            </div>
+                            
+                            <div class="info-card-yellow">
+                                <p>
+                                    <strong>思考範例：</strong><br>
+                                    將微溶鹽 $\mathrm{AgCl}(s)$ 溶於 $0.10\ \mathrm{M}$ 的 $\mathrm{NaCl}(aq)$ 中，求此時 $\mathrm{AgCl}$ 的莫耳溶解度 $s$？<br>
+                                    <span style="color:rgba(255,255,255,0.78); font-size:0.92em;">（已知 $25^\circ\mathrm{C}$ 時 $\mathrm{AgCl}$ 之 $K_{sp} = 1.0 \times 10^{-10}$）</span>
+                                </p>
+                            </div>
+
+                            <div class="info-card-cyan">
+                                <p><strong>定性分析（勒沙特略原理）：</strong><br>
+                                平衡式：$\mathrm{AgCl}(s) \rightleftharpoons \mathrm{Ag}^+(aq) + \mathrm{Cl}^-(aq)$<br>
+                                加入 $\mathrm{NaCl}$ 提供大量 $\mathrm{Cl}^-$ 共同離子，促使平衡<strong>向左逆向移動</strong>析出更多固體，使 $[\mathrm{Ag}^+]$ 與溶解度大幅減少。</p>
+                            </div>
+
+                            <div class="info-card-red">
+                                <p>📌 <strong>關鍵規律：</strong>加入共同離子後，<strong>$K_{sp}$ 值保持不變</strong>（僅與溫度有關），但溶質的莫耳溶解度<strong>大幅下降</strong>！</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右方欄位：互動解題思路與 ICE 表格 (各區塊充實填滿高度) -->
+                    <div class="panel">
+                        <h2>💡 互動解題思路與 ICE 表格</h2>
+                        <div class="right-content-wrap">
+                            <!-- ICE 表格 -->
+                            <table class="ice-table">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; color: var(--accent-yellow); padding-left: 0.9rem;">狀態 (M)</th>
+                                        <th>$\mathrm{AgCl}(s)$</th>
+                                        <th>$\rightleftharpoons$</th>
+                                        <th>$\mathrm{Ag}^+(aq)$</th>
+                                        <th>$+$</th>
+                                        <th>$\mathrm{Cl}^-(aq)$</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align: left; padding-left: 0.9rem;">初（Initial）</td>
+                                        <td>固體過量</td>
+                                        <td></td>
+                                        <td>$0$</td>
+                                        <td></td>
+                                        <td><span class="step-target blank-box" onclick="this.classList.add('revealed')">0.10</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: left; padding-left: 0.9rem;">變（Change）</td>
+                                        <td>$-s$</td>
+                                        <td></td>
+                                        <td>$+s$</td>
+                                        <td></td>
+                                        <td>$+s$</td>
+                                    </tr>
+                                    <tr class="eq-row">
+                                        <td style="text-align: left; padding-left: 0.9rem; color: var(--accent-cyan);">平（Equilibrium）</td>
+                                        <td>固體過量</td>
+                                        <td></td>
+                                        <td>$s$</td>
+                                        <td></td>
+                                        <td><span class="step-target blank-box" onclick="this.classList.add('revealed')">0.10 + s</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- 代入與計算推導 -->
+                            <div class="calc-box">
+                                <p><strong>代入 $K_{sp}$ 表達式求解：</strong></p>
+                                <p>$K_{sp} = [\mathrm{Ag}^+][\mathrm{Cl}^-] = (s)(0.10 + s) \approx (s) \times$ <span class="step-target blank-box" onclick="this.classList.add('revealed')">0.10</span></p>
+                                <p style="font-size:0.9em; color:#94a3b8;">💡 近似理由：因 $K_{sp}$ 極小，解離度 $s \ll 0.10$，故 $0.10 + s \approx 0.10$。</p>
+                                <p>$1.0 \times 10^{-10} = 0.10 \times s \implies s =$ <span class="step-target blank-box" onclick="this.classList.add('revealed')">$1.0 \times 10^{-9}$</span> $\mathrm{M}$</p>
+                            </div>
+
+                            <!-- 數值對比 -->
+                            <div class="compare-box">
+                                <p>📊 <strong>數值對比（見證共同離子效應）：</strong><br>
+                                • 純水中 $\mathrm{AgCl}$ 溶解度：$s_0 = \sqrt{K_{sp}} = \sqrt{1.0 \times 10^{-10}} = 1.0 \times 10^{-5}\ \mathrm{M}$<br>
+                                • 在 $0.10\ \mathrm{M}\ \mathrm{NaCl}$ 中：$s = 1.0 \times 10^{-9}\ \mathrm{M}$<br>
+                                • <strong>溶解度整整降低了 $10^4$ 倍（一萬倍）！</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>

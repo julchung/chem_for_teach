@@ -327,11 +327,11 @@ window.ChemDiagrams = (function () {
         let g = '';
         panels.forEach((p, i) => {
             g += `<g transform="translate(${i * 170}, 0)">
-                <g transform="translate(8, 12)">${ballStickPolar(id, p.items)}</g>
-                <text x="88" y="115" fill="#fde68a" font-size="11" text-anchor="middle">${p.label}</text>
+                <g transform="translate(85, 46) scale(0.8) translate(-80, -50)">${ballStickPolar(id, p.items)}</g>
+                <text x="85" y="118" fill="#fde68a" font-size="12" font-weight="700" text-anchor="middle">${p.label}</text>
             </g>`;
         });
-        return `<svg viewBox="0 0 500 125" xmlns="${NS}" class="chem-svg">${defs(id)}${g}</svg>`;
+        return `<svg viewBox="0 0 510 132" xmlns="${NS}" class="chem-svg">${defs(id)}${g}</svg>`;
     }
 
     function slide4NonpolarMols() {
@@ -366,11 +366,11 @@ window.ChemDiagrams = (function () {
         let g = '';
         panels.forEach((p, i) => {
             g += `<g transform="translate(${i * 170}, 0)">
-                <g transform="translate(8, 12)">${ballStickPolar(id, p.items)}</g>
-                <text x="88" y="115" fill="#6ee7b7" font-size="11" text-anchor="middle">${p.label}</text>
+                <g transform="translate(85, 46) scale(0.8) translate(-80, -52)">${ballStickPolar(id, p.items)}</g>
+                <text x="85" y="118" fill="#6ee7b7" font-size="12" font-weight="700" text-anchor="middle">${p.label}</text>
             </g>`;
         });
-        return `<svg viewBox="0 0 500 125" xmlns="${NS}" class="chem-svg">${defs(id)}${g}</svg>`;
+        return `<svg viewBox="0 0 510 132" xmlns="${NS}" class="chem-svg">${defs(id)}${g}</svg>`;
     }
 
     /** 第5頁：互動分子（JPG 教材圖 + PDB 3D） */

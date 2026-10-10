@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-5 特殊沉澱顏色 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.6rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.2rem; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        .title-left { display: flex; align-items: center; gap: 0.6rem; }
+        .title-left::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        
+        .header-desc {
+            font-size: clamp(0.88rem, 1vw, 1.05rem); color: rgba(255,255,255,0.7);
+            margin-bottom: 0.2rem; flex-shrink: 0;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .color-card {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        .color-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.45);
+        }
+
+        .color-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+        }
+        .color-dot {
+            width: 22px; height: 22px; border-radius: 50%;
+            box-shadow: 0 0 10px currentColor, inset 0 2px 4px rgba(255,255,255,0.6);
+            flex-shrink: 0;
+        }
+        .color-title {
+            font-size: clamp(1.05rem, 1.2vw, 1.25rem);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+
+        .formula-list {
+            font-size: clamp(0.88rem, 1.05vw, 1.05rem);
+            line-height: 1.65;
+            color: #f1f5f9;
+            flex: 1;
+        }
+        .note-tag {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            margin-top: auto;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            padding-top: 4px;
+        }
+
+        /* 顏色卡片風格 */
+        .card-white { border-left: 5px solid #e2e8f0; }
+        .card-white .color-dot { background: #f8fafc; color: rgba(255,255,255,0.8); }
+        .card-white .color-title { color: #f8fafc; }
+
+        .card-brick { border-left: 5px solid #f87171; }
+        .card-brick .color-dot { background: #b91c1c; color: #f87171; }
+        .card-brick .color-title { color: #fca5a5; }
+
+        .card-black { border-left: 5px solid #64748b; }
+        .card-black .color-dot { background: #1e293b; border: 1px solid #94a3b8; color: #94a3b8; }
+        .card-black .color-title { color: #cbd5e1; }
+
+        .card-yellow { border-left: 5px solid #fde047; }
+        .card-yellow .color-dot { background: #eab308; color: #fde047; }
+        .card-yellow .color-title { color: #fef08a; }
+
+        .card-blue { border-left: 5px solid #60a5fa; }
+        .card-blue .color-dot { background: #2563eb; color: #60a5fa; }
+        .card-blue .color-title { color: #93c5fd; }
+
+        .card-green { border-left: 5px solid #86efac; }
+        .card-green .color-dot { background: #15803d; color: #86efac; }
+        .card-green .color-title { color: #bbf7d0; }
+
+        @media (max-width: 900px) {
+            .cards-grid { grid-template-columns: 1fr; grid-template-rows: auto; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>
+            <span class="title-left">3-5 沉澱表與沉澱規則 &middot; 特殊沉澱顏色</span>
+            <span style="font-size:0.85rem; color:#94a3b8; font-weight:500;">🎨 沉澱物顏色是未知離子檢驗鑑別的關鍵標誌</span>
+        </h1>
+
+        <p class="header-desc">
+            在常見金屬離子反應中，多數沉澱物為白色。若觀察到具有鮮明特徵之顏色，即可快速鎖定特定陽離子或陰離子。
+        </p>
+
+        <div class="cards-grid">
+            <!-- 1. 白色沉澱 -->
+            <div class="color-card card-white">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">白色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 氯化物：$\text{AgCl}$、$\text{Hg}_2\text{Cl}_2$、$\text{PbCl}_2$<br>
+                    • 硫酸鹽：$\text{BaSO}_4$、$\text{SrSO}_4$、$\text{PbSO}_4$、$\text{CaSO}_4$<br>
+                    • 碳酸鹽與草酸鹽：$\text{CaCO}_3$、$\text{BaCO}_3$<br>
+                    • 氫氧化物：$\text{Al(OH)}_3$、$\text{Mg(OH)}_2$、$\text{Zn(OH)}_2$<br>
+                    • 硫化物例外：$\text{ZnS}$（極少數白色硫化物）
+                </div>
+                <div class="note-tag">💡 大多數離子沉澱為白色，$\text{ZnS}$ 為重要特例</div>
+            </div>
+
+            <!-- 2. 磚紅 / 紅棕色沉澱 -->
+            <div class="color-card card-brick">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">磚紅 / 紅棕色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 鉻酸銀：$\text{Ag}_2\text{CrO}_4$（磚紅色）<br>
+                    • 氫氧化鐵：$\text{Fe(OH)}_3$（紅棕色）<br>
+                    • 氧化亞銅：$\text{Cu}_2\text{O}$（磚紅色，本試劑檢驗還原糖）<br>
+                    • 硫化銻：$\text{Sb}_2\text{S}_3$（橘紅）
+                </div>
+                <div class="note-tag">💡 $\text{Ag}^+$ 加 $\text{CrO}_4^{2-}$ 呈特徵磚紅色沉澱</div>
+            </div>
+
+            <!-- 3. 黑色沉澱 -->
+            <div class="color-card card-black">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">黑色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 硫化銀：$\text{Ag}_2\text{S}$（黑）<br>
+                    • 硫化銅：$\text{CuS}$（黑）<br>
+                    • 硫化鉛：$\text{PbS}$（黑）<br>
+                    • 硫化汞：$\text{HgS}$（黑）<br>
+                    • 硫化亞鐵：$\text{FeS}$（黑）<br>
+                    • 氧化銀：$\text{Ag}_2\text{O}$（棕黑）
+                </div>
+                <div class="note-tag">💡 多數重金屬硫化物（含 $\text{S}^{2-}$）皆為黑色</div>
+            </div>
+
+            <!-- 4. 黃色沉澱 -->
+            <div class="color-card card-yellow">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">黃色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 碘化銀：$\text{AgI}$（亮黃色，不溶於氨水）<br>
+                    • 溴化銀：$\text{AgBr}$（淡黃色，微溶於氨水）<br>
+                    • 碘化鉛：$\text{PbI}_2$（金黃色亮片狀沉澱）<br>
+                    • 鉻酸鉛：$\text{PbCrO}_4$（鉻黃，常用黃色顏料）<br>
+                    • 鉻酸鋇：$\text{BaCrO}_4$（檸檬黃）<br>
+                    • 硫化鎘：$\text{CdS}$（鮮黃色）
+                </div>
+                <div class="note-tag">💡 鹵化銀淡黃至黃，$\text{PbI}_2$ 具金光特性</div>
+            </div>
+
+            <!-- 5. 藍色沉澱 -->
+            <div class="color-card card-blue">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">藍色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 氫氧化銅：$\text{Cu(OH)}_2$（淡藍色絮狀沉澱）<br>
+                    • 鹼式碳酸銅：$\text{Cu}_2(\text{OH})_2\text{CO}_3$（孔雀石綠藍）<br>
+                    • 普魯士藍 / 滕氏藍：$\text{Fe}_4[\text{Fe(CN)}_6]_3$（深藍色）
+                </div>
+                <div class="note-tag">💡 $\text{Cu(OH)}_2$ 溶於過量氨水轉為深藍色錯離子</div>
+            </div>
+
+            <!-- 6. 淡綠色沉澱 -->
+            <div class="color-card card-green">
+                <div class="color-header">
+                    <div class="color-dot"></div>
+                    <div class="color-title">淡綠色沉澱</div>
+                </div>
+                <div class="formula-list">
+                    • 氫氧化亞鐵：$\text{Fe(OH)}_2$（白色轉淡綠色）<br>
+                    • 空氣中氧化過程：$\text{Fe(OH)}_2$ 易被空氣中 $\text{O}_2$ 氧化，迅速轉為灰綠色，最終變為紅棕色 $\text{Fe(OH)}_3$！<br>
+                    • 氫氧化鉻：$\text{Cr(OH)}_3$（灰綠色沉澱，具兩性）
+                </div>
+                <div class="note-tag">💡 $\text{Fe}^{2+}$ 氫氧化物接觸空氣易氧化變色</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

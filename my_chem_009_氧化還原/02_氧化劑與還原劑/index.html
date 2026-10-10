@@ -28,7 +28,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; scroll-behavior: smooth; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
         #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
-        #start-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; }
+        #start-overlay { display: none !important; }
         #presentation-area { position: relative; width: 100%; min-height: 100vh; }
         #slides-container { position: relative; padding: 60px 68px 20px 2.5vw; }
         
@@ -908,5 +908,91 @@
         initQuiz();
 
     </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
 </body>
 </html>

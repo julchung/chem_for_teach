@@ -1,0 +1,269 @@
+import re
+
+with open('index_old.html', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Helper template
+def make_page(title, subtitle, badge_text, body_content, extra_css=""):
+    return f"""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-4 {title}</title>
+  <script>
+    MathJax = {{
+      tex: {{ inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']], processEscapes: true }},
+      svg: {{ fontCache: 'global' }}
+    }};
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * {{ box-sizing: border-box; margin: 0; padding: 0; user-select: none; }}
+    body {{
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(12px, 2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }}
+    .header-bar {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }}
+    .badge {{
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }}
+    h1 {{
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }}
+    .subtitle {{
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }}
+    .card {{
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(14px, 1.8vw, 20px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }}
+    .table-container {{
+      flex: 1;
+      overflow-y: auto;
+      border-radius: 10px;
+      border: 1px solid #334155;
+      background: rgba(15, 23, 42, 0.7);
+    }}
+    .orb-table {{
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: clamp(1rem, 1.2vw, 1.25rem);
+    }}
+    .orb-table th {{
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 10px 14px;
+      border-bottom: 2px solid #334155;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }}
+    .orb-table td {{
+      padding: 5px 12px;
+      border-bottom: 1px solid #334155;
+      vertical-align: middle;
+    }}
+    .orb-table tr:hover {{
+      background: rgba(56, 189, 248, 0.08);
+    }}
+    .orb-group {{ display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding-left: 16px; }}
+    .orb-col {{ display: flex; flex-direction: column; align-items: center; }}
+    .orb {{ display: flex; gap: 3.5px; }}
+    .orb-box {{
+      width: 34px; height: 34px;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.55rem; color: #34d399; line-height: 1;
+      border-radius: 5px; background: rgba(0,0,0,0.3);
+    }}
+    .orb-label {{ font-size: 0.8rem; color: #94a3b8; margin-top: 1px; }}
+    {extra_css}
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">{badge_text}</span>
+      <h1>{title}</h1>
+    </div>
+    <div class="subtitle">{subtitle}</div>
+  </div>
+
+  {body_content}
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>"""
+
+# Extract tables from index_old.html
+lines = content.splitlines(keepends=True)
+
+# Slide 4: lines 310 to 571 (0-indexed: 309 to 572)
+table4 = ''.join(lines[309:572])
+body4 = f"""<div class="card"><div class="table-container">{table4}</div></div>"""
+with open('slidepage4.html', 'w', encoding='utf-8') as f:
+    f.write(make_page("軌域填寫觀念統整 (原子序 1~10)", "前十號元素 (H 到 Ne) · 1s, 2s, 2p 軌域填寫全覽", "4-4 電子組態", body4))
+print("slidepage4.html generated.")
+
+# Slide 5: lines 591 to 900 (0-indexed: 590 to 901)
+table5 = ''.join(lines[591:901])
+body5 = f"""<div class="card"><div class="table-container">{table5}</div></div>"""
+with open('slidepage5.html', 'w', encoding='utf-8') as f:
+    f.write(make_page("軌域填寫觀念統整 (原子序 11~18)", "第三週期元素 (Na 到 Ar) · [Ne] 惰性氣體核心簡寫與 3s, 3p 填寫", "4-4 電子組態", body5))
+print("slidepage5.html generated.")
+
+# Slide 6: lines 918 to 1488 (0-indexed: 917 to 1489)
+table6 = ''.join(lines[918:1489])
+body6 = f"""<div class="card"><div class="table-container">{table6}</div></div>"""
+with open('slidepage6.html', 'w', encoding='utf-8') as f:
+    f.write(make_page("軌域填寫觀念統整 (原子序 19~36)", "第四週期元素 (K 到 Kr) · 包含 3d 過渡金屬軌域填寫與各主層分佈", "4-4 電子組態", body6))
+print("slidepage6.html generated.")
+
+# Slide 7: Exception (Cr & Cu)
+slide7_content = """
+  <div class="main-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex: 1; min-height: 0;">
+    <!-- Cr -->
+    <div class="card" style="overflow-y: auto;">
+      <h2 style="color: #fbbf24; font-size: 1.5rem; margin-bottom: 8px;">鉻 (Cr, Z = 24) — 半滿穩定</h2>
+      <div style="background: rgba(168, 85, 247, 0.1); border-left: 4px solid #a855f7; border-radius: 8px; padding: 12px 16px; font-size: 1.05rem; line-height: 1.7;">
+        3d 與 4s 軌域能量極為接近。當 3d 軌域達到<strong>半滿（5 個電子）</strong>狀態時，具有對稱的電荷分布與最大交換能，整體能量降低更穩定。
+        <div style="display: flex; gap: 16px; font-size: 1.15rem; margin-top: 8px; flex-wrap: wrap;">
+          <div>預期：<span style="color: #94a3b8; text-decoration: line-through;">$[Ar] 4s^2 3d^4$</span></div>
+          <div style="color: #f87171; font-weight: bold;">實際基態：$[Ar] 4s^1 3d^5$</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <div style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 6px;">(預期組態) 4s² 3d⁴ 未達半滿：</div>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-label">4s</div>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8593;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8593;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8593;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8593;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;"></div>
+            </div>
+            <div style="color: #94a3b8; font-size: 0.95rem; margin-left: 4px;">3d</div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: #334155;"></div>
+
+        <div>
+          <div style="color: #34d399; font-size: 1rem; font-weight: bold; margin-bottom: 6px;">(實際基態) 4s¹ 3d⁵ 半滿高對稱穩定：</div>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-label" style="color: #34d399;">4s</div>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+            </div>
+            <div style="color: #34d399; font-weight: bold; font-size: 0.95rem; margin-left: 4px;">3d</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cu -->
+    <div class="card" style="overflow-y: auto;">
+      <h2 style="color: #38bdf8; font-size: 1.5rem; margin-bottom: 8px;">銅 (Cu, Z = 29) — 全滿穩定</h2>
+      <div style="background: rgba(56, 189, 248, 0.1); border-left: 4px solid #38bdf8; border-radius: 8px; padding: 12px 16px; font-size: 1.05rem; line-height: 1.7;">
+        3d 與 4s 軌域能量極為接近。當 3d 軌域達到<strong>全滿（10 個電子）</strong>狀態時，球形電荷分佈完全對稱，屏蔽效應好，整體能量顯著降低更穩定。
+        <div style="display: flex; gap: 16px; font-size: 1.15rem; margin-top: 8px; flex-wrap: wrap;">
+          <div>預期：<span style="color: #94a3b8; text-decoration: line-through;">$[Ar] 4s^2 3d^9$</span></div>
+          <div style="color: #f87171; font-weight: bold;">實際基態：$[Ar] 4s^1 3d^{10}$</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-top: 14px; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <div style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 6px;">(預期組態) 4s² 3d⁹ 未達全滿：</div>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-label">4s</div>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8645;</div>
+              <div class="orb-box" style="border-color: #64748b; color: #64748b;">&#8593;</div>
+            </div>
+            <div style="color: #94a3b8; font-size: 0.95rem; margin-left: 4px;">3d</div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: #334155;"></div>
+
+        <div>
+          <div style="color: #34d399; font-size: 1rem; font-weight: bold; margin-bottom: 6px;">(實際基態) 4s¹ 3d¹⁰ 全滿完全對稱穩定：</div>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8593;</div>
+              <div class="orb-label" style="color: #34d399;">4s</div>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8645;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8645;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8645;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8645;</div>
+              <div class="orb-box" style="border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.1);">&#8645;</div>
+            </div>
+            <div style="color: #34d399; font-weight: bold; font-size: 0.95rem; margin-left: 4px;">3d</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+"""
+with open('slidepage7.html', 'w', encoding='utf-8') as f:
+    f.write(make_page("電子組態填寫例外 (Cr 與 Cu)", "半滿 ($d^5$) 與全滿 ($d^{10}$) 特殊穩定性機制", "4-4 電子組態", slide7_content))
+print("slidepage7.html generated.")

@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>勒沙特略原理總結 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        
+.summary-table { width: 100%; border-collapse: collapse; text-align: center; color: white; background: rgba(0,0,0,0.3); font-size: 1.02rem; }
+.summary-table th { border: 1px solid rgba(255,255,255,0.2); padding: 8px 6px; background: rgba(255,255,255,0.05); }
+.summary-table td { border: 1px solid rgba(255,255,255,0.2); padding: 10px 6px; vertical-align: middle; position: relative; }
+.op-cell { cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.05); transition: background 0.2s; user-select: none; }
+.op-cell:hover { background: rgba(255,255,255,0.15); }
+.hidden-content { opacity: 0; transform: scale(0.9); transition: opacity 0.3s ease, transform 0.3s ease; filter: blur(4px); }
+.row-revealed .hidden-content { opacity: 1; transform: scale(1); filter: blur(0); }
+.up-arrow { color: var(--accent-red); font-weight: bold; font-size: 1.6rem; }
+.down-arrow { color: var(--accent-green); font-weight: bold; font-size: 1.6rem; }
+.right-arrow { color: var(--accent-cyan); font-weight: bold; font-size: 1.6rem; }
+.left-arrow { color: var(--accent-purple); font-weight: bold; font-size: 1.6rem; }
+.cross { color: #888; font-weight: bold; font-size: 1.4rem; }
+.conc-graph { display: inline-block; vertical-align: middle; margin-left: 5px; width: 40px; height: 20px; border-left: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); position: relative; }
+.conc-graph svg { width: 100%; height: 100%; position: absolute; left: 0; top: 0; overflow: visible; }
+
+.action-pill-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.action-pill-btn:hover {
+    background: var(--accent-cyan);
+    color: #0f172a;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+    <h1>勒沙特略原理總結：改變條件對反應的影響</h1>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">📊 勒沙特略總結表 ($3A \rightleftharpoons 2B, \Delta H < 0$)</button>
+        <button class="tab-btn" onclick="switchTab(1)">✏️ 《練習》互動填答表 ($A \rightleftharpoons 2B, \Delta H > 0$)</button>
+    </div>
+    <div class="tab-pane active scroll-panel">
+            <div class="panel" style="margin-top:1.5rem; margin-bottom:1rem; padding:1.5rem; background:rgba(0,0,0,0.25);">
+        <h2 style="color:var(--accent-yellow); margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; font-size:1.4rem;">
+            📊 勒沙特略原理總結：對於反應 $3\text{A}_{(g)} \rightleftharpoons 2\text{B}_{(g)}$，<span style="color:#f87171;">$\Delta H &lt; 0$</span>
+        </h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:1rem;">
+            <p style="color:rgba(255,255,255,0.85); margin:0; font-size:1.05rem;">
+                💡 <strong>互動教學：</strong>點擊最左側的「操作條件」，即可顯示該條件對系統的影響。
+            </p>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="action-pill-btn" onclick="toggleTableRows('summary-table-demo', true)">👁️ 顯示全部解答</button>
+                <button type="button" class="action-pill-btn" onclick="toggleTableRows('summary-table-demo', false)">🔒 全部隱藏重新練習</button>
+            </div>
+        </div>
+
+        <style>
+            .summary-table { width: 100%; border-collapse: collapse; text-align: center; color: white; background: rgba(0,0,0,0.3); font-size: 1.1rem; }
+            .summary-table th { border: 1px solid rgba(255,255,255,0.2); padding: 10px; background: rgba(255,255,255,0.05); }
+            .summary-table td { border: 1px solid rgba(255,255,255,0.2); padding: 12px 8px; vertical-align: middle; position: relative; }
+            
+            .op-cell {
+                cursor: pointer;
+                font-weight: bold;
+                background: rgba(255,255,255,0.05);
+                transition: background 0.2s;
+                user-select: none;
+            }
+            .op-cell:hover { background: rgba(255,255,255,0.15); }
+            
+            .hidden-content {
+                opacity: 0;
+                transform: scale(0.9);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                filter: blur(4px);
+            }
+            
+            .row-revealed .hidden-content {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+            
+            .up-arrow { color: var(--accent-red); font-weight: bold; font-size: 1.8rem; }
+            .down-arrow { color: var(--accent-green); font-weight: bold; font-size: 1.8rem; }
+            .right-arrow { color: var(--accent-cyan); font-weight: bold; font-size: 1.8rem; }
+            .left-arrow { color: var(--accent-purple); font-weight: bold; font-size: 1.8rem; }
+            .cross { color: #888; font-weight: bold; font-size: 1.5rem; }
+            
+            .conc-graph { display: inline-block; vertical-align: middle; margin-left: 5px; width: 40px; height: 20px; border-left: 1px solid rgba(255,255,255,0.3); border-bottom: 1px solid rgba(255,255,255,0.3); position: relative; }
+            .conc-graph svg { width: 100%; height: 100%; position: absolute; left: 0; top: 0; overflow: visible; }
+        </style>
+
+        <table class="summary-table" id="summary-table-demo">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:14%;">操作條件<br><span style="font-size:0.8rem;color:var(--accent-yellow);">(點擊顯示)</span></th>
+                    <th colspan="2">改變瞬間</th>
+                    <th rowspan="2" style="width:16%;">平衡的移動</th>
+                    <th colspan="5">達成新平衡時</th>
+                </tr>
+                <tr>
+                    <th>$R_正$</th>
+                    <th>$R_逆$</th>
+                    <th>$k_正$</th>
+                    <th>$k_逆$</th>
+                    <th>$K$</th>
+                    <th>反應物濃度</th>
+                    <th>產物濃度</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 1. 增加反應物 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">增加<br>反應物</td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content right-arrow">→</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 12, 40 10" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- 2. 增加產物 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">增加<br>產物</td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content left-arrow">←</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#a78bfa" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 12, 40 10" fill="none" stroke="#a78bfa" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 3. 等比例稀釋 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">等比例稀釋<br><span style="font-size:0.85rem;font-weight:normal;">(擴大體積)</span></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="left-arrow">←</span>
+                            <span style="font-size:0.75rem; color:#888;">(係數和大一方)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 L 10 15 Q 20 10, 40 12" fill="none" stroke="#34d399" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 L 10 15 Q 20 15, 40 18" fill="none" stroke="#34d399" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 4. 等比例濃縮 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">等比例濃縮<br><span style="font-size:0.85rem;font-weight:normal;">(縮小體積)</span></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="right-arrow">→</span>
+                            <span style="font-size:0.75rem; color:#888;">(係數和小一方)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 10, 40 8" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 5, 40 2" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 5. 升溫 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">升溫</td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑↑</div></td>
+                    <td><div class="hidden-content left-arrow">←</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑↑</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 Q 20 5, 40 15" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 6. 降溫 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">降溫</td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓↓</div></td>
+                    <td><div class="hidden-content right-arrow">→</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓↓</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 Q 20 5, 40 15" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 7. 加入催化劑 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">加入<br>催化劑</td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="tab-pane scroll-panel">
+        <div class="panel" style="margin-top:2rem; margin-bottom:1rem; padding:1.5rem; background:rgba(0,0,0,0.25);">
+        <h2 style="color:var(--accent-yellow); margin-bottom:1rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; font-size:1.4rem;">
+            📊 《練習》對於反應 $\text{A}_{(g)} \rightleftharpoons 2\text{B}_{(g)}$，<span style="color:var(--accent-red);">$\Delta H &gt; 0$</span>
+        </h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:1rem;">
+            <p style="color:rgba(255,255,255,0.85); margin:0; font-size:1.05rem;">
+                💡 <strong>互動教學：</strong>點擊最左側的「操作條件」，即可顯示該條件對系統的影響。
+            </p>
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="action-pill-btn" onclick="toggleTableRows('summary-table-practice', true)">👁️ 顯示全部解答</button>
+                <button type="button" class="action-pill-btn" onclick="toggleTableRows('summary-table-practice', false)">🔒 全部隱藏重新練習</button>
+            </div>
+        </div>
+
+        <table class="summary-table" id="summary-table-practice">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:14%;">操作條件<br><span style="font-size:0.8rem;color:var(--accent-yellow);">(點擊顯示)</span></th>
+                    <th colspan="2">改變瞬間</th>
+                    <th rowspan="2" style="width:16%;">平衡的移動</th>
+                    <th colspan="5">達成新平衡時</th>
+                </tr>
+                <tr>
+                    <th>$R_正$</th>
+                    <th>$R_逆$</th>
+                    <th>$k_正$</th>
+                    <th>$k_逆$</th>
+                    <th>$K$</th>
+                    <th>反應物濃度</th>
+                    <th>產物濃度</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 1. 增加反應物 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">增加<br>反應物</td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content right-arrow">→</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 12, 40 10" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- 2. 增加產物 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">增加<br>產物</td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content left-arrow">←</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#a78bfa" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 12, 40 10" fill="none" stroke="#a78bfa" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 3. 等比例稀釋 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">等比例稀釋<br><span style="font-size:0.85rem;font-weight:normal;">(擴大體積)</span></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="right-arrow">→</span>
+                            <span style="font-size:0.75rem; color:#888;">(係數和大)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 L 10 15 Q 20 15, 40 18" fill="none" stroke="#34d399" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 L 10 15 Q 20 10, 40 12" fill="none" stroke="#34d399" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 4. 等比例濃縮 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">等比例濃縮<br><span style="font-size:0.85rem;font-weight:normal;">(縮小體積)</span></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="left-arrow">←</span>
+                            <span style="font-size:0.75rem; color:#888;">(係數和小)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 5, 40 2" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 L 10 5 Q 20 10, 40 8" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 5. 升溫 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">升溫</td>
+                    <td><div class="hidden-content up-arrow">↑↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="right-arrow">→</span>
+                            <span style="font-size:0.75rem; color:#888;">(朝吸熱向)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content up-arrow">↑↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 Q 20 5, 40 15" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#f87171" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 6. 降溫 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">降溫</td>
+                    <td><div class="hidden-content down-arrow">↓↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="left-arrow">←</span>
+                            <span style="font-size:0.75rem; color:#888;">(朝放熱向)</span>
+                        </div>
+                    </td>
+                    <td><div class="hidden-content down-arrow">↓↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td><div class="hidden-content down-arrow">↓</div></td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="up-arrow">↑</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 15 L 10 15 Q 20 15, 40 5" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="hidden-content" style="display:flex; justify-content:center; align-items:center;">
+                            <span class="down-arrow">↓</span>
+                            <div class="conc-graph"><svg viewBox="0 0 40 20"><path d="M 0 5 L 10 5 Q 20 5, 40 15" fill="none" stroke="#38bdf8" stroke-width="1.5"/></svg></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 7. 加入催化劑 -->
+                <tr onclick="this.classList.toggle('row-revealed')">
+                    <td class="op-cell">加入<br>催化劑</td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content up-arrow">↑</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                    <td><div class="hidden-content cross">✕</div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+window.toggleTableRows = function(tableId, reveal) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(r => {
+        if (reveal === true) {
+            r.classList.add('row-revealed');
+        } else if (reveal === false) {
+            r.classList.remove('row-revealed');
+        } else {
+            r.classList.toggle('row-revealed');
+        }
+    });
+};
+
+</script>
+</body>
+</html>

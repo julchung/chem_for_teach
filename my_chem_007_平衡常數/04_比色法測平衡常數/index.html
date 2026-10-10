@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>比色法測平衡常數 - 互動實驗</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
+    <title>比色法測平衡常數 - 實驗原理與模擬操作</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --bg-panel: rgba(30, 41, 59, 0.7);
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.75);
             --accent-blue: #38bdf8;
             --accent-green: #34d399;
             --accent-yellow: #fbbf24;
             --accent-red: #f87171;
             --accent-cyan: #22d3ee;
+            --accent-purple: #a78bfa;
             --text-main: #f1f5f9;
             --text-dim: #94a3b8;
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.12);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -24,52 +31,447 @@
         /* Hide spin buttons for number inputs to prevent jumping */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
-        body, html { width: 100%; height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Outfit', 'Noto Sans TC', sans-serif; overflow: hidden; font-size: 115%; }
-
-        #app { position: relative; width: 100vw; height: 100vh; display: flex; overflow: hidden; }
-
-        /* --- Start Overlay --- */
-        #start-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 3000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        
+        body, html { 
+            width: 100%; 
+            height: 100%; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif; 
+            overflow: hidden; 
+            font-size: 16px; 
         }
-        .hero-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; background: linear-gradient(135deg, var(--accent-red), var(--accent-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
-        .hero-subtitle { color: var(--text-dim); margin-bottom: 2rem; font-size: 1.2rem; }
-        .btn-start { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: white; border: none; padding: 16px 40px; border-radius: 50px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-start:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(248, 113, 113, 0.3); }
 
-        /* --- Main Layout --- */
+        #app { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        /* ── Top Navigation Bar ── */
+        .page-header {
+            height: 54px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-badge {
+            background: rgba(56, 189, 248, 0.18);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: var(--accent-cyan);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f1f5f9, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header-tabs {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            gap: 4px;
+        }
+        .tab-btn {
+            background: transparent;
+            color: var(--text-dim);
+            border: none;
+            padding: 6px 18px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), #0284c7);
+            color: #000;
+            font-weight: 700;
+            box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
+        }
+
+        /* ── Page Container & Switcher ── */
+        .page-container {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 54px);
+            position: relative;
+            overflow: hidden;
+        }
+        .page-section {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+        .page-section.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* ══════════════════════════════════════════════════════════════════════════
+           PAGE 1: 滿版比色法實驗原理說明 (THEORY VIEW)
+           ══════════════════════════════════════════════════════════════════════════ */
+        #page-theory {
+            flex-direction: column;
+            padding: 12px 18px;
+            gap: 10px;
+            overflow-y: auto;
+            background: radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08), transparent 40%),
+                        radial-gradient(circle at 85% 85%, rgba(248, 113, 113, 0.08), transparent 40%),
+                        var(--bg-dark);
+        }
+        #page-theory::-webkit-scrollbar { width: 6px; }
+        #page-theory::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 3px; }
+
+        .theory-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+        }
+        .theory-hero-text h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theory-hero-text p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 2px;
+        }
+        .theory-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .ttag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        /* 3-Column Balanced Layout for Theory */
+        .theory-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+        .theory-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .theory-card {
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            flex: 1;
+            position: relative;
+        }
+
+        .tcard-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.0rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 6px;
+            flex-shrink: 0;
+        }
+        .tcard-body {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Specialized Callout Boxes */
+        .formula-highlight-box {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.5);
+        }
+        .eq-large {
+            font-size: 1.1rem;
+            color: var(--accent-yellow);
+            font-weight: 600;
+        }
+        .species-color-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 6px 4px;
+            margin-top: 2px;
+            font-size: 0.82rem;
+            gap: 4px;
+        }
+        .sc-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            text-align: center;
+        }
+        .sc-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .dot-fe { background: #fef08a; }
+        .dot-scn { background: #e2e8f0; }
+        .dot-fescn { background: #dc2626; box-shadow: 0 0 8px rgba(220, 38, 38, 0.8); }
+
+        .concept-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent-blue);
+            padding: 8px 10px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.88rem;
+        }
+        .concept-item.green { border-left-color: var(--accent-green); }
+        .concept-item.yellow { border-left-color: var(--accent-yellow); }
+        .concept-item.red { border-left-color: var(--accent-red); }
+
+        .key-text {
+            color: var(--accent-yellow);
+            font-weight: 700;
+        }
+        .cyan-text {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Step Guide & Button */
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.86rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .step-num {
+            background: var(--accent-cyan);
+            color: #000;
+            font-weight: 800;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .btn-enter-exp {
+            background: linear-gradient(135deg, #059669, var(--accent-green));
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 1.08rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(52, 211, 153, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: auto;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .btn-enter-exp:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(52, 211, 153, 0.6);
+        }
+        .btn-enter-exp:active {
+            transform: translateY(0);
+        }
+
+        /* ══════════════════════════════════════════════════════════════════════════
+           PAGE 2: 模擬實驗操作 (EXPERIMENT VIEW - PRESERVED EXISTING STRUCTURE)
+           ══════════════════════════════════════════════════════════════════════════ */
+        #page-experiment {
+            width: 100%;
+            height: 100%;
+        }
+
         #main-container { 
-            width: 100vw; height: 100vh; display: grid; grid-template-columns: 1fr 1fr; padding: 15px; gap: 15px; 
-            opacity: 0; transition: opacity 0.8s ease; overflow: hidden;
+            width: 100%; 
+            height: 100%; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            padding: 12px 15px; 
+            gap: 15px; 
+            overflow: hidden;
+            opacity: 1;
         }
-        #main-container.visible { opacity: 1; }
 
-        .left-panel { display: flex; flex-direction: column; gap: 12px; height: 100%; overflow-y: auto; padding-right: 5px; padding-bottom: 300px; }
+        .left-panel { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            height: 100%; 
+            overflow-y: auto; 
+            padding-right: 5px; 
+            padding-bottom: 25px; 
+        }
         .left-panel::-webkit-scrollbar { width: 6px; }
         .left-panel::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 3px; }
 
-        .theory-row { display: flex; flex-direction: column; gap: 5px; background: rgba(56, 189, 248, 0.1); border-radius: 12px; padding: 12px 15px; border: 1px solid rgba(56, 189, 248, 0.2); flex-shrink: 0;}
-        .theory-item { font-size: 1rem; color: var(--text-dim); display: flex; flex-direction: row; align-items: center; gap: 15px; width: 100%; }
-        .theory-item span { color: var(--accent-cyan); font-weight: 600; font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; }
+        .theory-row { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            background: rgba(56, 189, 248, 0.1); 
+            border-radius: 12px; 
+            padding: 10px 14px; 
+            border: 1px solid rgba(56, 189, 248, 0.2); 
+            flex-shrink: 0;
+        }
+        .theory-item { 
+            font-size: 0.95rem; 
+            color: var(--text-dim); 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%; 
+        }
+        .theory-item span { 
+            color: var(--accent-cyan); 
+            font-weight: 600; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 1.15rem; 
+        }
 
         .workspace-card {
-            background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--glass-border);
-            border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 8px;
-            position: relative; flex-shrink: 0;
+            background: var(--bg-panel); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid var(--glass-border);
+            border-radius: 15px; 
+            padding: 14px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px;
+            position: relative; 
+            flex-shrink: 0;
         }
-        .area-header { font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; }
+        .area-header { 
+            font-weight: 700; 
+            color: var(--accent-cyan); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 1.05rem; 
+            border-bottom: 1px solid var(--glass-border); 
+            padding-bottom: 8px; 
+        }
 
         /* ── Serial Dilution Flowchart ── */
         .serial-flow-container { width: 100%; overflow: hidden; padding: 5px 5px 0; }
         .stair-canvas { position: relative; width: 100%; }
         .stage-column { position: absolute; width: 16%; display: flex; flex-direction: column; align-items: center; }
-        .flask-node { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 10px; padding: 4px; width: 45px; z-index: 10; transition: transform 0.3s; position: relative; }
+        .flask-node { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            background: rgba(255,255,255,0.02); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 10px; 
+            padding: 4px; 
+            width: 45px; 
+            z-index: 10; 
+            transition: transform 0.3s; 
+            position: relative; 
+        }
         .flask-svg-wrap { height: 40px; display: flex; align-items: center; justify-content: center; }
         .flask-info { 
             position: absolute; left: 55px; top: 10%; transform: translateY(-50%); 
             display: flex; align-items: center; gap: 6px; 
-            background: rgba(15, 23, 42, 0.8); padding: 5px 12px; 
+            background: rgba(15, 23, 42, 0.85); padding: 5px 12px; 
             border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); 
             white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 100;
             font-size: 0.9rem;
@@ -82,7 +484,7 @@
         .v-path::after { content: ''; position: absolute; bottom: 0; left: -4px; border-top: 8px solid rgba(56,189,248,0.5); border-left: 5px solid transparent; border-right: 5px solid transparent; }
         
         .tube-bottom-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .btn-add-set { background: var(--accent-green); color: black; border: none; padding: 6px 12px; border-radius: 6px; font-size: 1.0rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .btn-add-set { background: var(--accent-green); color: black; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .btn-add-set:hover { transform: scale(1.05); }
         .btn-add-set:disabled { background: var(--glass-border); color: var(--text-dim); cursor: not-allowed; box-shadow: none; transform: none; }
         
@@ -92,25 +494,24 @@
         .h-stair-link { position: absolute; height: 2px; background: var(--accent-blue); opacity: 0.85; z-index: 5; }
         .h-stair-link::after { content: ''; position: absolute; right: -7px; top: -4px; border-left: 9px solid var(--accent-blue); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
         .stair-input-box { position: absolute; left: 50%; transform: translateX(-50%); background: var(--bg-dark); border: 1px solid var(--accent-blue); border-radius: 6px; padding: 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 1px; z-index: 20; box-shadow: 0 3px 8px rgba(0,0,0,0.6); }
-        .stair-label { font-size: 1.1rem; color: var(--text-dim); white-space: nowrap; }
-        .stair-input { width: 55px; border: none; background: transparent; color: var(--accent-yellow); font-weight: 700; text-align: center; font-size: 1.2rem; outline: none; border-bottom: 1px dashed var(--accent-blue); }
+        .stair-label { font-size: 1.05rem; color: var(--text-dim); white-space: nowrap; }
+        .stair-input { width: 55px; border: none; background: transparent; color: var(--accent-yellow); font-weight: 700; text-align: center; font-size: 1.15rem; outline: none; border-bottom: 1px dashed var(--accent-blue); }
 
         /* ── Colorimetry Stage ── */
         .color-stand-layout { display: flex; flex-direction: row; gap: 30px; align-items: flex-end; justify-content: center; padding: 10px 0 0 0; position: relative; }
-        
         .stand-with-top-view { display: flex; flex-direction: column; align-items: center; gap: 20px; flex: 1; }
 
         .top-view-box {
             background: rgba(0,0,0,0.4); border-radius: 20px; border: 1px solid var(--glass-border);
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 15px;
         }
-        .view-circles { display: flex; gap: 40px; } /* Increased to match stand gap */
+        .view-circles { display: flex; gap: 40px; }
         .circle { width: 75px; height: 75px; border-radius: 50%; border: 3px solid white; box-shadow: inset 0 0 15px rgba(0,0,0,0.9); transition: background 0.2s; background: transparent; }
 
         .stand-area { display: flex; justify-content: center; align-items: flex-end; gap: 57px; padding-bottom: 12px; position: relative; height: 210px;}
         .base-slot { width: 58px; height: 16px; background: #334155; border-radius: 5px; position: relative; border-bottom: 4px solid #1e293b; }
-        .base-slot::after { content: attr(data-label); position: absolute; bottom: -25px; left: -10px; width: 140%; text-align: center; font-size: 1.0rem; color: var(--text-dim); white-space: nowrap; }
-        .slot-indicator { position: absolute; top: -150px; left: -6px; width: 70px; height: 150px; border: 2.5px dashed rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: rgba(255,255,255,0.2); text-align: center; }
+        .base-slot::after { content: attr(data-label); position: absolute; bottom: -25px; left: -10px; width: 140%; text-align: center; font-size: 0.95rem; color: var(--text-dim); white-space: nowrap; }
+        .slot-indicator { position: absolute; top: -150px; left: -6px; width: 70px; height: 150px; border: 2.5px dashed rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; color: rgba(255,255,255,0.2); text-align: center; }
 
         /* Standard Height Pull-tab Slider */
         .pull-tab-container { position: absolute; left: -40px; top: -150px; height: 150px; width: 32px; display: none; flex-direction: column; align-items: center; gap: 8px; }
@@ -128,17 +529,17 @@
 
         /* Right Panel: Data */
         .right-panel { display: flex; flex-direction: column; gap: 12px; height: 100%; overflow: hidden; }
-        .report-box { background: var(--bg-panel); border-radius: 15px; padding: 15px; border: 1px solid var(--glass-border); flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+        .report-box { background: var(--bg-panel); border-radius: 15px; padding: 14px; border: 1px solid var(--glass-border); flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
         
-        .params-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; border: 1px solid var(--glass-border); font-size: 0.9rem; flex-shrink: 0; }
+        .params-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 12px; border: 1px solid var(--glass-border); font-size: 0.9rem; flex-shrink: 0; }
         .params-row { display: flex; align-items: center; gap: 15px; margin-bottom: 5px; }
         .params-row:last-child { margin-bottom: 0; }
         .param-input { background: rgba(0,0,0,0.2); border: 1px solid var(--accent-blue); border-radius: 6px; color: var(--accent-blue); width: 70px; padding: 4px; font-weight: 700; text-align: center; outline: none; }
 
         .data-table-wrap { flex: none; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.15); margin-bottom: 2px; }
-        .data-table { width: 100%; border-collapse: collapse; font-size: 1.2rem; }
-        .data-table th { position: sticky; top: 0; background: #1e293b; text-align: center; padding: 12px 6px; border-bottom: 1px solid var(--glass-border); border-right: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); line-height: 1.2; font-size: 1.2rem; z-index: 10; }
-        .data-table td { padding: 12px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); text-align: center; font-size: 1.2rem; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 1.15rem; }
+        .data-table th { position: sticky; top: 0; background: #1e293b; text-align: center; padding: 10px 6px; border-bottom: 1px solid var(--glass-border); border-right: 1px solid rgba(255,255,255,0.05); color: var(--accent-cyan); line-height: 1.2; font-size: 1.15rem; z-index: 10; }
+        .data-table td { padding: 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); text-align: center; font-size: 1.15rem; }
         .data-table .highlight { color: var(--accent-yellow); font-weight: 600; }
         
         .record-btn-container { display: flex; justify-content: space-between; align-items: center; padding-top: 5px; flex-shrink: 0; }
@@ -146,9 +547,9 @@
             background: linear-gradient(135deg, var(--accent-green), #059669); 
             color: #000; 
             border: none; 
-            padding: 12px 25px; 
+            padding: 10px 22px; 
             border-radius: 50px; 
-            font-size: 1.25rem; 
+            font-size: 1.15rem; 
             font-weight: 700; 
             cursor: pointer; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -160,396 +561,449 @@
             white-space: nowrap;
         }
         .btn-record:hover { 
-            transform: translateY(-3px) scale(1.02); 
+            transform: translateY(-2px) scale(1.02); 
             box-shadow: 0 8px 25px rgba(52, 211, 153, 0.5); 
         }
         .btn-record:active {
             transform: translateY(-1px);
         }
-        
-        .avg-display { display: none; } /* User asked to delete K_avg display */
 
         /* Calculation Lab */
         .calc-section { 
             background: rgba(15, 23, 42, 0.4); border-radius: 15px; border: 1px solid var(--glass-border); 
-            padding: 15px; display: flex; flex-direction: column; gap: 12px; margin-top: 0;
+            padding: 12px; display: flex; flex-direction: column; gap: 10px; margin-top: 0;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
-        .calc-header { font-size: 0.9rem; font-weight: 700; color: var(--accent-yellow); margin-bottom: 5px; }
-        .calc-layout { display: flex; flex-direction: column; gap: 15px; }
+        .calc-header { font-size: 0.95rem; font-weight: 700; color: var(--accent-yellow); margin-bottom: 2px; }
+        .calc-layout { display: flex; flex-direction: column; gap: 12px; }
         .ice-container { width: 100%; }
-        .result-container { width: 100%; display: flex; flex-direction: column; align-items: flex-start; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; padding-left: 10px; }
+        .result-container { width: 100%; display: flex; flex-direction: column; align-items: flex-start; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; padding-left: 10px; }
 
-        .ice-table { width: 100%; border-collapse: collapse; font-size: 1.4rem; }
-        .ice-table th { color: var(--accent-cyan); font-weight: 700; text-align: center; padding: 8px 4px; }
-        .ice-table td { text-align: center; padding: 10px 4px; font-family: 'Courier New', Courier, monospace; font-size: 1.3rem; }
-        .row-label { color: var(--text-dim); font-size: 1.2rem; font-family: 'Noto Sans TC'; width: 30px; text-align: left !important; }
+        .ice-table { width: 100%; border-collapse: collapse; font-size: 1.3rem; }
+        .ice-table th { color: var(--accent-cyan); font-weight: 700; text-align: center; padding: 6px 4px; }
+        .ice-table td { text-align: center; padding: 8px 4px; font-family: 'Courier New', Courier, monospace; font-size: 1.25rem; }
+        .row-label { color: var(--text-dim); font-size: 1.15rem; font-family: 'Noto Sans TC'; width: 30px; text-align: left !important; }
         
-        .ice-var-box { background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.2); border-radius: 6px; padding: 6px; min-width: 80px; min-height: 32px; color: var(--accent-cyan); display: inline-block; transition: all 0.3s; font-size: 1.3rem; }
+        .ice-var-box { background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.2); border-radius: 6px; padding: 5px; min-width: 75px; min-height: 30px; color: var(--accent-cyan); display: inline-block; transition: all 0.3s; font-size: 1.25rem; }
         .ice-var-box.drop-target { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.2); transform: scale(1.05); }
         .ice-var-box.filled { border-style: solid; border-color: var(--accent-yellow); color: var(--accent-yellow); font-weight: 700; }
         
         .line-row td { border-top: 1.5px solid rgba(255,255,255,0.4); height: 0; padding: 0; }
         
-        .formula-card { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; width: 100%; text-align: left; }
-        .formula-line { display: flex; align-items: center; justify-content: flex-start; gap: 12px; font-size: 1.25rem; margin-top: 10px; color: var(--text-dim); }
-        .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; color: var(--text-main); font-size: 1.2rem; }
+        .formula-line { display: flex; align-items: center; justify-content: flex-start; gap: 12px; font-size: 1.2rem; margin-top: 8px; color: var(--text-dim); }
+        .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; color: var(--text-main); font-size: 1.15rem; }
         .numerator { border-bottom: 2px solid var(--text-main); padding: 0 8px; }
         .denominator { padding: 0 8px; }
         
-        .btn-do-calc { background: linear-gradient(135deg, var(--accent-yellow), #d97706); color: black; border: none; padding: 10px 25px; border-radius: 50px; font-size: 1.3rem; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3); }
+        .btn-do-calc { background: linear-gradient(135deg, var(--accent-yellow), #d97706); color: black; border: none; padding: 8px 22px; border-radius: 50px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3); }
         .btn-do-calc:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 8px 20px rgba(251, 191, 36, 0.5); }
         .btn-do-calc:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
 
         .draggable-id { cursor: grab; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 4px; font-weight: 700; transition: transform 0.2s; padding: 2px 6px; }
 
-        /* Toolbar */
-        #toolbar { position: fixed; right: 20px; top: 20px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 15px; display: flex; flex-direction: row; align-items: center; gap: 12px; z-index: 2000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .tool-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-        .tool-btn.active { background: var(--accent-blue); color: #000; border-color: var(--accent-blue); }
-        .color-dot { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1.5px solid transparent; }
-        .color-dot.active { border-color: white; transform: scale(1.1); }
-        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1500; }
-        #drawing-layer.active { pointer-events: auto; }
-
         .dragging { opacity: 0.4; transform: scale(0.9); }
         .drop-over { border-bottom: 3px solid var(--accent-blue) !important; background: rgba(56, 189, 248, 0.2) !important; }
 
         @media (max-width: 1024px) {
+            .theory-grid { grid-template-columns: 1fr; }
             #main-container { grid-template-columns: 1fr; overflow-y: auto; }
             .right-panel { height: auto; }
-        }
-
-        /* ---- Random Draw Modal ---- */
-        #random-draw-modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--accent-cyan);
-            box-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
-            border-radius: 20px;
-            padding: 20px;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            width: 600px;
-            max-width: 90vw;
-        }
-        #random-draw-balls {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            gap: 8px;
-            justify-content: center;
-            margin: 0 auto 20px auto;
-            width: 100%;
-            max-width: 500px;
-        }
-        .draw-ball {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: clamp(0.75rem, 2.5vw, 1.1rem);
-            color: #fff;
-            position: relative;
-            z-index: 1;
-            transition: all 0.3s;
-        }
-        .draw-ball.flicker {
-            background: #fff;
-            color: #000;
-            transform: scale(1.35);
-            box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan);
-            border-color: #fff;
-            z-index: 10;
-        }
-        .draw-ball.drawn {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.3);
-        }
-        .draw-ball.winner {
-            background: var(--accent-yellow);
-            border-color: var(--accent-yellow);
-            color: #000;
-            transform: scale(1.25);
-            box-shadow: 0 0 25px var(--accent-yellow);
-            z-index: 10;
-        }
-        #random-draw-controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        #btn-do-draw {
-            background: linear-gradient(135deg, var(--accent-cyan), #a78bfa);
-            color: #0f172a;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        #btn-do-draw:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
-        }
-        #btn-do-draw:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .draw-input-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-        }
-        .draw-input-group input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--accent-cyan);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            width: 60px;
-            text-align: center;
-            font-size: 1rem;
-        }
-        #btn-close-draw {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            opacity: 0.7;
-        }
-        #btn-close-draw:hover {
-            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- Start Overlay -->
-        <div id="start-overlay">
-            <h1 class="hero-title">比色法測平衡常數</h1>
-            <p class="hero-subtitle">互動實驗操作與數據記錄</p>
-            <button class="btn-start" onclick="initApp()">▶ 開始實驗教學</button>
-        </div>
+        <!-- ── Top Nav Bar ── -->
+        <header class="page-header">
+            <div class="header-left">
+                <span class="header-badge">化學平衡實驗</span>
+                <h1 class="header-title">比色法測定平衡常數</h1>
+            </div>
+            <div class="header-tabs">
+                <button class="tab-btn active" id="btn-tab-theory" onclick="switchPage('theory')">
+                    <span>📖</span> 第一頁：實驗原理說明
+                </button>
+                <button class="tab-btn" id="btn-tab-exp" onclick="switchPage('experiment')">
+                    <span>🔬</span> 第二頁：模擬實驗階段
+                </button>
+            </div>
+        </header>
 
-        <!-- Main Container -->
-        <div id="main-container">
-            <!-- Left Panel -->
-            <div class="left-panel">
-                <div class="theory-row">
-                    <div class="theory-item">反應方程式：<span>Fe³⁺<sub>(aq)</sub> + SCN⁻<sub>(aq)</sub> ⇌ FeSCN²⁺<sub>(aq)</sub></span></div>
-                </div>
+        <!-- ── Main Page Switcher Container ── -->
+        <main class="page-container">
 
-                <div class="workspace-card dilution-stage">
-                    <div class="area-header"><span>⚗️</span> 重點一：Fe³⁺ 序列稀釋流程</div>
-                    <div class="serial-flow-container" id="serial-flow">
-                        <div class="stair-canvas" id="stair-canvas"></div>
+            <!-- ══════════════════════════════════════════════════════════════════════════
+                 PAGE 1: 滿版比色法實驗原理說明 (Full Screen Colorimetry Principles)
+                 ══════════════════════════════════════════════════════════════════════════ -->
+            <section id="page-theory" class="page-section active">
+                
+                <!-- Hero Highlight Bar -->
+                <div class="theory-hero">
+                    <div class="theory-hero-text">
+                        <h2><span>⚗️</span> 比色法測平衡常數之核心原理與分析</h2>
+                        <p>探討配位平衡反應、標準溶液之極限反應設計、比爾-朗伯定律與俯視比色原理</p>
+                    </div>
+                    <div class="theory-tags">
+                        <span class="ttag">$\mathrm{Fe^{3+} \!-\! SCN^-}$ 體系</span>
+                        <span class="ttag">比爾-朗伯定律</span>
+                        <span class="ttag">勒沙特列原理</span>
+                        <span class="ttag">ICE 平衡計量</span>
                     </div>
                 </div>
 
-                <div class="workspace-card color-stage">
-                    <div class="area-header"><span>🔭</span> 重點二：拖曳比色與數據讀取</div>
-                    <div class="color-stand-layout">
-                        
-                        <div class="stand-with-top-view">
-                            <div class="top-view-box">
-                                <div style="font-size: 1.1rem; color: var(--text-dim); font-weight: 700; margin-bottom: 5px;">俯視比色窗</div>
-                                <div class="view-circles">
-                                    <div style="text-align: center;"><div id="vs" class="circle"></div><div style="font-size: 1rem; margin-top: 5px;">#1 標準管</div></div>
-                                    <div style="text-align: center;"><div id="vt" class="circle"></div><div id="vt-name" style="font-size: 1rem; margin-top: 5px;">待測管</div></div>
-                                </div>
-                            </div>
+                <!-- 3-Column Balanced Layout -->
+                <div class="theory-grid">
 
-                            <div class="stand-area" id="stand">
-                                <!-- Left Slot -->
-                                <div class="base-slot" id="slot-std" data-label="標準槽 (#1)">
-                                    <div class="slot-indicator">置入區</div>
-                                    <div class="pull-tab-container" id="pull-tab">
-                                        <div style="font-size: 0.85rem; color: var(--accent-blue); font-weight: 700;"><span id="h1-txt">5.0</span>cm</div>
-                                        <input type="range" class="tab-slider" id="h1-sld" min="1" max="50" value="50" oninput="changeH1(this.value)">
-                                        <div style="font-size: 0.65rem; color: var(--text-dim); text-align: center;">液柱<br>高度</div>
+                    <!-- COLUMN 1: 反應系統與標準溶液原理 -->
+                    <div class="theory-col">
+                        <!-- Card 1: 核心平衡反應 -->
+                        <div class="theory-card">
+                            <div class="tcard-header">
+                                <span>1️⃣</span> 核心平衡反應與顏色特性
+                            </div>
+                            <div class="tcard-body">
+                                <div class="formula-highlight-box">
+                                    <div class="eq-large">
+                                        $$\mathrm{Fe^{3+}_{(aq)} + SCN^-_{(aq)} \rightleftharpoons FeSCN^{2+}_{(aq)}}$$
                                     </div>
                                 </div>
-                                <!-- Right Slot -->
-                                <div class="base-slot" id="slot-test" data-label="待測槽 (#2~5)">
-                                    <div class="slot-indicator">置入區</div>
+                                <div class="species-color-strip">
+                                    <div class="sc-item">
+                                        <div class="sc-color-dot dot-fe"></div>
+                                        <span>$\mathrm{Fe^{3+}}$</span>
+                                        <small style="color:var(--text-dim);">淡黃色/近無色</small>
+                                    </div>
+                                    <span style="color:var(--text-dim); font-size:1.2rem;">+</span>
+                                    <div class="sc-item">
+                                        <div class="sc-color-dot dot-scn"></div>
+                                        <span>$\mathrm{SCN^-}$</span>
+                                        <small style="color:var(--text-dim);">無色透明</small>
+                                    </div>
+                                    <span style="color:var(--text-dim); font-size:1.2rem;">⇌</span>
+                                    <div class="sc-item">
+                                        <div class="sc-color-dot dot-fescn"></div>
+                                        <span>$\mathrm{FeSCN^{2+}}$</span>
+                                        <small style="color:var(--accent-red); font-weight:700;">血紅色配位離子</small>
+                                    </div>
+                                </div>
+                                <div class="concept-item">
+                                    <strong>溶液配置注意：</strong> $\mathrm{Fe(NO_3)_3}$ 固體配製時需溶於稀硝酸（約 $0.5\,\mathrm{M}\;\mathrm{HNO_3}$）中，目的在於<span class="key-text">防止 $\mathrm{Fe^{3+}}$ 發生水解</span>生成氫氧化鐵膠體沉澱。
+                                </div>
+                                <div class="concept-item">
+                                    <strong>平衡常數 $K_c$ 表示式：</strong>
+                                    $$K_c = \frac{[\mathrm{FeSCN^{2+}}]_{\text{eq}}}{[\mathrm{Fe^{3+}}]_{\text{eq}} \cdot [\mathrm{SCN^-}]_{\text{eq}}}$$
+                                    血紅色配位離子在波長 $\lambda_{\max} \approx 447\,\mathrm{nm}$ 有極強吸收峰，顏色深淺直接反映其濃度。
                                 </div>
                             </div>
                         </div>
 
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 35px; margin-bottom: 12px;">
-                            <button class="btn-record" onclick="recordData()">📥 記錄實驗數據</button>
-                            <div class="rack-area" id="rack" style="align-self: center;">
-                                <div style="font-size: 0.9rem; color: var(--text-dim); text-align: center;">試管架 (混合後可拖曳)</div>
-                                <div class="rack-row" id="rack-row"></div>
+                        <!-- Card 2: 1號管標準溶液配製原理 -->
+                        <div class="theory-card">
+                            <div class="tcard-header">
+                                <span>2️⃣</span> #1 標準管配製原理（推動完全反應）
+                            </div>
+                            <div class="tcard-body">
+                                <div class="concept-item yellow">
+                                    <strong>勒沙特列原理（Le Chatelier's Principle）之極致應用：</strong>
+                                    <div style="margin-top: 4px;">
+                                        在 #1 標準管中，加入<strong>極大量且高濃度的 $\mathrm{Fe^{3+}}$</strong>（高達 $0.2\,\mathrm{M}$，對比 $\mathrm{SCN^-}$ 僅 $0.002\,\mathrm{M}$，<span class="key-text">濃度過量達 100 倍！</span>）。
+                                    </div>
+                                </div>
+                                <div class="concept-item green">
+                                    <strong>限量試劑完全轉化：</strong>
+                                    根據勒沙特列原理，極大量過量的 $\mathrm{Fe^{3+}}$ 會強烈迫使平衡向右完全進行，將限量試劑 $\mathrm{SCN^-}$ <span class="key-text">幾近 $100\%$ 完全轉化為 $\mathrm{FeSCN^{2+}}$</span>。
+                                </div>
+                                <div class="formula-highlight-box" style="border-color: rgba(52, 211, 153, 0.4);">
+                                    <div style="color:var(--accent-green); font-size: 0.95rem; font-weight:700;">
+                                        #1 標準管濃度可視為已知基準：
+                                    </div>
+                                    <div style="font-size: 1.15rem; color: #fff; margin-top: 4px;">
+                                        $$[\mathrm{FeSCN^{2+}}]_{\text{std}} \approx [\mathrm{SCN^-}]_0 = 1.0 \times 10^{-3}\,\mathrm{M}$$
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Right Panel -->
-            <div class="right-panel">
-                <div class="report-box">
-                    
-                    <div class="params-box">
-                        <div class="params-row">
-                            <span style="color:var(--text-dim);">[SCN⁻]₀ 儲備液濃度：</span>
-                            <input type="number" id="scn-stock" class="param-input" value="0.002" step="0.001" onchange="calcSerial()"> 
-                            <span>M</span>
+                    <!-- COLUMN 2: 俯視比色原理與比爾定律 -->
+                    <div class="theory-col">
+                        <!-- Card 3: 比爾-朗伯定律 -->
+                        <div class="theory-card">
+                            <div class="tcard-header">
+                                <span>3️⃣</span> 比爾-朗伯定律（Beer-Lambert Law）
+                            </div>
+                            <div class="tcard-body">
+                                <div>
+                                    當特定波長單色光通過吸光溶液時，溶液對光的吸光度 $A$（Absorbance）與液層深度及吸光物質濃度成正比：
+                                </div>
+                                <div class="formula-highlight-box">
+                                    <div class="eq-large" style="color: var(--accent-cyan);">
+                                        $$A = \varepsilon \cdot b \cdot c = \varepsilon \cdot h \cdot c$$
+                                    </div>
+                                    <div style="font-size:0.85rem; color:var(--text-dim); margin-top:4px;">
+                                        $\varepsilon$：莫耳吸光係數 ｜ $h$：透光液柱高度 ｜ $c$：莫耳濃度
+                                    </div>
+                                </div>
+                                <div class="concept-item">
+                                    <strong>透射光與吸光度：</strong>
+                                    溶液顏色愈深、液柱高度愈高，穿透之光線愈弱，吸光度 $A = -\log(I/I_0)$ 愈大。
+                                </div>
+                            </div>
                         </div>
-                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">※ 反應時各管皆取 5mL Fe³⁺ 與 5mL SCN⁻ 均勻混合。</div>
+
+                        <!-- Card 4: 俯視比色原理 -->
+                        <div class="theory-card">
+                            <div class="tcard-header">
+                                <span>4️⃣</span> 垂直俯視比色原理（Visual Color Matching）
+                            </div>
+                            <div class="tcard-body">
+                                <div class="concept-item red">
+                                    <strong>消除側向干擾：垂直俯視觀察</strong><br>
+                                    將比色管底部置於均勻白光或白紙上，由<strong>管口垂直由上往下俯視</strong>，光線垂直穿過整段液柱。
+                                </div>
+                                <div class="concept-item green">
+                                    <strong>視野顏色深淺一致時：</strong><br>
+                                    調降標準管液柱高度，當兩視野顏色外觀完全一致時，代表兩管之<span class="key-text">吸光度相等</span>：
+                                    $$A_{\text{std}} = A_{\text{test}} \implies \varepsilon \cdot h_{\text{std}} \cdot c_{\text{std}} = \varepsilon \cdot h_{\text{test}} \cdot c_{\text{test}}$$
+                                </div>
+                                <div class="formula-highlight-box" style="border-color: rgba(251, 191, 36, 0.4);">
+                                    <div style="color:var(--accent-yellow); font-weight:700;">待測管濃度計算公式：</div>
+                                    <div style="font-size:1.15rem; color:#fff; margin-top:4px;">
+                                        $$c_{\text{test}} = c_{\text{std}} \times \frac{h_{\text{std}}}{h_{\text{test}}}$$
+                                    </div>
+                                    <div style="font-size:0.85rem; color:var(--accent-cyan); margin-top:2px;">
+                                        💡 核心規律：外觀深淺相同時，<strong>液柱高度與濃度成反比</strong>！
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="data-table-wrap">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">管別</th>
-                                    <th colspan="2">混合後初始濃度 (M)</th>
-                                    <th colspan="2">比色高度 (cm)</th>
-                                    <th rowspan="2">[FeSCN²⁺]<sub>eq</sub> (M)</th>
-                                    <th rowspan="2">K<sub>c</sub></th>
-                                </tr>
-                                <tr>
-                                    <th>[Fe³⁺]₀</th><th>[SCN⁻]₀</th>
-                                    <th>h<sub>std</sub></th><th>h<sub>test</sub></th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-body">
-                                <!-- Data rows -->
-                            </tbody>
-                        </table>
+                    <!-- COLUMN 3: 待測液計算與實驗指引 -->
+                    <div class="theory-col">
+                        <!-- Card 5: 序列稀釋與 ICE 表計算 -->
+                        <div class="theory-card">
+                            <div class="tcard-header">
+                                <span>5️⃣</span> 序列稀釋與 ICE 計算平衡常數
+                            </div>
+                            <div class="tcard-body">
+                                <div class="concept-item">
+                                    <strong>序列稀釋（Serial Dilution）：</strong><br>
+                                    #2~5 號管將 $\mathrm{Fe^{3+}}$ 儲備液逐級稀釋（$10\,\mathrm{mL} \to 25\,\mathrm{mL}$），使 $\mathrm{Fe^{3+}}$ 濃度降至與 $\mathrm{SCN^-}$ 相當的數量級，建立真實的化學平衡狀態。
+                                </div>
+                                <div class="concept-item yellow">
+                                    <strong>ICE 表（初、轉、平）計量：</strong><br>
+                                    各管混合後初濃度均折半（$5\,\mathrm{mL} + 5\,\mathrm{mL}$）。由比色求得之 $[\mathrm{FeSCN^{2+}}]_{\text{eq}}$ 反推反應物之平衡濃度：
+                                    $$[\mathrm{Fe^{3+}}]_{\text{eq}} = [\mathrm{Fe^{3+}}]_0 - [\mathrm{FeSCN^{2+}}]_{\text{eq}}$$
+                                    $$[\mathrm{SCN^-}]_{\text{eq}} = [\mathrm{SCN^-}]_0 - [\mathrm{FeSCN^{2+}}]_{\text{eq}}$$
+                                </div>
+                                <div class="concept-item green">
+                                    <strong>計算各管 $K_c$：</strong><br>
+                                    代入平衡常數公式計算各管之 $K_c$。在相同溫度下，各組待測管計算求得之 $K_c$ 數值理論上應極為一致。
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 6: 實驗步驟與進入按鈕 -->
+                        <div class="theory-card" style="border-color: rgba(52, 211, 153, 0.3);">
+                            <div class="tcard-header" style="color:var(--accent-green);">
+                                <span>🔬</span> 模擬實驗操作指南
+                            </div>
+                            <div class="tcard-body">
+                                <div class="step-list">
+                                    <div class="step-item">
+                                        <div class="step-num">1</div>
+                                        <div><strong>配製試管：</strong>點擊階梯流程圖之「加入」按鈕，依序將各管溶液混合均勻。</div>
+                                    </div>
+                                    <div class="step-item">
+                                        <div class="step-num">2</div>
+                                        <div><strong>置入比色：</strong>拖曳 #1 標準管與待測管至比色槽，由上方圓形視窗觀察深淺。</div>
+                                    </div>
+                                    <div class="step-item">
+                                        <div class="step-num">3</div>
+                                        <div><strong>調節高度：</strong>拉動標準管液柱滑桿，調整至左右兩圓深淺完全一致。</div>
+                                    </div>
+                                    <div class="step-item">
+                                        <div class="step-num">4</div>
+                                        <div><strong>記錄計算：</strong>點擊「記錄實驗數據」，拖曳管號至 ICE 手札中進行 $K_c$ 計算驗證！</div>
+                                    </div>
+                                </div>
+
+                                <button class="btn-enter-exp" onclick="switchPage('experiment')">
+                                    <span>前往實驗階段</span>
+                                    <span style="font-size:1.2rem;">➔</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Calculation Lab -->
-                    <div class="calc-section" id="calc-drop-zone">
-                        <div class="calc-header"><span>📝</span> Kc 計算手札 (將數據組別拖曳至此)</div>
-                        <div class="calc-layout">
-                            <div class="ice-container">
-                                <table class="ice-table" style="width: 80%; margin-left: 0;"> <!-- Shifted left a bit -->
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════════════════════════════
+                 PAGE 2: 模擬實驗階段 (SIMULATOR VIEW - RETAINED ORIGINAL ARCHITECTURE)
+                 ══════════════════════════════════════════════════════════════════════════ -->
+            <section id="page-experiment" class="page-section">
+                <!-- Main Container -->
+                <div id="main-container">
+                    <!-- Left Panel -->
+                    <div class="left-panel">
+                        <div class="theory-row">
+                            <div class="theory-item">反應方程式：<span>Fe³⁺<sub>(aq)</sub> + SCN⁻<sub>(aq)</sub> ⇌ FeSCN²⁺<sub>(aq)</sub></span></div>
+                        </div>
+
+                        <div class="workspace-card dilution-stage">
+                            <div class="area-header"><span>⚗️</span> 重點一：Fe³⁺ 序列稀釋流程</div>
+                            <div class="serial-flow-container" id="serial-flow">
+                                <div class="stair-canvas" id="stair-canvas"></div>
+                            </div>
+                        </div>
+
+                        <div class="workspace-card color-stage">
+                            <div class="area-header"><span>🔭</span> 重點二：拖曳比色與數據讀取</div>
+                            <div class="color-stand-layout">
+                                
+                                <div class="stand-with-top-view">
+                                    <div class="top-view-box">
+                                        <div style="font-size: 1.05rem; color: var(--text-dim); font-weight: 700; margin-bottom: 5px;">俯視比色窗</div>
+                                        <div class="view-circles">
+                                            <div style="text-align: center;"><div id="vs" class="circle"></div><div style="font-size: 0.95rem; margin-top: 5px;">#1 標準管</div></div>
+                                            <div style="text-align: center;"><div id="vt" class="circle"></div><div id="vt-name" style="font-size: 0.95rem; margin-top: 5px;">待測管</div></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="stand-area" id="stand">
+                                        <!-- Left Slot -->
+                                        <div class="base-slot" id="slot-std" data-label="標準槽 (#1)">
+                                            <div class="slot-indicator">置入區</div>
+                                            <div class="pull-tab-container" id="pull-tab">
+                                                <div style="font-size: 0.85rem; color: var(--accent-blue); font-weight: 700;"><span id="h1-txt">5.0</span>cm</div>
+                                                <input type="range" class="tab-slider" id="h1-sld" min="1" max="50" value="50" oninput="changeH1(this.value)">
+                                                <div style="font-size: 0.65rem; color: var(--text-dim); text-align: center;">液柱<br>高度</div>
+                                            </div>
+                                        </div>
+                                        <!-- Right Slot -->
+                                        <div class="base-slot" id="slot-test" data-label="待測槽 (#2~5)">
+                                            <div class="slot-indicator">置入區</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 35px; margin-bottom: 12px;">
+                                    <button class="btn-record" onclick="recordData()">📥 記錄實驗數據</button>
+                                    <div class="rack-area" id="rack" style="align-self: center;">
+                                        <div style="font-size: 0.88rem; color: var(--text-dim); text-align: center;">試管架 (混合後可拖曳)</div>
+                                        <div class="rack-row" id="rack-row"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel -->
+                    <div class="right-panel">
+                        <div class="report-box">
+                            
+                            <div class="params-box">
+                                <div class="params-row">
+                                    <span style="color:var(--text-dim);">[SCN⁻]₀ 儲備液濃度：</span>
+                                    <input type="number" id="scn-stock" class="param-input" value="0.002" step="0.001" onchange="calcSerial()"> 
+                                    <span>M</span>
+                                </div>
+                                <div style="font-size:0.75rem; color:rgba(255,255,255,0.4);">※ 反應時各管皆取 5mL Fe³⁺ 與 5mL SCN⁻ 均勻混合。</div>
+                            </div>
+
+                            <div class="data-table-wrap">
+                                <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th></th>
-                                            <th colspan="2">Fe³⁺</th><th>+</th><th colspan="2">SCN⁻</th><th>⇌</th><th colspan="2">FeSCN²⁺</th>
+                                            <th rowspan="2">管別</th>
+                                            <th colspan="2">混合後初始濃度 (M)</th>
+                                            <th colspan="2">比色高度 (cm)</th>
+                                            <th rowspan="2">[FeSCN²⁺]<sub>eq</sub> (M)</th>
+                                            <th rowspan="2">K<sub>c</sub></th>
+                                        </tr>
+                                        <tr>
+                                            <th>[Fe³⁺]₀</th><th>[SCN⁻]₀</th>
+                                            <th>h<sub>std</sub></th><th>h<sub>test</sub></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td class="row-label">前</td>
-                                            <td colspan="2"><div class="ice-var-box" id="ice-a"></div></td><td></td>
-                                            <td colspan="2"><div class="ice-var-box" id="ice-b"></div></td><td></td>
-                                            <td colspan="2">0</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="row-label">中</td>
-                                            <td style="text-align:right;">-</td><td id="ice-c1" style="text-align:left; color:var(--accent-red);"></td>
-                                            <td></td>
-                                            <td style="text-align:right;">-</td><td id="ice-c2" style="text-align:left; color:var(--accent-red);"></td>
-                                            <td></td>
-                                            <td style="text-align:right;">+</td><td id="ice-c3" style="text-align:left; color:var(--accent-red);"></td>
-                                        </tr>
-                                        <tr class="line-row"><td colspan="9"></td></tr>
-                                        <tr>
-                                            <td class="row-label">後</td>
-                                            <td colspan="2" id="ice-ac" style="color:var(--accent-green);"></td><td></td>
-                                            <td colspan="2" id="ice-bc" style="color:var(--accent-green);"></td><td></td>
-                                            <td colspan="2"><div class="ice-var-box" id="ice-c"></div></td>
-                                        </tr>
+                                    <tbody id="tbl-body">
+                                        <!-- Data rows -->
                                     </tbody>
                                 </table>
                             </div>
-                            
-                            <div class="result-container">
-                                <button class="btn-do-calc" id="btn-calc" onclick="performKcCalc()" disabled style="margin-bottom: 10px;">⚡ 開始計算 Kc</button>
-                                <div class="formula-line" id="formula-display" style="display:none; flex-direction: row; align-items: center; justify-content: flex-start; gap: 30px; margin-top: 10px; width: 100%;">
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span>Kc = </span>
-                                        <div class="fraction">
-                                            <div class="numerator">[FeSCN²⁺]</div>
-                                            <div class="denominator">[Fe³⁺][SCN⁻]</div>
-                                        </div>
+
+                            <!-- Calculation Lab -->
+                            <div class="calc-section" id="calc-drop-zone">
+                                <div class="calc-header"><span>📝</span> Kc 計算手札 (將數據組別拖曳至此)</div>
+                                <div class="calc-layout">
+                                    <div class="ice-container">
+                                        <table class="ice-table" style="width: 80%; margin-left: 0;">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th colspan="2">Fe³⁺</th><th>+</th><th colspan="2">SCN⁻</th><th>⇌</th><th colspan="2">FeSCN²⁺</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="row-label">前</td>
+                                                    <td colspan="2"><div class="ice-var-box" id="ice-a"></div></td><td></td>
+                                                    <td colspan="2"><div class="ice-var-box" id="ice-b"></div></td><td></td>
+                                                    <td colspan="2">0</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="row-label">中</td>
+                                                    <td style="text-align:right;">-</td><td id="ice-c1" style="text-align:left; color:var(--accent-red);"></td>
+                                                    <td></td>
+                                                    <td style="text-align:right;">-</td><td id="ice-c2" style="text-align:left; color:var(--accent-red);"></td>
+                                                    <td></td>
+                                                    <td style="text-align:right;">+</td><td id="ice-c3" style="text-align:left; color:var(--accent-red);"></td>
+                                                </tr>
+                                                <tr class="line-row"><td colspan="9"></td></tr>
+                                                <tr>
+                                                    <td class="row-label">後</td>
+                                                    <td colspan="2" id="ice-ac" style="color:var(--accent-green);"></td><td></td>
+                                                    <td colspan="2" id="ice-bc" style="color:var(--accent-green);"></td><td></td>
+                                                    <td colspan="2"><div class="ice-var-box" id="ice-c"></div></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 12px;">
-                                        <span> = </span>
-                                        <div class="fraction">
-                                            <div class="numerator" id="num-val"></div>
-                                            <div class="denominator" id="den-val"></div>
+                                    
+                                    <div class="result-container">
+                                        <button class="btn-do-calc" id="btn-calc" onclick="performKcCalc()" disabled style="margin-bottom: 10px;">⚡ 開始計算 Kc</button>
+                                        <div class="formula-line" id="formula-display" style="display:none; flex-direction: row; align-items: center; justify-content: flex-start; gap: 30px; margin-top: 10px; width: 100%;">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <span>Kc = </span>
+                                                <div class="fraction">
+                                                    <div class="numerator">[FeSCN²⁺]</div>
+                                                    <div class="denominator">[Fe³⁺][SCN⁻]</div>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <span> = </span>
+                                                <div class="fraction">
+                                                    <div class="numerator" id="num-val"></div>
+                                                    <div class="denominator" id="den-val"></div>
+                                                </div>
+                                                <span> = </span>
+                                                <span id="kc-calc-res" style="color:var(--accent-yellow); font-weight:700; font-size:1.6rem;">?</span>
+                                            </div>
                                         </div>
-                                        <span> = </span>
-                                        <span id="kc-calc-res" style="color:var(--accent-yellow); font-weight:700; font-size:1.8rem;">?</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Floating Toolbar -->
-        <div id="toolbar">
-            <div id="toolbar-handle" style="cursor: grab; color: rgba(255,255,255,0.3); font-size: 1.2rem; padding: 0 5px;">⋮</div>
-            <button class="tool-btn" id="btn-draw" onclick="toggleDrawing()" title="手寫功能">✎</button>
-            <div id="draw-tools" style="display: none; flex-direction: row; gap: 8px; align-items: center; border-left: 1px solid var(--glass-border); padding-left: 10px;">
-                <div class="color-dot active" style="background: #f8fafc" onclick="setPenColor('#f8fafc', this)"></div>
-                <div class="color-dot" style="background: #f87171" onclick="setPenColor('#f87171', this)"></div>
-                <div class="color-dot" style="background: #fbbf24" onclick="setPenColor('#fbbf24', this)"></div>
-                <div class="color-dot" style="background: #38bdf8" onclick="setPenColor('#38bdf8', this)"></div>
-                <div class="color-dot" style="background: #34d399" onclick="setPenColor('#34d399', this)"></div>
-                <div class="color-dot" style="background: #a78bfa" onclick="setPenColor('#a78bfa', this)"></div>
-                
-                <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
-                
-                <button class="tool-btn" id="btn-eraser" onclick="typeof setEraser === 'function' ? setEraser() : alert('此頁面尚未實作橡皮擦功能')" title="橡皮擦">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
-                </button>
-                <button class="tool-btn" id="btn-clear" onclick="clearCanvas()" title="清除手寫">🗑</button>
-            </div>
-            
-            <div style="width: 1px; height: 20px; background: var(--glass-border); margin-left: 8px;"></div>
-            
-            <button class="tool-btn" id="btn-random-draw" onclick="typeof openRandomDrawModal === 'function' ? openRandomDrawModal() : alert('此頁面尚未實作隨機抽號功能')" title="隨機抽號">🎲</button>
-            <button class="tool-btn" onclick="location.reload()" title="重置全部">🔄</button>
-            <button class="tool-btn" id="btn-home" onclick="window.location.href='../../index.html'" title="回到 my_化學網 首頁">🏠</button>
-        </div>
-
-        <canvas id="drawing-layer"></canvas>
-
-        <!-- ======= RANDOM DRAW MODAL ======= -->
-        <div id="random-draw-modal">
-            <button type="button" id="btn-close-draw" title="關閉">×</button>
-            <div id="random-draw-balls"></div>
-            <div id="random-draw-controls">
-                <button type="button" id="btn-do-draw">抽號</button>
-                <div class="draw-input-group">
-                    <label for="draw-total-input">籤號總數：</label>
-                    <input type="number" id="draw-total-input" min="1" max="100" value="40">
-                </div>
-            </div>
-        </div>
-
+        </main>
     </div>
 
+    <!-- ── Logic Scripts ── -->
     <script>
         const state = {
             h1: 5.0,
@@ -566,23 +1020,27 @@
             activeCalcTubeId: null
         };
 
-        function initApp() {
-            try {
-                const elem = document.documentElement;
-                if (elem.requestFullscreen) elem.requestFullscreen();
-                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            } catch (err) { console.log(err); }
+        // Page Switching
+        function switchPage(page) {
+            const theorySec = document.getElementById('page-theory');
+            const expSec = document.getElementById('page-experiment');
+            const btnTheory = document.getElementById('btn-tab-theory');
+            const btnExp = document.getElementById('btn-tab-exp');
 
-            document.getElementById('start-overlay').style.display = 'none';
-            document.getElementById('main-container').classList.add('visible');
-            
-            buildFlowUI();
-            buildRack();
-            calcSerial(); // Initial calculation and table build
-            initDragAndDrop();
-            initCanvas();
-            initToolbarDragging();
-            initCalcDragAndDrop();
+            if (page === 'theory') {
+                theorySec.classList.add('active');
+                expSec.classList.remove('active');
+                btnTheory.classList.add('active');
+                btnExp.classList.remove('active');
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    window.MathJax.typesetPromise([theorySec]);
+                }
+            } else {
+                theorySec.classList.remove('active');
+                expSec.classList.add('active');
+                btnTheory.classList.remove('active');
+                btnExp.classList.add('active');
+            }
         }
 
         // --- Core Math ---
@@ -609,15 +1067,18 @@
         }
 
         function calcSerial() {
-            const m1 = parseFloat(document.getElementById('fe-m1').value) || 0.2;
+            const feInput = document.getElementById('fe-m1');
+            const m1 = feInput ? (parseFloat(feInput.value) || 0.2) : 0.2;
             const scnStock = parseFloat(document.getElementById('scn-stock').value) || 0.002;
             
             const ms = [m1];
             for(let i = 2; i <= 5; i++) {
-                const v = parseFloat(document.getElementById(`v-trans-${i}`).value) || 10;
+                const transInput = document.getElementById(`v-trans-${i}`);
+                const v = transInput ? (parseFloat(transInput.value) || 10) : 10;
                 const mNext = ms[i-2] * (v / 25);
                 ms.push(mNext);
-                document.getElementById(`m-val-${i}`).textContent = mNext.toFixed(4);
+                const mValEl = document.getElementById(`m-val-${i}`);
+                if (mValEl) mValEl.textContent = mNext.toFixed(4);
             }
             
             for(let i = 1; i <= 5; i++) {
@@ -642,8 +1103,11 @@
             const op = Math.min(1, Math.max(0.05, ceq / 10));
             const color = `rgba(153, 27, 27, ${op})`;
             
-            document.getElementById(`stair-liq-${id}`).style.backgroundColor = color;
-            document.getElementById(`rack-liq-${id}`).style.backgroundColor = color;
+            const stairLiq = document.getElementById(`stair-liq-${id}`);
+            if (stairLiq) stairLiq.style.backgroundColor = color;
+
+            const rackLiq = document.getElementById(`rack-liq-${id}`);
+            if (rackLiq) rackLiq.style.backgroundColor = color;
             
             if (state.activeSlotStd === id || state.activeSlotTest === id) {
                 updateVisuals();
@@ -653,6 +1117,7 @@
         // --- UI Builders ---
         function buildFlowUI() {
             const canvas = document.getElementById('stair-canvas');
+            if (!canvas) return;
             canvas.innerHTML = '';
 
             const N = 5;
@@ -687,7 +1152,7 @@
                        <input type="number" class="stair-input" id="fe-m1" value="0.2" step="0.01" onchange="calcSerial()">
                        <div class="stair-label">M</div>`
                     : `<div class="stair-label">[Fe³⁺]<sub>${i}</sub></div>
-                       <div id="m-val-${i}" style="font-size:1.2rem;color:var(--accent-yellow);font-weight:700;">-</div>
+                       <div id="m-val-${i}" style="font-size:1.15rem;color:var(--accent-yellow);font-weight:700;">-</div>
                        <div class="stair-label">M</div>`;
 
                 const infoClass = (i === N) ? 'flask-info above' : 'flask-info';
@@ -708,7 +1173,7 @@
                 canvas.appendChild(col);
 
                 if (i < N) {
-                    const arrowY = (i * STEP_Y) + 30; // 將箭頭大約對齊到下一個容量瓶的瓶頸處 (或上半部)
+                    const arrowY = (i * STEP_Y) + 30;
                     const arrowLeft = colLeft + COL_W / 2;
                     const arrowWidth = `calc(${COL_W + COL_GAP}% - 28px)`;
 
@@ -716,10 +1181,9 @@
                     arrow.className = 'h-stair-link';
                     arrow.style.cssText = `left:${arrowLeft}%; width:${arrowWidth}; top:${arrowY}px; overflow:visible;`;
                     
-                    // First three steps (i=1,2,3) go below (top:5px), others stay above (bottom:5px)
                     const boxPos = (i <= 3) ? 'top: 8px;' : 'bottom: 8px;';
-                    const fontSize = 'font-size: 1.2rem;';
-                    const labelSize = 'font-size: 1.1rem;';
+                    const fontSize = 'font-size: 1.15rem;';
+                    const labelSize = 'font-size: 1.05rem;';
 
                     arrow.innerHTML = `
                         <div class="stair-input-box" style="${boxPos} padding: 4px 8px;">
@@ -734,6 +1198,7 @@
 
         function buildRack() {
             const rackRow = document.getElementById('rack-row');
+            if (!rackRow) return;
             rackRow.innerHTML = '';
             for(let i = 1; i <= 5; i++) {
                 const tube = document.createElement('div');
@@ -760,6 +1225,7 @@
 
         function updateTable() {
             const tbody = document.getElementById('tbl-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             for(let i = 1; i <= 5; i++) {
                 const t = state.tubes[i];
@@ -794,20 +1260,28 @@
         // --- Interactions ---
         function addToTube(id) {
             state.tubes[id].added = true;
-            document.getElementById(`btn-add-${id}`).disabled = true;
-            document.getElementById(`btn-add-${id}`).textContent = "已加";
+            const btn = document.getElementById(`btn-add-${id}`);
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "已加";
+            }
             
-            document.getElementById(`stair-liq-${id}`).style.height = '100%';
-            document.getElementById(`rack-liq-${id}`).style.height = '100%';
+            const stairLiq = document.getElementById(`stair-liq-${id}`);
+            if (stairLiq) stairLiq.style.height = '100%';
+
+            const rackLiq = document.getElementById(`rack-liq-${id}`);
+            if (rackLiq) rackLiq.style.height = '100%';
             
             updateTubeColor(id);
-            document.getElementById(`tube-${id}`).draggable = true;
+            const tube = document.getElementById(`tube-${id}`);
+            if (tube) tube.draggable = true;
             updateTable();
         }
 
         function initDragAndDrop() {
             const slots = [document.getElementById('slot-std'), document.getElementById('slot-test')];
             slots.forEach(s => {
+                if (!s) return;
                 s.addEventListener('dragover', e => { e.preventDefault(); s.classList.add('drop-over'); });
                 s.addEventListener('dragleave', () => s.classList.remove('drop-over'));
                 s.addEventListener('drop', e => {
@@ -818,13 +1292,15 @@
             });
 
             const rack = document.getElementById('rack');
-            rack.addEventListener('dragover', e => { e.preventDefault(); rack.classList.add('drop-over'); });
-            rack.addEventListener('dragleave', () => rack.classList.remove('drop-over'));
-            rack.addEventListener('drop', e => {
-                e.preventDefault();
-                rack.classList.remove('drop-over');
-                returnToRack(e.dataTransfer.getData('tubeId'));
-            });
+            if (rack) {
+                rack.addEventListener('dragover', e => { e.preventDefault(); rack.classList.add('drop-over'); });
+                rack.addEventListener('dragleave', () => rack.classList.remove('drop-over'));
+                rack.addEventListener('drop', e => {
+                    e.preventDefault();
+                    rack.classList.remove('drop-over');
+                    returnToRack(e.dataTransfer.getData('tubeId'));
+                });
+            }
         }
 
         function handleDrop(tubeId, slotId) {
@@ -860,7 +1336,6 @@
             } else {
                 state.activeSlotTest = id;
                 document.getElementById('vt-name').textContent = `#${id} 待測管`;
-                // Reset standard tube height for new measurement
                 document.getElementById('h1-sld').value = 50;
                 changeH1(50);
             }
@@ -896,7 +1371,8 @@
             
             if (state.activeSlotStd) {
                 const hPct = (state.h1 / 5.0) * 100;
-                document.getElementById('rack-liq-1').style.height = `${hPct}%`;
+                const rLiq = document.getElementById('rack-liq-1');
+                if (rLiq) rLiq.style.height = `${hPct}%`;
             }
             updateVisuals();
         }
@@ -907,7 +1383,7 @@
             
             if (state.activeSlotStd) {
                 const ceqStd = state.tubes[1].ceq;
-                const intStd = ceqStd * state.h1; // max 10 * 5 = 50
+                const intStd = ceqStd * state.h1;
                 vs.style.backgroundColor = `rgba(153, 27, 27, ${Math.min(1, intStd / 50)})`;
             } else {
                 vs.style.backgroundColor = 'transparent';
@@ -927,18 +1403,18 @@
             if (!state.tubes[id].added) { e.preventDefault(); return; }
             e.dataTransfer.setData('rowId', id);
             
-            // Create a custom drag image (magnified row preview)
             const ghost = document.createElement('div');
             ghost.className = 'drag-ghost';
             ghost.id = 'drag-ghost';
             ghost.textContent = `載入數據 #${id}...`;
+            ghost.style.cssText = 'position:fixed; pointer-events:none; z-index:9999; background:rgba(56,189,248,0.9); color:#000; padding:4px 10px; border-radius:6px; font-weight:700;';
             document.body.appendChild(ghost);
             
-            e.dataTransfer.setDragImage(new Image(), 0, 0); // Hide default
+            e.dataTransfer.setDragImage(new Image(), 0, 0);
             
             const moveGhost = (ev) => {
                 const g = document.getElementById('drag-ghost');
-                if (g) { g.style.left = ev.clientX + 'px'; g.style.top = ev.clientY + 'px'; }
+                if (g) { g.style.left = ev.clientX + 10 + 'px'; g.style.top = ev.clientY + 10 + 'px'; }
             };
             window.addEventListener('dragover', moveGhost);
             
@@ -951,6 +1427,7 @@
 
         function initCalcDragAndDrop() {
             const zone = document.getElementById('calc-drop-zone');
+            if (!zone) return;
             zone.addEventListener('dragover', e => {
                 e.preventDefault();
                 document.querySelectorAll('.ice-var-box').forEach(b => b.classList.add('drop-target'));
@@ -962,7 +1439,7 @@
                 e.preventDefault();
                 document.querySelectorAll('.ice-var-box').forEach(b => b.classList.remove('drop-target'));
                 const id = parseInt(e.dataTransfer.getData('rowId'));
-                loadTubeIntoCalc(id);
+                if (id) loadTubeIntoCalc(id);
             });
         }
 
@@ -1026,14 +1503,12 @@
                 return;
             }
             
-            // Show Equilibrium row values
             document.getElementById('ice-ac').textContent = fe_eq.toExponential(2).replace('e', '×10').replace('+', '');
             document.getElementById('ice-bc').textContent = scn_eq.toExponential(2).replace('e', '×10').replace('+', '');
             
             const kc = c / (fe_eq * scn_eq);
             t.kc = kc;
             
-            // Show final formula with numbers
             document.getElementById('formula-display').style.display = 'flex';
             document.getElementById('num-val').textContent = formatSci(t.recordedCeq);
             
@@ -1069,238 +1544,17 @@
             }
             
             updateTable();
-            
-            let sum = 0; let count = 0;
-            for(let i=2; i<=5; i++) {
-                if(state.tubes[i].kc) { sum += state.tubes[i].kc; count++; }
-            }
-            if (count > 0) {
-                document.getElementById('avg-val').textContent = Math.round(sum / count);
-            }
         }
 
-        // --- Drawing Tools & Toolbar ---
-        let drawingCtx = null;
-        let isDrawingMode = false;
-        let drawMode = 'pen';
-        let isDrawing = false;
-        let penColor = '#f8fafc';
-        let lx, ly;
-
-        function initCanvas() {
-            const canvas = document.getElementById('drawing-layer');
-            drawingCtx = canvas.getContext('2d');
-            
-            const resize = () => {
-                const dpr = window.devicePixelRatio || 1;
-                
-                // Save current canvas content to prevent clearing
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = canvas.height;
-                if (canvas.width > 0 && canvas.height > 0) {
-                    tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
-                }
-
-                canvas.width = window.innerWidth * dpr;
-                canvas.height = window.innerHeight * dpr;
-                drawingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                drawingCtx.lineCap = 'round';
-                drawingCtx.lineWidth = 3;
-                drawingCtx.strokeStyle = penColor;
-
-                // Restore previous content
-                if (tempCanvas.width > 0 && tempCanvas.height > 0) {
-                    drawingCtx.save();
-                    drawingCtx.setTransform(1, 0, 0, 1, 0, 0);
-                    drawingCtx.globalCompositeOperation = 'source-over';
-                    drawingCtx.drawImage(tempCanvas, 0, 0);
-                    drawingCtx.restore();
-                }
-            };
-            
-            window.addEventListener('resize', resize);
-            resize();
-
-            const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                return [clientX - rect.left, clientY - rect.top];
-            };
-
-            const start = (e) => { 
-                if(!isDrawingMode) return; 
-                isDrawing = true; 
-                [lx, ly] = getPos(e); 
-            };
-            const move = (e) => {
-                if(!isDrawing) return;
-                const [cx, cy] = getPos(e);
-                drawingCtx.beginPath(); 
-                if (drawMode === 'eraser') {
-                    drawingCtx.globalCompositeOperation = 'destination-out';
-                    drawingCtx.lineWidth = 20;
-                } else {
-                    drawingCtx.globalCompositeOperation = 'source-over';
-                    drawingCtx.strokeStyle = penColor;
-                    drawingCtx.lineWidth = 3;
-                }
-                drawingCtx.moveTo(lx, ly); 
-                drawingCtx.lineTo(cx, cy); 
-                drawingCtx.stroke();
-                [lx, ly] = [cx, cy];
-            };
-            const end = () => isDrawing = false;
-
-            canvas.addEventListener('mousedown', start); 
-            canvas.addEventListener('mousemove', move); 
-            window.addEventListener('mouseup', end);
-            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); }, {passive: false}); 
-            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); }, {passive: false}); 
-            canvas.addEventListener('touchend', end);
-        }
-
-        function setPenColor(c, el) {
-            drawMode = 'pen';
-            penColor = c;
-            if (drawingCtx) drawingCtx.strokeStyle = c;
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('btn-eraser').classList.remove('active');
-        }
-
-        function clearCanvas() { 
-            const canvas = document.getElementById('drawing-layer');
-            drawingCtx.clearRect(0, 0, canvas.width, canvas.height); 
-        }
-
-        function initToolbarDragging() {
-            const t = document.getElementById('toolbar');
-            const h = document.getElementById('toolbar-handle');
-            let drag = false, ox = 0, oy = 0;
-            h.onmousedown = (e) => { drag = true; ox = e.clientX - t.offsetLeft; oy = e.clientY - t.offsetTop; t.style.bottom = 'auto'; };
-            document.onmousemove = (e) => { if(drag) { t.style.left = (e.clientX - ox) + 'px'; t.style.top = (e.clientY - oy) + 'px'; } };
-            document.onmouseup = () => drag = false;
-        }
-
-        function setEraser() {
-            drawMode = drawMode === 'eraser' ? 'pen' : 'eraser';
-            const btn = document.getElementById('btn-eraser');
-            if (drawMode === 'eraser') {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        }
-
-        function toggleDrawing() {
-            isDrawingMode = !isDrawingMode;
-            if (isDrawingMode) drawMode = 'pen';
-            document.getElementById('btn-draw').classList.toggle('active');
-            document.getElementById('draw-tools').style.display = isDrawingMode ? 'flex' : 'none';
-            document.getElementById('drawing-layer').classList.toggle('active');
-            if (!isDrawingMode && document.getElementById('btn-eraser')) {
-                document.getElementById('btn-eraser').classList.remove('active');
-            }
-        }
-
-        // Random Draw Logic
-        let drawBalls = [];
-        let totalBalls = 40;
-        let drawInterval, drawTimeout;
-
-        function openRandomDrawModal() {
-            const drawModal = document.getElementById('random-draw-modal');
-            const btnRandomDraw = document.getElementById('btn-random-draw');
-            const drawBallsContainer = document.getElementById('random-draw-balls');
-            const drawTotalInput = document.getElementById('draw-total-input');
-            
-            if (drawModal.style.display === 'block') {
-                drawModal.style.display = 'none';
-                btnRandomDraw.classList.remove('active');
-            } else {
-                drawModal.style.display = 'block';
-                btnRandomDraw.classList.add('active');
-                if (drawBalls.length === 0) {
-                    totalBalls = parseInt(drawTotalInput.value) || 40;
-                    renderBalls();
-                }
-            }
-        }
-
-        function renderBalls() {
-            const drawBallsContainer = document.getElementById('random-draw-balls');
-            drawBallsContainer.innerHTML = '';
-            drawBalls = [];
-            for (let i = 1; i <= totalBalls; i++) {
-                const ball = document.createElement('div');
-                ball.className = 'draw-ball';
-                ball.textContent = i;
-                ball.dataset.num = i;
-                drawBallsContainer.appendChild(ball);
-                drawBalls.push(ball);
-            }
-        }
-
-        document.getElementById('btn-close-draw')?.addEventListener('click', () => {
-            document.getElementById('random-draw-modal').style.display = 'none';
-            document.getElementById('btn-random-draw').classList.remove('active');
+        // --- Init on DOM Ready ---
+        window.addEventListener('DOMContentLoaded', () => {
+            buildFlowUI();
+            buildRack();
+            calcSerial();
+            initDragAndDrop();
+            initCalcDragAndDrop();
+            switchPage('theory');
         });
-
-        document.getElementById('draw-total-input')?.addEventListener('change', (e) => {
-            let val = parseInt(e.target.value);
-            if (isNaN(val) || val < 1) val = 1;
-            e.target.value = val;
-            totalBalls = val;
-            renderBalls();
-        });
-
-        document.getElementById('btn-do-draw')?.addEventListener('click', () => {
-            const btnDoDraw = document.getElementById('btn-do-draw');
-            const drawTotalInput = document.getElementById('draw-total-input');
-            if (btnDoDraw.disabled) return;
-
-            const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
-            if (availableBalls.length === 0) {
-                alert('所有號碼都已抽出！');
-                return;
-            }
-
-            const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
-            if (prevWinner) {
-                prevWinner.classList.remove('winner');
-                prevWinner.classList.add('drawn');
-            }
-
-            const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
-            if (currentAvailable.length === 0) {
-                alert('所有號碼都已抽出！');
-                return;
-            }
-
-            btnDoDraw.disabled = true;
-            drawTotalInput.disabled = true;
-
-            let flickerDuration = 3000;
-            let flickerSpeed = 50;
-
-            drawInterval = setInterval(() => {
-                currentAvailable.forEach(b => b.classList.remove('flicker'));
-                const randomIdx = Math.floor(Math.random() * currentAvailable.length);
-                currentAvailable[randomIdx].classList.add('flicker');
-            }, flickerSpeed);
-
-            drawTimeout = setTimeout(() => {
-                clearInterval(drawInterval);
-                currentAvailable.forEach(b => b.classList.remove('flicker'));
-                const winnerIdx = Math.floor(Math.random() * currentAvailable.length);
-                currentAvailable[winnerIdx].classList.add('winner');
-                btnDoDraw.disabled = false;
-                drawTotalInput.disabled = false;
-            }, flickerDuration);
-        });
-
     </script>
 </body>
 </html>

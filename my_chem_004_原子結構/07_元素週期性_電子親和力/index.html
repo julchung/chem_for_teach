@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -33,7 +34,8 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             background-image:
                 radial-gradient(circle at 20% 50%, rgba(96,165,250,0.06) 0%, transparent 60%),
                 radial-gradient(circle at 80% 20%, rgba(192,132,252,0.06) 0%, transparent 60%),
@@ -41,19 +43,10 @@
             background-size: 100% 100%, 100% 100%, 32px 32px;
         }
 
-        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow: visible; }
 
         /* ── Start Overlay ── */
-        #start-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--bg-dark); z-index: 5000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background-image:
-                radial-gradient(circle at 30% 40%, rgba(96,165,250,0.12) 0%, transparent 50%),
-                radial-gradient(circle at 70% 60%, rgba(192,132,252,0.10) 0%, transparent 50%),
-                radial-gradient(rgba(96,165,250,0.06) 1.5px, transparent 1.5px);
-            background-size: 100% 100%, 100% 100%, 50px 50px;
-        }
+        #start-overlay { display: none !important; }
         .start-badge {
             font-size: 1rem; color: var(--accent-cyan);
             background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3);
@@ -98,18 +91,34 @@
         .info-chip span:first-child { font-size: 1.1rem; }
 
         /* ── Presentation ── */
-        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
-        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; overflow: visible; }
+        #slides-container {
+            position: relative;
+            width: 100%;
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            box-sizing: border-box;
+        }
 
         .slide {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            padding: 0.8rem 0.5rem 0.5rem 0.5rem;
-            opacity: 0; pointer-events: none;
+            position: relative; width: 100%; min-height: auto;
+            padding: 2rem 1.8rem;
+            opacity: 1 !important; pointer-events: auto !important;
             transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: scale(0.99);
-            display: flex; flex-direction: column; overflow: hidden;
+            transform: none !important;
+            display: flex; flex-direction: column; overflow: visible;
+            background: rgba(10, 15, 30, 0.65);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            backdrop-filter: blur(12px);
+            box-sizing: border-box;
         }
-        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        .slide.active { opacity: 1; pointer-events: auto; transform: none; }
 
         h1 {
             color: var(--accent-orange); font-size: clamp(1.5rem, 2.6vw, 2.2rem);
@@ -126,14 +135,19 @@
         ul { margin-left: 1.4rem; }
         li { margin-bottom: 0.3rem; }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; flex: 1; min-height: 0; overflow: hidden; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; min-height: auto; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; min-height: auto; }
+        @media (max-width: 900px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+        }
         .panel {
             background: var(--glass); border: 1.5px solid var(--glass-border);
             border-radius: 18px; padding: 1.1rem 1.2rem;
             backdrop-filter: blur(14px); display: flex; flex-direction: column;
-            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            overflow: visible; box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            min-height: auto; box-sizing: border-box;
         }
+
         .formula-box {
             background: rgba(0,0,0,0.4); border-radius: 12px;
             border-left: 6px solid var(--accent-green);
@@ -154,7 +168,7 @@
 
         /* ── Toolbar ── */
         #toolbar {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            display: none !important;
             background: rgba(10, 15, 30, 0.92); padding: 12px 6px;
             border-radius: 30px; display: flex; flex-direction: column; gap: 9px;
             align-items: center; z-index: 2000;
@@ -172,7 +186,7 @@
         .btn-tool.active-tool { background: var(--accent-orange); color: #fff; border-color: var(--accent-orange); box-shadow: 0 0 15px rgba(251,146,60,0.6); }
         #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; font-size: 1.3rem; line-height: 0.5; margin-bottom: 2px; }
         #slide-info {
-            position: absolute; bottom: 18px; left: 18px; z-index: 100;
+            display: none !important;
             font-size: 0.95rem; color: rgba(255,255,255,0.6);
             background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
             border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px); font-weight: 700;
@@ -440,12 +454,12 @@
             <!-- ══ Slide 4: 互動電子親和力週期表 ══ -->
             <div class="slide" id="slide-ptable">
                 <h1>互動：週期表中的電子親和力分佈</h1>
-                <div style="display:flex; flex-direction:column; flex:1; gap:0.8rem; overflow:hidden;">
+                <div style="display:flex; flex-direction:column; flex:1; gap:0.8rem; overflow:visible;">
                     <div class="panel" style="flex:0 0 auto; padding:0.6rem 1.2rem;">
                         <p>顏色越<strong style="color:var(--accent-orange);">深橘紅</strong>表示電子親和力數值越大，越<strong style="color:var(--accent-blue);">深藍/透明</strong>表示數值越低（接近 0）。點選元素查看其<b>電子組態</b>與<b>電子親和力</b>。</p>
                     </div>
-                    <div class="panel" style="flex:1; overflow:hidden;">
-                        <div id="ptable-grid" style="display:grid; grid-template-columns: repeat(18,1fr); gap:3px; height:100%; align-content:start; padding:0.3rem;"></div>
+                    <div class="panel" style="flex:1; min-height:480px; overflow-x:auto; overflow-y:visible;">
+                        <div id="ptable-grid" style="display:grid; grid-template-columns: repeat(18,1fr); gap:3px; min-height:440px; min-width:680px; align-content:start; padding:0.3rem;"></div>
                     </div>
                 </div>
             </div>
@@ -842,9 +856,9 @@
             <!-- ══ Slide 8: 單元挑戰 ══ -->
             <div class="slide" id="slide-game">
                 <h1 style="color:var(--accent-orange);">單元挑戰：觀念連連看</h1>
-                <div style="flex:1; position:relative; background:rgba(0,0,0,0.2); border-radius:20px; overflow:hidden; margin-top:0.5rem;">
+                <div style="flex:1; min-height:500px; position:relative; background:rgba(0,0,0,0.2); border-radius:20px; overflow:visible; margin-top:0.5rem;">
                     <svg id="game-svg" style="position:absolute; width:100%; height:100%; pointer-events:none;"></svg>
-                    <div style="display:grid; grid-template-columns:1fr auto 1fr; height:100%; padding:16px 20px; gap:0; align-items:stretch;">
+                    <div style="display:grid; grid-template-columns:1fr auto 1fr; min-height:500px; padding:16px 20px; gap:0; align-items:stretch;">
                         <div id="left-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; padding-right:12px;"></div>
                         <div id="dot-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; width:220px;"></div>
                         <div id="right-column" style="display:flex; flex-direction:column; justify-content:space-around; gap:8px; padding-left:12px;"></div>
@@ -935,10 +949,10 @@
         <canvas id="drawing-layer"></canvas>
     </div><!-- /presentation-area -->
 
-    <div id="slide-info">1 / 9</div>
+
 
     <!-- ═══════════════════ FLOATING TOOLBAR ═══════════════════ -->
-    <div id="toolbar">
+    <!-- toolbar removed:
         <div id="drag-handle">≡</div>
         <button class="btn-tool" id="btn-prev" title="上一頁">▲</button>
         <button class="btn-tool" id="btn-next" title="下一頁">▼</button>
@@ -960,7 +974,7 @@
         <div style="height:1px; width:30px; background:rgba(255,255,255,0.2); margin:4px 0;"></div>
         <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
         <button class="btn-tool" id="btn-home" title="回到化學網首頁">🏠</button>
-    </div>
+    -->
 
 </div><!-- /app -->
 
@@ -1073,16 +1087,16 @@
     canvas.addEventListener('touchend', stopDrawing);
 
     function updateSlides() {
-        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
-        slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
+        slides.forEach((s, i) => s.classList.add('active'));
+        if (slideInfo) slideInfo.textContent = `${currentSlide + 1} / ${slides.length}`;
         restoreDrawing();
         if (slides[currentSlide].id === 'slide-game') initGame();
         if (slides[currentSlide].id === 'slide-ptable') initPTable();
         if (slides[currentSlide].id === 'slide-compare') initCompare();
     }
 
-    document.getElementById('btn-next').addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
-    document.getElementById('btn-prev').addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
+    const btnNext = document.getElementById('btn-next'); if (btnNext) btnNext.addEventListener('click', () => { if (currentSlide < slides.length - 1) { currentSlide++; updateSlides(); } });
+    const btnPrev = document.getElementById('btn-prev'); if (btnPrev) btnPrev.addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlides(); } });
 
     // Swipe support for iPad
     let touchStartX = 0, touchStartY = 0;
@@ -1097,7 +1111,7 @@
         }
     }, {passive:true});
 
-    document.getElementById('btn-draw').addEventListener('click', (e) => {
+    const btnDraw = document.getElementById('btn-draw'); if (btnDraw) btnDraw.addEventListener('click', (e) => {
         isDrawingMode = !isDrawingMode;
         if (isDrawingMode) drawMode = 'pen';
         e.currentTarget.classList.toggle('active-tool', isDrawingMode);
@@ -1106,7 +1120,7 @@
         document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
     });
 
-    document.getElementById('btn-eraser').addEventListener('click', (e) => {
+    const btnEraser = document.getElementById('btn-eraser'); if (btnEraser) btnEraser.addEventListener('click', (e) => {
         drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
         e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
     });
@@ -1117,16 +1131,16 @@
             dot.style.borderColor = 'white';
             penColor = dot.dataset.color;
             drawMode = 'pen';
-            document.getElementById('btn-eraser').classList.remove('active-tool');
+            const be = document.getElementById('btn-eraser'); if (be) be.classList.remove('active-tool');
         });
     });
 
-    document.getElementById('btn-clear').addEventListener('click', () => {
+    const btnClear = document.getElementById('btn-clear'); if (btnClear) btnClear.addEventListener('click', () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         slideDrawings[currentSlide] = null;
     });
 
-    document.getElementById('btn-start').addEventListener('click', () => {
+    const btnStart = document.getElementById('btn-start'); if (btnStart) btnStart.addEventListener('click', () => {
         document.getElementById('start-overlay').style.display = 'none';
         if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
 
@@ -1193,7 +1207,7 @@
         updateSlides();
     });
 
-    document.getElementById('btn-home').addEventListener('click', () => {
+    const btnHome = document.getElementById('btn-home'); if (btnHome) btnHome.addEventListener('click', () => {
         window.location.href = '../../index.html';
     });
 
@@ -1202,10 +1216,10 @@
     let isDT = false, tOY = 0;
     const sDT = (y) => { isDT = true; tOY = y - tb.offsetTop; };
     const mDT = (y) => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; tb.style.transform = 'none'; } };
-    dh.addEventListener('mousedown', (e) => sDT(e.clientY));
+    if (dh) dh.addEventListener('mousedown', (e) => sDT(e.clientY));
     window.addEventListener('mousemove', (e) => mDT(e.clientY));
     window.addEventListener('mouseup', () => isDT = false);
-    dh.addEventListener('touchstart', (e) => sDT(e.touches[0].clientY), {passive:true});
+    if (dh) dh.addEventListener('touchstart', (e) => sDT(e.touches[0].clientY), {passive:true});
     window.addEventListener('touchmove', (e) => { if(isDT) mDT(e.touches[0].clientY); }, {passive:true});
     window.addEventListener('touchend', () => isDT = false);
 
@@ -1471,6 +1485,7 @@
 
         const pSlider = document.getElementById('period-slider');
         const gSlider = document.getElementById('group-slider');
+        if (!pSlider || !gSlider) return;
 
         function updatePeriod() {
             const idx = parseInt(pSlider.value);
@@ -1678,6 +1693,133 @@
         });
     }
     function resetGame() { initGame(); }
+
+    // Auto initialize interactive features for continuous scrolling layout
+    function runAutoInit() {
+        try { if (typeof initPTable === 'function') initPTable(); } catch (err) { console.error('initPTable error:', err); }
+        try { if (typeof initCompare === 'function') initCompare(); } catch (err) { console.error('initCompare error:', err); }
+        try { if (typeof initGame === 'function') initGame(); } catch (err) { console.error('initGame error:', err); }
+        try { if (typeof drawConnections === 'function') drawConnections(); } catch (err) { console.error('drawConnections error:', err); }
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runAutoInit);
+    } else {
+        runAutoInit();
+    }
+    window.addEventListener('load', runAutoInit);
+    setTimeout(runAutoInit, 80);
+    setTimeout(runAutoInit, 400);
 </script>
+    // Listen for child quiz message
+    window.addEventListener('message', (e) => {
+      if (e.data && (e.data.type === 'QUIZ_PASSED' || e.data.type === 'SECTION_COMPLETE')) {
+        try { window.parent !== window && window.parent.postMessage(e.data, '*'); } catch (err) {}
+      }
+    });
+  </script>
+
+  <!-- ── 捲動位置中繼器與手寫板連動橋接 ── -->
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script id="__chem_scroll_bridge">
+  (function() {
+    if (window.__chemScrollBridgeInstalled) return;
+    window.__chemScrollBridgeInstalled = true;
+
+    function getContainer() {
+      return document.getElementById('slides-container') ||
+             document.getElementById('presentation-area') ||
+             document.getElementById('presentation-stream') ||
+             document.getElementById('main-scroller') ||
+             document.scrollingElement ||
+             document.documentElement;
+    }
+
+    function getScrollPos() {
+      var c = getContainer();
+      var sy = (c && c.scrollTop !== undefined && c !== document.documentElement && c !== document.body)
+               ? c.scrollTop
+               : (window.scrollY || window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0);
+      var sx = (c && c.scrollLeft !== undefined && c !== document.documentElement && c !== document.body)
+               ? c.scrollLeft
+               : (window.scrollX || window.pageXOffset || (document.documentElement && document.documentElement.scrollLeft) || (document.body && document.body.scrollLeft) || 0);
+      return { sx: sx, sy: sy };
+    }
+
+    function reportScroll() {
+      if (window.parent && window.parent !== window) {
+        var pos = getScrollPos();
+        window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+      }
+    }
+
+    window.__chemReportScroll = reportScroll;
+
+    try {
+      Object.defineProperty(window, 'scrollY', {
+        get: function() { return getScrollPos().sy; },
+        configurable: true
+      });
+      Object.defineProperty(window, 'pageYOffset', {
+        get: function() { return getScrollPos().sy; },
+        configurable: true
+      });
+    } catch (e) {}
+
+    var c = getContainer();
+    if (c) {
+      c.addEventListener('scroll', reportScroll, { passive: true });
+    }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+
+    window.addEventListener('wheel', function() {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 40);
+      setTimeout(reportScroll, 120);
+    }, { capture: true, passive: true });
+
+    window.addEventListener('touchmove', function() {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 40);
+      setTimeout(reportScroll, 120);
+    }, { capture: true, passive: true });
+
+    window.addEventListener('keydown', function(e) {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 60);
+        setTimeout(reportScroll, 180);
+      }
+    }, { passive: true });
+
+    window.addEventListener('message', function(e) {
+      if (!e.data) return;
+      if (e.data.type === '__chem_scroll_by') {
+        var dy = e.data.deltaY || 0;
+        var dx = e.data.deltaX || 0;
+        var cont = getContainer();
+        if (cont && cont !== document.documentElement && cont !== document.body) {
+          cont.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+        } else {
+          window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+        }
+        reportScroll();
+      } else if (e.data.type === '__chem_get_scroll') {
+        reportScroll();
+      }
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', reportScroll);
+    } else {
+      reportScroll();
+    }
+    window.addEventListener('load', reportScroll);
+    setTimeout(reportScroll, 100);
+    setTimeout(reportScroll, 400);
+    setTimeout(reportScroll, 1000);
+  })();
+  </script>
+
 </body>
 </html>

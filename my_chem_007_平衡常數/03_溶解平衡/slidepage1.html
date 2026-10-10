@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>溶解度積 (Ksp) 核心觀念 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.12rem, 1.4vw, 1.35rem); margin-bottom: 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.08vw, 1.08rem); line-height: 1.5; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        /* 縮小左方、放大右方 (34% : 66%) */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 34fr 66fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.75rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow: hidden;
+        }
+
+        /* 左側卡片群 - 均勻填滿高度 */
+        .left-col-cards {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+        .left-col-cards > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0.5rem 0.85rem;
+            border-radius: 10px;
+        }
+
+        .formula-box-purple {
+            background: rgba(0,0,0,0.35); border-left: 4.5px solid var(--accent-purple);
+            text-align: center;
+            font-size: clamp(0.98rem, 1.15vw, 1.15rem);
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.28);
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.28);
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.28);
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.28);
+        }
+
+        /* 右側 4 個微溶鹽卡片 - 網格等高填滿分佈 */
+        .k-cards-grid {
+            display: grid;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 0.5rem;
+            flex: 1;
+            min-height: 0;
+        }
+        .k-card {
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            padding: 0.55rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .k-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .k-card-ab   { border-left: 4.5px solid var(--accent-yellow); }
+        .k-card-ab2  { border-left: 4.5px solid var(--accent-cyan); }
+        .k-card-ab3  { border-left: 4.5px solid var(--accent-red); }
+        .k-card-a2b3 { border-left: 4.5px solid var(--accent-purple); }
+
+        .k-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            flex-wrap: nowrap;
+        }
+        .k-card-title {
+            font-size: clamp(0.98rem, 1.15vw, 1.15rem);
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+        .k-card-calc {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .k-formula-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.65rem;
+            border-radius: 6px;
+            font-size: clamp(0.92rem, 1.08vw, 1.08rem);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .badge-yellow { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.5); color: #fbbf24; }
+        .badge-cyan   { background: rgba(34,211,238,0.15); border: 1px solid rgba(34,211,238,0.5); color: #38bdf8; }
+        .badge-red    { background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.5); color: #f87171; }
+        .badge-purple { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.5); color: #c4b5fd; }
+
+        .k-arrow {
+            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+        }
+        .k-result-badge {
+            font-size: clamp(0.98rem, 1.15vw, 1.15rem);
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .k-card-chem-line {
+            font-size: clamp(0.88rem, 1.05vw, 1.05rem);
+            color: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.4rem 0.9rem;
+            line-height: 1.45;
+        }
+        .chem-example {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+        .chem-conc {
+            color: rgba(255,255,255,0.8);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>7-3 溶解平衡 · 溶解度積 (Ksp) 核心觀念</h1>
+                <div class="grid-2">
+                    <!-- 左方欄位：縮小佔比 (34%)，重點概念均勻填滿 -->
+                    <div class="panel">
+                        <h2>⚖️ 核心定義</h2>
+                        <div class="left-col-cards">
+                            <div class="info-card">
+                                <p><strong>溶解度積 ($K_{sp}$)：</strong>微溶性電解質，在定溫下達飽和溶液時，其離子濃度次方乘積稱為溶解度積。</p>
+                            </div>
+                            <div class="formula-box-purple">
+                                通式：$\mathrm{A}_x\mathrm{B}_y(s) \rightleftharpoons x\,\mathrm{A}^{y+}(aq) + y\,\mathrm{B}^{x-}(aq)$
+                            </div>
+                            <div class="info-card-yellow">
+                                <p>💡 <strong>平衡常數式：</strong> $K_{sp} = [\mathrm{A}^{y+}]^x \, [\mathrm{B}^{x-}]^y$</p>
+                            </div>
+                            <div class="info-card-cyan">
+                                <p><strong>重要性質：</strong>$K_{sp}$ 是一種平衡常數，<strong>只隨溫度與溶質種類改變</strong>！純水、加入共同離子、改變容積均不改變 $K_{sp}$ 之值。</p>
+                            </div>
+                            <div class="info-card-green">
+                                <p>📌 <strong>注意事項：</strong>固體純溶質之濃度視為常數，不列入 $K_{sp}$ 表達式中；溶液必須達到<strong>飽和平衡</strong>狀態方可適用。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右方欄位：放大佔比 (66%)，大字體展示 4 大微溶鹽型態 -->
+                    <div class="panel">
+                        <h2>📌 溶解度 ($s$) 與 $K_{sp}$ 的關係</h2>
+                        <div class="k-cards-grid">
+                            <!-- ① AB 型 -->
+                            <div class="k-card k-card-ab">
+                                <div class="k-card-header">
+                                    <span class="k-card-title">① AB 型微溶鹽（1 : 1 鹽）</span>
+                                    <div class="k-card-calc">
+                                        <span class="k-formula-badge badge-yellow">$K_{sp} = (s)(s) = s^2$</span>
+                                        <span class="k-arrow">$\Rightarrow$</span>
+                                        <span class="k-result-badge">$s = \sqrt{K_{sp}}$</span>
+                                    </div>
+                                </div>
+                                <div class="k-card-chem-line">
+                                    <span class="chem-example">例：$\mathrm{AgCl}(s) \rightleftharpoons \mathrm{Ag}^+ + \mathrm{Cl}^-$</span>
+                                    <span class="chem-conc">若溶解度為 $s$，則 $[\mathrm{Ag}^+] = s,\; [\mathrm{Cl}^-] = s$</span>
+                                </div>
+                            </div>
+
+                            <!-- ② AB2 或 A2B 型 -->
+                            <div class="k-card k-card-ab2">
+                                <div class="k-card-header">
+                                    <span class="k-card-title">② $\mathrm{AB_2}$ 或 $\mathrm{A_2B}$ 型微溶鹽（1 : 2 鹽）</span>
+                                    <div class="k-card-calc">
+                                        <span class="k-formula-badge badge-cyan">$K_{sp} = (s)(2s)^2 = 4s^3$</span>
+                                        <span class="k-arrow">$\Rightarrow$</span>
+                                        <span class="k-result-badge">$s = \sqrt[3]{\dfrac{K_{sp}}{4}}$</span>
+                                    </div>
+                                </div>
+                                <div class="k-card-chem-line">
+                                    <span class="chem-example">例：$\mathrm{CaF}_2(s) \rightleftharpoons \mathrm{Ca}^{2+} + 2\mathrm{F}^-$ 或 $\mathrm{Ag}_2\mathrm{CrO}_4(s) \rightleftharpoons 2\mathrm{Ag}^+ + \mathrm{CrO}_4^{2-}$</span>
+                                    <span class="chem-conc">若溶解度為 $s$，則 $[\mathrm{Ca}^{2+}] = s,\; [\mathrm{F}^-] = 2s$</span>
+                                </div>
+                            </div>
+
+                            <!-- ③ AB3 或 A3B 型 -->
+                            <div class="k-card k-card-ab3">
+                                <div class="k-card-header">
+                                    <span class="k-card-title">③ $\mathrm{AB_3}$ 或 $\mathrm{A_3B}$ 型微溶鹽（1 : 3 鹽）</span>
+                                    <div class="k-card-calc">
+                                        <span class="k-formula-badge badge-red">$K_{sp} = (s)(3s)^3 = 27s^4$</span>
+                                        <span class="k-arrow">$\Rightarrow$</span>
+                                        <span class="k-result-badge">$s = \sqrt[4]{\dfrac{K_{sp}}{27}}$</span>
+                                    </div>
+                                </div>
+                                <div class="k-card-chem-line">
+                                    <span class="chem-example">例：$\mathrm{Al(OH)}_3(s) \rightleftharpoons \mathrm{Al}^{3+} + 3\mathrm{OH}^-$</span>
+                                    <span class="chem-conc">若溶解度為 $s$，則 $[\mathrm{Al}^{3+}] = s,\; [\mathrm{OH}^-] = 3s$</span>
+                                </div>
+                            </div>
+
+                            <!-- ④ A2B3 或 A3B2 型 -->
+                            <div class="k-card k-card-a2b3">
+                                <div class="k-card-header">
+                                    <span class="k-card-title">④ $\mathrm{A_2B_3}$ 或 $\mathrm{A_3B_2}$ 型微溶鹽（2 : 3 鹽）</span>
+                                    <div class="k-card-calc">
+                                        <span class="k-formula-badge badge-purple">$K_{sp} = (3s)^3(2s)^2 = 108s^5$</span>
+                                        <span class="k-arrow">$\Rightarrow$</span>
+                                        <span class="k-result-badge">$s = \sqrt[5]{\dfrac{K_{sp}}{108}}$</span>
+                                    </div>
+                                </div>
+                                <div class="k-card-chem-line">
+                                    <span class="chem-example">例：$\mathrm{Ca}_3(\mathrm{PO}_4)_2(s) \rightleftharpoons 3\mathrm{Ca}^{2+} + 2\mathrm{PO}_4^{3-}$</span>
+                                    <span class="chem-conc">若溶解度為 $s$，則 $[\mathrm{Ca}^{2+}] = 3s,\; [\mathrm{PO}_4^{3-}] = 2s$</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>

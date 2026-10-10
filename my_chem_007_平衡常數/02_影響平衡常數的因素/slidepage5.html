@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>壓力與體積效應（二）：加入鈍氣與效應總結 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        /* ---- 壓力與體積效應總結專屬美化樣式 ---- */
+        .summary-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 24px;
+        }
+        .summary-header-banner {
+            background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(167,139,250,0.12));
+            border: 1px solid rgba(34,211,238,0.35);
+            border-radius: 14px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .banner-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .banner-icon {
+            font-size: 1.8rem;
+            background: rgba(34,211,238,0.2);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid rgba(34,211,238,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .banner-core-motto {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+        .banner-subtext {
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.78);
+            margin-top: 3px;
+        }
+        .banner-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .badge-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .badge-pill.cyan { background: rgba(34,211,238,0.18); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .badge-pill.yellow { background: rgba(251,191,36,0.18); border: 1px solid var(--accent-yellow); color: var(--accent-yellow); }
+        .badge-pill.red { background: rgba(248,113,113,0.18); border: 1px solid var(--accent-red); color: var(--accent-red); }
+        .badge-pill.green { background: rgba(52,211,153,0.18); border: 1px solid var(--accent-green); color: var(--accent-green); }
+
+        /* 表格區塊 */
+        .summary-table-card {
+            background: rgba(15,23,42,0.65);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+        }
+        .summary-matrix {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            text-align: center;
+            color: #f1f5f9;
+            font-size: 0.95rem;
+            min-width: 780px;
+        }
+        .summary-matrix th, .summary-matrix td {
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 10px 8px;
+            vertical-align: middle;
+        }
+        .summary-matrix thead th {
+            background: rgba(30, 41, 59, 0.92);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 0.96rem;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .summary-matrix tbody tr:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        .summary-matrix .col-op {
+            text-align: left;
+            padding-left: 14px;
+            font-weight: 700;
+        }
+        .shift-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.88rem;
+        }
+        .shift-right { background: rgba(52,211,153,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.5); }
+        .shift-left { background: rgba(248,113,113,0.2); color: #f87171; border: 1px solid rgba(248,113,113,0.5); }
+        .shift-none { background: rgba(148,163,184,0.2); color: #cbd5e1; border: 1px solid rgba(148,163,184,0.4); }
+
+        /* 卡片三欄排版 */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 992px) {
+            .grid-3 { grid-template-columns: 1fr; }
+        }
+        .summary-card {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .summary-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3.5px;
+        }
+        .summary-card.card-blue::before { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
+        .summary-card.card-purple::before { background: linear-gradient(90deg, var(--accent-purple), #c084fc); }
+        .summary-card.card-yellow::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-orange)); }
+
+        .card-header-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .step-list li {
+            counter-increment: step-counter;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin: 0;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            background: rgba(34,211,238,0.2);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(34,211,238,0.5);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* 互動檢測工具 */
+        .interactive-tester-box {
+            background: rgba(15,23,42,0.8);
+            border: 1.5px solid rgba(167,139,250,0.35);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .tester-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .tester-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.88);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tester-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(34,211,238,0.12);
+        }
+        .tester-btn.active {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(34,211,238,0.4);
+        }
+        .tester-btn.op-btn.active {
+            background: var(--accent-yellow);
+            color: #0f172a;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 10px rgba(251,191,36,0.4);
+        }
+        .tester-result-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            border-left: 4px solid var(--accent-cyan);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+    <h1>壓力與體積效應（二）：加入鈍氣與效應總結</h1>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">🔒 (5) 恆容下加入鈍性氣體</button>
+        <button class="tab-btn" onclick="switchTab(1)">⚖️ (6) 恆壓下加入鈍性氣體</button>
+        <button class="tab-btn" onclick="switchTab(2)">📋 壓力與體積效應規律總結</button>
+    </div>
+    <div class="tab-pane active">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <!-- 引導教學 -->
+        <div class="panel scroll-panel" style="min-height: 400px;">
+            <p style="margin-top:0.2rem; font-size:1.1rem; color:rgba(255,255,255,0.9);">
+                <strong>(5) 恆容下若加入鈍性氣體（各成分氣體分壓不改變），則平衡不移動。</strong>
+            </p>
+            <p style="color:var(--accent-yellow); margin-top:0.4rem; font-size:1.05rem;">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$ 同溫定容下，達平衡後再<strong>加入少量氦氣</strong>，破壞平衡，則：
+            </p>
+            
+            <div style="font-size: 1.05rem; line-height: 2.2; margin-top: 0.6rem; color: rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left: 1.5rem;">
+                    <li>瞬間 $P_A$ 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">不變</span>，$P_B$ 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">不變</span> 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>瞬間 $Q = \frac{P_{B\text{瞬間}}^3}{P_{A\text{瞬間}}^2}$ 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        $K = \frac{P_{B\text{原平衡}}^3}{P_{A\text{原平衡}}^2}$ 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        瞬間逆反應速率 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">不移動</span> 
+                        達到新平衡 
+                        <span style="font-size:0.85rem; color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        原平衡常數 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>且達新平衡時，反應物 $P_{A\text{新平衡}}$ 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        $P_{A\text{原平衡}}$
+                    </li>
+                    <li>生成物 $P_{B\text{新平衡}}$ 
+                        <span class="step-target5 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        $P_{B\text{原平衡}}$ 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- 圖形分析 -->
+        <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 0.8rem; flex:1; min-height:0;">
+            <h2 style="margin-bottom: 0.2rem;">📊 圖形分析：加入少量氦氣 (定容)</h2>
+            
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-all-5"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-all-5"/></clipPath>
+                    <clipPath id="clip-concA-all-5"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-all-5"/></clipPath>
+                    <clipPath id="clip-concB-all-5"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-all-5"/></clipPath>
+                </defs>
+            </svg>
+            
+            <div style="display:flex; gap:0.5rem; flex:1; min-height:0;">
+                <!-- P_A Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">P_A vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-all-5)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                        </g>
+                        <line id="tracker-concA-5" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- P_B Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">P_B vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-all-5)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                        </g>
+                        <line id="tracker-concB-5" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rate Graph -->
+            <div style="flex:1.2; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative; min-height:0; display:flex; flex-direction:column;">
+                <div style="font-size:0.85rem; color:#aaa; font-weight: bold; margin-bottom: 5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex; flex-direction:row; flex:1; min-height:0; gap: 10px;">
+                    <div style="flex: 2; display:flex; flex-direction:column; min-width:0;">
+                        <div style="position:relative; flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                                <defs>
+                                    <marker id="arrow5" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)" />
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow5)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow5)"/>
+                                <text x="15" y="73" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                
+                                <g clip-path="url(#clip-rate-all-5)">
+                                    <line x1="20" y1="50" x2="280" y2="50" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="50" x2="280" y2="50" stroke="#a78bfa" stroke-width="3"/>
+                                    
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">加鈍氣</text>
+                                    
+                                    <text x="140" y="40" fill="#a78bfa" font-size="11" font-weight="bold">r_f = r_r</text>
+                                </g>
+                                <line id="tracker-rate-5" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 恆容下加入鈍氣時間軸：<span id="slider-label-5" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-5'); sl.value=0; updateGraphTime5(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-5'); sl.value=25; updateGraphTime5(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-5'); sl.value=100; updateGraphTime5(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-5" min="0" max="100" value="0" oninput="updateGraphTime5(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; border-left: 1px dashed rgba(255,255,255,0.2); padding-left: 15px; font-size: 1.15rem;">
+                        <div style="color: #34d399; font-weight: bold; margin-bottom: 0.8rem;">$r_f = k_f(P_A)^2$</div>
+                        <div style="color: #38bdf8; font-weight: bold;">$r_r = k_r(P_B)^3$</div>
+                        <div style="font-size: 0.85rem; color: #888; margin-top: 0.8rem;"><i class="fas fa-info-circle"></i> 定容下加入不參與反應的氣體，總壓雖增加，但各成分氣體之分壓不變，故反應速率不變。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let blanksRevealed5 = false;
+    function updateGraphTime5(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-all-5').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-5');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-all-5').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-all-5').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        const tA = document.getElementById('tracker-concA-5');
+        tA.setAttribute('x1', concX); tA.setAttribute('x2', concX);
+        tA.style.opacity = v > 0 ? '0.8' : '0';
+        const tB = document.getElementById('tracker-concB-5');
+        tB.setAttribute('x1', concX); tB.setAttribute('x2', concX);
+        tB.style.opacity = v > 0 ? '0.8' : '0';
+        
+        if (v > 95 && !blanksRevealed5) {
+            blanksRevealed5 = true;
+            document.querySelectorAll('.step-target5').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTime5(0);
+    </script>
+
+    </div>
+    <div class="tab-pane">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <!-- 引導教學 -->
+        <div class="panel scroll-panel" style="min-height: 400px;">
+            <p style="margin-top:0.2rem; font-size:1.1rem; color:rgba(255,255,255,0.9);">
+                <strong>(6) 恆壓下若加入鈍性氣體（各氣體的分壓變小），則平衡向氣體莫耳數多的一方移動。</strong>
+            </p>
+            <p style="color:var(--accent-yellow); margin-top:0.4rem; font-size:1.05rem;">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$ 定溫定壓下，達平衡後再<strong>加入少量氦氣</strong>，破壞平衡，則：
+            </p>
+            
+            <div style="font-size: 1.05rem; line-height: 2.2; margin-top: 0.6rem; color: rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left: 1.5rem;">
+                    <li>瞬間 $P_A$ 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">↓</span>，$P_B$ 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">↓</span> 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>瞬間 $Q = \frac{P_{B\text{瞬間}}^3}{P_{A\text{瞬間}}^2}$ 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $K = \frac{P_{B\text{原平衡}}^3}{P_{A\text{原平衡}}^2}$ 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">&gt;</span> 
+                        瞬間逆反應速率 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">右</span> 
+                        達到新平衡 
+                        <span style="font-size:0.85rem; color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        原平衡常數 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>且達新平衡時，反應物 $P_{A\text{新平衡}}$ 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $P_{A\text{原平衡}}$
+                    </li>
+                    <li>生成物 $P_{B\text{新平衡}}$ 
+                        <span class="step-target6 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $P_{B\text{原平衡}}$ 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- 圖形分析 -->
+        <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 0.8rem; flex:1; min-height:0;">
+            <h2 style="margin-bottom: 0.2rem;">📊 圖形分析：加入少量氦氣 (定壓)</h2>
+            
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-all-6"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-all-6"/></clipPath>
+                    <clipPath id="clip-concA-all-6"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-all-6"/></clipPath>
+                    <clipPath id="clip-concB-all-6"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-all-6"/></clipPath>
+                </defs>
+            </svg>
+            
+            <div style="display:flex; gap:0.5rem; flex:1; min-height:0;">
+                <!-- P_A Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">P_A vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="30" x2="140" y2="30" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-all-6)">
+                            <line x1="15" y1="30" x2="45" y2="30" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            
+                            <!-- spike down -->
+                            <line x1="45" y1="30" x2="45" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <!-- curve down further to new eq (y=70) -->
+                            <path d="M 45 50 Q 65 50, 105 70" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="70" x2="140" y2="70" stroke="#f87171" stroke-width="2.5"/>
+                        </g>
+                        <line id="tracker-concA-6" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- P_B Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">P_B vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="30" x2="140" y2="30" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-all-6)">
+                            <line x1="15" y1="30" x2="45" y2="30" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- spike down -->
+                            <line x1="45" y1="30" x2="45" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <!-- curve up to new eq (y=40) -->
+                            <path d="M 45 50 Q 65 50, 105 40" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="40" x2="140" y2="40" stroke="rgba(167,139,250,0.5)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="40" x2="140" y2="40" stroke="#38bdf8" stroke-width="2.5"/>
+                        </g>
+                        <line id="tracker-concB-6" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rate Graph -->
+            <div style="flex:1.2; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative; min-height:0; display:flex; flex-direction:column;">
+                <div style="font-size:0.85rem; color:#aaa; font-weight: bold; margin-bottom: 5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex; flex-direction:row; flex:1; min-height:0; gap: 10px;">
+                    <div style="flex: 2; display:flex; flex-direction:column; min-width:0;">
+                        <div style="position:relative; flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                                <defs>
+                                    <marker id="arrow6" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)" />
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow6)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow6)"/>
+                                <text x="15" y="73" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                
+                                <g clip-path="url(#clip-rate-all-6)">
+                                    <line x1="20" y1="30" x2="280" y2="30" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="30" x2="80" y2="30" stroke="#a78bfa" stroke-width="2.5"/>
+                                    
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">加鈍氣</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    
+                                    <!-- r_f: spikes down to 60, curves down to 75 -->
+                                    <line x1="80" y1="30" x2="80" y2="60" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 60 Q 110 60, 210 75" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="75" x2="280" y2="75" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="140" y="55" fill="#34d399" font-size="11" font-weight="bold">正反應速率 (r_f)</text>
+                
+                                    <!-- r_r: spikes down to 85, curves up to 75 -->
+                                    <line x1="80" y1="30" x2="80" y2="85" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <path d="M 80 85 Q 130 85, 210 75" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="140" y="95" fill="#38bdf8" font-size="11" font-weight="bold">逆反應速率 (r_r)</text>
+                                </g>
+                                <line id="tracker-rate-6" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 恆壓下加入鈍氣時間軸：<span id="slider-label-6" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-6'); sl.value=0; updateGraphTime6(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-6'); sl.value=25; updateGraphTime6(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-6'); sl.value=100; updateGraphTime6(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-6" min="0" max="100" value="0" oninput="updateGraphTime6(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; border-left: 1px dashed rgba(255,255,255,0.2); padding-left: 15px; font-size: 1.15rem;">
+                        <div style="color: #34d399; font-weight: bold; margin-bottom: 0.8rem;">$r_f = k_f(P_A)^2$</div>
+                        <div style="color: #38bdf8; font-weight: bold;">$r_r = k_r(P_B)^3$</div>
+                        <div style="font-size: 0.85rem; color: #888; margin-top: 0.8rem;"><i class="fas fa-info-circle"></i> 恆壓下加鈍氣，系統會膨脹（擴大體積），所有分壓驟降，效果同「減壓」。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let blanksRevealed6 = false;
+    function updateGraphTime6(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-all-6').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-6');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-all-6').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-all-6').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        const tA = document.getElementById('tracker-concA-6');
+        tA.setAttribute('x1', concX); tA.setAttribute('x2', concX);
+        tA.style.opacity = v > 0 ? '0.8' : '0';
+        const tB = document.getElementById('tracker-concB-6');
+        tB.setAttribute('x1', concX); tB.setAttribute('x2', concX);
+        tB.style.opacity = v > 0 ? '0.8' : '0';
+        
+        if (v > 95 && !blanksRevealed6) {
+            blanksRevealed6 = true;
+            document.querySelectorAll('.step-target6').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTime6(0);
+    </script>
+
+    </div>
+    <div class="tab-pane">
+        <div class="summary-wrapper">
+            <!-- 頂部概念 Banner -->
+            <div class="summary-header-banner">
+                <div class="banner-title-group">
+                    <div class="banner-icon">⚖️</div>
+                    <div>
+                        <div class="banner-core-motto">壓力與體積效應核心規律（勒沙特列原理）</div>
+                        <div class="banner-subtext">外力改變壓力或體積時，系統必向「能抵消 / 減弱此壓力擾動」之方向移動</div>
+                    </div>
+                </div>
+                <div class="banner-badges">
+                    <span class="badge-pill cyan">壓縮增壓 $\to$ 往氣體係數小</span>
+                    <span class="badge-pill yellow">擴大減壓 $\to$ 往氣體係數大</span>
+                    <span class="badge-pill green">$\Delta n_g = 0$ $\to$ 不受影響</span>
+                    <span class="badge-pill red">溫度不變 $\to$ $K$ 絕不改變</span>
+                </div>
+            </div>
+
+            <!-- 全景規律綜合對照表 -->
+            <div class="summary-table-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-cyan); display:flex; align-items:center; gap:6px;">
+                        <span>📊 壓力、體積與鈍氣操作全景規律對照矩陣</span>
+                    </div>
+                    <span style="font-size:0.84rem; color:rgba(255,255,255,0.65);">註：$\Delta n_g = \sum \text{產物}(g) - \sum \text{反應物}(g)$（僅計算氣態）</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="summary-matrix">
+                        <thead>
+                            <tr>
+                                <th style="width:16%;">操作條件</th>
+                                <th style="width:12%;">體積 $V$ / 總壓 $P_{\text{總}}$</th>
+                                <th style="width:15%;">各氣體分壓初瞬變化</th>
+                                <th style="width:13%;">反應商 $Q$ vs $K$</th>
+                                <th style="width:23%;">平衡移動方向判定</th>
+                                <th style="width:10%;">新平衡常數 $K'$</th>
+                                <th style="width:13%;">達新平衡分壓比較</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="col-op">
+                                    <span class="tag tag-cyan" style="font-size:0.78rem;">操作 1</span><br>
+                                    <strong>壓縮容器體積</strong><br>
+                                    <span style="font-size:0.82rem; color:#94a3b8;">（加壓 / 體積減小）</span>
+                                </td>
+                                <td>$V \downarrow$<br><span style="color:var(--accent-red); font-weight:bold;">$P_{\text{總}} \uparrow$</span></td>
+                                <td>所有氣體分壓<br><span style="color:var(--accent-red); font-weight:bold;">瞬間倍增 $\uparrow$</span></td>
+                                <td>
+                                    若 $\Delta n_g > 0 \implies Q > K$<br>
+                                    若 $\Delta n_g < 0 \implies Q < K$
+                                </td>
+                                <td style="text-align:left; padding-left:12px;">
+                                    <div>• $\Delta n_g < 0$：<span class="shift-badge shift-right">向右移動 $\to$</span>（係數小）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g > 0$：<span class="shift-badge shift-left">向左移動 $\leftarrow$</span>（係數小）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g = 0$：<span class="shift-badge shift-none">不移動 $\rightleftharpoons$</span></div>
+                                </td>
+                                <td><span style="color:var(--accent-green); font-weight:bold;">不變</span><br><span style="font-size:0.78rem; color:#888;">(同溫)</span></td>
+                                <td>
+                                    <span style="color:var(--accent-yellow); font-weight:bold;">所有分壓均高於初態</span><br>
+                                    <span style="font-size:0.75rem; color:#94a3b8;">(移動無法完全抵消)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-op">
+                                    <span class="tag tag-yellow" style="font-size:0.78rem;">操作 2</span><br>
+                                    <strong>擴大容器體積</strong><br>
+                                    <span style="font-size:0.82rem; color:#94a3b8;">（減壓 / 體積增大）</span>
+                                </td>
+                                <td>$V \uparrow$<br><span style="color:var(--accent-green); font-weight:bold;">$P_{\text{總}} \downarrow$</span></td>
+                                <td>所有氣體分壓<br><span style="color:var(--accent-green); font-weight:bold;">瞬間驟降 $\downarrow$</span></td>
+                                <td>
+                                    若 $\Delta n_g > 0 \implies Q < K$<br>
+                                    若 $\Delta n_g < 0 \implies Q > K$
+                                </td>
+                                <td style="text-align:left; padding-left:12px;">
+                                    <div>• $\Delta n_g < 0$：<span class="shift-badge shift-left">向左移動 $\leftarrow$</span>（係數大）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g > 0$：<span class="shift-badge shift-right">向右移動 $\to$</span>（係數大）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g = 0$：<span class="shift-badge shift-none">不移動 $\rightleftharpoons$</span></div>
+                                </td>
+                                <td><span style="color:var(--accent-green); font-weight:bold;">不變</span><br><span style="font-size:0.78rem; color:#888;">(同溫)</span></td>
+                                <td>
+                                    <span style="color:var(--accent-blue); font-weight:bold;">所有分壓均低於初態</span><br>
+                                    <span style="font-size:0.75rem; color:#94a3b8;">(移動無法完全補充)</span>
+                                </td>
+                            </tr>
+                            <tr style="background:rgba(167,139,250,0.06);">
+                                <td class="col-op">
+                                    <span class="tag tag-purple" style="font-size:0.78rem;">操作 3 (關鍵)</span><br>
+                                    <strong>恆容下加入鈍氣</strong><br>
+                                    <span style="font-size:0.82rem; color:#a78bfa;">（如密閉鋼瓶加 He）</span>
+                                </td>
+                                <td>$V$ 恆定<br><span style="color:var(--accent-red); font-weight:bold;">$P_{\text{總}} \uparrow$ (加鈍氣)</span></td>
+                                <td>
+                                    <span style="color:var(--accent-cyan); font-weight:bold;">各成分分壓 $P_i$ 不變</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">($n_i, V, T$ 皆未改變)</span>
+                                </td>
+                                <td><span style="color:var(--accent-cyan); font-weight:bold;">$Q = K$</span><br><span style="font-size:0.78rem; color:#94a3b8;">(始終相等)</span></td>
+                                <td>
+                                    <span class="shift-badge shift-none" style="font-size:0.95rem; padding:4px 12px;">🚫 一律不移動</span><br>
+                                    <span style="font-size:0.8rem; color:#cbd5e1;">正、逆反應速率皆不受影響</span>
+                                </td>
+                                <td><span style="color:var(--accent-green); font-weight:bold;">不變</span><br><span style="font-size:0.78rem; color:#888;">(同溫)</span></td>
+                                <td>
+                                    <span style="color:var(--accent-cyan); font-weight:bold;">各分壓完全不變</span><br>
+                                    <span style="font-size:0.75rem; color:#94a3b8;">(與原平衡相等)</span>
+                                </td>
+                            </tr>
+                            <tr style="background:rgba(52,211,153,0.06);">
+                                <td class="col-op">
+                                    <span class="tag tag-green" style="font-size:0.78rem;">操作 4 (關鍵)</span><br>
+                                    <strong>恆壓下加入鈍氣</strong><br>
+                                    <span style="font-size:0.82rem; color:#34d399;">（活塞可滑動加 He）</span>
+                                </td>
+                                <td>
+                                    <span style="color:var(--accent-yellow); font-weight:bold;">$V \uparrow$ (體積必膨脹)</span><br>
+                                    $P_{\text{總}}$ 恆定
+                                </td>
+                                <td>
+                                    各成分分壓<br>
+                                    <span style="color:var(--accent-green); font-weight:bold;">瞬間驟降 $\downarrow$</span><br>
+                                    <span style="font-size:0.78rem; color:#94a3b8;">(效果等同於「減壓」)</span>
+                                </td>
+                                <td>
+                                    同「擴大體積」<br>
+                                    若 $\Delta n_g > 0 \implies Q < K$
+                                </td>
+                                <td style="text-align:left; padding-left:12px;">
+                                    <div>• $\Delta n_g < 0$：<span class="shift-badge shift-left">向左移動 $\leftarrow$</span>（氣體多）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g > 0$：<span class="shift-badge shift-right">向右移動 $\to$</span>（氣體多）</div>
+                                    <div style="margin-top:4px;">• $\Delta n_g = 0$：<span class="shift-badge shift-none">不移動 $\rightleftharpoons$</span></div>
+                                </td>
+                                <td><span style="color:var(--accent-green); font-weight:bold;">不變</span><br><span style="font-size:0.78rem; color:#888;">(同溫)</span></td>
+                                <td>
+                                    <span style="color:var(--accent-blue); font-weight:bold;">所有分壓均降低</span><br>
+                                    <span style="font-size:0.75rem; color:#94a3b8;">(系統膨脹稀釋)</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 卡片三欄排版 -->
+            <div class="grid-3">
+                <!-- 卡片 1: 判斷 SOP -->
+                <div class="summary-card card-blue">
+                    <div class="card-header-title" style="color:var(--accent-cyan);">
+                        <span>💡 判斷解題 3 步驟 SOP</span>
+                    </div>
+                    <ul class="step-list">
+                        <li>
+                            <div>
+                                <strong>計算氣態係數差 ($\Delta n_g$)</strong><br>
+                                檢視方程式，計算 $\Delta n_g = \sum n_{\text{產物}(g)} - \sum n_{\text{反應物}(g)}$。<br>
+                                <span style="color:var(--accent-yellow); font-size:0.84rem;">⚠️ 純固體、純液體不計入！</span>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <strong>辨析操作擾動本質</strong><br>
+                                壓縮體積 $\to P \uparrow$；擴大體積 $\to P \downarrow$。<br>
+                                定容加鈍氣 $\to$ 分壓不變；定壓加鈍氣 $\to$ 體積膨脹（等同減壓）。
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <strong>套用勒沙特列法則定移動</strong><br>
+                                增壓往氣體分子少方移；減壓往氣體分子多方移。<br>
+                                若 $\Delta n_g = 0$，則改變體積/壓力<strong>完全不影響平衡</strong>。
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 卡片 2: 鈍氣效應對比 -->
+                <div class="summary-card card-purple">
+                    <div class="card-header-title" style="color:var(--accent-purple);">
+                        <span>⚡ 鈍性氣體 (He/Ne/Ar) 加入差異</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:0.92rem; line-height:1.55;">
+                        <div style="background:rgba(167,139,250,0.1); border-left:3px solid var(--accent-purple); padding:8px 10px; border-radius:6px;">
+                            <strong style="color:var(--accent-purple);">🔒 恆容 (剛性密閉容器)：</strong>
+                            <p style="margin:2px 0 0; color:rgba(255,255,255,0.85); font-size:0.88rem;">
+                                容器體積 $V$ 不變，各成分分子莫耳數 $n_i$ 不變 $\implies$ 各成分分壓 $P_i = \frac{n_i R T}{V}$ <strong>不變</strong>，濃度亦不變，故 $Q=K$，<strong>平衡絕不移動</strong>！
+                            </p>
+                        </div>
+                        <div style="background:rgba(52,211,153,0.1); border-left:3px solid var(--accent-green); padding:8px 10px; border-radius:6px;">
+                            <strong style="color:var(--accent-green);">⚖️ 恆壓 (活塞自由滑動)：</strong>
+                            <p style="margin:2px 0 0; color:rgba(255,255,255,0.85); font-size:0.88rem;">
+                                為維持 $P_{\text{總}}$ 恆定，活塞外推<strong>體積膨脹 ($V \uparrow$)</strong>，導致各反應物及生成物分壓瞬間被稀釋變小，<strong>等同於「減壓」</strong>，平衡向氣體莫耳數多的一方移動！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3: 避坑指南 -->
+                <div class="summary-card card-yellow">
+                    <div class="card-header-title" style="color:var(--accent-yellow);">
+                        <span>⚠️ 考試高頻三大避坑指南</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px; font-size:0.92rem; line-height:1.55;">
+                        <div class="info-card-red" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-red);">1. 固體與液體不計入：</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                例：$\text{CaCO}_{3(s)} \rightleftharpoons \text{CaO}_{(s)} + \text{CO}_{2(g)}$，左邊氣體係數為 $0$，右邊為 $1$。加壓時向左移動（向氣體係數小方向）！
+                            </div>
+                        </div>
+                        <div class="info-card-yellow" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-yellow);">2. 無法完全抵消定律：</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                壓縮體積使分壓初瞬加倍，平衡雖會朝氣體係數小的一方移動，但<strong>淨移動只能減輕、無法完全抵消</strong>外加擾動。新平衡分壓仍高於原平衡！
+                            </div>
+                        </div>
+                        <div class="info-card-cyan" style="margin:0; padding:8px 10px;">
+                            <strong style="color:var(--accent-cyan);">3. 溫度不變則 $K$ 絕不改變：</strong>
+                            <div style="font-size:0.86rem; color:rgba(255,255,255,0.88); margin-top:2px;">
+                                不論壓力、體積、濃度如何劇烈改變，平衡常數 $K$ <strong>只由溫度決定</strong>，只要溫度恆定，$K$ 始終保持定值！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 即時互動試驗台 -->
+            <div class="interactive-tester-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:1.05rem; font-weight:700; color:var(--accent-purple); display:flex; align-items:center; gap:6px;">
+                        <span>🧪 規律即時演練測試台：選擇反應與操作條件</span>
+                    </div>
+                    <span style="font-size:0.82rem; color:rgba(255,255,255,0.65);">點選下方按鈕，即時驗證平衡移動方向與科學剖析</span>
+                </div>
+
+                <div class="tester-controls">
+                    <span style="font-size:0.9rem; font-weight:700; color:var(--accent-cyan); min-width:85px;">選擇反應：</span>
+                    <button type="button" class="tester-btn rxn-btn active" onclick="setSummaryRxn(0)">
+                        $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$ ($\Delta n = +1$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setSummaryRxn(1)">
+                        $2\text{SO}_{2(g)} + \text{O}_{2(g)} \rightleftharpoons 2\text{SO}_{3(g)}$ ($\Delta n = -1$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setSummaryRxn(2)">
+                        $\text{H}_{2(g)} + \text{I}_{2(g)} \rightleftharpoons 2\text{HI}_{(g)}$ ($\Delta n = 0$)
+                    </button>
+                    <button type="button" class="tester-btn rxn-btn" onclick="setSummaryRxn(3)">
+                        $\text{CaCO}_{3(s)} \rightleftharpoons \text{CaO}_{(s)} + \text{CO}_{2(g)}$ ($\Delta n = +1$)
+                    </button>
+                </div>
+
+                <div class="tester-controls" style="margin-top:4px;">
+                    <span style="font-size:0.9rem; font-weight:700; color:var(--accent-yellow); min-width:85px;">操作條件：</span>
+                    <button type="button" class="tester-btn op-btn active" onclick="setSummaryOp(0)">📦 壓縮容器體積 (增壓)</button>
+                    <button type="button" class="tester-btn op-btn" onclick="setSummaryOp(1)">🎈 擴大容器體積 (減壓)</button>
+                    <button type="button" class="tester-btn op-btn" onclick="setSummaryOp(2)">🔒 恆容下加入氦氣 He</button>
+                    <button type="button" class="tester-btn op-btn" onclick="setSummaryOp(3)">⚖️ 恆壓下加入氦氣 He</button>
+                </div>
+
+                <div class="tester-result-panel" id="summary-test-result">
+                    <!-- 動態產出反饋 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+const orig_updateGraphTime5 = window.updateGraphTime5;
+window.updateGraphTime5 = function(val) {
+    if (typeof orig_updateGraphTime5 === 'function') orig_updateGraphTime5(val);
+    const lbl = document.getElementById('slider-label-5');
+    if (lbl) {
+        const v = parseFloat(val);
+        if (v === 0) lbl.textContent = '原平衡 (t₀)';
+        else if (v < 50) lbl.textContent = '加入氦氣 (分壓不變)';
+        else lbl.textContent = '平衡不移動 (各分壓維持不變)';
+    }
+};
+
+const orig_updateGraphTime6 = window.updateGraphTime6;
+window.updateGraphTime6 = function(val) {
+    if (typeof orig_updateGraphTime6 === 'function') orig_updateGraphTime6(val);
+    const lbl = document.getElementById('slider-label-6');
+    if (lbl) {
+        const v = parseFloat(val);
+        if (v === 0) lbl.textContent = '原平衡 (t₀)';
+        else if (v < 30) lbl.textContent = '定壓加氦 (體積膨脹，分壓下降)';
+        else if (v < 95) lbl.textContent = '向右進行調適中 (朝氣體莫耳數多方向)...';
+        else lbl.textContent = '新平衡達成 (t₂)';
+    }
+};
+
+/* 互動試驗台邏輯 */
+const summaryRxnData = [
+    {
+        name: "2\\text{A}_{(g)} \\rightleftharpoons 3\\text{B}_{(g)}",
+        deltaN: 1,
+        note: "產物氣態係數和 (3) > 反應物氣態係數和 (2)，$\\Delta n_g = +1$"
+    },
+    {
+        name: "2\\text{SO}_{2(g)} + \\text{O}_{2(g)} \\rightleftharpoons 2\\text{SO}_{3(g)}",
+        deltaN: -1,
+        note: "產物氣態係數和 (2) < 反應物氣態係數和 (2+1=3)，$\\Delta n_g = -1$"
+    },
+    {
+        name: "\\text{H}_{2(g)} + \\text{I}_{2(g)} \\rightleftharpoons 2\\text{HI}_{(g)}",
+        deltaN: 0,
+        note: "兩側氣態係數和相等 (1+1 = 2)，$\\Delta n_g = 0$"
+    },
+    {
+        name: "\\text{CaCO}_{3(s)} \\rightleftharpoons \\text{CaO}_{(s)} + \\text{CO}_{2(g)}",
+        deltaN: 1,
+        note: "純固體不計入！反應物氣態係數為 0，產物氣態係數為 1 (\\text{CO}_2)，$\\Delta n_g = +1$"
+    }
+];
+
+let currentRxnIdx = 0;
+let currentOpIdx = 0;
+
+function updateSummaryTester() {
+    const rxn = summaryRxnData[currentRxnIdx];
+    const op = currentOpIdx;
+    const resEl = document.getElementById('summary-test-result');
+    if (!resEl) return;
+
+    let shiftText = "";
+    let shiftBadge = "";
+    let qComp = "";
+    let reason = "";
+
+    if (op === 0) { // 壓縮容器體積 (增壓)
+        if (rxn.deltaN > 0) {
+            shiftBadge = "<span class='shift-badge shift-left' style='font-size:1rem; padding:4px 12px;'>向左移動 $\\leftarrow$</span>";
+            shiftText = "向反應物方向移動（朝氣體莫耳數較小方向）";
+            qComp = "$Q > K$";
+            reason = "壓縮體積使各氣體分壓初瞬倍增。因產物氣體係數較大，反應商分子增大倍率高於分母，瞬間 $Q > K$；依勒沙特列原理，系統向氣體分子數少（左方）移動以紓解增壓。";
+        } else if (rxn.deltaN < 0) {
+            shiftBadge = "<span class='shift-badge shift-right' style='font-size:1rem; padding:4px 12px;'>向右移動 $\\to$</span>";
+            shiftText = "向產物方向移動（朝氣體莫耳數較小方向）";
+            qComp = "$Q < K$";
+            reason = "壓縮體積使各氣體分壓初瞬倍增。因反應物氣體係數較大，反應商分母增大倍率高於分子，瞬間 $Q < K$；依勒沙特列原理，系統向氣體分子數少（右方）移動以紓解增壓。";
+        } else {
+            shiftBadge = "<span class='shift-badge shift-none' style='font-size:1rem; padding:4px 12px;'>平衡不移動 $\\rightleftharpoons$</span>";
+            shiftText = "平衡位置不改變";
+            qComp = "$Q = K$";
+            reason = "兩側氣體係數和相等（$\\Delta n_g = 0$）。體積壓縮雖使分壓同比例增大，但反應商分子分母倍率完全抵消，$Q$ 仍等於 $K$，正逆反應速率等量增加，平衡不移動。";
+        }
+    } else if (op === 1) { // 擴大容器體積 (減壓)
+        if (rxn.deltaN > 0) {
+            shiftBadge = "<span class='shift-badge shift-right' style='font-size:1rem; padding:4px 12px;'>向右移動 $\\to$</span>";
+            shiftText = "向產物方向移動（朝氣體莫耳數較大方向）";
+            qComp = "$Q < K$";
+            reason = "擴大體積使氣體各分壓初瞬降低。因產物係數較大，分子縮小倍率大於分母，瞬間 $Q < K$；系統向氣體分子數多（右方）移動以補充氣體分子、減輕減壓。";
+        } else if (rxn.deltaN < 0) {
+            shiftBadge = "<span class='shift-badge shift-left' style='font-size:1rem; padding:4px 12px;'>向左移動 $\\leftarrow$</span>";
+            shiftText = "向反應物方向移動（朝氣體莫耳數較大方向）";
+            qComp = "$Q > K$";
+            reason = "擴大體積使氣體各分壓初瞬降低。因反應物係數較大，分母縮小倍率大於分子，瞬間 $Q > K$；系統向氣體分子數多（左方）移動以補充氣體分子、減輕減壓。";
+        } else {
+            shiftBadge = "<span class='shift-badge shift-none' style='font-size:1rem; padding:4px 12px;'>平衡不移動 $\\rightleftharpoons$</span>";
+            shiftText = "平衡位置不改變";
+            qComp = "$Q = K$";
+            reason = "兩側氣體係數和相等（$\\Delta n_g = 0$）。擴大體積使分壓等比例縮小，分子分母變化相抵，$Q = K$，正逆反應速率等量減慢，平衡不移動。";
+        }
+    } else if (op === 2) { // 恆容加入氦氣 He
+        shiftBadge = "<span class='shift-badge shift-none' style='font-size:1rem; padding:4px 12px;'>🚫 平衡不移動 $\\rightleftharpoons$</span>";
+        shiftText = "各成分氣體分壓不變，平衡絕不移動";
+        qComp = "$Q = K$";
+        reason = "在定容下加入不反應的鈍氣，容器總壓雖增加，但各反應物與產物的物質的量 ($n_i$)、容器體積 ($V$) 與溫度均未改變，各自分壓 $P_i = \\frac{n_i RT}{V}$ 絲毫不變，故 $Q=K$，正逆反應速率維持原樣，平衡絕不移動！";
+    } else if (op === 3) { // 恆壓加入氦氣 He
+        if (rxn.deltaN > 0) {
+            shiftBadge = "<span class='shift-badge shift-right' style='font-size:1rem; padding:4px 12px;'>向右移動 $\\to$</span>";
+            shiftText = "向產物方向移動（朝氣體莫耳數較多方向）";
+            qComp = "$Q < K$";
+            reason = "恆壓下加入鈍氣，活塞外推使容器體積膨脹 ($V \\uparrow$) 以維持總壓恆定。此舉等同於「減壓（擴大體積）」，各反應成分分壓驟降，系統向氣體莫耳數多（右方）移動。";
+        } else if (rxn.deltaN < 0) {
+            shiftBadge = "<span class='shift-badge shift-left' style='font-size:1rem; padding:4px 12px;'>向左移動 $\\leftarrow$</span>";
+            shiftText = "向反應物方向移動（朝氣體莫耳數較多方向）";
+            qComp = "$Q > K$";
+            reason = "恆壓下加入鈍氣，容器體積必須膨脹 ($V \\uparrow$)。效果等同於「減壓」，使各成分分壓下降，系統向氣體莫耳數多（左方）移動。";
+        } else {
+            shiftBadge = "<span class='shift-badge shift-none' style='font-size:1rem; padding:4px 12px;'>平衡不移動 $\\rightleftharpoons$</span>";
+            shiftText = "兩側氣體係數相等，平衡不移動";
+            qComp = "$Q = K$";
+            reason = "恆壓加鈍氣使體積膨脹，但因兩側氣態係數和相等（$\\Delta n_g = 0$），同比例稀釋不破壞平衡，$Q$ 仍等於 $K$，平衡不移動。";
+        }
+    }
+
+    resEl.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-weight:700; color:var(--accent-yellow);">【判定結果】</span>
+                ${shiftBadge}
+                <span style="font-weight:600; color:#fff;">${shiftText}</span>
+            </div>
+            <div style="font-size:0.9rem; color:var(--accent-green); font-weight:bold;">
+                平衡常數 $K'$：<span style="color:#34d399;">恆定不變</span>（同溫）
+            </div>
+        </div>
+        <div style="margin-top:6px; font-size:0.93rem; color:rgba(255,255,255,0.92); line-height:1.6;">
+            <strong>🔍 原理剖析：</strong>${reason}
+            <div style="margin-top:4px; font-size:0.86rem; color:rgba(255,255,255,0.75);">
+                • 反應式特徵：${rxn.note}。<br>
+                • 反應商狀態：${qComp}。
+            </div>
+        </div>
+    `;
+
+    if (window.MathJax) {
+        window.MathJax.typesetPromise([resEl]);
+    }
+}
+
+function setSummaryRxn(idx) {
+    currentRxnIdx = idx;
+    document.querySelectorAll('.rxn-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    updateSummaryTester();
+}
+
+function setSummaryOp(idx) {
+    currentOpIdx = idx;
+    document.querySelectorAll('.op-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    updateSummaryTester();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateGraphTime5 === 'function') updateGraphTime5(0);
+    if (typeof updateGraphTime6 === 'function') updateGraphTime6(0);
+    if (typeof updateSummaryTester === 'function') updateSummaryTester();
+});
+
+</script>
+</body>
+</html>

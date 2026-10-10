@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>碰撞學說 | 互動教學</title>
+    <meta name="description" content="選修化學二：碰撞學說、正確位向、活化能與低限能互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warning-box {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(52,211,153,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        /* Mechanism Practice Slide */
+        .mech-tab-btn {
+            padding: 0.45rem 1.5rem; border-radius: 999px; border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.2s;
+        }
+        .mech-tab-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .mech-tab-active { background: var(--accent-blue) !important; color: #0f172a !important; border-color: var(--accent-blue) !important; }
+        .mech-reveal-btn {
+            margin-top: 0.6rem; padding: 0.5rem 1.2rem; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: opacity 0.2s; align-self: flex-start;
+        }
+        .mech-reveal-btn:hover { opacity: 0.85; }
+        .mech-case { display: flex; flex-direction: column; gap: 0.4rem; height: 100%; }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 1rem; color: #fff;
+            text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+
+        /* Animation canvas */
+        #collision-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+        #energy-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+
+        /* Orientation animation */
+        .orient-container { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .orient-row { display: flex; gap: 0.7rem; flex: 1; min-height: 0; }
+        .orient-box {
+            flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1.5px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; position: relative; overflow: hidden;
+        }
+        .orient-label {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px;
+            white-space: nowrap;
+        }
+        .label-fail { background: rgba(248,113,113,0.2); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .label-ok { background: rgba(52,211,153,0.2); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+
+        /* Energy diagram styles */
+        .energy-diagram-wrapper { flex: 1; min-height: 0; position: relative; }
+        .energy-label-box {
+            position: absolute; background: rgba(15,23,42,0.85); border-radius: 8px;
+            padding: 3px 8px; font-size: 0.78rem; font-weight: 700; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Slider styles */
+        .slider-row { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; margin-top: 0.4rem; }
+        .slider-row label { font-size: 0.9rem; color: var(--accent-yellow); white-space: nowrap; }
+        input[type=range] { flex: 1; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* btn-action */
+        .btn-action {
+            padding: 0.5rem 1.2rem; border-radius: 10px; font-size: 1rem; cursor: pointer;
+            border: 1.5px solid var(--accent-blue); background: rgba(56,189,248,0.12);
+            color: #fff; font-weight: 700; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #0f172a; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.82rem;
+            font-weight: 700; margin: 0 3px;
+        }
+        .badge-red { background: rgba(248,113,113,0.18); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .badge-green { background: rgba(52,211,153,0.18); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+        .badge-yellow { background: rgba(251,191,36,0.18); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-blue { background: rgba(56,189,248,0.18); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4); }
+        .badge-orange { background: rgba(251,146,60,0.18); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.4); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-mechanism-practice">
+                <h1>反應機構互動練習：$2A + B \rightarrow D$</h1>
+                <div style="display:flex; gap:0.6rem; margin-bottom:0.5rem; justify-content:center; flex-shrink:0;">
+                    <button onclick="showMechCase(1)" id="mech-btn-1" class="mech-tab-btn mech-tab-active">機構甲</button>
+                    <button onclick="showMechCase(2)" id="mech-btn-2" class="mech-tab-btn">機構乙</button>
+                    <button onclick="showMechCase(3)" id="mech-btn-3" class="mech-tab-btn">機構丙</button>
+                </div>
+                <div style="display:flex; gap:0.8rem; flex:1; min-height:0;">
+                    <!-- 左欄：步驟推導 -->
+                    <div class="panel" style="flex:1.5; display:flex; flex-direction:column; gap:0.5rem; padding:1rem; overflow-y:auto;">
+
+                        <!-- 機構甲 -->
+                        <div id="mech-case-1" class="mech-case">
+                            <h2 style="color:var(--accent-yellow); margin:0 0 0.3rem;">機構甲</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-red);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + A \rightarrow C$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_1$ 大</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$C + B \rightleftharpoons D$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[D]}{[C][B]}$</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第一步（慢），$Ea_1$ 最大<br>
+                                    ➤ 速率定律依<strong>慢步驟</strong>的反應物寫出：
+                                </p>
+                            </div>
+                            <div id="mech1-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.1rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse;">
+                                        <tr><td style="padding:3px 0; color:#94a3b8;">速率定律：</td><td style="padding:3px 6px;">$R = k[A][A]$</td></tr>
+                                        <tr><td></td><td style="padding:3px 6px;">$\Rightarrow R = k[A]^2$</td></tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k[A]^2}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">B 只在快步驟出現，故不影響速率定律。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech1-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                        <!-- 機構乙：case-2 (內容互換後：A+B→E 慢；E+A→D 快) -->
+                        <div id="mech-case-2" class="mech-case" style="display:none;">
+                            <h2 style="color:var(--accent-cyan); margin:0 0 0.3rem;">機構乙</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-cyan);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + B \rightarrow E$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_1$ 大</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$E + A \rightleftharpoons D$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[D]}{[E][A]}$</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第一步（慢），$Ea_1$ 最大<br>
+                                    ➤ 速率定律直接依<strong>慢步驟</strong>的反應物寫出：
+                                </p>
+                            </div>
+                            <div id="mech2-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.1rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse;">
+                                        <tr><td style="padding:3px 0; color:#94a3b8;">速率定律：</td><td style="padding:3px 6px;">$R = k[A][B]$</td></tr>
+                                        <tr><td></td><td style="padding:3px 6px; color:#34d399; font-weight:700;">$\Rightarrow R = k[A][B]$</td></tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k[A][B]}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">E 為中間物，僅在快步驟出現，不影響速率定律。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech2-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                        <!-- 機構丙：case-3 (內容互換後：A+A⇌C 快；C+B→D 慢) -->
+                        <div id="mech-case-3" class="mech-case" style="display:none;">
+                            <h2 style="color:var(--accent-green); margin:0 0 0.3rem;">機構丙</h2>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.55rem; border-left-color:var(--accent-green);">
+                                <table style="border-collapse:collapse; width:100%;">
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第一步（<span style="color:#34d399; font-weight:700;">快</span>）：</td>
+                                        <td style="padding:2px 4px;">$A + A \rightleftharpoons C$</td>
+                                        <td style="padding:2px 4px; color:#34d399; font-size:0.9em;">$K=\dfrac{[C]}{[A]^2}$</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:2px 6px; white-space:nowrap; color:#94a3b8;">第二步（<span style="color:#f87171; font-weight:700;">慢</span>）：</td>
+                                        <td style="padding:2px 4px;">$C + B \rightarrow D$</td>
+                                        <td style="padding:2px 4px; color:#f87171; font-size:0.9em;">$Ea_2$ 大</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="info-card" style="padding:0.45rem; margin-top:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    ➤ <strong style="color:#f87171;">速率決定步驟</strong>為第二步（慢），$Ea_2$ 最大<br>
+                                    ➤ 慢步驟初步速率式 $R = k[B][C]$，但 C 為中間物須消去：
+                                </p>
+                            </div>
+                            <div id="mech3-step1" style="display:none;">
+                                <div class="formula-box" style="font-size:1.05rem; padding:0.5rem; border-left-color:var(--accent-yellow);">
+                                    <table style="border-collapse:collapse; line-height:1.9;">
+                                        <tr>
+                                            <td style="padding:1px 0; color:#94a3b8; white-space:nowrap;">速率定律：</td>
+                                            <td style="padding:1px 8px;">$R = k[B][C]$</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#94a3b8;">由平衡：</td>
+                                            <td style="padding:1px 8px;">$[C] = K[A]^2$</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#94a3b8;">代入：</td>
+                                            <td style="padding:1px 8px;">$R = k[B] \cdot K[A]^2$</td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td style="padding:1px 8px; color:#34d399; font-weight:700;">$\Rightarrow R = k'[B][A]^2$</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="success-box" style="margin-top:0.3rem; padding:0.5rem;">
+                                    <p style="margin:0; font-size:0.93rem;">整體速率定律：$\boxed{R = k'[A]^2[B]}$<br>
+                                    <span style="color:rgba(255,255,255,0.65); font-size:0.88rem;">將快平衡的 K 代入，消去中間物 C。</span></p>
+                                </div>
+                            </div>
+                            <button onclick="revealMech('mech3-step1', this)" class="mech-reveal-btn" style="margin-top:auto;">▶ 展開推導</button>
+                        </div>
+
+                    </div>
+                    <!-- 右欄：位能圖 -->
+                    <div class="panel" style="flex:1; display:flex; flex-direction:column; padding:0.8rem; gap:0.4rem;">
+                        <h2 style="text-align:center; margin:0 0 0.3rem; font-size:1rem;">位能示意圖</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="mech-practice-canvas" style="width:100%; height:100%; border-radius:10px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <div id="mech-legend" style="font-size:0.8rem; color:#94a3b8; text-align:center; flex-shrink:0;"></div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+};
+window.updateSlides = function() {};
+
+/* ========================================================
+   SLIDE 7: Mechanism Practice Interactive
+   ======================================================== */
+let currentMechCase = 1;
+
+function showMechCase(n) {
+    currentMechCase = n;
+    [1,2,3].forEach(i => {
+        document.getElementById('mech-case-' + i).style.display = (i === n) ? 'flex' : 'none';
+        const btn = document.getElementById('mech-btn-' + i);
+        btn.classList.toggle('mech-tab-active', i === n);
+    });
+    drawMechPracticeCanvas(n);
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([document.getElementById('slide-mechanism-practice')]).catch(()=>{});
+    }
+}
+
+function revealMech(id, btn) {
+    const el = document.getElementById(id);
+    const visible = el.style.display === 'block';
+    el.style.display = visible ? 'none' : 'block';
+    btn.textContent = visible ? '▶ 展開推導' : '▼ 隱藏推導';
+    if (!visible && window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([el]).catch(()=>{});
+    }
+}
+
+function drawMechPracticeCanvas(caseNum) {
+    const cvs = document.getElementById('mech-practice-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 340;
+    const H = cvs.height = cvs.offsetHeight || 340;
+    ctx.clearRect(0, 0, W, H);
+
+    const mL = 52, mB = 38, mT = 30, mR = 20;
+    const gW = W - mL - mR;
+    const gH = H - mT - mB;
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#1a1035'); bg.addColorStop(1, '#0f172a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 5; i++) {
+        const y = mT + gH * i / 5;
+        ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(W - mR, y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.moveTo(mL, mT); ctx.lineTo(mL, H - mB); ctx.lineTo(W - mR + 10, H - mB); ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    // axis arrows
+    ctx.beginPath(); ctx.moveTo(mL-4, mT+6); ctx.lineTo(mL, mT); ctx.lineTo(mL+4, mT+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-mR+5, H-mB-4); ctx.lineTo(W-mR+12, H-mB); ctx.lineTo(W-mR+5, H-mB+4); ctx.fill();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應途徑', mL + gW/2, H - 8);
+    ctx.save(); ctx.translate(14, H/2); ctx.rotate(-Math.PI/2); ctx.fillText('能  量', 0, 0); ctx.restore();
+
+    // Define energy levels per case
+    // Case 1 (甲): reactant=0.75, peak1=0.15, product=0.85 — one peak
+    // Case 2 (乙): reactant=0.75, peak1=0.15 (via fast equilib), valley=0.40, peak2=0.35, product=0.85
+    // Case 3 (丙): reactant=0.75, peak1=0.15, product=0.85 — one peak
+
+    const yR = mT + gH * 0.78; // reactant
+    const yP = mT + gH * 0.90; // product
+
+    function eY(frac) { return mT + gH * frac; }
+
+    const xStart = mL;
+    const xEnd = W - mR;
+
+    // Color by case
+    const colors = ['', '#e11d48', '#06b6d4', '#22c55e'];
+    ctx.strokeStyle = colors[caseNum]; ctx.lineWidth = 3.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+    if (caseNum === 1) {
+        // 機構甲: A+A->C (慢, high Ea1), C+B->D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = C+B intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow)
+        const yVly = eY(0.50);   // C+B intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above C+B)
+
+        const x1  = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B',  xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 double-arrow (left of peak1, tall)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 double-arrow (right of valley, short)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge
+        ctx.fillStyle = 'rgba(251,191,36,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 115, 22, 5); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A]²', mL+8, mT+18);
+
+    } else if (caseNum === 2) {
+        // 機構乙 (互換後): A+B→E (慢, high Ea1), E+A⇌D (快, low Ea2)
+        // Two peaks: peak1 HIGH (slow), valley = E+A intermediate, peak2 LOW (fast)
+        const yPk1 = eY(0.08);   // first peak HIGH (slow step)
+        const yVly = eY(0.50);   // E+A intermediate level
+        const yPk2 = eY(0.38);   // second peak LOW (fast, slightly above valley)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.33;
+        const xVly = mL + gW*0.53;
+        const xPk2 = mL + gW*0.72;
+        const x2   = mL + gW*0.88;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.10, yR, xPk1-gW*0.10, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.09, yPk1, xVly-gW*0.09, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.09, yVly, xPk2-gW*0.09, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('E+A', xVly, yVly + 14);
+        // 中間物 bubble (cyan)
+        ctx.fillStyle = '#06b6d4'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 large arrow (slow, left of peak1)
+        const aX1 = mL + gW*0.16;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#f87171', 'Ea₁(慢)', 'right');
+        // Ea2 small arrow (fast, right of valley)
+        const aX2 = xVly + gW*0.08;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#94a3b8', 'Ea₂(快)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.62, yR, mL+gW*0.62, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (cyan)
+        ctx.fillStyle = 'rgba(6,182,212,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 120, 22, 5); ctx.fill();
+        ctx.fillStyle = '#06b6d4'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k[A][B]', mL+8, mT+18);
+
+    } else {
+        // 機構丙 (互換後): A+A⇌C (快, small Ea1), C+B→D (慢, large Ea2)
+        // Two peaks: peak1 LOW (fast equilibrium), valley = C+B, peak2 HIGH (slow)
+        const yPk1 = eY(0.42);   // first peak LOW (fast equil)
+        const yVly = eY(0.55);   // C+B intermediate level
+        const yPk2 = eY(0.10);   // second peak HIGH (slow step)
+
+        const x1   = mL + gW*0.12;
+        const xPk1 = mL + gW*0.30;
+        const xVly = mL + gW*0.50;
+        const xPk2 = mL + gW*0.70;
+        const x2   = mL + gW*0.87;
+
+        ctx.beginPath();
+        ctx.moveTo(xStart, yR); ctx.lineTo(x1, yR);
+        ctx.bezierCurveTo(x1+gW*0.09, yR, xPk1-gW*0.09, yPk1, xPk1, yPk1);
+        ctx.bezierCurveTo(xPk1+gW*0.08, yPk1, xVly-gW*0.08, yVly, xVly, yVly);
+        ctx.bezierCurveTo(xVly+gW*0.08, yVly, xPk2-gW*0.10, yPk2, xPk2, yPk2);
+        ctx.bezierCurveTo(xPk2+gW*0.10, yPk2, x2-gW*0.08, yP, x2, yP);
+        ctx.lineTo(xEnd, yP); ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'left';   ctx.fillText('2A+B', xStart+3, yR - 6);
+        ctx.textAlign = 'center'; ctx.fillText('C+B', xVly, yVly + 14);
+        // 中間物 bubble (green)
+        ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.roundRect(xVly-22, yVly+20, 44, 16, 4); ctx.fill();
+        ctx.fillStyle = '#0f172a'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('中間物', xVly, yVly+31);
+        ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'right';  ctx.fillText('D', xEnd-3, yP - 6);
+
+        // Dashed level lines
+        drawMechDash(ctx, mL, yR,   xEnd, yR);
+        drawMechDash(ctx, mL, yPk1, xEnd, yPk1);
+        drawMechDash(ctx, mL, yVly, xEnd, yVly);
+        drawMechDash(ctx, mL, yPk2, xEnd, yPk2);
+        drawMechDash(ctx, mL, yP,   xEnd, yP);
+
+        // Ea1 small arrow (fast equilibrium, left of peak1)
+        const aX1 = mL + gW*0.17;
+        drawMechArrow(ctx, aX1, yR, aX1, yPk1, '#94a3b8', 'Ea₁(快)', 'right');
+        // Ea2 large arrow (slow, right of valley)
+        const aX2 = xVly + gW*0.09;
+        drawMechArrow(ctx, aX2, yVly, aX2, yPk2, '#f87171', 'Ea₂(慢)', 'left');
+        // ΔH
+        drawMechArrow(ctx, mL+gW*0.58, yR, mL+gW*0.58, yP, '#38bdf8', 'ΔH<0', 'left');
+
+        // Rate law badge (green)
+        ctx.fillStyle = 'rgba(34,197,94,0.15)'; ctx.beginPath(); ctx.roundRect(mL+4, mT+4, 138, 22, 5); ctx.fill();
+        ctx.fillStyle = '#22c55e'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('速率定律：R = k′[A]²[B]', mL+8, mT+18);
+    }
+}
+
+function drawMechArrow(ctx, sx, sy, ex, ey, color, label, side) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    const up = ey < sy;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey); ctx.lineTo(ex-4, ey+(up?6:-6)); ctx.lineTo(ex+4, ey+(up?6:-6)); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(sx-4, sy+(up?-6:6)); ctx.lineTo(sx+4, sy+(up?-6:6)); ctx.fill();
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = side === 'right' ? 'right' : 'left';
+    const tx = side === 'right' ? sx - 4 : sx + 4;
+    ctx.fillText(label, tx, (sy+ey)/2 + 4);
+    ctx.restore();
+}
+function drawMechDash(ctx, x1, y1, x2, y2) {
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+}
+
+function drawMechArrow(ctx, sx, sy, ex, ey, color, label, side) {
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+    const up = ey < sy;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey); ctx.lineTo(ex-4, ey+(up?6:-6)); ctx.lineTo(ex+4, ey+(up?6:-6)); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(sx-4, sy+(up?-6:6)); ctx.lineTo(sx+4, sy+(up?-6:6)); ctx.fill();
+    ctx.font = 'bold 10px sans-serif'; ctx.textAlign = side === 'right' ? 'right' : 'left';
+    const tx = side === 'right' ? sx - 4 : sx + 4;
+    ctx.fillText(label, tx, (sy+ey)/2 + 4);
+    ctx.restore();
+}
+
+function drawMechDash(ctx, x1, y1, x2, y2) {
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.restore();
+}
+
+function initSlide7() {
+    showMechCase(1);
+    const cvs = document.getElementById('mech-practice-canvas');
+    if (cvs) {
+        cvs.width = cvs.offsetWidth || 340;
+        cvs.height = cvs.offsetHeight || 340;
+        drawMechPracticeCanvas(1);
+    }
+}
+
+window.addEventListener('load', initSlide7);
+window.addEventListener('resize', () => { drawMechPracticeCanvas(currentMechCase); });
+setTimeout(initSlide7, 80);
+</script>
+</body>
+</html>

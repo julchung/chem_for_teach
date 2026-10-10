@@ -1,0 +1,295 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-3 反應熱加成性與赫士定律 · 赫士定律實例與位能階梯圖 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.95rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 4.5px solid var(--accent-blue);
+            padding: 0.5rem 0.8rem; text-align: left;
+            flex-shrink: 0;
+        }
+
+        .interactive-row {
+            padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid transparent;
+        }
+        .interactive-row:hover {
+            background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4);
+        }
+        .interactive-row.active {
+            background: rgba(251,191,36,0.18); border-color: rgba(251,191,36,0.5);
+        }
+
+        .eq-item {
+            font-size: 1.02rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .svg-interactive-arrow {
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .svg-interactive-arrow:hover {
+            filter: drop-shadow(0 0 6px rgba(255,255,255,0.85));
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>1-3 反應熱加成性與赫士定律 · 赫士定律實例與位能階梯圖分析</h1>
+                <div class="grid-2">
+                    <!-- 左欄：已知反應方程式與操作推導 -->
+                    <div class="panel">
+                        <h2 style="color: var(--accent-blue); display: flex; align-items: center; justify-content: space-between;">
+                            <span>📑 已知反應方程式（點擊聯動右圖）</span>
+                            <span style="font-size: 0.8rem; color: rgba(255,255,255,0.45); font-weight: normal;">點擊高亮箭頭</span>
+                        </h2>
+
+                        <div class="formula-box">
+                            <div class="interactive-row" id="row-eq1" onclick="highlightEq(1)">
+                                <span class="eq-item">
+                                    <span style="font-weight: 700; color: #94a3b8;">(1)</span>
+                                    <span>$\displaystyle \mathrm{C_{(s)} + \frac{1}{2}O_{2(g)} \longrightarrow CO_{(g)}}$</span>
+                                </span>
+                                <strong style="color: var(--accent-yellow); font-size: 1.05rem;">$\Delta H_1$</strong>
+                            </div>
+                            <div class="interactive-row" id="row-eq2" onclick="highlightEq(2)">
+                                <span class="eq-item">
+                                    <span style="font-weight: 700; color: #94a3b8;">(2)</span>
+                                    <span>$\displaystyle \mathrm{C_{(s)} + O_{2(g)} \longrightarrow CO_{2(g)}}$</span>
+                                </span>
+                                <strong style="color: var(--accent-blue); font-size: 1.05rem;">$\Delta H_2$</strong>
+                            </div>
+                            <div class="interactive-row" id="row-eq3" onclick="highlightEq(3)">
+                                <span class="eq-item">
+                                    <span style="font-weight: 700; color: #94a3b8;">(3)</span>
+                                    <span>$\displaystyle \mathrm{CO_{(g)} + \frac{1}{2}O_{2(g)} \longrightarrow CO_{2(g)}}$</span>
+                                </span>
+                                <strong style="color: var(--accent-green); font-size: 1.05rem;">$\Delta H_3$</strong>
+                            </div>
+                        </div>
+
+                        <h2 style="color: var(--accent-yellow); margin-top: 0.15rem;">
+                            <span>🧮</span> 代數操作推導過程
+                        </h2>
+
+                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.7rem 0.95rem; font-size: 0.95rem; line-height: 1.55;">
+                            <div>
+                                觀察欲求之方程式 (3)，可由 <strong style="color: var(--accent-yellow);">式(2) － 式(1)</strong> 疊加推導：
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; margin: 0.35rem 0;">
+                                <tr style="height: 36px;">
+                                    <td style="width: 60px; color: var(--accent-blue); font-weight: 700; font-size: 0.95rem;">式(2)</td>
+                                    <td style="font-size: 1.02rem;">$\displaystyle \mathrm{C_{(s)} + O_{2(g)} \longrightarrow CO_{2(g)}}$</td>
+                                    <td style="text-align: right; width: 105px; color: var(--accent-blue); font-weight: 700; font-size: 1rem;">$\Delta H_2$</td>
+                                </tr>
+                                <tr style="height: 36px;">
+                                    <td style="color: var(--accent-red); font-weight: 700; font-size: 0.95rem;">－ 式(1)</td>
+                                    <td style="font-size: 1.02rem;">$\displaystyle \mathrm{C_{(s)} + \frac{1}{2}O_{2(g)} \longrightarrow CO_{(g)}}$</td>
+                                    <td style="text-align: right; color: var(--accent-yellow); font-weight: 700; font-size: 1rem;">$\Delta H_1$</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" style="padding: 2px 0;">
+                                        <hr style="border: none; border-top: 1.5px solid rgba(255,255,255,0.3); margin: 3px 0;">
+                                    </td>
+                                </tr>
+                                <tr style="height: 36px;">
+                                    <td style="color: #94a3b8; font-size: 0.92rem; font-weight: 600;">相減</td>
+                                    <td style="font-size: 1.02rem;">$\displaystyle \mathrm{\frac{1}{2}O_{2(g)} \longrightarrow CO_{2(g)} - CO_{(g)}}$</td>
+                                    <td style="text-align: right; color: var(--text-main); font-weight: 700; font-size: 1rem;">$\Delta H_2 - \Delta H_1$</td>
+                                </tr>
+                            </table>
+
+                            <div style="margin-top: 0.35rem;">
+                                移項整理後即得目標方程式 (3)：
+                            </div>
+                            <div style="text-align: center; margin: 0.35rem 0; padding: 0.45rem; background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); border-radius: 8px;">
+                                <strong style="color: var(--accent-green); font-size: 1.05rem;">$\displaystyle \mathrm{CO_{(g)} + \frac{1}{2}O_{2(g)} \longrightarrow CO_{2(g)}}$</strong>
+                            </div>
+                            <div style="text-align: center; margin-top: 0.3rem;">
+                                故由赫士定律獲證：
+                                <strong style="color: var(--accent-cyan); font-size: 1.05rem;">$\mathbf{\Delta H_3 = \Delta H_2 - \Delta H_1} \iff \mathbf{\Delta H_1 + \Delta H_3 = \Delta H_2}$</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：SVG 位能階梯圖分析 -->
+                    <div class="panel" style="display: flex; flex-direction: column;">
+                        <h2 style="color: var(--accent-green); display: flex; align-items: center; justify-content: space-between;">
+                            <span>📈 能量位能階梯圖</span>
+                            <span style="font-size: 0.8rem; color: #94a3b8; font-weight: normal;">反應熱線段對齊加成</span>
+                        </h2>
+
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 8px;">
+                            <svg viewBox="0 0 390 280" style="width: 100%; max-height: 280px; height: auto;">
+                                <!-- 縱軸 (H) -->
+                                <line x1="45" y1="255" x2="45" y2="25" stroke="#94a3b8" stroke-width="2" />
+                                <polygon points="45,16 40,27 50,27" fill="#94a3b8" />
+                                <text x="45" y="12" fill="#94a3b8" font-size="11.5" font-weight="700" text-anchor="middle">H (熱含量)</text>
+
+                                <!-- 能階階梯線 1：始態 (最高能階) -->
+                                <line x1="65" y1="52" x2="355" y2="52" stroke="#f8fafc" stroke-width="3" stroke-linecap="round" />
+                                <text x="125" y="42" fill="#f8fafc" font-size="13" font-weight="700">C(s) + O₂(g)</text>
+
+                                <!-- 能階階梯線 2：中間態 (中能階) -->
+                                <line x1="155" y1="142" x2="355" y2="142" stroke="#fbbf24" stroke-width="3" stroke-linecap="round" />
+                                <text x="165" y="132" fill="#fbbf24" font-size="13" font-weight="700">CO(g) + ½ O₂(g)</text>
+
+                                <!-- 能階階梯線 3：終態 (最低能階) -->
+                                <line x1="65" y1="232" x2="355" y2="232" stroke="#34d399" stroke-width="3" stroke-linecap="round" />
+                                <text x="125" y="250" fill="#34d399" font-size="13" font-weight="700">CO₂(g)</text>
+
+                                <!-- 箭頭 2: 始態 -> 終態 (全反應直達 ΔH2, 左側單一線段，x=92) -->
+                                <g id="svg-arrow-2" class="svg-interactive-arrow" onclick="highlightEq(2)">
+                                    <line x1="92" y1="52" x2="92" y2="223" stroke="#38bdf8" stroke-width="3" />
+                                    <polygon points="92,232 86,221 98,221" fill="#38bdf8" />
+                                    <rect x="54" y="131" width="76" height="22" rx="5" fill="rgba(15,23,42,0.92)" stroke="#38bdf8" stroke-width="1.3" />
+                                    <text x="92" y="146" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">ΔH₂ (總)</text>
+                                </g>
+
+                                <!-- 箭頭 1: 始態 -> 中間態 (ΔH1, 右側上半段線段，嚴格共線對齊 x=290) -->
+                                <g id="svg-arrow-1" class="svg-interactive-arrow" onclick="highlightEq(1)">
+                                    <line x1="290" y1="52" x2="290" y2="133" stroke="#fbbf24" stroke-width="2.8" stroke-dasharray="4,2" />
+                                    <polygon points="290,142 284,131 296,131" fill="#fbbf24" />
+                                    <rect x="302" y="86" width="56" height="22" rx="5" fill="rgba(15,23,42,0.92)" stroke="#fbbf24" stroke-width="1.3" />
+                                    <text x="330" y="101" fill="#fbbf24" font-size="12" font-weight="800" text-anchor="middle">ΔH₁</text>
+                                </g>
+
+                                <!-- 箭頭 3: 中間態 -> 終態 (ΔH3, 右側下半段線段，嚴格共線對齊 x=290 接續向下) -->
+                                <g id="svg-arrow-3" class="svg-interactive-arrow" onclick="highlightEq(3)">
+                                    <line x1="290" y1="142" x2="290" y2="223" stroke="#34d399" stroke-width="2.8" stroke-dasharray="4,2" />
+                                    <polygon points="290,232 284,221 296,221" fill="#34d399" />
+                                    <rect x="302" y="176" width="56" height="22" rx="5" fill="rgba(15,23,42,0.92)" stroke="#34d399" stroke-width="1.3" />
+                                    <text x="330" y="191" fill="#34d399" font-size="12" font-weight="800" text-anchor="middle">ΔH₃</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div style="background: rgba(52,211,153,0.06); border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 0.86rem; line-height: 1.5; color: #cbd5e1; margin-top: 0.4rem;">
+                            📌 <strong>位能圖線段加成本質：</strong> 右側 $\Delta H_1$ 與 $\Delta H_3$ 兩段分步線段共線對齊接續向下，長度總和恰好等於左側直達線段 $\Delta H_2$：$\mathbf{\Delta H_1 + \Delta H_3 = \Delta H_2}$！
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentActiveEq = null;
+
+function highlightEq(num) {
+    if (currentActiveEq === num) {
+        currentActiveEq = null;
+        document.querySelectorAll('.interactive-row').forEach(r => r.classList.remove('active'));
+        for (let k = 1; k <= 3; k++) {
+            const arrow = document.getElementById(`svg-arrow-${k}`);
+            if (arrow) {
+                arrow.style.opacity = '1';
+                arrow.style.filter = 'none';
+            }
+        }
+        return;
+    }
+
+    currentActiveEq = num;
+    document.querySelectorAll('.interactive-row').forEach(r => r.classList.remove('active'));
+    const row = document.getElementById(`row-eq${num}`);
+    if (row) row.classList.add('active');
+
+    for (let k = 1; k <= 3; k++) {
+        const arrow = document.getElementById(`svg-arrow-${k}`);
+        if (arrow) {
+            if (k === num) {
+                arrow.style.opacity = '1';
+                arrow.style.filter = 'drop-shadow(0 0 8px rgba(255,255,255,0.9))';
+            } else {
+                arrow.style.opacity = '0.3';
+                arrow.style.filter = 'none';
+            }
+        }
+    }
+}
+</script>
+</body>
+</html>

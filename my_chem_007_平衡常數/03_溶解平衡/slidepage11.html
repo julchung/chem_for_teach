@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>沉澱的轉化與平衡常數 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.12rem, 1.4vw, 1.35rem); margin-bottom: 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.95rem, 1.12vw, 1.12rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        /* 左右欄比例：48% : 52% */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 48fr 52fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.75rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow: hidden;
+        }
+
+        .content-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.5rem;
+        }
+
+        /* 左側與右側卡片樣式 */
+        .case-card {
+            background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12));
+            border: 1px solid rgba(139,92,246,0.35);
+            border-radius: 10px;
+            padding: 0.55rem 0.95rem;
+        }
+
+        .task-card {
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            padding: 0.6rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.3rem;
+            flex: 1;
+            transition: background 0.15s ease;
+        }
+        .task-card:hover {
+            background: rgba(255,255,255,0.055);
+        }
+        .task-cyan   { border-left: 4.5px solid var(--accent-cyan); }
+        .task-yellow { border-left: 4.5px solid var(--accent-yellow); }
+        .task-purple { border-left: 4.5px solid var(--accent-purple); }
+
+        .task-title {
+            font-size: clamp(0.96rem, 1.12vw, 1.15rem);
+            font-weight: 700;
+        }
+        .task-body {
+            font-size: clamp(0.92rem, 1.08vw, 1.08rem);
+            color: rgba(255,255,255,0.9);
+            line-height: 1.55;
+        }
+
+        /* 挖空互動元素 */
+        .blank-box {
+            display: inline-block; min-width: 60px; text-align: center;
+            border-bottom: 2px dashed rgba(255,255,255,0.7); cursor: pointer; color: transparent;
+            transition: all 0.25s ease; font-weight: bold; padding: 0.1rem 8px;
+            background: rgba(255,255,255,0.08); border-radius: 4px;
+        }
+        .blank-box * {
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-bottom-style: solid !important;
+            border-color: var(--accent-yellow) !important;
+            background: rgba(251,191,36,0.18) !important;
+        }
+        .blank-box.revealed * {
+            opacity: 1 !important;
+            color: var(--accent-yellow) !important;
+        }
+
+        /* 規律總結高亮框 */
+        .summary-card {
+            background: rgba(251,191,36,0.08);
+            border: 1px solid rgba(251,191,36,0.3);
+            border-left: 4.5px solid var(--accent-yellow);
+            border-radius: 10px;
+            padding: 0.6rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.25rem;
+            flex: 1;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>7-3 溶解平衡 · 沉澱的轉化與平衡常數</h1>
+                <div class="grid-2">
+                    <!-- 左方欄位：現象探討與反應方程式 -->
+                    <div class="panel">
+                        <h2>🧪 實驗現象與沉澱轉化</h2>
+                        <div class="content-wrap">
+                            <div class="case-card">
+                                <p style="font-size: clamp(0.95rem, 1.1vw, 1.12rem); line-height: 1.6;">
+                                    將白色 $\mathrm{PbCl}_2(s)$ 粉末撒入一杯飽和碘化鉀水溶液 ($\mathrm{KI}(aq)$) 中：<br>
+                                    <span style="color:rgba(255,255,255,0.78); font-size:0.92em;">（已知 $25^\circ\mathrm{C}$ 時：$\mathrm{PbCl}_2\ K_{sp} = 1.6 \times 10^{-5}$，$\mathrm{PbI}_2\ K_{sp} = 1.4 \times 10^{-8}$）</span>
+                                </p>
+                            </div>
+
+                            <!-- (1) 觀察現象 -->
+                            <div class="task-card task-cyan">
+                                <div class="task-title" style="color: var(--accent-cyan);">(1) 溶液中會觀察到何種現象？</div>
+                                <div class="task-body">
+                                    同為 $\mathrm{AB}_2$ 型鹽，因 $K_{sp}(\mathrm{PbI}_2) \ll K_{sp}(\mathrm{PbCl}_2)$，微量 $\mathrm{Pb}^{2+}$ 優先與過量 $\mathrm{I}^-$ 結合：<br>
+                                    <span class="blank-box" onclick="this.classList.add('revealed')" style="display:block; text-align:left; margin-top:0.25rem;">
+                                        結論：白色 $\mathrm{PbCl}_2$ 固體逐漸消失，自發轉化為亮黃色 $\mathrm{PbI}_2$ 沉澱！
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- (2) 淨離子方程式 -->
+                            <div class="task-card task-yellow">
+                                <div class="task-title" style="color: var(--accent-yellow);">(2) 寫出沉澱轉化的淨離子反應方程式</div>
+                                <div class="task-body">
+                                    較易溶的微溶鹽自發轉化為溶解度更小的難溶鹽：<br>
+                                    <span class="blank-box" onclick="this.classList.add('revealed')" style="display:block; text-align:center; margin-top:0.3rem; padding: 0.25rem 0.5rem;">
+                                        $\mathrm{PbCl}_2(s) + 2\mathrm{I}^-(aq) \rightleftharpoons \mathrm{PbI}_2(s) + 2\mathrm{Cl}^-(aq)$
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右方欄位：平衡常數計算與規律總結 -->
+                    <div class="panel">
+                        <h2>📐 平衡常數 $K$ 計算與規律總結</h2>
+                        <div class="content-wrap">
+                            <!-- (3) 平衡常數計算 -->
+                            <div class="task-card task-purple" style="flex: 1.15;">
+                                <div class="task-title" style="color: var(--accent-purple);">(3) 計算此沉澱轉化反應的平衡常數 $K$</div>
+                                <div class="task-body">
+                                    由轉化反應式寫出平衡常數式：<br>
+                                    $K = \dfrac{[\mathrm{Cl}^-]^2}{[\mathrm{I}^-]^2} = \dfrac{[\mathrm{Pb}^{2+}][\mathrm{Cl}^-]^2}{[\mathrm{Pb}^{2+}][\mathrm{I}^-]^2} = \dfrac{K_{sp}(\mathrm{PbCl}_2)}{K_{sp}(\mathrm{PbI}_2)}$<br>
+                                    代入數值計算：<br>
+                                    $K = \dfrac{1.6 \times 10^{-5}}{1.4 \times 10^{-8}} \approx$ <span class="blank-box" onclick="this.classList.add('revealed')">$1.14 \times 10^3$</span><br>
+                                    <span style="color:#6ee7b7; font-weight:700; margin-top:0.2rem; display:inline-block;">結論：$K \gg 1$（達上千倍），反應向右轉化非常徹底！</span>
+                                </div>
+                            </div>
+
+                            <!-- 規律總結 -->
+                            <div class="summary-card" style="flex: 0.95;">
+                                <div style="font-weight:700; color:var(--accent-yellow); font-size:clamp(0.98rem, 1.15vw, 1.15rem); margin-bottom:0.2rem;">
+                                    📌 沉澱轉化核心規律總結：
+                                </div>
+                                <p style="font-size:clamp(0.9rem, 1.05vw, 1.05rem); line-height:1.55;">
+                                    <strong>1. 轉化方向：</strong>溶解度較大（$K_{sp}$ 較大）的沉澱，加入能生成溶解度更小（$K_{sp}$ 更小）沉澱的離子時，原沉澱可<strong>自發轉化為新沉澱</strong>。<br>
+                                    <strong>2. 平衡常數：</strong>轉化常數 $K = \dfrac{K_{sp}(\text{原沉澱})}{K_{sp}(\text{新沉澱})}$；兩者 $K_{sp}$ 差距越大，轉化越完全。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>

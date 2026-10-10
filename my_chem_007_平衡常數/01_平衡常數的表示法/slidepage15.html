@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>六、平衡常數 K 值的意義與極端平衡計算原則 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.4rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.45vw, 1.25rem); margin-bottom: 0.45rem; font-weight: 700; flex-shrink: 0; display: flex; align-items: center; gap: 0.5rem; }
+        p, li { font-size: clamp(0.92rem, 1.15vw, 1.05rem); line-height: 1.6; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            overflow: hidden;
+        }
+
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 12px;
+            padding: 0.75rem 1rem; border: 1px solid rgba(56,189,248,0.28);
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(251,191,36,0.28);
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(52,211,153,0.28);
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(248,113,113,0.28);
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(167,139,250,0.28);
+        }
+
+        .strategy-banner {
+            background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(245,158,11,0.08));
+            border-left: 5px solid var(--accent-yellow);
+            border-radius: 10px;
+            padding: 0.9rem 1.15rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        }
+
+        .step-badge {
+            display: inline-block; background: var(--accent-cyan); color: #0f172a;
+            font-size: 0.82rem; font-weight: 900; padding: 2px 8px; border-radius: 12px; margin-right: 6px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>六、平衡常數 K 值的意義與極端平衡計算原則</h1>
+                <div class="grid-2">
+                    
+                    <!-- 左欄：核心觀念與解題準則 -->
+                    <div class="panel" style="gap:0.75rem; justify-content:space-between;">
+                        <div>
+                            <h2>📖 平衡常數 K 值的意義</h2>
+                            <div class="info-card" style="line-height:1.7; border-left:4px solid var(--accent-blue);">
+                                <p><strong>平衡常數 $K$ 值愈大：</strong>表示反應愈接近完全（反應物幾乎皆轉化成產物，反應物殘餘極少）。</p>
+                                <p style="margin-top:0.4rem; color:var(--accent-red); font-weight:bold;">
+                                    ⚠️ 觀念釐清：$K$ 值大小僅代表反應進行的「程度與極限」，絕對無法表示「反應速率的快慢」！
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 策略 Banner -->
+                        <div class="strategy-banner">
+                            <div style="font-size:1.15rem; font-weight:bold; color:var(--accent-yellow); margin-bottom:0.4rem; display:flex; align-items:center; gap:0.4rem;">
+                                💡 極端平衡解題通用法則（核心口訣）：
+                            </div>
+                            <div style="font-size:1.06rem; line-height:1.75; color:#fff;">
+                                遇到 $K$ 值極大或極小之平衡體系，作法皆是：<br>
+                                <strong style="color:var(--accent-yellow); font-size:1.12rem;">「先完全反應（推到底／先沉澱／先生成錯離子），再微量解離（考慮平衡常數）」</strong>
+                            </div>
+                        </div>
+
+                        <!-- 盲點與優勢分析 -->
+                        <div class="info-card-yellow" style="line-height:1.65;">
+                            <div style="font-weight:bold; color:var(--accent-yellow); margin-bottom:0.3rem;">
+                                ❓ 為什麼必須「先推到底再解離」？
+                            </div>
+                            <p style="color:rgba(255,255,255,0.9);">
+                                • <strong>直接計算的盲點：</strong>若平衡極偏單側，未知數變化量 $x$ 會極度接近起始濃度，相減時造成極大有效位數誤差，且高次方無法簡化近似。<br>
+                                • <strong>推到底的優勢：</strong>換到產物（或反應物）單邊為新起點後，平衡移動量即為<strong>「真正的極微量」</strong>，可在數學上安全合理地進行近似化簡！
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：兩大極端狀況解析與計算步驟 -->
+                    <div class="panel" style="gap:0.75rem; justify-content:space-between;">
+                        <h2>🎯 兩大極端狀況深度解析</h2>
+
+                        <div class="info-card-green" style="display:flex; flex-direction:column; gap:0.35rem;">
+                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                <span style="font-size:1.15rem; font-weight:800; color:var(--accent-green);">a. $K \gg 1$（$K$ 值極大）</span>
+                                <span style="font-size:0.85rem; color:var(--accent-green); background:rgba(52,211,153,0.18); padding:2px 8px; border-radius:10px;">反應趨向生成物</span>
+                            </div>
+                            <p style="color:#f1f5f9; line-height:1.6;">
+                                表示正反應由左向右進行相當完全。<br>
+                                <strong>計算策略：</strong><br>
+                                <span class="step-badge">步 1</span>假設反應物<strong>由左向右完全反應到底</strong>，算出生成物新起點。<br>
+                                <span class="step-badge">步 2</span>自新起點考慮極微量的<strong>逆向解離（$-x$）</strong>，代入平衡常數求值。
+                            </p>
+                        </div>
+
+                        <div class="info-card-red" style="display:flex; flex-direction:column; gap:0.35rem;">
+                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                <span style="font-size:1.15rem; font-weight:800; color:var(--accent-red);">b. $K \ll 1$（$K$ 值極小）</span>
+                                <span style="font-size:0.85rem; color:var(--accent-red); background:rgba(248,113,113,0.18); padding:2px 8px; border-radius:10px;">反應趨向反應物</span>
+                            </div>
+                            <p style="color:#f1f5f9; line-height:1.6;">
+                                表示正反應極難進行，而<strong>逆反應易進行完全</strong>（如錯離子解離或沉澱反應）。<br>
+                                <strong>計算策略：</strong><br>
+                                <span class="step-badge" style="background:var(--accent-red);">步 1</span>先假設各離子<strong>由右向左完全反應到底</strong>，形成新起點。<br>
+                                <span class="step-badge" style="background:var(--accent-red);">步 2</span>自新起點考慮極微量的<strong>正向解離（$+y$）</strong>，利用 $y \ll C_0$ 近似求得微量離子濃度。
+                            </p>
+                        </div>
+
+                        <div class="info-card-purple" style="display:flex; align-items:center; gap:0.8rem; padding:0.65rem 1rem;">
+                            <span style="font-size:1.3rem;">📋</span>
+                            <span style="font-size:0.95rem; line-height:1.5;">
+                                <strong>實戰導引：</strong>在後續實戰演練中，若見 $K_c \sim 10^{-5}$ 以下之極小常數（如沉澱、錯離子生成），請務必遵循此法則化繁為簡！
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+window.updateSlides = function() {};
+</script>
+</body>
+</html>

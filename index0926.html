@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="高中化學全螢幕學習網 - 循序解鎖章節、容器化全螢幕教學、手寫筆記與課堂抽號工具">
+  <title>高中化學全螢幕學習網 · 互動教學系統</title>
+  
+  <!-- 字型引入 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- MathJax 數學公式支援 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <!-- 系統樣式表 -->
+  <link rel="stylesheet" href="unified_chem_spa/css/portal.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VIEW 1: 登入介面 (Login Portal)
+       ═══════════════════════════════════════════════════════════════ -->
+  <section id="view-login" class="app-view active">
+    <div class="login-box">
+      <div class="login-logo">⚗️</div>
+      <h1>高中化學全螢幕學習網</h1>
+      <p class="subtitle">全螢幕章節容器 · 循序解鎖闖關 · 課堂手寫板與抽號機</p>
+
+      <!-- 若有上次登入紀錄，顯示提示卡片（絕不自動跳轉，需使用者點擊） -->
+      <div id="saved-login-box" style="display: none; margin-bottom: 20px; padding: 14px 18px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 14px; text-align: left;">
+        <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 6px;">💡 偵測到上次登入紀錄：</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+          <div>
+            <strong id="saved-user-name" style="color: #fff; font-size: 1.05rem;"></strong>
+            <span id="saved-user-role" style="font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-left: 6px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-weight: 700;"></span>
+          </div>
+          <button id="btn-continue-saved" type="button" class="btn-primary" style="width: auto; margin-top: 0; padding: 8px 18px; font-size: 0.9rem;">以該身分進入大廳 ➔</button>
+        </div>
+      </div>
+
+      <form id="portal-login-form">
+        <div class="form-group">
+          <label for="input-username">登入帳號 / 學生學號</label>
+          <input type="text" id="input-username" class="input-field" placeholder="請輸入帳號 (如 teacher 或 student)" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="input-password">通行密碼</label>
+          <input type="password" id="input-password" class="input-field" placeholder="請輸入密碼" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-primary">進入學習大廳 🚀</button>
+      </form>
+
+      <div id="login-err-msg" class="login-err"></div>
+
+      <!-- 快速示範帳號 -->
+      <div class="quick-logins">
+        <div class="quick-title">點擊快速填入示範帳號並登入：</div>
+        <div class="quick-tags">
+          <span class="quick-tag" data-user="teacher" data-pwd="888">🔑 教師端 (全開權限: teacher / 888)</span>
+          <span class="quick-tag" data-user="student" data-pwd="123">🎓 學生端 (逐章解鎖: student / 123)</span>
+          <span class="quick-tag" data-user="10101" data-pwd="123">座號 10101</span>
+          <span class="quick-tag" data-user="10102" data-pwd="123">座號 10102</span>
+          <span class="quick-tag" data-user="10103" data-pwd="123">座號 10103</span>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <button id="btn-clear-all-data" type="button" style="background: none; border: none; color: #64748b; font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
+            🗑️ 清除所有已存紀錄（還原為初始未登入狀態）
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VIEW 2: 全螢幕章節目錄大廳 (Chapter Directory Dashboard)
+       ═══════════════════════════════════════════════════════════════ -->
+  <section id="view-dashboard" class="app-view">
+    <!-- 頂部導航列 -->
+    <header class="dashboard-header">
+      <div class="header-brand">
+        <span class="brand-icon">⚗️</span>
+        <h2>高中化學互動學習網</h2>
+      </div>
+
+      <div class="header-user-panel">
+        <div class="user-badge">
+          <span>👤</span>
+          <strong id="dash-user-name">訪客</strong>
+          <span id="dash-user-role" class="role-tag role-student">學生帳號</span>
+        </div>
+
+        <div class="progress-pill">
+          <div class="progress-mini-bar">
+            <div id="dash-progress-fill" class="progress-mini-fill" style="width: 2%;"></div>
+          </div>
+          <span id="dash-progress-text">已解鎖 1 / 59 單元 (2%)</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-dash-fullscreen" class="btn-icon" title="切換全螢幕">⛶ 全螢幕</button>
+        <button id="btn-dash-logout" class="btn-icon btn-danger-icon" title="登出系統">🚪 登出</button>
+      </div>
+    </header>
+
+    <!-- 歡迎接續橫幅 -->
+    <div class="dashboard-hero">
+      <div class="hero-banner">
+        <div class="hero-info">
+          <h1>探索化學奧秘，展開您的學習旅程</h1>
+          <p>循序闖關完成各章節與小節檢核，點選已解鎖章節將立即全螢幕載入教學視窗！</p>
+        </div>
+        <button id="btn-dash-resume" class="btn-resume">🚀 接續上次學習</button>
+      </div>
+    </div>
+
+    <!-- 12 大章節目錄卡片網格 -->
+    <main class="dashboard-grid-container">
+      <div class="section-headline">
+        <h3>📚 全課程章節目錄總覽 (12 大主題 · 59 個學習模組)</h3>
+      </div>
+
+      <div id="chapter-cards-container" class="chapter-cards-grid">
+        <!-- 由 portal.js 動態渲染 12 章與小節清單 -->
+      </div>
+    </main>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       VIEW 3: 全螢幕章節容器視窗 (Container Viewport)
+       ═══════════════════════════════════════════════════════════════ -->
+  <section id="view-container" class="app-view">
+    <!-- 左側浮動目錄呼叫按鈕 -->
+    <button id="btn-toggle-drawer" class="btn-drawer-toggle" title="展開章節目錄">
+      ☰ 章節目錄
+    </button>
+
+    <!-- 主體內容容器 iframe（以全螢幕插入該章節頁面檔） -->
+    <iframe id="chapter-iframe" src="" allow="fullscreen" allowfullscreen></iframe>
+    <div id="built-in-reader"></div>
+
+    <!-- 左側抽屜遮罩 -->
+    <div id="drawer-backdrop"></div>
+
+    <!-- 左側浮動隱藏抽屜目錄欄 -->
+    <aside id="sidebar-drawer">
+      <div class="drawer-header">
+        <h3>📑 課程章節目錄</h3>
+        <button id="btn-close-drawer" class="btn-close-drawer" title="關閉目錄">✕</button>
+      </div>
+
+      <div class="drawer-quick-actions">
+        <button id="btn-drawer-home" class="drawer-action-btn btn-home">🏠 返回目錄大廳</button>
+        <button id="btn-drawer-prev" class="drawer-action-btn">◀ 上一節</button>
+        <button id="btn-drawer-next" class="drawer-action-btn">下一節 ▶</button>
+        <button id="btn-drawer-complete" class="drawer-action-btn" style="color: #6ee7b7;">✓ 完成本節</button>
+      </div>
+
+      <div class="drawer-content" id="drawer-toc-content">
+        <!-- 由 portal.js 動態填入 12 章與 59 節目錄項目 -->
+      </div>
+    </aside>
+
+    <!-- 右側浮動工具列 -->
+    <aside id="floating-toolbar">
+      <button class="tool-btn" id="tool-home" data-tooltip="返回目錄大廳">🏠</button>
+      <button class="tool-btn" id="tool-whiteboard" data-tooltip="開啟手寫筆記">🖊️</button>
+      <button class="tool-btn" id="tool-calc" data-tooltip="即時計算機">🧮</button>
+      <button class="tool-btn" id="tool-dice" data-tooltip="課堂隨機抽號">🎲</button>
+      <button class="tool-btn" id="tool-fullscreen" data-tooltip="全螢幕切換">⛶</button>
+      <button class="tool-btn" id="tool-logout" data-tooltip="登出">🚪</button>
+    </aside>
+
+    <!-- 即時計算機浮動面板 -->
+    <div id="calc-panel">
+      <!-- 頂部工具列：切換基本/工程模式 -->
+      <div class="calc-header">
+        <div class="calc-title">即時計算機</div>
+        <button id="calc-mode-toggle" class="calc-mode-btn" type="button" title="切換標準/工程模式">
+          <span class="calc-mode-label">科學 / 工程</span> 🔬
+        </button>
+      </div>
+
+      <div class="calc-screen">
+        <div id="calc-expr" class="calc-expr"></div>
+        <div id="calc-display" class="calc-display">0</div>
+      </div>
+
+      <!-- 工程計算按鈕群 (預設摺疊或切換顯示) -->
+      <div class="calc-sci-grid" id="calc-sci-grid">
+        <button class="calc-btn calc-sci" data-action="sci" data-val="sin">sin</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="cos">cos</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="tan">tan</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="pi">π</button>
+
+        <button class="calc-btn calc-sci" data-action="sci" data-val="ln">ln</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="log">log</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="sqrt">√</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="e">e</button>
+
+        <button class="calc-btn calc-sci" data-action="sci" data-val="sq">x²</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="pow">xʸ</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="inv">1/x</button>
+        <button class="calc-btn calc-sci" data-action="sci" data-val="exp">EXP</button>
+      </div>
+
+      <!-- 標準計算按鍵網格 -->
+      <div class="calc-grid">
+        <button class="calc-btn calc-fn" data-action="clear">AC</button>
+        <button class="calc-btn calc-fn" data-action="sign">+/−</button>
+        <button class="calc-btn calc-fn" data-action="percent">%</button>
+        <button class="calc-btn calc-op" data-action="op" data-val="÷">÷</button>
+
+        <button class="calc-btn" data-action="digit" data-val="7">7</button>
+        <button class="calc-btn" data-action="digit" data-val="8">8</button>
+        <button class="calc-btn" data-action="digit" data-val="9">9</button>
+        <button class="calc-btn calc-op" data-action="op" data-val="×">×</button>
+
+        <button class="calc-btn" data-action="digit" data-val="4">4</button>
+        <button class="calc-btn" data-action="digit" data-val="5">5</button>
+        <button class="calc-btn" data-action="digit" data-val="6">6</button>
+        <button class="calc-btn calc-op" data-action="op" data-val="−">−</button>
+
+        <button class="calc-btn" data-action="digit" data-val="1">1</button>
+        <button class="calc-btn" data-action="digit" data-val="2">2</button>
+        <button class="calc-btn" data-action="digit" data-val="3">3</button>
+        <button class="calc-btn calc-op" data-action="op" data-val="+">+</button>
+
+        <button class="calc-btn calc-btn-wide" data-action="digit" data-val="0">0</button>
+        <button class="calc-btn" data-action="dot">.</button>
+        <button class="calc-btn calc-eq" data-action="equals">=</button>
+      </div>
+    </div>
+
+    <!-- 手寫畫布層 -->
+    <canvas id="whiteboard-canvas"></canvas>
+
+    <!-- 手寫浮動調整面板 -->
+    <div id="whiteboard-tools">
+      <div class="wb-tool-item selected" data-tool="pen" title="畫筆">✏️</div>
+      <div class="wb-tool-item" data-tool="eraser" title="橡皮擦">🧹</div>
+
+      <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
+
+      <div class="color-dot selected" data-color="#38bdf8" style="background: #38bdf8;" title="天藍色"></div>
+      <div class="color-dot" data-color="#fbbf24" style="background: #fbbf24;" title="金黃色"></div>
+      <div class="color-dot" data-color="#f43f5e" style="background: #f43f5e;" title="警示紅"></div>
+      <div class="color-dot" data-color="#10b981" style="background: #10b981;" title="翠綠色"></div>
+      <div class="color-dot" data-color="#ffffff" style="background: #ffffff;" title="純白色"></div>
+
+      <div style="width: 1px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
+
+      <div class="wb-tool-item" id="wb-btn-visibility" title="切換顯示/隱藏筆記">👁️</div>
+      <div class="wb-tool-item" id="wb-btn-undo" title="復原上一筆">↩️</div>
+      <div class="wb-tool-item" id="wb-btn-clear" title="清空本節筆記">🗑️</div>
+      <div class="wb-tool-item" id="wb-btn-close" style="color: #6ee7b7; font-weight: bold;" title="完成標註並收合工具（筆記自動保留）">✓</div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       課堂隨機抽號彈窗 (Random Picker Modal)
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="random-picker-modal">
+    <div class="picker-card">
+      <h3 style="color: #fff; font-size: 1.3rem; margin-bottom: 8px;">🎲 課堂隨機點名抽號</h3>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">設定號碼範圍，隨機抽取同學回答問題</p>
+
+      <div class="picker-inputs">
+        <label style="color: #94a3b8; font-size: 0.9rem;">從 <input type="number" id="picker-min" value="1" min="1"></label>
+        <span style="color: #64748b;">~</span>
+        <label style="color: #94a3b8; font-size: 0.9rem;">到 <input type="number" id="picker-max" value="45" max="99"></label>
+      </div>
+
+      <div class="picker-display" id="picker-num-display">--</div>
+
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button id="btn-roll-dice" class="btn-primary" style="margin-top: 0; width: auto; padding: 12px 32px;">🎲 開始抽號</button>
+        <button id="btn-close-picker" class="btn-icon" style="padding: 12px 20px;">關閉</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       Toast 通知容器
+       ═══════════════════════════════════════════════════════════════ -->
+  <div id="toast-container"></div>
+
+
+  <!-- 系統核心邏輯 -->
+  <script src="unified_chem_spa/js/chem_data.js"></script>
+  <script src="unified_chem_spa/js/users.js"></script>
+  <script src="unified_chem_spa/js/portal.js"></script>
+
+</body>
+</html>
+　

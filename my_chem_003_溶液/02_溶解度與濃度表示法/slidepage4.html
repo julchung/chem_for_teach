@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-2 影響溶解度的因素與曲線 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.92rem, 1.05vw, 1.12rem); font-weight: 700; margin-bottom: 0.3rem; }
+        p, li { font-size: clamp(0.82rem, 0.93vw, 0.96rem); line-height: 1.5; }
+        ul { margin-left: 1.2rem; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1.05fr 1fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1.05rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.5rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .factor-card {
+            border-radius: 10px; padding: 0.6rem 0.85rem; border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.025);
+        }
+
+        .img-compare-wrap {
+            display: flex; gap: 10px; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.3); border-radius: 12px; padding: 8px;
+            border: 1px solid var(--glass-border);
+        }
+        .img-box {
+            flex: 1; text-align: center;
+        }
+        .img-box img {
+            max-width: 100%; height: 160px; object-fit: contain;
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+            background: #fff; padding: 2px;
+        }
+        .img-title {
+            font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);
+            margin-top: 4px;
+        }
+
+        .curve-notes {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+        }
+        .curve-pill {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px; padding: 5px 8px; font-size: 0.82rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+            .img-box img { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-2 溶解度與濃度表示法 &middot; 影響溶解度的因素與溶解度曲線</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：三大影響因素 -->
+            <div class="panel">
+                <div class="factor-card" style="border-left:4px solid var(--accent-yellow);">
+                    <h2 style="color:var(--accent-yellow);">1. 溶質與溶劑的本性（Like dissolves like）</h2>
+                    <p style="color:#cbd5e1;">
+                        • <strong>相似者相溶原則：</strong>極性溶質易溶於極性溶劑（如 $\text{NaCl}$ 溶於水）；非極性溶質易溶於非極性溶劑（如 $\text{I}_2$ 易溶於松香水或 $\text{CCl}_4$）。<br>
+                        • 氫鍵作用：若能與水形成<strong>氫鍵</strong>（如乙醇、丙酮、蔗糖），常能與水任意比例互溶。
+                    </p>
+                </div>
+
+                <div class="factor-card" style="border-left:4px solid var(--accent-red);">
+                    <h2 style="color:var(--accent-red);">2. 溫度效應（反應熱平衡移動）</h2>
+                    <ul style="color:#cbd5e1;">
+                        <li><strong style="color:var(--accent-red);">固體吸熱溶解：</strong>$\Delta H > 0 \implies T\uparrow, S\uparrow$（大多數固體，如 $\text{KNO}_3$）。</li>
+                        <li><strong style="color:var(--accent-blue);">固體放熱溶解：</strong>$\Delta H < 0 \implies T\uparrow, S\downarrow$（如 $\text{Ce}_2(\text{SO}_4)_3$）。</li>
+                        <li><strong style="color:var(--accent-green);">氣體溶解：</strong>溶於水必為<strong>放熱反應</strong> $\implies$ 溫度升高，氣體溶解度<strong>必定下降</strong>（如煮水時水未滾先冒氣泡）。</li>
+                    </ul>
+                </div>
+
+                <div class="factor-card" style="border-left:4px solid var(--accent-cyan);">
+                    <h2 style="color:var(--accent-cyan);">3. 壓力效應（亨利定律 Henry's Law）</h2>
+                    <p style="color:#cbd5e1;">
+                        • 定溫下，難溶性氣體之溶解度與液面上該氣體之<strong>分壓成正比</strong>：
+                    </p>
+                    <div style="background:rgba(0,0,0,0.4); text-align:center; padding:4px 8px; border-radius:6px; margin:4px 0; color:var(--accent-cyan); font-weight:700;">
+                        $S = k \cdot P$
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.84rem;">
+                        ⚠️ <strong>重要考點：</strong>固體與液體體積不可壓縮，溶解度<strong>完全不受壓力影響</strong>！且極易溶並反應之氣體（如 $\text{HCl, NH}_3$）<strong>不遵守亨利定律</strong>。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：溶解度曲線圖示分析 (3.png & 4.png) -->
+            <div class="panel">
+                <h2 style="color:var(--accent-blue);">四、溶解度曲線圖形特徵解析</h2>
+
+                <!-- 兩張圖並排 -->
+                <div class="img-compare-wrap">
+                    <div class="img-box">
+                        <img src="3.png" alt="固體溶解度曲線圖">
+                        <div class="img-title">📈 固體溶解度 vs 溫度</div>
+                    </div>
+                    <div class="img-box">
+                        <img src="4.png" alt="氣體溶解度曲線圖">
+                        <div class="img-title">📉 氣體溶解度 vs 溫度</div>
+                    </div>
+                </div>
+
+                <!-- 物質特徵解析卡片 -->
+                <div class="curve-notes">
+                    <div class="curve-pill" style="border-left:3px solid var(--accent-red);">
+                        <strong style="color:var(--accent-red);">$\text{KNO}_3$（急遽上升）</strong><br>
+                        吸熱量大，斜率最陡，最適合用於<strong>冷卻降溫再結晶純化</strong>。
+                    </div>
+                    <div class="curve-pill" style="border-left:3px solid var(--accent-green);">
+                        <strong style="color:var(--accent-green);">$\text{NaCl}$（平緩平直）</strong><br>
+                        溶解熱極小，幾乎不受溫度影響，必須透過<strong>蒸發溶劑結晶法</strong>析出。
+                    </div>
+                    <div class="curve-pill" style="border-left:3px solid var(--accent-blue); grid-column: 1 / -1;">
+                        <strong style="color:var(--accent-blue);">$\text{Na}_2\text{SO}_4$ 結晶水轉折奇異現象：</strong><br>
+                        在 $32.4^\circ\text{C}$ 出現轉折尖峰。$32.4^\circ\text{C}$ 以下為十水物 $\text{Na}_2\text{SO}_4\cdot 10\text{H}_2\text{O}$（吸熱，$T\uparrow, S\uparrow$）；超過 $32.4^\circ\text{C}$ 結晶水脫去轉為無水鹽 $\text{Na}_2\text{SO}_4$（放熱，$T\uparrow, S\downarrow$）。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return; window.__chemScrollBridgeInstalled = true;
+    function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY||0, sx: window.scrollX||0 }, '*'); } }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('message', function (e) { if (!e.data) return; if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY||0, behavior: 'instant' }); reportScroll(); } else if (e.data.type === '__chem_get_scroll') { reportScroll(); } });
+    reportScroll(); window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>

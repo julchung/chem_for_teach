@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kc 大小的意義與反應商 Q 趨勢判斷 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.4rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.4rem, 2.3vw, 2rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.45vw, 1.25rem); margin-bottom: 0.45rem; font-weight: 700; flex-shrink: 0; display: flex; align-items: center; gap: 0.5rem; }
+        p, li { font-size: clamp(0.92rem, 1.15vw, 1.05rem); line-height: 1.6; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 12px;
+            padding: 0.75rem 1rem; border: 1px solid rgba(56,189,248,0.28);
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(251,191,36,0.28);
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(52,211,153,0.28);
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 12px;
+            padding: 0.8rem 1rem; border: 1px solid rgba(248,113,113,0.28);
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 12px;
+            padding: 0.75rem 1rem; border: 1px solid rgba(34,211,238,0.28);
+        }
+
+        .tag {
+            display: inline-block; padding: 0.2rem 0.75rem; border-radius: 20px;
+            font-size: 1.05rem; font-weight: 800; text-align: center;
+        }
+        .tag-green { background: rgba(52,211,153,0.2); border: 1.5px solid var(--accent-green); color: var(--accent-green); }
+        .tag-yellow { background: rgba(251,191,36,0.2); border: 1.5px solid var(--accent-yellow); color: var(--accent-yellow); }
+        .tag-red { background: rgba(248,113,113,0.2); border: 1.5px solid var(--accent-red); color: var(--accent-red); }
+
+        .compare-row {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+        }
+        @media (max-width: 900px) {
+            .compare-row { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>$K_c$ 大小的意義與反應商 Q 趨勢判斷</h1>
+                <div style="display:flex; flex-direction:column; gap:0.9rem; flex:1; min-height:0; justify-content:space-between;">
+                    
+                    <!-- 區塊一：Kc 大小的物理意義 -->
+                    <div class="panel" style="flex:0 0 auto;">
+                        <h2>📌 平衡常數 $K_c$ 大小的物理意義（反應進行程度）</h2>
+                        
+                        <div class="compare-row" style="margin-top:0.3rem;">
+                            <div class="info-card-green" style="display:flex; flex-direction:column; gap:0.35rem;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:1.35rem; font-weight:800; color:var(--accent-green);">$K_c \gg 1$</span>
+                                    <span style="font-size:0.85rem; color:var(--accent-green); background:rgba(52,211,153,0.18); padding:2px 8px; border-radius:10px;">偏向生成物</span>
+                                </div>
+                                <p style="color:#f1f5f9;">平衡時生成物濃度遠大於反應物：<br><strong>$[\text{產物}] \gg [\text{反應物}]$</strong></p>
+                                <p style="font-size:0.92rem; color:rgba(255,255,255,0.7);">表示反應進行程度極為完全。</p>
+                            </div>
+
+                            <div class="info-card-yellow" style="display:flex; flex-direction:column; gap:0.35rem;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:1.35rem; font-weight:800; color:var(--accent-yellow);">$K_c \approx 1$</span>
+                                    <span style="font-size:0.85rem; color:var(--accent-yellow); background:rgba(251,191,36,0.18); padding:2px 8px; border-radius:10px;">居中平衡</span>
+                                </div>
+                                <p style="color:#f1f5f9;">平衡時反應物與生成物濃度相近：<br><strong>$[\text{產物}] \approx [\text{反應物}]$</strong></p>
+                                <p style="font-size:0.92rem; color:rgba(255,255,255,0.7);">正、逆反應進行之程度相當。</p>
+                            </div>
+
+                            <div class="info-card-red" style="display:flex; flex-direction:column; gap:0.35rem;">
+                                <div style="display:flex; align-items:center; justify-content:space-between;">
+                                    <span style="font-size:1.35rem; font-weight:800; color:var(--accent-red);">$K_c \ll 1$</span>
+                                    <span style="font-size:0.85rem; color:var(--accent-red); background:rgba(248,113,113,0.18); padding:2px 8px; border-radius:10px;">偏向反應物</span>
+                                </div>
+                                <p style="color:#f1f5f9;">平衡時反應物濃度遠大於生成物：<br><strong>$[\text{反應物}] \gg [\text{產物}]$</strong></p>
+                                <p style="font-size:0.92rem; color:rgba(255,255,255,0.7);">正反應不易進行，逆反應進行完全。</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:0.6rem; padding:0.45rem 0.9rem; background:rgba(248,113,113,0.12); border-left:4px solid var(--accent-red); border-radius:6px; font-size:0.95rem; color:#fca5a5;">
+                            ⚠️ <strong>特別提醒：</strong>$K_c$ 大小僅決定平衡時反應物轉化為產物的<strong>「最大限度（熱力學）」</strong>，<strong>完全無法表示反應速率的快慢（動力學）</strong>！
+                        </div>
+                    </div>
+
+                    <!-- 區塊二：反應商 Q 與平衡趨勢判斷 -->
+                    <div class="panel" style="flex:1; display:flex; flex-direction:column; gap:0.65rem;">
+                        <h2>📊 反應商 $Q_c$ 與反應自發進行方向預測</h2>
+                        
+                        <div class="info-card" style="padding:0.6rem 1rem;">
+                            <strong>反應商（Reaction Quotient）$Q_c$：</strong>在反應進行的<em>任意時刻</em>，將該瞬間測得的各物質濃度代入平衡常數表示式中所得之比值。
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; flex:1; align-items:stretch;">
+                            <div class="info-card-green" style="display:flex; flex-direction:column; justify-content:center; gap:0.45rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <span class="tag tag-green">$Q_c &lt; K_c$</span>
+                                    <span style="font-weight:bold; color:var(--accent-green); font-size:1.08rem;">向右自發進行 $\rightarrow$</span>
+                                </div>
+                                <p style="color:rgba(255,255,255,0.9); font-size:0.98rem; line-height:1.55;">
+                                    反應物濃度相對偏高、產物偏低。<br>
+                                    系統<strong>正反應自發進行</strong>，生成更多產物直至達平衡。
+                                </p>
+                            </div>
+
+                            <div class="info-card-yellow" style="display:flex; flex-direction:column; justify-content:center; gap:0.45rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <span class="tag tag-yellow">$Q_c = K_c$</span>
+                                    <span style="font-weight:bold; color:var(--accent-yellow); font-size:1.08rem;">已達動態平衡 ⚖️</span>
+                                </div>
+                                <p style="color:rgba(255,255,255,0.9); font-size:0.98rem; line-height:1.55;">
+                                    正反應速率等於逆反應速率。<br>
+                                    系統處於<strong>平衡狀態</strong>，巨觀上無淨反應方向。
+                                </p>
+                            </div>
+
+                            <div class="info-card-red" style="display:flex; flex-direction:column; justify-content:center; gap:0.45rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <span class="tag tag-red">$Q_c &gt; K_c$</span>
+                                    <span style="font-weight:bold; color:var(--accent-red); font-size:1.08rem;">向左自發進行 $\leftarrow$</span>
+                                </div>
+                                <p style="color:rgba(255,255,255,0.9); font-size:0.98rem; line-height:1.55;">
+                                    生成物濃度相對偏高、反應物偏低。<br>
+                                    系統<strong>逆反應自發進行</strong>，消耗生成物直至達平衡。
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="info-card-cyan" style="display:flex; align-items:center; gap:0.8rem; padding:0.6rem 1rem;">
+                            <span style="font-size:1.3rem;">💡</span>
+                            <span style="font-size:1rem; line-height:1.5;">
+                                <strong>記憶要訣：</strong>以平衡常數 $K$ 為目標標竿——<strong>$Q$ 比 $K$ 小</strong>代表尚未達標，繼續往前走（向右 $\rightarrow$）；<strong>$Q$ 比 $K$ 大</strong>代表衝過頭了，必須後退修正（向左 $\leftarrow$）！
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+window.updateSlides = function() {};
+</script>
+</body>
+</html>

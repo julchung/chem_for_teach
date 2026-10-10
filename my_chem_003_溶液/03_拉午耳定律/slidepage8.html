@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 範例 3：揮發性混合溶液計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.25rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.92rem, 1.05vw, 1.1rem); line-height: 1.7; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.1rem; flex: 1; min-height: 0; align-items: stretch;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.8rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35); padding: 10px 22px;
+            font-size: 1rem; transition: all 0.2s; align-self: flex-start;
+        }
+        .btn-action:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        .calc-step {
+            background: rgba(0,0,0,0.3); border-radius: 10px;
+            padding: 0.9rem 1.1rem; border-left: 4px solid var(--accent-blue);
+            margin-bottom: 0.6rem;
+        }
+        .formula-box {
+            background: rgba(255,255,255,0.05); padding: 0.5rem 0.8rem;
+            border-radius: 6px; font-size: 1.12rem; margin: 4px 0; color: #fff;
+        }
+        .options-list {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0.8rem 0;
+        }
+        .option-item {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 14px; border-radius: 8px; font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-3 拉午耳定律 &middot; 實戰演練：範例 3</h1>
+
+        <div class="grid-2">
+            <!-- 左欄：題目內容 -->
+            <div class="panel" style="justify-content:space-between;">
+                <div>
+                    <h2 style="color:var(--accent-yellow); font-size:1.3rem; margin-bottom:0.8rem;">📝 題目內容</h2>
+                    <div style="font-size:1.05rem; line-height:1.75; color:#f8fafc;">
+                        <p>某溫度時，庚烷 ($\text{C}_7\text{H}_{16}$) 及辛烷 ($\text{C}_8\text{H}_{18}$) 的純飽和蒸氣壓各為 $90\text{ mmHg}$ 及 $30\text{ mmHg}$。<br><br>
+                        若只含庚烷及辛烷的理想溶液，測得其<strong>總蒸氣壓為 $45\text{ mmHg}$</strong>，則與該溶液平衡之蒸氣中，<strong>辛烷氣體分子的莫耳分率 ($Y_O$)</strong> 為何？</p>
+
+                        <div class="options-list">
+                            <div class="option-item">(A) 0.25</div>
+                            <div class="option-item">(B) 0.50</div>
+                            <div class="option-item">(C) 0.75</div>
+                            <div class="option-item">(D) 0.90</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding-top:1rem;">
+                    <button class="btn-action" onclick="toggleSolution('solution-box')">
+                        💡 顯示詳解 / 隱藏
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右欄：詳解（預設留空供板書註解，點擊後呈現） -->
+            <div class="panel" style="background:rgba(255,255,255,0.02);">
+                <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
+                    <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 範例詳解</h2>
+
+                    <div class="calc-step">
+                        <div style="font-size:1rem; color:var(--accent-blue); font-weight:700;">1. 依據拉午耳定律求「液相莫耳分率」：</div>
+                        <p style="font-size:0.95rem; color:#cbd5e1; margin-top:2px;">
+                            設液相中庚烷之莫耳分率為 $X_G$，則辛烷為 $X_O = 1 - X_G$：
+                        </p>
+                        <div class="formula-box">
+                            $$P_{total} = P^\circ_G \cdot X_G + P^\circ_O \cdot X_O$$
+                            $$45 = 90 \cdot X_G + 30 \cdot (1 - X_G)$$
+                            $$45 = 60 \cdot X_G + 30 \implies 15 = 60 \cdot X_G \implies X_G = \mathbf{0.25}$$
+                        </div>
+                        <p style="font-size:0.92rem; color:#94a3b8; margin-top:3px;">
+                            液相辛烷莫耳分率：$X_O = 1 - 0.25 = \mathbf{0.75}$。
+                        </p>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-cyan);">
+                        <div style="font-size:1rem; color:var(--accent-cyan); font-weight:700;">2. 計算氣相中辛烷之蒸氣分壓：</div>
+                        <div class="formula-box">
+                            $$P_O = P^\circ_O \cdot X_O = 30 \times 0.75 = \mathbf{22.5\text{ mmHg}}$$
+                        </div>
+                        <p style="font-size:0.92rem; color:#94a3b8; margin-top:2px;">
+                            （同理庚烷分壓 $P_G = 90 \times 0.25 = 22.5\text{ mmHg}$，總壓 $22.5 + 22.5 = 45\text{ mmHg}$）
+                        </p>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-green);">
+                        <div style="font-size:1rem; color:var(--accent-green); font-weight:700;">3. 依道耳吞分壓定律求「氣相莫耳分率」：</div>
+                        <div class="formula-box">
+                            $$Y_O = \frac{P_O}{P_{total}} = \frac{22.5\text{ mmHg}}{45\text{ mmHg}} = \mathbf{0.50}$$
+                        </div>
+                        <p style="font-size:0.9rem; color:#cbd5e1; margin-top:4px;">
+                            💡 <strong>觀念拓展：</strong>庚烷易揮發（$P^\circ = 90$），在氣相中大幅富集（$X_G=0.25 \to Y_G=0.50$）；辛烷不易揮發（$P^\circ=30$），在氣相中比例下降（$X_O=0.75 \to Y_O=0.50$）！
+                        </p>
+                    </div>
+
+                    <div style="margin-top:0.4rem; padding:0.6rem 1rem; background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); border-radius:8px;">
+                        <span style="color:#34d399; font-weight:800; font-size:1.15rem;">🎯 正確答案：(B) 0.50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

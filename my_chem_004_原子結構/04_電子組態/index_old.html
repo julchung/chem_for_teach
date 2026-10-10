@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>電子組態的填寫規則 - 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; overflow-x: hidden; overflow-y: auto; background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px); background-size: 30px 30px; }
+        
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; display: block; }
+        
+        #start-overlay { display: none !important; }
+        .btn-start { background: var(--accent-blue); color: #0f172a; border: none; padding: 1.2rem 3.5rem; border-radius: 60px; font-size: 1.6rem; font-weight: 800; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 30px rgba(56, 189, 248, 0.5); }
+        .btn-start:hover { transform: scale(1.1); box-shadow: 0 0 50px rgba(56, 189, 248, 0.7); }
+
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; overflow: visible; }
+        #slides-container { position: relative; width: 100%; padding: 2vh 4vw 5vh 4vw; }
+        
+        .slide { position: relative; width: 100%; min-height: 90vh; padding: 1.5rem 4rem 2.5rem 1.5rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255, 255, 255, 0.08); margin-bottom: 2.5rem; box-sizing: border-box; }
+        .slide.active { opacity: 1; pointer-events: auto; }
+        
+        h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.8rem; border-bottom: 2px solid rgba(56, 189, 248, 0.2); padding-bottom: 0.4rem; flex-shrink: 0; }
+        h1::before { content: ""; width: 8px; height: 32px; background: var(--accent-blue); border-radius: 4px; }
+        h2 { color: var(--accent-yellow); font-size: clamp(1.2rem, 1.8vw, 1.5rem); margin: 0.5rem 0; font-weight: 600; flex-shrink: 0; }
+        
+        p, li { font-size: clamp(1rem, 1.4vw, 1.25rem); line-height: 1.5; margin-bottom: 0.6rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel { background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 20px; padding: 1.4rem; backdrop-filter: blur(12px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        
+        .formula-box { background: rgba(0, 0, 0, 0.4); border-radius: 12px; border-left: 6px solid var(--accent-green); padding: 1rem; margin: 0.8rem 0; text-align: center; font-size: clamp(1.5rem, 2.2vw, 2rem); box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
+        
+        .info-card { background: rgba(56, 189, 248, 0.08); border-radius: 14px; padding: 1rem; border: 1px solid rgba(56, 189, 248, 0.3); margin: 0.6rem 0; flex-shrink: 0; }
+
+        /* Navigation Toolbar */
+        #toolbar { position: fixed; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 10px; align-items: center; z-index: 2000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; transform: translateY(-2px); }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px var(--accent-blue); }
+        
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; font-size: 1.4rem; line-height: 0.5; margin-bottom: 2px; }
+
+        #slide-info { display: none !important; }
+
+        #drawing-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+
+        .ans-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 15, 30, 0.98); z-index: 100; flex-direction: column; padding: 2rem; border-radius: 20px; border: 3px solid var(--accent-red); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .btn-action { background: var(--accent-blue); color: #000; border: none; padding: 0.8rem 1.8rem; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 1.1rem; transition: 0.2s; align-self: center; margin-top: auto; flex-shrink: 0; }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.05); }
+
+        .svg-container { flex: 1; display: flex; justify-content: center; align-items: center; min-height: 0; overflow: hidden; }
+        .svg-container svg { max-height: 100%; max-width: 100%; }
+
+        @keyframes electron-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* ── 單元4-3 通關檢核 CSS ── */
+        .quiz-container-full { width: 100%; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+        .quiz-scenario-box { background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 14px 18px; }
+        .problem-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; border: 1px solid; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.02em; }
+        .quiz-grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; flex: 1; }
+        @media (max-width: 700px) { .quiz-grid-layout { grid-template-columns: 1fr; } }
+        .quiz-card { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.25s, box-shadow 0.25s; }
+        .quiz-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+        .quiz-card.card-correct { border-color: rgba(52, 211, 153, 0.7) !important; box-shadow: 0 0 16px rgba(52, 211, 153, 0.15) !important; }
+        .quiz-card.card-wrong { border-color: rgba(248, 113, 113, 0.7) !important; box-shadow: 0 0 16px rgba(248, 113, 113, 0.15) !important; }
+        .quiz-q { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; font-weight: 500; }
+        .quiz-options { display: flex; flex-direction: column; gap: 7px; }
+        .quiz-opt { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; padding: 9px 13px; font-size: 0.9rem; cursor: pointer; transition: all 0.18s; color: #cbd5e1; text-align: left; line-height: 1.4; width: 100%; }
+        .quiz-opt:hover { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.5); color: #f8fafc; }
+        .quiz-opt.selected { background: rgba(56,189,248,0.18); border-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+        .quiz-opt.verified-pass { background: rgba(52,211,153,0.22) !important; border-color: #34d399 !important; color: #34d399 !important; font-weight: 700; }
+        .quiz-opt.verified-fail { background: rgba(248,113,113,0.22) !important; border-color: #f87171 !important; color: #f87171 !important; font-weight: 700; }
+        .quiz-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
+        .quiz-feedback-msg { flex: 1; min-width: 180px; font-size: 0.92rem; color: #94a3b8; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.04); }
+        .quiz-feedback-msg.success { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+        .quiz-feedback-msg.fail { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+        .btn-submit-exam { background: linear-gradient(135deg, #38bdf8, #34d399); color: #0b1120; border: none; padding: 10px 24px; border-radius: 12px; font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; white-space: nowrap; }
+        .btn-submit-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-submit-exam:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .btn-retry-exam { display: none; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-size: 0.97rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; white-space: nowrap; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35); }
+        .btn-retry-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="start-overlay">
+            <h1 style="border:none; font-size: 4.5rem; text-align:center; margin-bottom: 0.5rem; text-shadow: 0 0 40px rgba(56,189,248,0.4);">電子組態</h1>
+            <p style="font-size: 2rem; color: var(--accent-cyan); margin-bottom: 4rem;">填寫規則互動教學</p>
+            <button class="btn-start" id="btn-start">開始探索教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+                <!-- Slide 1: Aufbau Principle -->
+                <div class="slide active">
+                    <h1>奧夫堡規則 (Aufbau Principle)</h1>
+                    <div class="grid-2">
+                        <div class="panel">
+                            <h2>低能階優先填寫</h2>
+                            <p><strong>奧夫堡規則</strong>（又稱構築原則）：電子在原子軌域中排列時，會優先填入<strong>能量最低</strong>的軌域，填滿後再依次填入較高能量的軌域。</p>
+                            <div class="info-card">
+                                <p><strong>軌域能量高低判斷 (n+l 規則)：</strong></p>
+                                <ul style="margin-left: 1.5rem;">
+                                    <li>決定於主量子數(n)與角量子數(l)的和：<strong>(n + l) 值愈大，能量愈高</strong>。</li>
+                                    <li>若 (n + l) 值相同，則 <strong>n 值愈大，能量愈高</strong>。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <h2 style="color: var(--accent-cyan);">軌域填寫順序圖</h2>
+                            <div class="svg-container">
+                                <svg width="100%" height="100%" viewBox="0 10 250 380">
+                                    <defs>
+                                        <marker id="arrowDiag" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                            <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent-blue)" />
+                                        </marker>
+                                        <g id="orbBox">
+                                            <circle cx="0" cy="0" r="18" fill="rgba(56,189,248,0.1)" stroke="var(--accent-blue)" stroke-width="2"/>
+                                        </g>
+                                    </defs>
+                                    
+                                    <!-- s-orbitals (col 1) -->
+                                    <use href="#orbBox" x="50" y="50" /> <text x="50" y="55" fill="#fff" font-size="16" text-anchor="middle">1s</text>
+                                    <use href="#orbBox" x="50" y="100" /> <text x="50" y="105" fill="#fff" font-size="16" text-anchor="middle">2s</text>
+                                    <use href="#orbBox" x="50" y="150" /> <text x="50" y="155" fill="#fff" font-size="16" text-anchor="middle">3s</text>
+                                    <use href="#orbBox" x="50" y="200" /> <text x="50" y="205" fill="#fff" font-size="16" text-anchor="middle">4s</text>
+                                    <use href="#orbBox" x="50" y="250" /> <text x="50" y="255" fill="#fff" font-size="16" text-anchor="middle">5s</text>
+                                    <use href="#orbBox" x="50" y="300" /> <text x="50" y="305" fill="#fff" font-size="16" text-anchor="middle">6s</text>
+                                    <use href="#orbBox" x="50" y="350" /> <text x="50" y="355" fill="#fff" font-size="16" text-anchor="middle">7s</text>
+
+                                    <!-- p-orbitals (col 2) -->
+                                    <use href="#orbBox" x="100" y="100" /> <text x="100" y="105" fill="#fff" font-size="16" text-anchor="middle">2p</text>
+                                    <use href="#orbBox" x="100" y="150" /> <text x="100" y="155" fill="#fff" font-size="16" text-anchor="middle">3p</text>
+                                    <use href="#orbBox" x="100" y="200" /> <text x="100" y="205" fill="#fff" font-size="16" text-anchor="middle">4p</text>
+                                    <use href="#orbBox" x="100" y="250" /> <text x="100" y="255" fill="#fff" font-size="16" text-anchor="middle">5p</text>
+                                    <use href="#orbBox" x="100" y="300" /> <text x="100" y="305" fill="#fff" font-size="16" text-anchor="middle">6p</text>
+                                    <use href="#orbBox" x="100" y="350" /> <text x="100" y="355" fill="#fff" font-size="16" text-anchor="middle">7p</text>
+
+                                    <!-- d-orbitals (col 3) -->
+                                    <use href="#orbBox" x="150" y="150" /> <text x="150" y="155" fill="#fff" font-size="16" text-anchor="middle">3d</text>
+                                    <use href="#orbBox" x="150" y="200" /> <text x="150" y="205" fill="#fff" font-size="16" text-anchor="middle">4d</text>
+                                    <use href="#orbBox" x="150" y="250" /> <text x="150" y="255" fill="#fff" font-size="16" text-anchor="middle">5d</text>
+                                    <use href="#orbBox" x="150" y="300" /> <text x="150" y="305" fill="#fff" font-size="16" text-anchor="middle">6d</text>
+
+                                    <!-- f-orbitals (col 4) -->
+                                    <use href="#orbBox" x="200" y="200" /> <text x="200" y="205" fill="#fff" font-size="16" text-anchor="middle">4f</text>
+                                    <use href="#orbBox" x="200" y="250" /> <text x="200" y="255" fill="#fff" font-size="16" text-anchor="middle">5f</text>
+
+                                    <!-- Diagonal Lines -->
+                                    <!-- 1s -->
+                                    <line x1="75" y1="25" x2="25" y2="75" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 2s -->
+                                    <line x1="75" y1="75" x2="25" y2="125" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 2p, 3s -->
+                                    <line x1="125" y1="75" x2="25" y2="175" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 3p, 4s -->
+                                    <line x1="125" y1="125" x2="25" y2="225" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 3d, 4p, 5s -->
+                                    <line x1="175" y1="125" x2="25" y2="275" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 4d, 5p, 6s -->
+                                    <line x1="175" y1="175" x2="25" y2="325" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 4f, 5d, 6p, 7s -->
+                                    <line x1="225" y1="175" x2="25" y2="375" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                    <!-- 5f, 6d, 7p -->
+                                    <line x1="225" y1="225" x2="75" y2="375" stroke="var(--accent-blue)" stroke-width="2" marker-end="url(#arrowDiag)"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel" style="margin-top: 15px; padding: 15px 30px; flex: 0 0 auto;">
+                        <div class="formula-box" style="margin: 0; font-size: 1.8rem; letter-spacing: 2px; text-align: center;">
+                            $1s < 2s < 2p < 3s < 3p < 4s < 3d < 4p < 5s < 4d < 5p < 6s < 4f < 5d \dots$
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Pauli Exclusion Principle -->
+                <div class="slide">
+                    <h1>包利不相容原理 (Pauli Exclusion Principle)</h1>
+                    <div class="grid-2">
+                        <div class="panel">
+                            <h2>電子自旋與軌域容量</h2>
+                            <p style="font-size: 1.6rem; line-height: 2; margin-bottom: 2rem; margin-top: 1rem;"><strong>定義：</strong>一原子中不可能存在二個電子具有完全相同的四種量子數。</p>
+                            <div class="info-card" style="border-color: var(--accent-red); padding: 2rem;">
+                                <p style="font-size: 1.5rem; margin-bottom: 1rem;"><strong>核心結論：</strong></p>
+                                <ul style="margin-left: 2rem; font-size: 1.4rem; line-height: 2;">
+                                    <li>同一軌域中，<strong>最多只能容納兩個電子</strong>。</li>
+                                    <li>若有兩個電子填入同一軌域，它們的<strong>自旋方向必須相反</strong> (一個向上 $\uparrow$，一個向下 $\downarrow$)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <h2>軌域圖示比較</h2>
+                            <div class="svg-container" style="flex-direction: column; gap: 40px; justify-content: center;">
+                                <!-- Correct -->
+                                <div style="display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center;">
+                                    <div style="width: 100px; height: 100px; border: 4px solid var(--accent-green); display: flex; justify-content: center; align-items: center; border-radius: 12px; background: rgba(52,211,153,0.1);">
+                                        <span style="color: var(--accent-green); font-size: 4.5rem; font-weight: bold; line-height: 1;">&#8645;</span>
+                                    </div>
+                                    <div style="color: var(--accent-green); font-size: 2rem; font-weight: bold; width: 250px;">(正確) 自旋相反</div>
+                                </div>
+                                <!-- Incorrect 1 -->
+                                <div style="display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center;">
+                                    <div style="width: 100px; height: 100px; border: 4px solid var(--accent-red); display: flex; justify-content: center; align-items: center; border-radius: 12px; background: rgba(248,113,113,0.1);">
+                                        <span style="color: var(--accent-red); font-size: 4.5rem; font-weight: bold; line-height: 1;">&#8648;</span>
+                                    </div>
+                                    <div style="color: var(--accent-red); font-size: 2rem; font-weight: bold; width: 250px;">(錯誤) 自旋相同</div>
+                                </div>
+                                <!-- Incorrect 2 -->
+                                <div style="display: flex; align-items: center; gap: 30px; width: 100%; justify-content: center;">
+                                    <div style="width: 100px; height: 100px; border: 4px solid var(--accent-red); display: flex; justify-content: center; align-items: center; border-radius: 12px; background: rgba(248,113,113,0.1);">
+                                        <div style="display: flex; color: var(--accent-red); font-size: 4.5rem; font-weight: bold; line-height: 1;">
+                                            <span>&#8645;</span><span style="margin-left: -5px;">&#8593;</span>
+                                        </div>
+                                    </div>
+                                    <div style="color: var(--accent-red); font-size: 2rem; font-weight: bold; width: 250px;">(錯誤) 超過兩個電子</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Hund's Rule -->
+                <div class="slide">
+                    <h1>洪德原則 (Hund's Rule)</h1>
+                    <div class="grid-2">
+                        <div class="panel">
+                            <h2>最大未成對電子數</h2>
+                            <p style="font-size: 1.6rem; line-height: 2; margin-bottom: 2rem; margin-top: 1rem;"><strong>定義：</strong>電子填入同能階的同型軌域 (例如 $p_x, p_y, p_z$) 時，會先以<strong>相同的自旋方位</strong>分別填入不同的軌域中。</p>
+                            <div class="info-card" style="border-color: var(--accent-yellow); padding: 2rem;">
+                                <p style="font-size: 1.5rem; margin-bottom: 1rem;"><strong>為什麼？</strong></p>
+                                <p style="font-size: 1.4rem; line-height: 2;">當電子分散在不同的軌域且自旋平行時，可以減少電子間的斥力，使得原子處於<strong>能量最低、最穩定</strong>的狀態 (基態)。只有當每個軌域都半填滿後，才允許自旋方向相反的電子填入成對。</p>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <h2>氮原子 (N, $Z=7$) 的 2p 軌域填寫</h2>
+                            <p style="text-align: center; font-size: 1.5rem;">電子組態：$1s^2 2s^2 2p^3$ (剩 3 個電子填 2p)</p>
+                            <div class="svg-container" style="flex-direction: column; gap: 40px; margin-top: 20px;">
+                                <!-- Correct -->
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                                    <div style="color: var(--accent-green); font-size: 1.8rem; font-weight: bold;">(正確) 洪德原則 - 單獨填入且自旋平行</div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--accent-green);">&#8593;</div>
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--accent-green);">&#8593;</div>
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--accent-green);">&#8593;</div>
+                                    </div>
+                                    <div style="display: flex; gap: 10px; width: 290px;">
+                                        <div style="flex:1; text-align:center; font-size: 1.4rem;">$p_x$</div>
+                                        <div style="flex:1; text-align:center; font-size: 1.4rem;">$p_y$</div>
+                                        <div style="flex:1; text-align:center; font-size: 1.4rem;">$p_z$</div>
+                                    </div>
+                                </div>
+                                <!-- Incorrect -->
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                                    <div style="color: var(--accent-red); font-size: 1.8rem; font-weight: bold;">(錯誤) 提早成對，排斥力大</div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4.5rem; color: var(--accent-red); line-height: 1;">&#8645;</div>
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4rem; color: var(--accent-red);">&#8593;</div>
+                                        <div style="width: 90px; height: 90px; border: 3px solid #fff; display: flex; justify-content: center; align-items: center; font-size: 4rem;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: 軌域填寫觀念統整 -->
+                <div class="slide">
+                    <h1>軌域填寫觀念統整 (原子序 1~10)</h1>
+                    <div class="panel" style="flex: 1; padding: 10px; overflow-y: hidden;">
+
+                        <style>
+                        .orb-table { width: 100%; height: auto; max-height: 100%; border-collapse: collapse; text-align: center; font-size: 1.6rem; margin-top: 2px; }
+                        .orb-table th { background: rgba(56,189,248,0.15); color: var(--accent-cyan); padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); font-weight: bold; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(10px); }
+                        .orb-table td { padding: 5px 12px; border: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2); vertical-align: middle; }
+                        .orb-group { display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding-left: 20px; }
+                        .orb-col { display: flex; flex-direction: column; align-items: center; }
+                        .orb { display: flex; gap: 3.5px; }
+                        .orb-box { width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-size: 1.95rem; color: var(--accent-green); line-height: 1; border-radius: 5px; background: rgba(0,0,0,0.2); }
+                        .orb-label { font-size: 1.1rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+                        </style>
+                        <table class="orb-table">
+                            <thead>
+                                <tr>
+                                    <th width="12%">原子序 (Z)</th>
+                                    <th width="15%">元素</th>
+                                    <th width="25%" style="text-align: left; padding-left: 30px;">電子組態</th>
+                                    <th width="48%" style="text-align: left; padding-left: 20px;">軌域填寫</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">H</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8593;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb"><div class="orb-box"></div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">He</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb"><div class="orb-box"></div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Li</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8593;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Be</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">B</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">C</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">N</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^3$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">O</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^4$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">F</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^5$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>10</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ne</td>
+                                    <td style="text-align: left; padding-left: 30px;">$1s^2 2s^2 2p^6$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                
+                <!-- Slide 5: 軌域填寫觀念統整 (原子序 11~18) -->
+                <div class="slide">
+                    <h1>軌域填寫觀念統整 (原子序 11~18)</h1>
+                    <div class="panel" style="flex: 1; padding: 10px; overflow-y: hidden;">
+
+                        <style>
+                        .orb-table { width: 100%; height: auto; max-height: 100%; border-collapse: collapse; text-align: center; font-size: 1.6rem; margin-top: 2px; }
+                        .orb-table th { background: rgba(56,189,248,0.15); color: var(--accent-cyan); padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); font-weight: bold; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(10px); }
+                        .orb-table td { padding: 5px 12px; border: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2); vertical-align: middle; }
+                        .orb-group { display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding-left: 20px; }
+                        .orb-col { display: flex; flex-direction: column; align-items: center; }
+                        .orb { display: flex; gap: 3.5px; }
+                        .orb-box { width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-size: 1.95rem; color: var(--accent-green); line-height: 1; border-radius: 5px; background: rgba(0,0,0,0.2); }
+                        .orb-label { font-size: 1.1rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+                        </style>
+                        <table class="orb-table">
+                            <thead>
+                                <tr>
+                                    <th width="12%">原子序 (Z)</th>
+                                    <th width="15%">元素</th>
+                                    <th width="25%" style="text-align: left; padding-left: 30px;">電子組態</th>
+                                    <th width="48%" style="text-align: left; padding-left: 20px;">軌域填寫</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>11</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Na</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8593;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>12</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Mg</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>13</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Al</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>14</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Si</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>15</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">P</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^3$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>16</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">S</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^4$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>17</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Cl</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^5$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>18</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ar</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ne] 3s^2 3p^6$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">1s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">2s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">2p</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">3s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 1">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                
+                <!-- Slide 6: 軌域填寫觀念統整 (原子序 19~36) -->
+                <div class="slide">
+                    <h1>軌域填寫觀念統整 (原子序 19~36)</h1>
+                    <div class="panel" style="flex: 1; padding: 10px; overflow-y: auto;">
+
+                        <style>
+                        .orb-table { width: 100%; height: auto; border-collapse: collapse; text-align: center; font-size: 1.6rem; margin-top: 2px; }
+                        .orb-table th { background: rgba(56,189,248,0.15); color: var(--accent-cyan); padding: 8px 12px; border: 1px solid rgba(255,255,255,0.2); font-weight: bold; position: sticky; top: 0; z-index: 2; backdrop-filter: blur(10px); }
+                        .orb-table td { padding: 5px 12px; border: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2); vertical-align: middle; }
+                        .orb-group { display: flex; align-items: center; justify-content: flex-start; gap: 15px; padding-left: 20px; }
+                        .orb-col { display: flex; flex-direction: column; align-items: center; }
+                        .orb { display: flex; gap: 3.5px; }
+                        .orb-box { width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.5); display: flex; justify-content: center; align-items: center; font-size: 1.95rem; color: var(--accent-green); line-height: 1; border-radius: 5px; background: rgba(0,0,0,0.2); }
+                        .orb-label { font-size: 1.1rem; color: rgba(255,255,255,0.6); margin-top: 2px; }
+                        </style>
+                        <table class="orb-table">
+                            <thead>
+                                <tr>
+                                    <th width="12%">原子序 (Z)</th>
+                                    <th width="15%">元素</th>
+                                    <th width="25%" style="text-align: left; padding-left: 30px;">電子組態</th>
+                                    <th width="48%" style="text-align: left; padding-left: 20px;">價軌域填寫 (4s, 3d, 4p)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>19</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">K</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8593;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>20</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ca</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>21</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Sc</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>22</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ti</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>23</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">V</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^3$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>24</td>
+                                    <td style="font-weight: bold; color: var(--accent-red); font-size: 2rem;">Cr ★</td>
+                                    <td style="text-align: left; padding-left: 30px; font-weight: bold; color: var(--accent-red);">$[Ar] 4s^1 3d^5 (異常)</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div></div>
+                                                <div class="orb-label" style="color: var(--accent-red);">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label" style="color: var(--accent-red);">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>25</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Mn</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^5$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>26</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Fe</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^6$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>27</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Co</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^7$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>28</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ni</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^8$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>29</td>
+                                    <td style="font-weight: bold; color: var(--accent-red); font-size: 2rem;">Cu ★</td>
+                                    <td style="text-align: left; padding-left: 30px; font-weight: bold; color: var(--accent-red);">$[Ar] 4s^1 3d^{10} (異常)</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8593;</div></div>
+                                                <div class="orb-label" style="color: var(--accent-red);">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8645;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8645;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8645;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8645;</div>
+                                                    <div class="orb-box" style="color: var(--accent-red); font-weight: bold;">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label" style="color: var(--accent-red);">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>30</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Zn</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10}$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col" style="opacity: 0.2">
+                                                <div class="orb">
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>31</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ga</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^1$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>32</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Ge</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^2$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box"></div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>33</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">As</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^3$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>34</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Se</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^4$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>35</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Br</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^5$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8593;</div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>36</td>
+                                    <td style="font-weight: bold; color: var(--accent-yellow); font-size: 2rem;">Kr</td>
+                                    <td style="text-align: left; padding-left: 30px;">$[Ar] 4s^2 3d^{10} 4p^6$</td>
+                                    <td>
+                                        <div class="orb-group">
+                                            <div class="orb-col">
+                                                <div class="orb"><div class="orb-box">&#8645;</div></div>
+                                                <div class="orb-label">4s</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">3d</div>
+                                            </div>
+                                            <div class="orb-col">
+                                                <div class="orb">
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                    <div class="orb-box">&#8645;</div>
+                                                </div>
+                                                <div class="orb-label">4p</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Slide 7: Exceptions -->
+                <div class="slide">
+                    <h1>電子組態填寫例外 (Cr 與 Cu)</h1>
+                    <div class="grid-2">
+                        <!-- Left Panel: Cr -->
+                        <div class="panel" style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: hidden;">
+                            <h2 style="color: var(--accent-yellow); margin: 0; font-size: 1.8rem;">鉻 (Cr, Z = 24)</h2>
+                            
+                            <div class="info-card" style="border-left: 4px solid var(--accent-purple); padding: 10px 15px; background: rgba(255,255,255,0.02); border-radius: 6px; font-size: 1.1rem; line-height: 1.6; margin: 0;">
+                                <p style="margin: 0 0 6px 0;">3d 與 4s 軌域能量極為接近。當 3d 軌域達到<strong>半滿（5個電子）</strong>狀態時，具有對稱的球形電荷分布，能降低原子能量，使整體更趨穩定。</p>
+                                <div style="display: flex; gap: 20px; font-size: 1.25rem; margin-top: 5px;">
+                                    <div>預期：<span style="color: rgba(255,255,255,0.5); text-decoration: line-through;">$[Ar] 4s^2 3d^4$</span></div>
+                                    <div style="color: var(--accent-red); font-weight: bold;">實際基態：$[Ar] 4s^1 3d^5$</div>
+                                </div>
+                            </div>
+
+                            <div class="svg-container" style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin: 0;">
+                                <!-- Expected Diagram -->
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.95rem;">(預期) 未達半滿狀態：</div>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.4); margin-top: 1px;">4s</div>
+                                        </div>
+                                        <div style="display: flex; gap: 3.5px;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);"></div>
+                                        </div>
+                                        <div style="font-size: 1rem; color: rgba(255,255,255,0.4);">3d</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Line Separator -->
+                                <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0;"></div>
+
+                                <!-- Actual Diagram -->
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="color: var(--accent-green); font-size: 1rem; font-weight: bold;">(實際基態) 3d 半滿穩定狀態：</div>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="font-size: 0.9rem; color: var(--accent-green); margin-top: 1px;">4s</div>
+                                        </div>
+                                        <div style="display: flex; gap: 3.5px;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                        </div>
+                                        <div style="font-size: 1rem; color: var(--accent-green); font-weight: bold;">3d</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Cu -->
+                        <div class="panel" style="flex: 1; padding: 15px 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: hidden;">
+                            <h2 style="color: var(--accent-cyan); margin: 0; font-size: 1.8rem;">銅 (Cu, Z = 29)</h2>
+                            
+                            <div class="info-card" style="border-left: 4px solid var(--accent-purple); padding: 10px 15px; background: rgba(255,255,255,0.02); border-radius: 6px; font-size: 1.1rem; line-height: 1.6; margin: 0;">
+                                <p style="margin: 0 0 6px 0;">3d 與 4s 軌域能量極為接近。當 3d 軌域達到<strong>全滿（10個電子）</strong>狀態時，軌域完全對稱，屏蔽效應好，能顯著降低能量，使整體更為穩定。</p>
+                                <div style="display: flex; gap: 20px; font-size: 1.25rem; margin-top: 5px;">
+                                    <div>預期：<span style="color: rgba(255,255,255,0.5); text-decoration: line-through;">$[Ar] 4s^2 3d^9$</span></div>
+                                    <div style="color: var(--accent-red); font-weight: bold;">實際基態：$[Ar] 4s^1 3d^{10}$</div>
+                                </div>
+                            </div>
+
+                            <div class="svg-container" style="display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,0.25); padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin: 0;">
+                                <!-- Expected Diagram -->
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="color: rgba(255,255,255,0.5); font-size: 0.95rem;">(預期) 未達全滿狀態：</div>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.4); margin-top: 1px;">4s</div>
+                                        </div>
+                                        <div style="display: flex; gap: 3.5px;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: rgba(255,255,255,0.3);">&#8593;</div>
+                                        </div>
+                                        <div style="font-size: 1rem; color: rgba(255,255,255,0.4);">3d</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Line Separator -->
+                                <div style="height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0;"></div>
+
+                                <!-- Actual Diagram -->
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="color: var(--accent-green); font-size: 1rem; font-weight: bold;">(實際基態) 3d 全滿穩定狀態：</div>
+                                    <div style="display: flex; gap: 15px; align-items: center;">
+                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8593;</div>
+                                            <div style="font-size: 0.9rem; color: var(--accent-green); margin-top: 1px;">4s</div>
+                                        </div>
+                                        <div style="display: flex; gap: 3.5px;">
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8645;</div>
+                                            <div style="width: 38px; height: 38px; border: 1.5px solid var(--accent-green); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-green); background: rgba(16,185,129,0.05);">&#8645;</div>
+                                        </div>
+                                        <div style="font-size: 1rem; color: var(--accent-green); font-weight: bold;">3d</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 8: Example 1 -->
+                <div class="slide">
+                    <h1>範例練習 1</h1>
+                    <div class="panel" style="position: relative; flex: 1;">
+                        <div class="ans-overlay" id="ans-1">
+                            <h2>解析步驟</h2>
+                            <div style="font-size: 1.25rem; line-height: 1.8; margin-top: 1rem;">
+                                判斷基態與激發態：<br>
+                                (A) $1s^2 2s^2 2p^6 3s^2$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;依序填滿，無越級跳躍，為鎂(Mg)的<strong>基態</strong>。<br>
+                                (B) $1s^2 2s^2 2p^6 3s^1 3p^1$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;3s 軌域未填滿(應填2個)就填入 3p，表示電子吸收能量躍遷，為<strong>激發態</strong>。<br>
+                                (C) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^1$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;依序填寫，為鉀(K)的<strong>基態</strong>。<br>
+                                (D) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^2 3d^{10} 4p^1$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;依序填寫(能量 4s < 3d < 4p)，為鎵(Ga)的<strong>基態</strong>。
+                                <br><br>
+                                <strong style="color: var(--accent-green); font-size: 1.6rem;">答案：(B)</strong>
+                            </div>
+                            <button class="btn-action" onclick="toggleAns('ans-1')">返回題目</button>
+                        </div>
+                        <h2>激發態判斷</h2>
+                        <p style="font-size: 1.5rem; margin-top: 1rem; line-height: 2;">
+                            下列電子組態，哪一組表示其原子在<strong>激發態</strong>中？<br>
+                            (A) $1s^2 2s^2 2p^6 3s^2$<br>
+                            (B) $1s^2 2s^2 2p^6 3s^1 3p^1$<br>
+                            (C) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^1$<br>
+                            (D) $1s^2 2s^2 2p^6 3s^2 3p^6 4s^2 3d^{10} 4p^1$
+                        </p>
+                        <button class="btn-action" style="margin-top: auto;" onclick="toggleAns('ans-1')">顯示解題過程</button>
+                    </div>
+                </div>
+
+                <!-- Slide 9: Example 2 -->
+                <div class="slide">
+                    <h1>範例練習 2</h1>
+                    <div class="panel" style="position: relative; flex: 1;">
+                        <div class="ans-overlay" id="ans-2">
+                            <h2>解析步驟</h2>
+                            <div style="font-size: 1.25rem; line-height: 1.8; margin-top: 1rem;">
+                                列出各原子的基態電子組態：<br>
+                                (A) <strong>Cr ($Z=24$)</strong>：$[Ar] 4s^1 3d^5$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;未成對電子 = 1(來自4s) + 5(來自3d) = <strong style="color: var(--accent-red);">6 個</strong><br>
+                                (B) <strong>Fe ($Z=26$)</strong>：$[Ar] 4s^2 3d^6$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;3d 有 6 個電子，洪德原則填寫後有 4 個未成對，未成對電子 = <strong>4 個</strong><br>
+                                (C) <strong>Cu ($Z=29$)</strong>：$[Ar] 4s^1 3d^{10}$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;未成對電子 = 1(來自4s) = <strong>1 個</strong><br>
+                                (D) <strong>Zn ($Z=30$)</strong>：$[Ar] 4s^2 3d^{10}$<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;所有軌域全滿，未成對電子 = <strong>0 個</strong>
+                                <br><br>
+                                <strong style="color: var(--accent-green); font-size: 1.6rem;">答案：(A)</strong>
+                            </div>
+                            <button class="btn-action" onclick="toggleAns('ans-2')">返回題目</button>
+                        </div>
+                        <h2>未成對電子數</h2>
+                        <p style="font-size: 1.5rem; margin-top: 1rem; line-height: 2;">
+                            下列基態原子中，何者具有<strong>最多</strong>的未成對電子？<br>
+                            (A) Cr (鉻, $Z=24$)<br>
+                            (B) Fe (鐵, $Z=26$)<br>
+                            (C) Cu (銅, $Z=29$)<br>
+                            (D) Zn (鋅, $Z=30$)
+                        </p>
+                        <button class="btn-action" style="margin-top: auto;" onclick="toggleAns('ans-2')">顯示解題過程</button>
+                    </div>
+                </div>
+
+                <!-- ══════ Slide 10: 單元4-4 核心通關檢核 ══════ -->
+                <div class="slide" id="slide-checkpoint-electron" style="padding:1.5rem 3.5rem 2rem 2rem;">
+                    <div class="quiz-container-full">
+                        <!-- 標頭情境框 -->
+                        <div class="quiz-scenario-box">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                                <span class="problem-badge" style="background:rgba(52,211,153,0.2);border-color:rgba(52,211,153,0.4);color:#34d399;">
+                                    🏆 單元 4-4 · 核心通關檢核
+                                </span>
+                                <span style="font-size:0.86rem;color:#38bdf8;">📌 請完成共 3 小題測驗，點擊右下角「確定作答」提交檢核</span>
+                            </div>
+                            <h3 style="color:#f8fafc;font-size:1.15rem;margin:0 0 6px 0;display:flex;align-items:center;gap:8px;">
+                                <span>🎯</span> 單元 4-4 · 核心通關檢核
+                            </h3>
+                            <p style="color:#cbd5e1;font-size:0.92rem;margin:0;line-height:1.5;">
+                                <strong style="color:#fbbf24;">【電子組態填寫三大原則與應用】</strong>
+                                請仔細閱讀並作答以下 3 道核心關鍵例題（含組態能量穩定性、主層電子分佈及罕德定則判定），全部答對即可解鎖通關！
+                            </p>
+                        </div>
+
+                        <!-- 題目網格排版 -->
+                        <div class="quiz-grid-layout" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+                            <!-- 第(1)題 -->
+                            <div class="quiz-card" data-q="1" data-ans="2">
+                                <div class="quiz-q">
+                                    <span style="color:var(--accent-blue);font-weight:700;">(1)</span>
+                                    某中性原子之電子組態為 $1s^2 2s^2 2p^5 3s^1$，則下列敘述何者錯誤？
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt" data-opt="0">A. 此原子之原子序為 10</button>
+                                    <button type="button" class="quiz-opt" data-opt="1">B. 此種組態並非最安定者</button>
+                                    <button type="button" class="quiz-opt" data-opt="2">C. 此原子應獲得能量，變為 $1s^2 2s^2 2p^6$</button>
+                                    <button type="button" class="quiz-opt" data-opt="3">D. 此原子的 1s 和 2s 軌域，均已填滿電子</button>
+                                </div>
+                            </div>
+
+                            <!-- 第(2)題 -->
+                            <div class="quiz-card" data-q="2" data-ans="2">
+                                <div class="quiz-q">
+                                    <span style="color:var(--accent-blue);font-weight:700;">(2)</span>
+                                    關於 $_{23}	ext{V}$ 的電子組態，其 K、L、M、N 各主層的電子數依序為
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt" data-opt="0">A. 2、8、8、5</button>
+                                    <button type="button" class="quiz-opt" data-opt="1">B. 2、8、10、3</button>
+                                    <button type="button" class="quiz-opt" data-opt="2">C. 2、8、11、2</button>
+                                    <button type="button" class="quiz-opt" data-opt="3">D. 2、8、12、1</button>
+                                </div>
+                            </div>
+
+                            <!-- 第(3)題 -->
+                            <div class="quiz-card" data-q="3" data-ans="2">
+                                <div class="quiz-q">
+                                    <span style="color:var(--accent-blue);font-weight:700;">(3)</span>
+                                    下列何者違反罕德定則
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt" data-opt="0">A. $	ext{P}_x^1 	ext{P}_y^1 	ext{P}_z^1$</button>
+                                    <button type="button" class="quiz-opt" data-opt="1">B. $	ext{P}_x^2 	ext{P}_y^1 	ext{P}_z^1$</button>
+                                    <button type="button" class="quiz-opt" data-opt="2">C. $	ext{P}_x^2 	ext{P}_y^1 	ext{P}_z^0$</button>
+                                    <button type="button" class="quiz-opt" data-opt="3">D. $	ext{P}_x^1 	ext{P}_y^0 	ext{P}_z^1$</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 底部操作列與提示訊息 -->
+                        <div class="quiz-action-bar">
+                            <div class="quiz-feedback-msg" id="quiz-feedback-msg-electron">
+                                <span>💡 請依序點選作答第 (1) ~ (3) 題，完成後點擊「確定作答」。</span>
+                            </div>
+                            <div style="display:flex;gap:10px;align-items:center;">
+                                <button type="button" id="btn-retry-exam-electron" class="btn-retry-exam">
+                                    🔄 再試一次
+                                </button>
+                                <button type="button" id="btn-submit-exam-electron" class="btn-submit-exam">
+                                    確定作答 🚀
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 單元 4-4 核心通關完成橫幅 -->
+                <div id="section-complete-banner-electron" style="
+                    display: none;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    min-height: 40vh;
+                    padding: 3rem 2rem;
+                    background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0) 70%);
+                    border-top: 1px solid rgba(52,211,153,0.25);
+                    margin-top: 2rem;
+                    border-radius: 20px;
+                ">
+                    <div style="font-size:4rem; margin-bottom:0.8rem; animation: electron-pulse 1.5s ease-in-out infinite;">🏆</div>
+                    <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+                    <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜你 3 題全數通過！已完成電子組態核心檢核 🎉</p>
+                    <p style="color:#94a3b8; font-size:0.95rem;">下一單元已自動解鎖，請從左側目錄切換繼續學習</p>
+                    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                        <div style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:12px 22px; color:#34d399; font-weight:700;">
+                            ✅ 單元 4-4 電子組態 — 通關
+                        </div>
+                        <div style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:12px 22px; color:#38bdf8; font-weight:700;">
+                            🔓 下一單元 — 已解鎖
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <canvas id="drawing-layer"></canvas>
+        </div>
+        <!-- Floating Toolbar -->
+        <div id="toolbar">
+            <div id="drag-handle">≡</div>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂端" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+            <div style="height: 1px; width: 30px; background: rgba(255,255,255,0.2); margin: 5px 0;"></div>
+            
+            <button class="btn-tool" id="btn-draw" title="手寫功能">✎</button>
+            
+            <div id="color-picker" style="display: none; flex-direction: column; gap: 8px; margin-top: 5px;">
+                <div class="color-dot" style="width: 24px; height: 24px; background: #f8fafc; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width: 24px; height: 24px; background: #f87171; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width: 24px; height: 24px; background: #38bdf8; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width: 24px; height: 24px; background: #34d399; border-radius: 50%; cursor: pointer; border: 2px solid transparent;" data-color="#34d399"></div>
+            </div>
+
+            <div id="eraser-tools" style="display: none; width: 100%; flex-direction: column; gap: 8px; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <button class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+            </div>
+            
+            <div style="height: 1px; width: 30px; background: rgba(255,255,255,0.2); margin: 5px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button class="btn-tool" id="btn-home" title="回到首頁">🏠</button>
+        </div>
+    </div>
+
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 99999; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+        </div>
+    </div>
+
+    <style>
+    /* random draw styles */
+    .draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+    .draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+    .draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+    .draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+    </style>
+
+
+    <script>
+        // ─── Drawing Layer (scroll-mode) ───
+        let isDrawingMode = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let lastX = 0, lastY = 0;
+
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function resizeDrawCanvas() {
+            if (!canvas) return;
+            const pArea = document.getElementById('presentation-area') || document.body;
+            const sw = Math.max(pArea.scrollWidth, pArea.clientWidth, window.innerWidth);
+            const sh = Math.max(pArea.scrollHeight, pArea.clientHeight, document.documentElement.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.width = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+        window.addEventListener('resize', resizeDrawCanvas);
+        window.addEventListener('load', resizeDrawCanvas);
+        setTimeout(resizeDrawCanvas, 400);
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left + window.scrollX, clientY - rect.top + window.scrollY];
+        }
+
+        function startDrawing(e) { if (!isDrawingMode) return; isDrawing = true; [lastX, lastY] = getCoords(e); }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 40; ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+                ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = 3; ctx.strokeStyle = penColor;
+            }
+            ctx.lineCap = 'round'; ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() { isDrawing = false; }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { if(isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive: false});
+        canvas.addEventListener('touchmove', (e) => { if(isDrawingMode) e.preventDefault(); draw(e); }, {passive: false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function toggleAns(id) {
+            const overlay = document.getElementById(id);
+            if (overlay) overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        document.getElementById('btn-draw').addEventListener('click', (e) => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            document.getElementById('color-picker').style.display = isDrawingMode ? 'flex' : 'none';
+            document.getElementById('eraser-tools').style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        document.getElementById('btn-eraser').addEventListener('click', (e) => {
+            drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+            e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
+                drawMode = 'pen';
+                document.getElementById('btn-eraser').classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('start-overlay').style.display = 'none';
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(err => console.log(err));
+            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+        });
+
+        document.getElementById('btn-home').addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+        // ─── Toolbar Drag ───
+        const tb = document.getElementById('toolbar'), dh = document.getElementById('drag-handle');
+        let isDT = false, tOY = 0;
+        const sDT = (y) => { isDT = true; tb.style.transform = 'none'; tOY = y - tb.offsetTop; };
+        const mDT = (y) => { if (isDT) { tb.style.top = (y - tOY) + 'px'; tb.style.bottom = 'auto'; } };
+        dh.addEventListener('mousedown', (e) => sDT(e.clientY)); window.addEventListener('mousemove', (e) => mDT(e.clientY)); window.addEventListener('mouseup', () => isDT = false);
+        dh.addEventListener('touchstart', (e) => sDT(e.touches[0].clientY)); window.addEventListener('touchmove', (e) => { if(isDT) mDT(e.touches[0].clientY); }); window.addEventListener('touchend', () => isDT = false);
+
+        // ─── Random Draw Logic ───
+        let drawnNumbers = new Set();
+        let drawTotal = 40;
+        const rdModal = document.getElementById('random-draw-modal');
+        const btnRandomDraw = document.getElementById('btn-random-draw');
+        const btnCloseDraw = document.getElementById('btn-close-draw');
+        const btnDoDraw = document.getElementById('btn-do-draw');
+        const ballsContainer = document.getElementById('random-draw-balls');
+        const drawInput = document.getElementById('draw-total-input');
+
+        function initBalls() {
+            if (!ballsContainer) return;
+            ballsContainer.innerHTML = '';
+            for(let i=1; i<=drawTotal; i++) {
+                const d = document.createElement('div');
+                d.className = 'draw-ball'; d.id = 'ball-'+i; d.textContent = i;
+                if(drawnNumbers.has(i)) d.classList.add('drawn');
+                ballsContainer.appendChild(d);
+            }
+        }
+        if(drawInput) {
+            drawInput.addEventListener('change', (e) => {
+                let v = parseInt(e.target.value);
+                if(v<1) v=1; if(v>100) v=100; drawTotal=v;
+                drawnNumbers.clear(); initBalls();
+            });
+        }
+        if(btnRandomDraw) {
+            btnRandomDraw.addEventListener('click', () => { rdModal.style.display='block'; initBalls(); });
+        }
+        if(btnCloseDraw) {
+            btnCloseDraw.addEventListener('click', () => rdModal.style.display='none');
+        }
+        if(btnDoDraw) {
+            btnDoDraw.addEventListener('click', async () => {
+                if(drawnNumbers.size >= drawTotal) { drawnNumbers.clear(); initBalls(); }
+                const avail = []; for(let i=1;i<=drawTotal;i++) { if(!drawnNumbers.has(i)) avail.push(i); }
+                if(avail.length===0) return;
+                btnDoDraw.disabled = true;
+                const winner = avail[Math.floor(Math.random()*avail.length)];
+                let ticks = 0, lastFlicker = null;
+                const interval = setInterval(() => {
+                    if(lastFlicker) lastFlicker.classList.remove('flicker');
+                    const rnd = avail[Math.floor(Math.random()*avail.length)];
+                    const b = document.getElementById('ball-'+rnd);
+                    if(b) { b.classList.add('flicker'); lastFlicker = b; }
+                    ticks++;
+                    if(ticks > 20) {
+                        clearInterval(interval);
+                        if(lastFlicker) lastFlicker.classList.remove('flicker');
+                        const wb = document.getElementById('ball-'+winner);
+                        if(wb) {
+                            wb.classList.add('winner');
+                            setTimeout(() => { wb.classList.remove('winner'); wb.classList.add('drawn'); drawnNumbers.add(winner); btnDoDraw.disabled = false; }, 2000);
+                        } else { btnDoDraw.disabled = false; }
+                    }
+                }, 100);
+            });
+        }
+
+        // ─── 單元 4-4 核心通關檢核系統 ───
+        (function initElectronCheckpoint() {
+            let selectedAnswers = {};
+            let isPassed = false;
+            let isVerified = false;
+
+            const quizCards = document.querySelectorAll('#slide-checkpoint-electron .quiz-grid-layout .quiz-card');
+            const submitBtn = document.getElementById('btn-submit-exam-electron');
+            const retryBtn  = document.getElementById('btn-retry-exam-electron');
+            const feedbackMsg = document.getElementById('quiz-feedback-msg-electron');
+
+            if (!submitBtn || !feedbackMsg) return;
+
+            quizCards.forEach(card => {
+                const qId = card.dataset.q;
+                const options = card.querySelectorAll('.quiz-opt');
+                options.forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        if (isPassed) return;
+                        if (isVerified) {
+                            card.classList.remove('card-wrong');
+                            options.forEach(o => o.classList.remove('verified-fail'));
+                        }
+                        options.forEach(o => o.classList.remove('selected'));
+                        opt.classList.add('selected');
+                        selectedAnswers[qId] = parseInt(opt.dataset.opt, 10);
+                    });
+                });
+            });
+
+            submitBtn.addEventListener('click', () => {
+                if (isPassed) return;
+                const totalQ = quizCards.length;
+                const answeredQ = Object.keys(selectedAnswers).length;
+                if (answeredQ < totalQ) {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = `<span>⚠️ 尚有題目未作答！請完整回答所有 ${totalQ} 道題目後再提交。</span>`;
+                    return;
+                }
+                isVerified = true;
+                let allCorrect = true;
+                quizCards.forEach(card => {
+                    const qId = card.dataset.q;
+                    const correctAns = parseInt(card.dataset.ans, 10);
+                    const userAns = selectedAnswers[qId];
+                    const isCorrect = (userAns === correctAns);
+                    card.classList.remove('card-correct', 'card-wrong');
+                    card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+                    card.querySelectorAll('.quiz-opt').forEach(opt => {
+                        opt.classList.remove('verified-pass', 'verified-fail');
+                        const optVal = parseInt(opt.dataset.opt, 10);
+                        if (optVal === userAns) opt.classList.add(isCorrect ? 'verified-pass' : 'verified-fail');
+                    });
+                    if (!isCorrect) allCorrect = false;
+                });
+                if (allCorrect) {
+                    isPassed = true;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '檢核通過 ✅';
+                    if (retryBtn) retryBtn.style.display = 'none';
+                    feedbackMsg.className = 'quiz-feedback-msg success';
+                    feedbackMsg.innerHTML = '<span>🎉 檢核通過！3 題全部答對，電子組態核心檢核已成功解鎖通關！</span>';
+                    notifyElectronSectionComplete();
+                } else {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示答錯題目（紅色），請點擊「再試一次」進行修正！</span>';
+                    submitBtn.disabled = true;
+                    if (retryBtn) { retryBtn.style.display = 'inline-flex'; retryBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+                }
+            });
+
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    if (isPassed) return;
+                    isVerified = false;
+                    quizCards.forEach(card => {
+                        const qId = card.dataset.q;
+                        const correctAns = parseInt(card.dataset.ans, 10);
+                        if (selectedAnswers[qId] !== correctAns) {
+                            card.classList.remove('card-wrong');
+                            card.querySelectorAll('.quiz-opt').forEach(opt => opt.classList.remove('selected', 'verified-fail'));
+                            delete selectedAnswers[qId];
+                        }
+                    });
+                    retryBtn.style.display = 'none';
+                    submitBtn.disabled = false;
+                    feedbackMsg.className = 'quiz-feedback-msg';
+                    feedbackMsg.innerHTML = '<span>✏️ 請重新思考並選擇答錯的題目，完成後再次點擊「確定作答」。</span>';
+                });
+            }
+
+            function notifyElectronSectionComplete() {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'SECTION_COMPLETE' }, '*');
+                }
+                const banner = document.getElementById('section-complete-banner-electron');
+                if (banner) {
+                    banner.style.display = 'flex';
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise();
+            }
+        })();
+    </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>

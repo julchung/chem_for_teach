@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>極小平衡常數之錯離子平衡計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #presentation-area {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #slides-container {
+            position: absolute;
+            top: 1.5vh;
+            left: 3vw;
+            right: 4px;
+            bottom: 2vh;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            padding: 0.6rem 0.3rem;
+            opacity: 1;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: var(--accent-cyan);
+            font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            margin-bottom: 0.45rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25);
+            padding-bottom: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        h1::before {
+            content: "";
+            width: 7px;
+            height: 26px;
+            background: var(--accent-cyan);
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        h2 {
+            color: var(--accent-blue);
+            font-size: clamp(1.05rem, 1.55vw, 1.35rem);
+            margin: 0.2rem 0 0.35rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        p,
+        li {
+            font-size: clamp(0.92rem, 1.22vw, 1.12rem);
+            line-height: 1.55;
+            margin-bottom: 0.35rem;
+        }
+
+        strong {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        em {
+            color: var(--accent-yellow);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        ul {
+            margin-left: 1.3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.9rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.9rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 0.95rem 1.1rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+        }
+
+        .scroll-panel {
+            overflow-y: auto;
+        }
+
+        .scroll-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .scroll-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 2px;
+        }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.38);
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-green);
+            padding: 0.75rem 0.9rem;
+            margin: 0.45rem 0;
+            text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+            flex-shrink: 0;
+        }
+
+        .formula-box-blue {
+            background: rgba(0, 0, 0, 0.38);
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-blue);
+            padding: 0.75rem 0.9rem;
+            margin: 0.45rem 0;
+            text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+            flex-shrink: 0;
+        }
+
+        .formula-box-purple {
+            background: rgba(0, 0, 0, 0.38);
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-purple);
+            padding: 0.75rem 0.9rem;
+            margin: 0.45rem 0;
+            text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+            flex-shrink: 0;
+        }
+
+        .info-card {
+            background: rgba(56, 189, 248, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .info-card-yellow {
+            background: rgba(251, 191, 36, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(251, 191, 36, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .info-card-green {
+            background: rgba(52, 211, 153, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(52, 211, 153, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .info-card-red {
+            background: rgba(248, 113, 113, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(248, 113, 113, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .info-card-purple {
+            background: rgba(167, 139, 250, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(167, 139, 250, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .info-card-cyan {
+            background: rgba(34, 211, 238, 0.08);
+            border-radius: 11px;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid rgba(34, 211, 238, 0.28);
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.1rem 0.6rem;
+            border-radius: 18px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-right: 0.25rem;
+        }
+
+        .tag-blue {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: var(--accent-blue);
+        }
+
+        .tag-green {
+            background: rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            color: var(--accent-green);
+        }
+
+        .tag-red {
+            background: rgba(248, 113, 113, 0.12);
+            border: 1px solid rgba(248, 113, 113, 0.4);
+            color: var(--accent-red);
+        }
+
+        .tag-yellow {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: var(--accent-yellow);
+        }
+
+        .tag-purple {
+            background: rgba(167, 139, 250, 0.12);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            color: var(--accent-purple);
+        }
+
+        .tag-cyan {
+            background: rgba(34, 211, 238, 0.12);
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            color: var(--accent-cyan);
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.85rem, 1.1vw, 1.02rem);
+        }
+
+        table.data-table th,
+        table.data-table td {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 0.5rem 0.65rem;
+            text-align: center;
+        }
+
+        table.data-table th {
+            background: rgba(34, 211, 238, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .calc-step {
+            background: rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0;
+            padding: 0.6rem 0.9rem;
+            margin: 0.4rem 0;
+            flex-shrink: 0;
+        }
+
+        .step-num {
+            display: inline-block;
+            background: var(--accent-purple);
+            color: #0f172a;
+            width: 1.5em;
+            height: 1.5em;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 1.5em;
+            font-weight: 900;
+            font-size: 0.85rem;
+            margin-right: 0.45rem;
+            flex-shrink: 0;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border: none;
+            padding: 0.65rem 1.4rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            align-self: flex-start;
+            margin-top: 0.4rem;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr !important;
+            }
+
+            .grid-3 {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="presentation-area">
+            <div id="slides-container">
+
+                <div class="slide active">
+                    <h1>實戰演練：極小平衡常數之錯離子平衡計算</h1>
+                    <div class="grid-2" style="height:100%; gap:1.1rem; align-items:stretch;">
+                        <!-- 左欄：題目 -->
+                        <div class="panel scroll-panel"
+                            style="display:flex; flex-direction:column; gap:0.8rem; padding:1.2rem; position:relative;">
+                            <h2 style="color:var(--accent-yellow); font-size:1.3rem;">📝 題目內容</h2>
+                            <div style="font-size:1.05rem; line-height:1.7;">
+
+                                <p>將 0.05 莫耳 $\text{AgNO}_3$ 與 5.1 莫耳 $\text{NH}_3$ 溶於水配成 1.0 升溶液，已知：<br><br>
+                                    $\text{Ag(NH}_3\text{)}_2^+ \rightleftharpoons \text{Ag}^+ + 2\text{NH}_3$ 之 $K_c =
+                                    6.8 \times 10^{-8}$，求達平衡時之 $[\text{Ag}^+]$？</p>
+
+                            </div>
+                            <div style="margin-top:auto; padding-top:1rem;">
+                                <button class="btn-action" onclick="toggleSolution('solution-box')"
+                                    style="padding:10px 22px; font-size:1rem; box-shadow:0 4px 14px rgba(0,0,0,0.35);">
+                                    💡 顯示詳解 / 隱藏
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 右欄：詳解 (平時留空方便白板註解，點擊後呈現) -->
+                        <div class="panel scroll-panel"
+                            style="display:flex; flex-direction:column; gap:0.6rem; padding:1.2rem; position:relative; background:rgba(255,255,255,0.03);">
+                            <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
+                                <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 範例詳解
+                                </h2>
+                                <div style="font-size:1.05rem; line-height:1.7;">
+                                    <div class="calc-step" style="padding: 1rem 1.2rem; margin: 0; flex:1;">
+                                        <p
+                                            style="color:rgba(255,255,255,0.85); margin-bottom: 0.8rem; font-size:1.05rem; line-height: 1.5;">
+                                            因為 $K_c$ 極小，反應「向右難，向左易」。我們先假設反應<strong>完全向左</strong>進行，製造新的起始點後再重新考慮平衡。</p>
+
+                                        <div
+                                            style="overflow-x: auto; background: rgba(0,0,0,0.15); border-radius: 8px; padding: 0.8rem;">
+                                            <table
+                                                style="width:100%; text-align:center; font-size:1.1rem; border-collapse:collapse;">
+                                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.3);">
+                                                    <th
+                                                        style="text-align:left; padding:0.4rem; color: rgba(255,255,255,0.5);">
+                                                        濃度(M)</th>
+                                                    <th style="padding:0.4rem;">$\text{Ag(NH}_3\text{)}_2^+$</th>
+                                                    <th>$\rightleftharpoons$</th>
+                                                    <th>$\text{Ag}^+$</th>
+                                                    <th>$+$</th>
+                                                    <th>$2\text{NH}_3$</th>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align:left; color:#f87171; padding:0.3rem;">初濃度</td>
+                                                    <td>$0$</td>
+                                                    <td></td>
+                                                    <td>$0.05$</td>
+                                                    <td></td>
+                                                    <td>$5.1$</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align:left; color:#60a5fa; padding:0.3rem;">完全向左
+                                                    </td>
+                                                    <td>$+0.05$</td>
+                                                    <td></td>
+                                                    <td>$-0.05$</td>
+                                                    <td></td>
+                                                    <td>$-0.1$</td>
+                                                </tr>
+                                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.3);">
+                                                    <td style="text-align:left; color:#fbbf24; padding:0.3rem;">新起始點
+                                                    </td>
+                                                    <td>$0.05$</td>
+                                                    <td></td>
+                                                    <td>$0$</td>
+                                                    <td></td>
+                                                    <td>$5$</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="text-align:left; color:#34d399; padding:0.3rem;">考慮平衡
+                                                    </td>
+                                                    <td>$-y$</td>
+                                                    <td></td>
+                                                    <td>$+y$</td>
+                                                    <td></td>
+                                                    <td>$+2y$</td>
+                                                </tr>
+                                                <tr
+                                                    style="border-top: 1px dashed rgba(255,255,255,0.3); font-weight:bold;">
+                                                    <td style="text-align:left; color:#a855f7; padding:0.4rem;">最終平衡
+                                                    </td>
+                                                    <td>$0.05-y$</td>
+                                                    <td></td>
+                                                    <td>$y$</td>
+                                                    <td></td>
+                                                    <td>$5+2y$</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div
+                                            style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.2);">
+                                            <div style="font-size:1.15rem; margin-bottom: 0.5rem; color:#60a5fa;">代入平衡常數
+                                                $K_c$：</div>
+                                            <div class="formula-box"
+                                                style="font-size:1.25rem; padding:0.6rem; margin:0;">
+                                                $\displaystyle K_c = \frac{y \cdot (5+2y)^2}{(0.05-y)} = 6.8 \times
+                                                10^{-8}$
+                                            </div>
+                                            <div
+                                                style="font-size:1.1rem; color:rgba(255,255,255,0.8); margin: 0.8rem 0; line-height:1.5;">
+                                                由於 $K_c$ 極小，$y$ 必極小，可假設 $y \ll 0.05$：<br>
+                                                <span style="color:#fbbf24;">$(5+2y) \approx 5$</span>，<span
+                                                    style="color:#fbbf24;">$(0.05-y) \approx 0.05$</span>
+                                            </div>
+                                            <div class="formula-box"
+                                                style="font-size:1.25rem; padding:0.6rem; margin:0;">
+                                                $\displaystyle \frac{y \cdot 5^2}{0.05} = 6.8 \times 10^{-8} \implies y
+                                                \cdot 500 = 6.8 \times 10^{-8}$
+                                            </div>
+                                            <div
+                                                style="font-size:1.3rem; font-weight:bold; color:#34d399; margin-top: 0.8rem; text-align:center; padding: 0.5rem; background:rgba(52,211,153,0.15); border-radius:8px;">
+                                                $\displaystyle [\text{Ag}^+] = y = 1.36 \times 10^{-10} \text{ M}$
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.toggleSolution = function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isHidden = (el.style.display === 'none' || el.style.display === '');
+            el.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden && window.MathJax) {
+                window.MathJax.typesetPromise([el]);
+            }
+        };
+        window.updateSlides = function () { };
+
+    </script>
+</body>
+
+</html>

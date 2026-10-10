@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4-1 密立坎油滴實驗 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.98rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.85rem, 0.95vw, 1rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1fr 1.35fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.55rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .sci-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 20px; padding: 2px 10px; width: fit-content;
+        }
+        .sci-year { font-weight: 800; color: var(--accent-yellow); font-size: 0.85rem; }
+        .sci-name { font-weight: 700; color: var(--accent-yellow); font-size: 0.85rem; }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.35); border-left: 4px solid var(--accent-yellow);
+            padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 1.15rem; color: #fff;
+            text-align: center; margin: 3px 0;
+        }
+        .info-card {
+            background: rgba(30, 41, 59, 0.7); border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 0.55rem 0.85rem;
+        }
+
+        .canv-wrap {
+            position: relative; width: 100%; flex: 1; min-height: 250px;
+            background: rgba(6, 12, 26, 0.85); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>4-1 原子結構近代史 &middot; 密立坎油滴實驗與基本電荷 (1909)</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：實驗原理與基本電荷求法 -->
+            <div class="panel">
+                <div class="sci-badge">
+                    <span class="sci-year">1909</span>
+                    <span class="sci-name">R.A. Millikan (密立坎)</span>
+                </div>
+
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、油滴懸浮靜力平衡原理</h2>
+                    <p>利用噴霧器將油滴霧化噴入儀器，並以 <strong>X 射線照射使氣體游離</strong>，帶負電之油滴穿過小孔進入帶電平行極板間：</p>
+                    
+                    <div class="formula-box">
+                        $$qE = mg \implies q = \dfrac{mg}{E}$$
+                    </div>
+                    <ul style="margin-left:1.2rem; font-size:0.84rem; color:#cbd5e1; line-height:1.55;">
+                        <li>上極板帶正電 ($\oplus$)，下極板帶負電 ($\ominus$)。</li>
+                        <li>向上電力 $F_e = qE$，向下重力 $F_g = mg$。</li>
+                        <li>微調電壓使特定油滴<strong>靜止懸浮</strong>，由油滴半徑及下落終端速度求出質量 $m$，進而算出所帶電量 $q$。</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h2 style="color:var(--accent-green);">二、電荷量子化與基本電荷量</h2>
+                    <p style="font-size:0.85rem; color:#cbd5e1;">密立坎測得數千顆油滴之電量，發現所有油滴電量必為某一最小常數之<strong>整數倍</strong>：</p>
+                    
+                    <div class="formula-box" style="border-left-color:var(--accent-green);">
+                        $$e = 1.602 \times 10^{-19} \text{ 庫侖 (C)}$$
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <span style="font-weight:700; color:var(--accent-blue); font-size:0.88rem;">✨ 電子質量正式出爐：</span>
+                    <p style="font-size:0.82rem; color:#cbd5e1; margin-top:2px;">
+                        結合湯木生陰極射線荷質比：<br>
+                        $m_e = \dfrac{e}{e/m} = \dfrac{1.60\times 10^{-19}\text{ C}}{1.76\times 10^8\text{ C/g}} \approx \mathbf{9.11 \times 10^{-28}\text{ g}}$
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：油滴實驗互動動態模擬 -->
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="color:var(--accent-cyan); margin:0;">🔬 密立坎油滴室互動模擬</h2>
+                </div>
+
+                <div class="canv-wrap">
+                    <canvas id="c-millikan"></canvas>
+                </div>
+
+                <div style="background:rgba(15,23,42,0.6); padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); display:flex; flex-direction:column; gap:4px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:0.85rem; color:#cbd5e1; white-space:nowrap;">調整電場強度：</span>
+                        <input type="range" id="eField" min="0" max="100" value="50" style="flex:1; cursor:pointer;">
+                    </div>
+                    <div id="eLabel" style="font-size:0.83rem; text-align:center; color:var(--accent-yellow);">
+                        ✨ 電場適中 → 帶電油滴<strong>靜止懸浮 (Fe = Fg)</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let milliAF = null;
+let milliDrops = [];
+
+function initMillikan() {
+    const c = document.getElementById('c-millikan');
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    const w = Math.floor(r.width) || c.clientWidth || 550;
+    const h = Math.floor(r.height) || c.clientHeight || 280;
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+
+    const eSlider = document.getElementById('eField');
+    const eLabel = document.getElementById('eLabel');
+    milliDrops = [];
+    let fc = 0;
+
+    const chamL = w * 0.12, chamR = w * 0.72, chamW = chamR - chamL, cx = (chamL + chamR) / 2;
+    const Y_plateT = h * 0.38, Y_plateB = h * 0.76, Y_gap = (Y_plateT + Y_plateB) / 2;
+    const plateH = 10, slitHalf = 10;
+    const xrSX = chamR - chamW * 0.08, xrSY = h * 0.04;
+
+    function spawnDrop() {
+        const ang = Math.random() * 0.7 + 0.05;
+        const spd = 2.8 + Math.random() * 2.2;
+        milliDrops.push({
+            x: chamL + 12 + Math.random() * 8, y: h * 0.07 + Math.random() * 4,
+            vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd - 0.5,
+            r: 1.6 + Math.random() * 1.8, phase: 'scatter', charge: 0, timer: 0
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#060c1a'; ctx.fillRect(0, 0, w, h);
+        const E = eSlider ? parseInt(eSlider.value) : 50;
+        const pY = Y_plateT - plateH / 2;
+        fc++;
+        if (fc % 12 === 0) { spawnDrop(); spawnDrop(); }
+
+        // X-ray 波浪光束
+        ctx.save();
+        const xrEX = cx, xrEY = pY;
+        const wavePhase = (Date.now() / 80) % (Math.PI * 2);
+        const dx = xrEX - xrSX, dy = xrEY - xrSY;
+        const len = Math.sqrt(dx*dx + dy*dy);
+        const ux = dx/len, uy = dy/len;
+        const nx = -uy, ny = ux;
+
+        ctx.strokeStyle = 'rgba(244,114,182,0.18)'; ctx.lineWidth = 8;
+        ctx.beginPath();
+        for (let i = 0; i <= 50; i++) {
+            const t = i / 50;
+            const bx = xrSX + dx*t, by = xrSY + dy*t;
+            const wave = Math.sin(t*Math.PI*6 - wavePhase) * 5;
+            if (i === 0) ctx.moveTo(bx + nx*wave, by + ny*wave);
+            else ctx.lineTo(bx + nx*wave, by + ny*wave);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(244,114,182,0.75)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i <= 50; i++) {
+            const t = i / 50;
+            const bx = xrSX + dx*t, by = xrSY + dy*t;
+            const wave = Math.sin(t*Math.PI*6 - wavePhase) * 5;
+            if (i === 0) ctx.moveTo(bx + nx*wave, by + ny*wave);
+            else ctx.lineTo(bx + nx*wave, by + ny*wave);
+        }
+        ctx.stroke();
+
+        ctx.fillStyle = '#334155'; ctx.fillRect(xrSX - 14, xrSY - 12, 28, 14);
+        ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.strokeRect(xrSX - 14, xrSY - 12, 28, 14);
+        ctx.fillStyle = '#f472b6'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('X光', xrSX, xrSY - 5);
+        ctx.restore();
+
+        // 噴霧器 (左上)
+        ctx.save();
+        const nzX = chamL + 14, nzY = h * 0.08;
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.5;
+        ctx.fillStyle = 'rgba(15,23,42,0.8)';
+        ctx.beginPath();
+        ctx.moveTo(nzX - 12, nzY - 32); ctx.lineTo(nzX + 12, nzY - 32);
+        ctx.lineTo(nzX + 9, nzY - 10); ctx.lineTo(nzX - 9, nzY - 10);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = 'rgba(52,211,153,0.6)';
+        ctx.beginPath();
+        ctx.moveTo(nzX - 11, nzY - 22); ctx.lineTo(nzX + 11, nzY - 22);
+        ctx.lineTo(nzX + 9, nzY - 11); ctx.lineTo(nzX - 9, nzY - 11);
+        ctx.closePath(); ctx.fill();
+
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(nzX, nzY - 10); ctx.lineTo(nzX, nzY + 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(nzX - 18, nzY - 2); ctx.lineTo(nzX, nzY - 2); ctx.stroke();
+
+        const bulbR = (fc % 80 < 12) ? 8 : 11;
+        ctx.fillStyle = '#2563eb';
+        ctx.beginPath(); ctx.arc(nzX - 18, nzY - 2, bulbR, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        // 噴霧室上層外框
+        ctx.save();
+        ctx.strokeStyle = 'rgba(100,116,139,0.3)'; ctx.lineWidth = 1;
+        ctx.fillStyle = 'rgba(15,23,42,0.1)';
+        ctx.fillRect(chamL, h * 0.04, chamW, Y_plateT - h * 0.04);
+        ctx.strokeRect(chamL, h * 0.04, chamW, Y_plateT - h * 0.04);
+        ctx.restore();
+
+        // 觀測室 (電極板間)
+        ctx.save();
+        ctx.fillStyle = 'rgba(10,20,50,0.35)';
+        ctx.fillRect(chamL, Y_plateT, chamW, Y_plateB - Y_plateT);
+        ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(chamL, Y_plateT, chamW, Y_plateB - Y_plateT);
+        ctx.restore();
+
+        // 上極板 (+)
+        ctx.save();
+        const pg = ctx.createLinearGradient(chamL, Y_plateT, chamR, Y_plateT);
+        pg.addColorStop(0, '#f87171'); pg.addColorStop(1, '#ef4444');
+        ctx.fillStyle = pg; ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = 1;
+        ctx.fillRect(chamL, pY, cx - chamL - slitHalf, plateH);
+        ctx.strokeRect(chamL, pY, cx - chamL - slitHalf, plateH);
+        ctx.fillRect(cx + slitHalf, pY, chamR - cx - slitHalf, plateH);
+        ctx.strokeRect(cx + slitHalf, pY, chamR - cx - slitHalf, plateH);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('＋', cx - chamW*0.25, Y_plateT + 2);
+        ctx.fillText('＋', cx + chamW*0.25, Y_plateT + 2);
+        ctx.fillText('小孔', cx, pY - 3);
+        ctx.restore();
+
+        // 下極板 (-)
+        ctx.save();
+        const bg = ctx.createLinearGradient(chamL, Y_plateB, chamR, Y_plateB);
+        bg.addColorStop(0, '#fbbf24'); bg.addColorStop(1, '#f59e0b');
+        ctx.fillStyle = bg; ctx.strokeStyle = '#b45309'; ctx.lineWidth = 1;
+        ctx.fillRect(chamL, Y_plateB - plateH/2, chamW, plateH);
+        ctx.strokeRect(chamL, Y_plateB - plateH/2, chamW, plateH);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('－', cx - chamW*0.25, Y_plateB + 2);
+        ctx.fillText('－', cx + chamW*0.25, Y_plateB + 2);
+        ctx.restore();
+
+        // 電場線
+        if (E > 5) {
+            ctx.save(); ctx.setLineDash([3, 5]);
+            ctx.strokeStyle = `rgba(251,191,36,${E/250})`; ctx.lineWidth = 1;
+            for (let xx = chamL + 24; xx < chamR - 10; xx += 30) {
+                ctx.beginPath(); ctx.moveTo(xx, Y_plateT + 4); ctx.lineTo(xx, Y_plateB - 4); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // 顯微鏡 (右側)
+        const micX = chamR + 4;
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(micX, Y_gap - 12, w - micX, 24);
+        ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.strokeRect(micX, Y_gap - 12, w - micX, 24);
+        ctx.fillStyle = '#cbd5e1'; ctx.fillRect(micX, Y_gap - 12, 4, 24);
+
+        // 油滴物理演算法
+        milliDrops.forEach(d => {
+            if (d.phase === 'scatter') {
+                d.x += d.vx; d.y += d.vy;
+                d.vx *= 0.993; d.vy += 0.035;
+                if (d.x < chamL + 2 || d.x > chamR - 2) d.phase = 'dead';
+                if (d.y < h * 0.04 + 2) { d.y = h * 0.04 + 2; d.vy = Math.abs(d.vy) * 0.4; }
+
+                if (d.y >= pY - 1 && d.y <= pY + plateH + 1) {
+                    if (Math.abs(d.x - cx) < slitHalf) {
+                        d.phase = 'charged';
+                        d.charge = Math.floor(1 + Math.random() * 4);
+                        d.vy = 0.6; d.vx = (Math.random() - 0.5) * 0.3;
+                        d.x = cx + (Math.random() - 0.5) * (slitHalf * 1.5);
+                    } else {
+                        d.phase = 'dead';
+                    }
+                }
+                if (d.phase === 'dead') return;
+                ctx.fillStyle = 'rgba(148,163,184,0.8)';
+                ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
+            } else if (d.phase === 'charged') {
+                const ef = (E / 50) * d.charge * 0.088;
+                const gf = d.r * 0.072;
+                d.vy += gf - ef; d.vy *= 0.87;
+                d.y += d.vy;
+                d.x += (Math.random() - 0.5) * 0.22;
+                d.x = Math.max(chamL + 4, Math.min(chamR - 4, d.x));
+
+                if (d.y < Y_plateT + 3) { d.y = Y_plateT + 3; d.vy = 0; }
+                else if (d.y > Y_plateB - 3) { d.y = Y_plateB - 3; d.vy = 0; }
+
+                ctx.save();
+                ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 8;
+                ctx.beginPath(); ctx.arc(d.x, d.y, d.r + 1, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#000'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('-', d.x, d.y);
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.font = `bold ${Math.max(8, d.r * 1.6)}px sans-serif`;
+                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+                ctx.fillText(`-${d.charge}e`, d.x + d.r + 3, d.y + 3);
+                ctx.restore();
+            }
+        });
+
+        milliDrops = milliDrops.filter(d => d.phase !== 'dead' && d.y < h * 0.99 && d.y > -20);
+
+        function drawPillLabel(text, x, y, color) {
+            ctx.save();
+            ctx.font = 'bold 10px sans-serif';
+            const tw = ctx.measureText(text).width + 12;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(x - tw/2, y - 10, tw, 20, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+            ctx.restore();
+        }
+
+        drawPillLabel('① 噴霧器', nzX - 22, nzY - 20, '#38bdf8');
+        drawPillLabel('② X光游離', chamR + 42, xrSY + 12, '#f472b6');
+        drawPillLabel('③ 觀測顯微鏡', micX + 26, Y_gap - 20, '#38bdf8');
+
+        if (eLabel) {
+            eLabel.innerHTML = E < 35
+                ? '⚡ <span style="color:#f87171;font-weight:bold">電場過弱</span> → 帶電油滴加速下墜 (Fe < Fg)'
+                : E > 65
+                ? '⚡ <span style="color:#38bdf8;font-weight:bold">電場過強</span> → 帶電油滴向上漂移 (Fe > Fg)'
+                : E >= 45 && E <= 55
+                ? '✨ <span style="color:#34d399;font-weight:bold">電場適中</span> → 帶電油滴<strong>靜止懸浮 (Fe = Fg)</strong>'
+                : '⚡ 調整電場強度中...';
+        }
+
+        milliAF = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+window.addEventListener('load', () => {
+    initMillikan();
+});
+window.addEventListener('resize', () => {
+    if (milliAF) cancelAnimationFrame(milliAF);
+    initMillikan();
+});
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

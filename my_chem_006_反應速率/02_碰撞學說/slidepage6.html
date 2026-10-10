@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>碰撞學說 | 互動教學</title>
+    <meta name="description" content="選修化學二：碰撞學說、正確位向、活化能與低限能互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warning-box {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(52,211,153,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        /* Mechanism Practice Slide */
+        .mech-tab-btn {
+            padding: 0.45rem 1.5rem; border-radius: 999px; border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.2s;
+        }
+        .mech-tab-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .mech-tab-active { background: var(--accent-blue) !important; color: #0f172a !important; border-color: var(--accent-blue) !important; }
+        .mech-reveal-btn {
+            margin-top: 0.6rem; padding: 0.5rem 1.2rem; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: opacity 0.2s; align-self: flex-start;
+        }
+        .mech-reveal-btn:hover { opacity: 0.85; }
+        .mech-case { display: flex; flex-direction: column; gap: 0.4rem; height: 100%; }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 1rem; color: #fff;
+            text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+
+        /* Animation canvas */
+        #collision-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+        #energy-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+
+        /* Orientation animation */
+        .orient-container { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .orient-row { display: flex; gap: 0.7rem; flex: 1; min-height: 0; }
+        .orient-box {
+            flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1.5px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; position: relative; overflow: hidden;
+        }
+        .orient-label {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px;
+            white-space: nowrap;
+        }
+        .label-fail { background: rgba(248,113,113,0.2); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .label-ok { background: rgba(52,211,153,0.2); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+
+        /* Energy diagram styles */
+        .energy-diagram-wrapper { flex: 1; min-height: 0; position: relative; }
+        .energy-label-box {
+            position: absolute; background: rgba(15,23,42,0.85); border-radius: 8px;
+            padding: 3px 8px; font-size: 0.78rem; font-weight: 700; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Slider styles */
+        .slider-row { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; margin-top: 0.4rem; }
+        .slider-row label { font-size: 0.9rem; color: var(--accent-yellow); white-space: nowrap; }
+        input[type=range] { flex: 1; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* btn-action */
+        .btn-action {
+            padding: 0.5rem 1.2rem; border-radius: 10px; font-size: 1rem; cursor: pointer;
+            border: 1.5px solid var(--accent-blue); background: rgba(56,189,248,0.12);
+            color: #fff; font-weight: 700; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #0f172a; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.82rem;
+            font-weight: 700; margin: 0 3px;
+        }
+        .badge-red { background: rgba(248,113,113,0.18); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .badge-green { background: rgba(52,211,153,0.18); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+        .badge-yellow { background: rgba(251,191,36,0.18); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-blue { background: rgba(56,189,248,0.18); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4); }
+        .badge-orange { background: rgba(251,146,60,0.18); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.4); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-mechanism">
+                <h1>反應機構與速率決定步驟</h1>
+                <div class="grid-2" style="flex:1; min-height:0; gap:1rem; align-items:stretch; grid-template-columns: 1.5fr 1fr;">
+                    <!-- 左欄：說明 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding:1rem; overflow-y:auto;">
+                        <h2 style="color:var(--accent-yellow); margin-top:0;">反應機構 (Reaction Mechanism)</h2>
+                        <div class="info-card" style="padding: 0.6rem;">
+                            <p style="margin:0; font-size:0.95rem; line-height:1.5;">
+                                根據碰撞學說，粒子間發生碰撞，同一時間以<strong>兩個粒子相互碰撞的機率最高</strong>。<br>
+                                大多數的化學反應是經由<strong>連續性多步驟碰撞</strong>所完成，這些步驟的總和稱為反應機構。
+                            </p>
+                        </div>
+                        <h2 style="color:var(--accent-cyan); margin-top:0.2rem;">速率決定步驟 (Rate-Determining Step)</h2>
+                        <div class="highlight-box" style="padding: 0.6rem;">
+                            <p style="margin:0; font-size:0.95rem; line-height:1.5;">
+                                每一步驟反應都是基本步驟，其中<strong>反應速率最慢的步驟</strong>，稱為速率決定步驟，又稱<strong>瓶頸反應</strong>。<br>
+                                此步驟的活化能最大，<strong>決定了整個反應的快慢</strong>。
+                            </p>
+                        </div>
+                        <h2 style="color:var(--accent-green); margin-top:0.2rem;">實例探討</h2>
+                        <p style="font-size:0.95rem; line-height:1.5; margin-bottom: 0;">以二氧化氮和一氧化碳反應為例：</p>
+                        <div class="formula-box" style="font-size: 1.15rem; padding: 0.5rem; border-left-color: var(--accent-blue);">
+                            總反應式：$NO_{2(g)} + CO_{(g)} \rightarrow NO_{(g)} + CO_{2(g)}$
+                        </div>
+                        <p style="font-size:0.95rem; line-height:1.5; margin-bottom: 0;">由實驗得知其速率定律為 <strong style="color:var(--accent-yellow);">$R = k[NO_2]^2$</strong>，推論反應機構為：</p>
+                        <div class="formula-box" style="font-size: 1.15rem; padding: 0.5rem; background: rgba(0,0,0,0.25); border-left-color: var(--accent-purple);">
+                            第一步 (慢)：$NO_2 + NO_2 \rightarrow NO_3 + NO$ <span style="font-size:0.9rem; color:#aaa;">(活化能較高)</span><br>
+                            第二步 (快)：$NO_3 + CO \rightarrow NO_2 + CO_2$ <span style="font-size:0.9rem; color:#aaa;">(活化能較低)</span>
+                        </div>
+                    </div>
+                    <!-- 右欄：反應機構位能圖 -->
+                    <div class="panel" style="display:flex; flex-direction:column; padding:0.7rem; gap:0.4rem;">
+                        <h2 style="text-align:center; margin-bottom:0.2rem;">反應機構位能示意圖</h2>
+                        <div style="flex:1; min-height:0; position:relative;">
+                            <canvas id="mechanism-canvas" style="height:100%; width:100%; border-radius:12px; border:1.5px solid var(--glass-border); display:block;"></canvas>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-shrink:0; flex-wrap:wrap; justify-content:center; margin-top:0.5rem;">
+                            <span class="badge badge-yellow">E₁：第一步活化能 (最大，為速率決定步驟)</span>
+                            <span class="badge badge-purple">E₂：第二步活化能</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+};
+window.updateSlides = function() {};
+
+/* ========================================================
+   ANIMATION 5.5: Mechanism Canvas
+   ======================================================== */
+function drawMechanismCanvas() {
+    const cvs = document.getElementById('mechanism-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const W = cvs.width = cvs.offsetWidth || 500;
+    const H = cvs.height = cvs.offsetHeight || 300;
+    
+    ctx.clearRect(0, 0, W, H);
+    
+    // Set background slightly warm/transparent
+    ctx.fillStyle = 'rgba(250, 240, 230, 0.03)';
+    ctx.fillRect(0, 0, W, H);
+
+    const marginL = 50, marginB = 30, marginT = 100, marginR = 30;
+    const graphW = W - marginL - marginR;
+    const graphH = H - marginT - marginB;
+
+    // Draw axes
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(marginL, marginT-30); ctx.lineTo(marginL, H-marginB); ctx.lineTo(W-marginR+15, H-marginB); ctx.stroke();
+    // Arrows
+    ctx.beginPath(); ctx.moveTo(marginL-4, marginT-25); ctx.lineTo(marginL, marginT-33); ctx.lineTo(marginL+4, marginT-25); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W-marginR+10, H-marginB-4); ctx.lineTo(W-marginR+18, H-marginB); ctx.lineTo(W-marginR+10, H-marginB+4); ctx.fill();
+    
+    ctx.fillStyle = '#cbd5e1'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('反應進行方向', marginL + graphW/2, H - marginB + 20);
+    ctx.save(); ctx.translate(18, H/2 + 20); ctx.rotate(-Math.PI/2); ctx.fillText('能 量', 0, 0); ctx.restore();
+
+    const yReactant = marginT + graphH * 0.75;
+    const yPeak1 = marginT + graphH * 0.15;
+    const yValley = marginT + graphH * 0.50;
+    const yPeak2 = marginT + graphH * 0.35;
+    const yProduct = marginT + graphH * 0.90;
+
+    // Dashed lines
+    function drawDash(y) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(marginL, y); ctx.lineTo(W-marginR, y); ctx.stroke(); ctx.setLineDash([]);
+    }
+    drawDash(yReactant); drawDash(yPeak1); drawDash(yValley); drawDash(yPeak2); drawDash(yProduct);
+
+    // Curve
+    ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    const x0 = marginL;
+    const x1 = marginL + graphW * 0.12;
+    const xPeak1 = marginL + graphW * 0.35;
+    const xValley = marginL + graphW * 0.52;
+    const xPeak2 = marginL + graphW * 0.68;
+    const x2 = marginL + graphW * 0.85;
+    const xEnd = W - marginR;
+
+    ctx.moveTo(x0, yReactant);
+    ctx.lineTo(x1, yReactant);
+    ctx.bezierCurveTo(x1 + (xPeak1-x1)*0.5, yReactant, xPeak1 - (xPeak1-x1)*0.2, yPeak1, xPeak1, yPeak1);
+    ctx.bezierCurveTo(xPeak1 + (xValley-xPeak1)*0.3, yPeak1, xValley - (xValley-xPeak1)*0.3, yValley, xValley, yValley);
+    ctx.bezierCurveTo(xValley + (xPeak2-xValley)*0.3, yValley, xPeak2 - (xPeak2-xValley)*0.3, yPeak2, xPeak2, yPeak2);
+    ctx.bezierCurveTo(xPeak2 + (x2-xPeak2)*0.4, yPeak2, x2 - (x2-xPeak2)*0.5, yProduct, x2, yProduct);
+    ctx.lineTo(xEnd, yProduct);
+    ctx.stroke();
+
+    // Text & Labels
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#a78bfa'; ctx.textAlign = 'left';
+    ctx.fillText('NO₂ + NO₂ + CO', x0 + 5, yReactant + 14);
+    ctx.fillStyle = '#fb923c'; ctx.textAlign = 'center';
+    ctx.fillText('NO + NO₃ + CO', xValley, yValley + 16);
+    
+    // Draw bubble for intermediate
+    ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.roundRect(xValley - 25, yValley + 24, 50, 18, 5); ctx.fill();
+    ctx.fillStyle = '#0f172a'; ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('中間物', xValley, yValley + 36);
+
+    ctx.fillStyle = '#93c5fd'; ctx.textAlign = 'right';
+    ctx.fillText('NO + CO₂ + NO₂', xEnd - 5, yProduct + 14);
+
+    // Ea1 arrow
+    ctx.strokeStyle = '#c084fc'; ctx.fillStyle = '#c084fc'; ctx.lineWidth = 1.5;
+    const arrowX1 = marginL + graphW * 0.16;
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1, yPeak1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yPeak1); ctx.lineTo(arrowX1-3, yPeak1+6); ctx.lineTo(arrowX1+3, yPeak1+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX1, yReactant); ctx.lineTo(arrowX1-3, yReactant-6); ctx.lineTo(arrowX1+3, yReactant-6); ctx.fill();
+    ctx.textAlign = 'right'; ctx.fillText('慢 Ea₁', arrowX1 - 6, (yReactant + yPeak1)/2 + 4);
+
+    // Ea2 arrow
+    const arrowX2 = xValley + 15;
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2, yPeak2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yPeak2); ctx.lineTo(arrowX2-3, yPeak2+6); ctx.lineTo(arrowX2+3, yPeak2+6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(arrowX2, yValley); ctx.lineTo(arrowX2-3, yValley-6); ctx.lineTo(arrowX2+3, yValley-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('Ea₂ 快', arrowX2 + 6, (yValley + yPeak2)/2 + 4);
+
+    // dH arrow
+    const dHx = xValley - 20;
+    ctx.strokeStyle = '#38bdf8'; ctx.fillStyle = '#38bdf8';
+    ctx.beginPath(); ctx.moveTo(dHx, yReactant); ctx.lineTo(dHx, yProduct); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dHx, yProduct); ctx.lineTo(dHx-3, yProduct-6); ctx.lineTo(dHx+3, yProduct-6); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillText('ΔH<0', dHx + 8, (yReactant + yProduct)/2 + 4);
+
+    // Transition State Drawings
+    function drawMoleculeTS(x, y, type) {
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath(); ctx.roundRect(x-45, y-26, 90, 40, 6); ctx.fill();
+        ctx.fillStyle = '#8a5a44'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('活化複合體', x, y-14);
+        
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        if(type === 1) {
+            ctx.moveTo(x, y+14); ctx.lineTo(xPeak1, yPeak1); ctx.lineTo(x+8, y+14); ctx.fill();
+        } else {
+            ctx.moveTo(x-8, y+14); ctx.lineTo(xPeak2, yPeak2); ctx.lineTo(x, y+14); ctx.fill();
+        }
+
+        const r = 5.5;
+        function da(cx, cy, c, lbl) {
+            ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle='#fff'; ctx.font='bold 8px sans-serif'; ctx.fillText(lbl, cx, cy+3);
+        }
+        function dL(x1,y1, x2,y2, dash) {
+            ctx.strokeStyle='#777'; ctx.lineWidth=1.5; 
+            if(dash) ctx.setLineDash([2,1.5]); else ctx.setLineDash([]);
+            ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        const colO = '#dc2626', colN = '#2563eb', colC = '#334155';
+        if (type === 1) {
+            dL(x-30, y-2, x-18, y+5); dL(x-30, y+12, x-18, y+5);
+            dL(x-18, y+5, x-3, y+5, true); dL(x-3, y+5, x+12, y+5, true); dL(x+12, y+5, x+27, y-2);
+            da(x-30, y-2, colO, 'O'); da(x-30, y+12, colO, 'O');
+            da(x-18, y+5, colN, 'N'); da(x-3, y+5, colO, 'O'); da(x+12, y+5, colN, 'N'); da(x+27, y-2, colO, 'O');
+        } else {
+            dL(x-35, y-2, x-22, y+5); dL(x-35, y+12, x-22, y+5);
+            dL(x-22, y+5, x-10, y+5); dL(x-10, y+5, x+5, y+5, true);
+            dL(x+5, y+3.5, x+20, y+3.5); dL(x+5, y+6.5, x+20, y+6.5);
+            da(x-35, y-2, colO, 'O'); da(x-35, y+12, colO, 'O');
+            da(x-22, y+5, colN, 'N'); da(x-10, y+5, colO, 'O');
+            da(x+5, y+5, colC, 'C'); da(x+20, y+5, colO, 'O');
+        }
+    }
+
+    drawMoleculeTS(xPeak1 - 10, yPeak1 - 50, 1);
+    drawMoleculeTS(xPeak2 + 10, yPeak2 - 50, 2);
+}
+
+window.addEventListener('load', drawMechanismCanvas);
+window.addEventListener('resize', drawMechanismCanvas);
+setTimeout(drawMechanismCanvas, 80);
+</script>
+</body>
+</html>

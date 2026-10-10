@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>範例 4：氫原子光譜譜線圖分析</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(16px, 3vw, 36px);
+    }
+    .header-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 2px solid #334155; padding-bottom: 12px; margin-bottom: 18px;
+    }
+    .badge {
+      background: #3b82f6; color: #fff; font-size: 0.85rem; padding: 4px 12px;
+      border-radius: 9999px; font-weight: 700; letter-spacing: 0.05em;
+    }
+    h1 { font-size: clamp(1.4rem, 2.2vw, 2rem); font-weight: 800; color: #f8fafc; }
+    .subtitle { font-size: clamp(0.85rem, 1.1vw, 1rem); color: #94a3b8; }
+    .main-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: clamp(16px, 2.5vw, 28px); flex: 1;
+    }
+    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+    .card {
+      background: #1e293b; border-radius: 14px; padding: clamp(16px, 2vw, 24px);
+      border: 1px solid #334155; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem); font-weight: 700; color: #60a5fa;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid #334155; padding-bottom: 8px;
+    }
+    .problem-box {
+      background: #0f172a; border-left: 4px solid #3b82f6; padding: 18px;
+      border-radius: 0 10px 10px 0; font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.8; color: #f1f5f9;
+    }
+    .problem-box ol { padding-left: 1.6rem; margin-top: 8px; }
+    .spectrum-img {
+      text-align: center; background: rgba(255,255,255,0.92); border-radius: 12px;
+      padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .spectrum-img img { max-width: 100%; max-height: 220px; object-fit: contain; }
+    .toggle-btn {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none;
+      padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 8px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .toggle-btn:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); transform: translateY(-2px); }
+    .solution-panel {
+      display: none; flex-direction: column; gap: 12px; background: #0f172a;
+      border: 1px solid #334155; border-radius: 12px; padding: 18px;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .step-box { border-left: 3px solid #10b981; padding-left: 12px; font-size: 0.95rem; line-height: 1.7; }
+    .step-title { font-weight: 700; color: #34d399; margin-bottom: 4px; }
+    .ans { color: #6ee7b7; font-weight: 700; }
+    .note { font-size: 0.85rem; color: #94a3b8; }
+    .answer-tag {
+      background: #064e3b; color: #6ee7b7; border: 1px solid #059669; padding: 10px 16px;
+      border-radius: 8px; font-weight: 700; font-size: 1rem; text-align: center; line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div>
+      <span class="badge">範例 04</span>
+      <h1 style="display:inline-block; margin-left: 10px;">氫原子光譜譜線圖分析</h1>
+    </div>
+    <div class="subtitle">綜合題型：判讀譜線圖，求躍遷能階、頻率比與波長比</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- 左：題目 -->
+    <div class="card">
+      <div class="card-title">📝 題目內容</div>
+      <div class="problem-box">
+        下圖為氫原子光譜中<strong>紫外光區</strong>及<strong>可見光區</strong>的譜線（a、b、c 屬紫外光區；d、e、f… 屬可見光區），試回答下列問題：
+        <div class="spectrum-img" style="margin: 12px 0;">
+          <img src="2.png" alt="氫原子光譜譜線圖">
+        </div>
+        <ol>
+          <li>來曼系列位於哪一光區？</li>
+          <li>電子由 \(n=4\) 降至 \(n=2\) 的譜線是哪一條？</li>
+          <li>譜線 \(e\) 與 \(d\) 的頻率比為何？</li>
+          <li>巴耳麥系列第三條譜線，是電子由哪一能階降至哪一能階？</li>
+          <li>譜線 \(b\) 與 \(d\) 的波長比為何？</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 右：詳解 -->
+    <div class="card">
+      <div class="card-title">💡 詳解與步驟分析</div>
+
+      <button class="toggle-btn" id="btn-toggle"><span>👁️ 顯示詳解</span></button>
+
+      <div class="solution-panel" id="solution-panel">
+        <div class="step-box">
+          <div class="step-title">(1) 來曼系列的光區</div>
+          <span class="ans">答：紫外光區。</span><br>
+          <span class="note">來曼系列落回 \(n=1\)，能量差大，位於紫外光區；巴耳麥系列落回 \(n=2\)，位於可見光區。</span>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">(2) \(n=4 \to 2\) 的譜線</div>
+          巴耳麥系列依能量由小到大：\(d\,(3\to2)\)、\(e\,(4\to2)\)、\(f\,(5\to2)\)…<br>
+          <span class="ans">答：譜線 e。</span>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">(3) 譜線 e 與 d 的頻率比</div>
+          頻率 \(\nu \propto \Delta E\)：<br>
+          \(\nu_e \propto \left(\frac{1}{2^2} - \frac{1}{4^2}\right) = \frac{3}{16}\)，
+          \(\nu_d \propto \left(\frac{1}{2^2} - \frac{1}{3^2}\right) = \frac{5}{36}\)<br>
+          <span class="ans">答：\(\nu_e : \nu_d = \frac{3}{16} : \frac{5}{36} = 27 : 20\)</span>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">(4) 巴耳麥系列第三條譜線</div>
+          第一條 \(3\to2\)；第二條 \(4\to2\)；第三條 \(5\to2\)<br>
+          <span class="ans">答：由 \(n=5\) 降至 \(n=2\)。</span>
+        </div>
+
+        <div class="step-box">
+          <div class="step-title">(5) 譜線 b 與 d 的波長比</div>
+          波長 \(\lambda \propto \frac{1}{\Delta E}\)：<br>
+          \(b\)：來曼系列第二條 \((3\to1)\)，\(\Delta E_b \propto 1 - \frac{1}{9} = \frac{8}{9}\)<br>
+          \(d\)：巴耳麥系列第一條 \((3\to2)\)，\(\Delta E_d \propto \frac{1}{4} - \frac{1}{9} = \frac{5}{36}\)<br>
+          \(\lambda_b : \lambda_d = \Delta E_d : \Delta E_b = \frac{5}{36} : \frac{8}{9} = 5 : 32\)<br>
+          <span class="ans">答：\(\lambda_b : \lambda_d = 5 : 32\)</span>
+        </div>
+
+        <div class="answer-tag">
+          🎯 (1) 紫外光區 ｜ (2) e ｜ (3) 27 : 20 ｜ (4) \(5 \to 2\) ｜ (5) 5 : 32
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const btnToggle = document.getElementById('btn-toggle');
+    const panel = document.getElementById('solution-panel');
+    let isShown = false;
+    btnToggle.addEventListener('click', () => {
+      isShown = !isShown;
+      panel.style.display = isShown ? 'flex' : 'none';
+      btnToggle.innerHTML = isShown ? '<span>🙈 隱藏詳解</span>' : '<span>👁️ 顯示詳解</span>';
+      if (isShown && window.MathJax) MathJax.typesetPromise();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-2 範例 5 · 含結晶水鹽類析出計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399;
+            --accent-red: #f87171; --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute; top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.2rem, 1.7vw, 1.6rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 22px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.05vw, 1.1rem); line-height: 1.65; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        .ex-layout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 0.85rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.1rem 1.3rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem; min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel.right-panel { background: rgba(255,255,255,0.025); border-style: dashed; align-items: center; justify-content: center; }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .tag { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+        .q-box { background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 0.9rem 1.1rem; }
+        .options { list-style: none; margin: 0; padding: 0; }
+        .options li { padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .options li:last-child { border-bottom: none; }
+        .btn-show-ans {
+            margin-top: auto; align-self: flex-start; padding: 9px 26px;
+            background: transparent; border: 1.5px solid rgba(255,255,255,0.3);
+            color: #fff; border-radius: 10px; cursor: pointer; font-size: 0.95rem;
+            transition: 0.2s; font-family: inherit; font-weight: bold;
+        }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); }
+        .ans-box { display: none; width: 100%; background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1.1rem 1.3rem; }
+        .ans-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.35rem; font-weight: 900; margin-bottom: 0.6rem; }
+        .ans-body { font-size: clamp(0.9rem, 1.0vw, 1.02rem); line-height: 1.8; color: #e2e8f0; }
+        .step-line { border-left: 3px solid rgba(34,211,238,0.3); padding-left: 0.75rem; margin: 0.5rem 0; font-size: 0.94rem; }
+        @media (max-width: 900px) {
+            .ex-layout { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-2 溶解度與濃度表示法 &middot; 範例 5：含結晶水鹽類降溫再結晶析出計算</h1>
+        <div class="ex-layout">
+            <!-- 左欄：題目呈現區 -->
+            <div class="panel">
+                <span class="tag tag-yellow">📋 範例 5</span>
+                <div class="q-box">
+                    <p style="font-size:1.05rem; line-height:1.7;">
+                        已知 $100\text{ g}$ 水可溶解無水 $\text{CuSO}_4$：$80^\circ\text{C}$ 時為 $56\text{ g}$，$25^\circ\text{C}$ 時為 $22\text{ g}$。<br>
+                        在 $80^\circ\text{C}$ 時取 $100\text{ g}$ 水配製成飽和溶液後，將其冷卻至 $25^\circ\text{C}$，試問應析出<strong>膽礬（$\text{CuSO}_4 \cdot 5\text{H}_2\text{O}$）</strong>結晶若干克？<br>
+                        <span style="font-size:0.9rem; color:#94a3b8;">（式量：$\text{CuSO}_4 = 160,\ \text{CuSO}_4 \cdot 5\text{H}_2\text{O} = 250$）</span>
+                    </p>
+                </div>
+                <ul class="options">
+                    <li>(A) $61\text{ 克}$</li>
+                    <li>(B) $54\text{ 克}$</li>
+                    <li>(C) $48\text{ 克}$</li>
+                    <li>(D) $41\text{ 克}$</li>
+                </ul>
+                <div style="margin-top:0.4rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.7rem 0.9rem;">
+                    <p style="font-size:0.88rem; color:#cbd5e1;">
+                        💡 <strong>高頻易錯盲點：</strong><br>
+                        析出的藍礬晶體中含有<strong>結晶水</strong>！每析出 $250\text{ g}$ 藍礬，會同時帶走 $160\text{ g}$ 溶質與 $90\text{ g}$ 水。因此母液中剩餘的水量<strong>不再是原來的 $100\text{ g}$</strong>，需列式解未知數。
+                    </p>
+                </div>
+                <button class="btn-show-ans" id="btnAns" onclick="toggleAns()">💡 顯示詳解</button>
+            </div>
+
+            <!-- 右欄：空白/詳解呈現區 -->
+            <div class="panel right-panel">
+                <div id="ansBox" class="ans-box">
+                    <div class="ans-label">解答：(A) 約 $61\text{ 克}$</div>
+                    <div class="ans-body">
+                        <strong style="color:var(--accent-yellow);">【精確方程列式步驟】</strong>
+                        <div class="step-line">
+                            <strong>1. 設析出之藍礬 $\text{CuSO}_4 \cdot 5\text{H}_2\text{O}$ 質量為 $x\text{ 克}$：</strong><br>
+                            • 析出之純 $\text{CuSO}_4$ 溶質重 $= x \times \dfrac{160}{250} = \mathbf{0.64x\text{ g}}$。<br>
+                            • 析出之結晶水重 $= x \times \dfrac{90}{250} = \mathbf{0.36x\text{ g}}$。
+                        </div>
+                        <div class="step-line">
+                            <strong>2. 計算冷卻至 $25^\circ\text{C}$ 時母液中剩餘量：</strong><br>
+                            • 剩餘溶質重 $= 56 - 0.64x\text{ g}$。<br>
+                            • 剩餘溶劑水重 $= 100 - 0.36x\text{ g}$。
+                        </div>
+                        <div class="step-line">
+                            <strong>3. 依 $25^\circ\text{C}$ 溶解度比值建立方程式：</strong><br>
+                            $\dfrac{56 - 0.64x}{100 - 0.36x} = \dfrac{22}{100}$<br>
+                            交叉相乘：<br>
+                            $5600 - 64x = 2200 - 7.92x$<br>
+                            $3400 = 56.08x \implies x = \dfrac{3400}{56.08} \approx \mathbf{60.63\text{ g}} \approx \mathbf{61\text{ 克}}$。
+                        </div>
+                    </div>
+                </div>
+                <p id="hint" style="color:rgba(255,255,255,0.3); font-size:0.95rem;">← 點擊左方「顯示詳解」</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAns() {
+    const box = document.getElementById('ansBox'), btn = document.getElementById('btnAns'), hint = document.getElementById('hint');
+    const isVisible = box.classList.contains('visible');
+    if (isVisible) {
+        box.classList.remove('visible'); btn.textContent = '💡 顯示詳解'; btn.classList.remove('shown'); if (hint) hint.style.display = 'block';
+    } else {
+        box.classList.add('visible'); btn.textContent = '🙈 隱藏詳解'; btn.classList.add('shown'); if (hint) hint.style.display = 'none';
+        if (window.MathJax) MathJax.typesetPromise([box]).catch(function(){});
+    }
+}
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return; window.__chemScrollBridgeInstalled = true;
+    function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY||0, sx: window.scrollX||0 }, '*'); } }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('message', function (e) { if (!e.data) return; if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY||0, behavior: 'instant' }); reportScroll(); } else if (e.data.type === '__chem_get_scroll') { reportScroll(); } });
+    reportScroll(); window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>

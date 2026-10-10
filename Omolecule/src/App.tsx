@@ -4,6 +4,7 @@ import { Canvas } from './components/Canvas';
 import { MoleculeDisplay } from './components/MoleculeDisplay';
 import { useMolecule } from './hooks/useMolecule';
 import { generateSMILES, isMoleculeComplete } from './utils/smilesGenerator';
+import { generateCondensedFormula } from './utils/condensedFormulaGenerator';
 import { fetchMoleculeInfo } from './utils/pubchemApi';
 import type { MoleculeInfo } from './utils/pubchemApi';
 import './App.css';
@@ -19,10 +20,11 @@ export default function App() {
   const resizing = useRef(false);
 
   const smiles = generateSMILES(state);
+  const condensedFormula = generateCondensedFormula(state);
   const complete = isMoleculeComplete(state);
 
 
-  // Fetch from PubChem when molecule changes
+  // Fetch from PubChem when molecule changes (always try, not just when 'complete')
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!smiles || state.blocks.length === 0) {
@@ -30,19 +32,15 @@ export default function App() {
       setIsLoading(false);
       return;
     }
-    if (complete) {
-      setIsLoading(true);
-      debounceRef.current = setTimeout(async () => {
-        const info = await fetchMoleculeInfo(smiles);
-        setMoleculeInfo(info);
-        setIsLoading(false);
-      }, DEBOUNCE_MS);
-    } else {
-      setMoleculeInfo(null);
+    // Always try to fetch — PubChem will return null if the SMILES is incomplete/invalid
+    setIsLoading(true);
+    debounceRef.current = setTimeout(async () => {
+      const info = await fetchMoleculeInfo(smiles);
+      setMoleculeInfo(info);
       setIsLoading(false);
-    }
+    }, DEBOUNCE_MS);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [smiles, complete, state.blocks.length]);
+  }, [smiles, state.blocks.length]);
 
 
 
@@ -126,7 +124,14 @@ export default function App() {
         {/* Center: Canvas */}
         <div className="center-panel">
           <div className="panel-title">
-            <span>🎨 作圖區</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <span>🎨 作圖區</span>
+              {condensedFormula && (
+                <span className="condensed-formula" style={{ color: '#FFD700', fontWeight: 'bold', letterSpacing: '1px' }}>
+                  {condensedFormula}
+                </span>
+              )}
+            </div>
             <span className="panel-hint">雙擊積木可刪除</span>
           </div>
           <div className="panel-body">

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>共價鍵及鍵結軌域 | 互動教學</title>
+    <meta name="description" content="高中選修化學二 第二章：共價鍵形成、σ/π鍵、混成軌域、極性共價鍵互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #071018;
+            --text-main: #ecfdf5;
+            --accent-teal: #2dd4bf;
+            --accent-cyan: #22d3ee;
+            --accent-green: #34d399;
+            --accent-yellow: #fde047;
+            --accent-purple: #a78bfa;
+            --accent-red: #f87171;
+            --accent-orange: #fb923c;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.14);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 20% 35%, rgba(45, 212, 191, 0.09) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.07) 0%, transparent 50%),
+                radial-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #app:not(.started) #presentation-area { pointer-events: none; }
+        #app:not(.started) ~ #toolbar,
+        #app:not(.started) ~ #slide-info { visibility: hidden; pointer-events: none; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.1em;
+        }
+        .start-title {
+            font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 900; text-align: center; line-height: 1.15;
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .start-sub { font-size: 1.25rem; color: rgba(236, 253, 245, 0.55); margin: 0.7rem 0 2.2rem; text-align: center; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+            color: #071018; border: none; padding: 1.05rem 3rem;
+            border-radius: 60px; font-size: 1.3rem; font-weight: 800;
+            box-shadow: 0 0 40px rgba(45, 212, 191, 0.45);
+            cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.8rem; display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.45rem; font-size: 0.86rem; color: rgba(236, 253, 245, 0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 68px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.7rem 0.4rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        .slide-iframe { padding: 0 !important; }
+        .slide-iframe .iframe-wrap {
+            flex: 1; min-height: 0; border-radius: 16px; overflow: hidden;
+            border: 1.5px solid rgba(45, 212, 191, 0.35);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+        }
+        .slide-iframe iframe { width: 100%; height: 100%; border: none; display: block; }
+        .iframe-caption {
+            flex-shrink: 0; text-align: center; font-size: 0.88rem;
+            color: rgba(236,253,245,0.55); padding: 0.4rem 0;
+        }
+
+        h1 {
+            color: var(--accent-teal); font-size: clamp(1.4rem, 2.4vw, 2rem);
+            margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.65rem;
+            border-bottom: 2px solid rgba(45, 212, 191, 0.28); padding-bottom: 0.35rem; flex-shrink: 0;
+        }
+        h1::before {
+            content: ""; width: 7px; height: 26px;
+            background: linear-gradient(var(--accent-teal), var(--accent-cyan)); border-radius: 4px;
+        }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.98rem, 1.5vw, 1.25rem); margin: 0.3rem 0; font-weight: 700; flex-shrink: 0; }
+        h3 { color: var(--accent-cyan); font-size: clamp(0.88rem, 1.2vw, 1.05rem); margin: 0.2rem 0; font-weight: 600; }
+        p, li { font-size: clamp(0.86rem, 1.15vw, 1.05rem); line-height: 1.5; margin-bottom: 0.32rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-teal); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.25rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border);
+            border-radius: 16px; padding: 0.95rem 1.05rem;
+            backdrop-filter: blur(12px); display: flex; flex-direction: column;
+            overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; flex: 1; min-height: 0; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.7rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.1rem, 1.6vw, 1.4rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(34, 211, 238, 0.07); border-radius: 11px;
+            padding: 0.7rem; border: 1px solid rgba(34, 211, 238, 0.22); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(45, 212, 191, 0.08); border-radius: 11px;
+            padding: 0.7rem; border: 1px solid rgba(45, 212, 191, 0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag {
+            display: inline-block; padding: 0.1rem 0.55rem; border-radius: 18px;
+            font-size: 0.76rem; font-weight: 700; margin-right: 0.25rem;
+        }
+        .tag-teal { background: rgba(45,212,191,0.15); border: 1px solid rgba(45,212,191,0.45); color: var(--accent-teal); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.78rem, 1.05vw, 0.92rem); }
+        table.data-table th, table.data-table td {
+            border: 1px solid rgba(255,255,255,0.12); padding: 0.4rem 0.45rem; text-align: center;
+        }
+        table.data-table th { background: rgba(45, 212, 191, 0.12); color: var(--accent-teal); }
+
+        .bond-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.5rem 0; flex-shrink: 0; }
+        .bond-chip {
+            flex: 1; min-width: 100px; text-align: center; padding: 0.5rem 0.4rem;
+            border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12);
+            font-size: 0.82rem; font-weight: 600;
+        }
+        .bond-chip span { display: block; font-size: 1.4rem; margin-bottom: 0.15rem; }
+
+        #canvas-h2-pe {
+            display: block; width: 100%; flex: 1; min-height: 220px;
+            border-radius: 12px; background: rgba(0,0,0,0.35); cursor: ew-resize;
+        }
+        .pe-label { text-align: center; font-size: 0.88rem; color: var(--accent-cyan); margin-top: 0.35rem; flex-shrink: 0; }
+
+        .hybrid-diagram {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.28); border-radius: 12px; padding: 0.5rem;
+        }
+        .hybrid-diagram svg { max-width: 100%; max-height: 100%; }
+
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0;
+        }
+        .quiz-options { list-style: none; margin: 0.45rem 0 0; padding: 0; flex: 1; }
+        .quiz-options li {
+            font-size: clamp(0.9rem, 1.2vw, 1.02rem); padding: 0.35rem 0.5rem; margin-bottom: 0.15rem;
+            border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+        }
+        .quiz-options li span.opt-label { color: var(--accent-teal); font-weight: 700; min-width: 2em; display: inline-block; }
+
+        .ans-overlay {
+            display: none; position: absolute; inset: 0;
+            background: rgba(7, 16, 24, 0.97); z-index: 100; flex-direction: column;
+            padding: 1.2rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-teal), var(--accent-cyan));
+            color: #071018; border: none; padding: 0.65rem 1.4rem; border-radius: 9px;
+            cursor: pointer; font-weight: 700; font-size: 0.95rem; align-self: flex-start;
+            margin-top: 0.4rem; flex-shrink: 0; position: relative; z-index: 110;
+        }
+        .btn-action:hover { filter: brightness(1.08); transform: scale(1.03); }
+
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(7, 16, 24, 0.92); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.14); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-teal); color: #071018; border-color: var(--accent-teal); box-shadow: 0 0 14px rgba(45,212,191,0.5); }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.35); cursor: grab; font-size: 1.25rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; left: 16px; z-index: 9000;
+            font-size: 0.92rem; color: rgba(255,255,255,0.55);
+            background: rgba(0,0,0,0.55); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.12); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 58px; }
+        }
+    </style>
+
+
+<style>
+    #start-overlay, #toolbar, #slide-info { display: none !important; }
+    body, html { width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto !important; }
+    #app { width: 100%; height: 100vh; overflow: hidden; position: relative; }
+    #presentation-area { width: 100%; height: 100%; overflow: hidden; position: relative; pointer-events: auto !important; }
+    #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 2vw; bottom: 2vh; }
+    .slide {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        padding: 0.8rem 0.5rem; opacity: 1 !important; pointer-events: auto !important;
+        display: flex; flex-direction: column; overflow: hidden; transform: none !important;
+    }
+    .scroll-panel { overflow-y: auto !important; -webkit-overflow-scrolling: touch; }
+</style>
+
+</head>
+<body>
+<div id="app" class="started">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>範例練習（一）</h1>
+                <div class="grid-2">
+                    <div class="panel quiz-item">
+                        <p><span class="tag tag-teal">範例 1</span> 一般共價鍵的鍵長約為多少公尺？（最接近）</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 10⁴</li>
+                            <li><span class="opt-label">(B)</span> 10⁶</li>
+                            <li><span class="opt-label">(C)</span> 10⁸</li>
+                            <li><span class="opt-label">(D)</span> 10⁻¹⁰</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans-c1', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans-c1">
+                            <p style="font-size:1.15rem; color:var(--accent-green);"><strong>解答：(D)</strong></p>
+                            <p>共價鍵長約 10⁻¹⁰ m（Å）量级。</p>
+                        </div>
+                    </div>
+                    <div class="panel quiz-item">
+                        <p><span class="tag tag-teal">範例 2</span> 下列敘述何者<strong>不正確</strong>？</p>
+                        <ul class="quiz-options">
+                            <li><span class="opt-label">(A)</span> 含共價鍵的化合物一定是共價化合物</li>
+                            <li><span class="opt-label">(B)</span> 氣態單質分子中一定有共價鍵</li>
+                            <li><span class="opt-label">(C)</span> 離子晶體中可能含共價鍵</li>
+                            <li><span class="opt-label">(D)</span> 共價化合物中一定有共價鍵</li>
+                        </ul>
+                        <button type="button" class="btn-action" onclick="toggleAns('ans-c2', this)">顯示解答</button>
+                        <div class="ans-overlay" id="ans-c2">
+                            <p style="font-size:1.15rem; color:var(--accent-green);"><strong>解答：(A)(B)</strong></p>
+                            <p>(A) 如 NH₄Cl 含共價鍵但為離子化合物；(B) 稀有氣體單質無共價鍵。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const inline = el.classList.contains('ans-inline');
+    const openDisplay = inline ? 'block' : 'flex';
+    const isOpen = el.style.display === openDisplay;
+    el.style.display = isOpen ? 'none' : openDisplay;
+    const button = btn || el.parentElement.querySelector('.btn-action');
+    if (button) {
+        const showLabel = button.getAttribute('data-show-label') || '顯示解答';
+        button.textContent = isOpen ? showLabel : '隱藏解答';
+    }
+}
+</script>
+
+</body>
+</html>

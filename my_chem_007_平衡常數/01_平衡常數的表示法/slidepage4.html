@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>平衡達成的過程與圖形特徵 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.55vw, 1.35rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.22vw, 1.12rem); line-height: 1.55; margin-bottom: 0.35rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.75rem 0.9rem; margin: 0.45rem 0; text-align: center;
+            font-size: clamp(1.05rem, 1.6vw, 1.35rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.85rem, 1.1vw, 1.02rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.5rem 0.65rem; text-align: center; }
+        table.data-table th { background: rgba(34,211,238,0.12); color: var(--accent-cyan); }
+        .calc-step {
+            background: rgba(0,0,0,0.2); border-left: 4px solid var(--accent-purple);
+            border-radius: 0 8px 8px 0; padding: 0.6rem 0.9rem; margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .step-num {
+            display: inline-block; background: var(--accent-purple); color: #0f172a;
+            width: 1.5em; height: 1.5em; border-radius: 50%; text-align: center; line-height: 1.5em;
+            font-weight: 900; font-size: 0.85rem; margin-right: 0.45rem; flex-shrink: 0;
+        }
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-equil-process" style="display: flex; flex-direction: column;">
+    <h1>平衡達成的過程與圖形特徵</h1>
+    <p style="color:rgba(255,255,255,0.7); margin-bottom: 0.4rem; flex-shrink: 0; font-size: 0.98rem;">
+        觀察不同起始條件下，濃度及反應速率隨時間變化的趨勢。<strong style="color:var(--accent-cyan);">您可以將游標滑動於圖表上方</strong>，觀察如「實驗進行」般的動態推演過程。
+    </p>
+    
+    <style>
+        .process-tabs { display: flex; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .process-tab {
+            padding: 6px 16px; background: rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer;
+            font-weight: 700; color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.12); transition: 0.25s; font-size: 1.05rem;
+        }
+        .process-tab:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .process-tab.active { background: rgba(34,211,238,0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); box-shadow: 0 0 12px rgba(34,211,238,0.3); }
+        .process-content { display: none; flex: 1; flex-direction: column; min-height: 0; }
+        .process-content.active { display: flex; }
+
+        .derivation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            flex: 1;
+            min-height: 0;
+        }
+        .dg-panel {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+        }
+        .dg-panel h3 {
+            margin-bottom: 6px;
+            font-size: 1.02rem;
+            color: var(--accent-yellow);
+            border-bottom: 1px dashed rgba(255,255,255,0.2);
+            padding-bottom: 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dg-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            overflow: hidden;
+            width: 100%;
+        }
+        .diagram-panel {
+            background: rgba(0,0,0,0.35);
+            border-radius: 10px;
+            padding: 6px;
+            position: relative;
+        }
+        .diagram-panel svg {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        .feature-note {
+            padding: 6px 12px;
+            margin-top: 6px;
+            font-size: 0.92rem;
+            line-height: 1.45;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-yellow);
+            flex-shrink: 0;
+            color: #f8fafc;
+        }
+        .dynamic-label { transition: opacity 0.2s; pointer-events: none; font-weight: bold; }
+
+        /* 針對 Tab 2 雙行情況的垂直滾動 */
+        .tab2-scroller {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+        .tab2-scroller::-webkit-scrollbar { width: 5px; }
+        .tab2-scroller::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+    </style>
+
+    <!-- SVG Defs for synchronized clipping -->
+    <svg width="0" height="0" style="position:absolute;">
+        <defs>
+            <clipPath id="clip-sync-0"><rect id="rect-sync-0" x="40" y="0" width="240" height="200" /></clipPath>
+            <clipPath id="clip-sync-1"><rect id="rect-sync-1" x="40" y="0" width="240" height="200" /></clipPath>
+            <clipPath id="clip-sync-2"><rect id="rect-sync-2" x="40" y="0" width="240" height="200" /></clipPath>
+            <clipPath id="clip-sync-3"><rect id="rect-sync-3" x="40" y="0" width="240" height="200" /></clipPath>
+        </defs>
+    </svg>
+
+    <div class="process-tabs">
+        <div class="process-tab active" onclick="switchProcessTab(0)">僅加入反應物</div>
+        <div class="process-tab" onclick="switchProcessTab(1)">僅加入產物</div>
+        <div class="process-tab" onclick="switchProcessTab(2)">相變平衡 (水蒸發)</div>
+    </div>
+
+    <!-- Tab 0: 僅加入反應物 -->
+    <div class="process-content active" id="process-tab-0">
+        <div class="info-card" style="margin-bottom: 8px; padding: 6px 12px; flex-shrink: 0;">
+            <span style="font-size: 1.05rem;">例：反應 $\text{A} \rightleftharpoons 2\text{B} + \text{C}$，定溫下，反應初期體積固定的密閉容器中<strong>僅加入反應物 A</strong>。</span>
+        </div>
+        <div class="derivation-grid">
+            <div class="dg-panel">
+                <h3>📈 各物種濃度隨時間之變化圖</h3>
+                <div class="dg-body diagram-panel">
+                    <svg viewBox="0 0 300 200">
+                        <line x1="40" y1="170" x2="280" y2="170" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="170" x2="40" y2="30" stroke="white" stroke-width="2"/>
+                        <text x="250" y="190" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="25" fill="white" font-size="12">濃度</text>
+                        <line x1="160" y1="30" x2="160" y2="180" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="190" fill="#a78bfa" font-size="14" text-anchor="middle" font-weight="bold">達平衡</text>
+
+                        <!-- Initial concentration reference line -->
+                        <line x1="40" y1="40" x2="280" y2="40" stroke="#3b82f6" stroke-dasharray="6,3" stroke-width="1.5" opacity="0.55"/>
+                        <text x="43" y="37" fill="#3b82f6" font-size="11" opacity="0.8">[A]₀</text>
+                        
+                        <g clip-path="url(#clip-sync-0)">
+                            <path id="path-sync-0-l-A" d="M 40 40 Q 90 90, 160 110 L 280 110" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="285" y="115" fill="#3b82f6" font-size="14">[A]</text>
+                            
+                            <path id="path-sync-0-l-B" d="M 40 170 Q 100 80, 160 50 L 280 50" fill="none" stroke="#10b981" stroke-width="3"/>
+                            <text x="285" y="55" fill="#10b981" font-size="14">[B]</text>
+
+                            <path id="path-sync-0-l-C" d="M 40 170 Q 100 130, 160 110 L 280 110" fill="none" stroke="#a855f7" stroke-width="3"/>
+                            <text x="285" y="100" fill="#a855f7" font-size="14">[C]</text>
+                        </g>
+                        
+                        <line id="cursor-sync-0-left" x1="280" y1="30" x2="280" y2="180" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <!-- Dynamic Labels -->
+                        <g id="labels-sync-0-left">
+                            <text id="dyn-0-l-A" class="dynamic-label" font-size="14" fill="#3b82f6" opacity="0">[A]</text>
+                            <text id="dyn-0-l-B" class="dynamic-label" font-size="14" fill="#10b981" opacity="0">[B]</text>
+                            <text id="dyn-0-l-C" class="dynamic-label" font-size="14" fill="#a855f7" opacity="0">[C]</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="200" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 0)" onmouseleave="resetProcessGraphs(0)" />
+                    </svg>
+                </div>
+                <div class="feature-note">
+                    <strong>💡 特徵：</strong><br>
+                    1. 濃度變化量之比等於係數比：$\Delta[\text{A}] : \Delta[\text{B}] : \Delta[\text{C}] = 1 : 2 : 1$。<br>
+                    2. 反應物濃度下降，生成物濃度上升；平衡後各物質濃度維持定值。
+                </div>
+            </div>
+
+            <div class="dg-panel">
+                <h3>⏱️ 反應速率隨時間之變化圖</h3>
+                <div class="dg-body diagram-panel">
+                    <svg viewBox="0 0 300 200">
+                        <line x1="40" y1="170" x2="280" y2="170" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="170" x2="40" y2="30" stroke="white" stroke-width="2"/>
+                        <text x="250" y="190" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="25" fill="white" font-size="12">反應速率</text>
+                        <line x1="160" y1="30" x2="160" y2="180" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        
+                        <g clip-path="url(#clip-sync-0)">
+                            <path id="path-sync-0-r-rf" d="M 40 40 Q 90 80, 160 100 L 280 100" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="100" y="60" fill="#3b82f6" font-size="16">r_f</text>
+                            
+                            <path id="path-sync-0-r-rr" d="M 40 170 Q 90 120, 160 100 L 280 100" fill="none" stroke="#ef4444" stroke-width="3"/>
+                            <text x="100" y="150" fill="#ef4444" font-size="16">r_r</text>
+
+                            <text x="210" y="90" fill="#3b82f6" font-size="16">r_f = r_r</text>
+                        </g>
+                        
+                        <!-- Rate law formula box -->
+                        <rect x="165" y="30" width="113" height="46" rx="5" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                        <text font-size="12" font-family="Georgia, serif">
+                            <tspan x="171" y="47" fill="#3b82f6" font-weight="bold">R</tspan><tspan fill="#3b82f6" font-size="9" dy="3">正</tspan><tspan fill="white" dy="-3"> = [反應物]</tspan><tspan fill="#fbbf24" font-size="9" dy="-5">m</tspan>
+                        </text>
+                        <text font-size="12" font-family="Georgia, serif">
+                            <tspan x="171" y="67" fill="#ef4444" font-weight="bold">R</tspan><tspan fill="#ef4444" font-size="9" dy="3">逆</tspan><tspan fill="white" dy="-3"> = [生成物]</tspan><tspan fill="#fbbf24" font-size="9" dy="-5">n</tspan>
+                        </text>
+
+                        <line id="cursor-sync-0-right" x1="280" y1="30" x2="280" y2="180" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-0-right">
+                            <text id="dyn-0-r-rf" class="dynamic-label" font-size="14" fill="#3b82f6" opacity="0">r_f</text>
+                            <text id="dyn-0-r-rr" class="dynamic-label" font-size="14" fill="#ef4444" opacity="0">r_r</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="200" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 0)" onmouseleave="resetProcessGraphs(0)" />
+                    </svg>
+                </div>
+                <div class="feature-note" style="border-left-color: var(--accent-green);">
+                    <strong>💡 特徵：</strong><br>
+                    1. 初期 $r_f$ 最大，逆反應速率 $r_r = 0$。<br>
+                    2. 達平衡時，$r_f = r_r \neq 0$（微觀上分子仍持續反應，為動態平衡）。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 1: 僅加入產物 -->
+    <div class="process-content" id="process-tab-1">
+        <div class="info-card" style="margin-bottom: 8px; padding: 6px 12px; flex-shrink: 0;">
+            <span style="font-size: 1.05rem;">例：反應 $\text{A} \rightleftharpoons 2\text{B} + \text{C}$，定溫下，反應初期體積固定的密閉容器中<strong>僅加入等莫耳的 B 與 C</strong>。</span>
+        </div>
+        <div class="derivation-grid">
+            <div class="dg-panel">
+                <h3>📈 各物種濃度隨時間之變化圖</h3>
+                <div class="dg-body diagram-panel">
+                    <svg viewBox="0 0 300 200">
+                        <line x1="40" y1="170" x2="280" y2="170" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="170" x2="40" y2="30" stroke="white" stroke-width="2"/>
+                        <text x="250" y="190" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="25" fill="white" font-size="12">濃度</text>
+                        <line x1="160" y1="30" x2="160" y2="180" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="190" fill="#a78bfa" font-size="14" text-anchor="middle" font-weight="bold">達平衡</text>
+
+                        <!-- Initial concentration reference line: [B]₀=[C]₀ at y=40 -->
+                        <line x1="40" y1="40" x2="280" y2="40" stroke="#ef4444" stroke-dasharray="6,3" stroke-width="1.5" opacity="0.55"/>
+                        <text x="43" y="37" fill="#ef4444" font-size="11" opacity="0.8">[B]₀=[C]₀</text>
+                        
+                        <g clip-path="url(#clip-sync-1)">
+                            <path id="path-sync-1-l-C" d="M 40 40 Q 90 60, 160 80 L 280 80" fill="none" stroke="#a855f7" stroke-width="3"/>
+                            <text x="285" y="85" fill="#a855f7" font-size="14">[C]</text>
+                            
+                            <path id="path-sync-1-l-B" d="M 40 40 Q 90 90, 160 120 L 280 120" fill="none" stroke="#ef4444" stroke-width="3"/>
+                            <text x="285" y="125" fill="#ef4444" font-size="14">[B]</text>
+
+                            <path id="path-sync-1-l-A" d="M 40 170 Q 90 140, 160 130 L 280 130" fill="none" stroke="#10b981" stroke-width="3"/>
+                            <text x="285" y="135" fill="#10b981" font-size="14">[A]</text>
+                            
+                            <circle cx="40" cy="40" r="4" fill="none" stroke="#3b82f6" stroke-width="2"/>
+                        </g>
+                        
+                        <line id="cursor-sync-1-left" x1="280" y1="30" x2="280" y2="180" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-1-left">
+                            <text id="dyn-1-l-C" class="dynamic-label" font-size="14" fill="#a855f7" opacity="0">[C]</text>
+                            <text id="dyn-1-l-B" class="dynamic-label" font-size="14" fill="#ef4444" opacity="0">[B]</text>
+                            <text id="dyn-1-l-A" class="dynamic-label" font-size="14" fill="#10b981" opacity="0">[A]</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="200" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 1)" onmouseleave="resetProcessGraphs(1)" />
+                    </svg>
+                </div>
+                <div class="feature-note">
+                    <strong>💡 特徵：</strong><br>
+                    1. B 與 C 雖然同莫耳數加入，但 B 的消耗速率為 C 的兩倍，故平衡時 $[\text{C}] > [\text{B}]$。<br>
+                    2. 反應向逆方向進行，A 的濃度由零逐步上升至平衡定值。
+                </div>
+            </div>
+
+            <div class="dg-panel">
+                <h3>⏱️ 反應速率隨時間之變化圖</h3>
+                <div class="dg-body diagram-panel">
+                    <svg viewBox="0 0 300 200">
+                        <line x1="40" y1="170" x2="280" y2="170" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="170" x2="40" y2="30" stroke="white" stroke-width="2"/>
+                        <text x="250" y="190" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="25" fill="white" font-size="12">反應速率</text>
+                        <line x1="160" y1="30" x2="160" y2="180" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        
+                        <g clip-path="url(#clip-sync-1)">
+                            <path id="path-sync-1-r-rr" d="M 40 40 Q 90 80, 160 100 L 280 100" fill="none" stroke="#10b981" stroke-width="3"/>
+                            <text x="90" y="60" fill="#10b981" font-size="16">r_r</text>
+                            
+                            <path id="path-sync-1-r-rf" d="M 40 170 Q 90 120, 160 100 L 280 100" fill="none" stroke="#a855f7" stroke-width="3"/>
+                            <text x="90" y="150" fill="#a855f7" font-size="16">r_f</text>
+
+                            <text x="210" y="90" fill="#10b981" font-size="16">r_f = r_r</text>
+                        </g>
+                        
+                        <!-- Rate law formula box -->
+                        <rect x="165" y="30" width="113" height="46" rx="5" fill="rgba(0,0,0,0.6)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+                        <text font-size="12" font-family="Georgia, serif">
+                            <tspan x="171" y="47" fill="#3b82f6" font-weight="bold">R</tspan><tspan fill="#3b82f6" font-size="9" dy="3">正</tspan><tspan fill="white" dy="-3"> = [反應物]</tspan><tspan fill="#fbbf24" font-size="9" dy="-5">m</tspan>
+                        </text>
+                        <text font-size="12" font-family="Georgia, serif">
+                            <tspan x="171" y="67" fill="#ef4444" font-weight="bold">R</tspan><tspan fill="#ef4444" font-size="9" dy="3">逆</tspan><tspan fill="white" dy="-3"> = [生成物]</tspan><tspan fill="#fbbf24" font-size="9" dy="-5">n</tspan>
+                        </text>
+
+                        <line id="cursor-sync-1-right" x1="280" y1="30" x2="280" y2="180" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-1-right">
+                            <text id="dyn-1-r-rr" class="dynamic-label" font-size="14" fill="#10b981" opacity="0">r_r</text>
+                            <text id="dyn-1-r-rf" class="dynamic-label" font-size="14" fill="#a855f7" opacity="0">r_f</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="200" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 1)" onmouseleave="resetProcessGraphs(1)" />
+                    </svg>
+                </div>
+                <div class="feature-note" style="border-left-color: var(--accent-green);">
+                    <strong>💡 特徵：</strong><br>
+                    1. 初期 $r_r$ 最大，正反應速率 $r_f = 0$。<br>
+                    2. 反應向逆方向進行，隨產物減少 $r_r$ 下降、$r_f$ 上升，直到 $r_f = r_r$ 達成平衡。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: 相變平衡 (水蒸發) -->
+    <div class="process-content" id="process-tab-2">
+        <div class="info-card" style="margin-bottom: 8px; padding: 6px 12px; flex-shrink: 0;">
+            <span style="font-size: 1.02rem;">例：若 $25^\circ\text{C}$ 時水的飽和蒸氣壓為 $23\text{ mmHg}$，相變平衡式：$\text{H}_2\text{O}_{(l)} \rightleftharpoons \text{H}_2\text{O}_{(g)}$</span>
+        </div>
+        <div class="derivation-grid" style="overflow-y: auto;">
+            <!-- Column 1: 狀況 (1) 僅置入液體水 -->
+            <div class="dg-panel" style="overflow-y: auto; display: flex; flex-direction: column;">
+                <h3 style="color: var(--accent-cyan);">(1) 僅置入 2 mL 液體水：</h3>
+                
+                <!-- 上圖：分壓圖 -->
+                <div style="font-size: 0.9rem; color: var(--accent-blue); font-weight: 700; margin: 2px 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <span>📈 水蒸氣分壓隨時間變化</span>
+                    <span style="color: #ef4444; font-size: 0.82rem;">飽和蒸氣壓 = 23 mmHg</span>
+                </div>
+                <div class="dg-body diagram-panel" style="height: 180px; flex-shrink: 0;">
+                    <svg viewBox="0 0 300 170">
+                        <line x1="40" y1="140" x2="280" y2="140" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="140" x2="40" y2="20" stroke="white" stroke-width="2"/>
+                        <text x="250" y="160" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="20" fill="white" font-size="12">分壓</text>
+                        <line x1="160" y1="20" x2="160" y2="148" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="160" fill="#a78bfa" font-size="13" text-anchor="middle" font-weight="bold">達平衡</text>
+                        
+                        <line x1="40" y1="60" x2="280" y2="60" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="1.8"/>
+                        <text x="14" y="64" fill="#ef4444" font-size="12" font-weight="bold">23</text>
+                        
+                        <g clip-path="url(#clip-sync-2)">
+                            <path id="path-sync-2-l-P" d="M 40 140 Q 90 65, 160 60 L 280 60" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="220" y="50" fill="#3b82f6" font-size="13" font-weight="bold">P H2O</text>
+                        </g>
+                        
+                        <line id="cursor-sync-2-left" x1="280" y1="20" x2="280" y2="148" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-2-left">
+                            <text id="dyn-2-l-P" class="dynamic-label" font-size="13" fill="#3b82f6" opacity="0">P</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="170" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 2)" onmouseleave="resetProcessGraphs(2)" />
+                    </svg>
+                </div>
+
+                <!-- 下圖：速率圖 -->
+                <div style="font-size: 0.9rem; color: var(--accent-green); font-weight: 700; margin: 4px 0 2px 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <span>⏱️ 反應速率隨時間變化</span>
+                    <span style="color: #a78bfa; font-size: 0.82rem;">平衡時 r蒸發 = r凝結</span>
+                </div>
+                <div class="dg-body diagram-panel" style="height: 180px; flex-shrink: 0;">
+                    <svg viewBox="0 0 300 170">
+                        <line x1="40" y1="140" x2="280" y2="140" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="140" x2="40" y2="20" stroke="white" stroke-width="2"/>
+                        <text x="250" y="160" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="20" fill="white" font-size="12">速率</text>
+                        <line x1="160" y1="20" x2="160" y2="148" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="160" fill="#a78bfa" font-size="13" text-anchor="middle" font-weight="bold">達平衡</text>
+                        
+                        <g clip-path="url(#clip-sync-2)">
+                            <path id="path-sync-2-r-re" d="M 40 60 L 280 60" fill="none" stroke="#ef4444" stroke-width="3"/>
+                            <text x="75" y="52" fill="#ef4444" font-size="13" font-weight="bold">r蒸發 (定值)</text>
+                            
+                            <path id="path-sync-2-r-rc" d="M 40 140 Q 90 75, 160 60 L 280 60" fill="none" stroke="#10b981" stroke-width="3"/>
+                            <text x="75" y="125" fill="#10b981" font-size="13" font-weight="bold">r凝結</text>
+
+                            <text x="195" y="52" fill="#a78bfa" font-size="12" font-weight="bold">r蒸發 = r凝結</text>
+                        </g>
+                        
+                        <!-- Rate law formula box -->
+                        <rect x="170" y="10" width="122" height="38" rx="4" fill="rgba(0,0,0,0.65)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                        <text font-size="10.5" font-family="Georgia, serif">
+                            <tspan x="175" y="24" fill="#ef4444" font-weight="bold">R</tspan><tspan fill="#ef4444" font-size="8.5" dy="2">蒸發</tspan><tspan fill="white" dy="-2"> = k[液水]</tspan><tspan fill="#fbbf24" font-size="8.5" dy="-4">m</tspan>
+                        </text>
+                        <text font-size="10.5" font-family="Georgia, serif">
+                            <tspan x="175" y="40" fill="#10b981" font-weight="bold">R</tspan><tspan fill="#10b981" font-size="8.5" dy="2">凝結</tspan><tspan fill="white" dy="-2"> = k[H₂O(g)]</tspan><tspan fill="#fbbf24" font-size="8.5" dy="-4">n</tspan>
+                        </text>
+
+                        <line id="cursor-sync-2-right" x1="280" y1="20" x2="280" y2="148" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-2-right">
+                            <text id="dyn-2-r-re" class="dynamic-label" font-size="13" fill="#ef4444" opacity="0">r蒸發</text>
+                            <text id="dyn-2-r-rc" class="dynamic-label" font-size="13" fill="#10b981" opacity="0">r凝結</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="170" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 2)" onmouseleave="resetProcessGraphs(2)" />
+                    </svg>
+                </div>
+                
+                <div class="feature-note" style="margin-top: 6px; font-size: 0.88rem; line-height: 1.45;">
+                    💡 蒸發速率保持定值；凝結速率隨水蒸氣增加而上升，平衡時 $r_{\text{蒸發}} = r_{\text{凝結}}$，分壓維持 $23\text{ mmHg}$。
+                </div>
+            </div>
+
+            <!-- Column 2: 狀況 (2) 置入液體水及 700 mmHg 過飽和水蒸氣 -->
+            <div class="dg-panel" style="overflow-y: auto; display: flex; flex-direction: column;">
+                <h3 style="color: var(--accent-cyan);">(2) 置入 2 mL 液體水及 700 mmHg 過飽和水蒸氣：</h3>
+                
+                <!-- 上圖：分壓圖 -->
+                <div style="font-size: 0.9rem; color: var(--accent-blue); font-weight: 700; margin: 2px 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <span>📈 水蒸氣分壓隨時間變化</span>
+                    <span style="color: #ef4444; font-size: 0.82rem;">飽和蒸氣壓 = 23 mmHg</span>
+                </div>
+                <div class="dg-body diagram-panel" style="height: 180px; flex-shrink: 0;">
+                    <svg viewBox="0 0 300 170">
+                        <line x1="40" y1="140" x2="280" y2="140" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="140" x2="40" y2="20" stroke="white" stroke-width="2"/>
+                        <text x="250" y="160" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="20" fill="white" font-size="12">分壓</text>
+                        <line x1="160" y1="20" x2="160" y2="148" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="160" fill="#a78bfa" font-size="13" text-anchor="middle" font-weight="bold">達平衡</text>
+                        
+                        <!-- Initial pressure reference line: 700 mmHg at y=40 -->
+                        <line x1="40" y1="40" x2="280" y2="40" stroke="#3b82f6" stroke-dasharray="5,3" stroke-width="1.5" opacity="0.55"/>
+                        <text x="12" y="44" fill="#3b82f6" font-size="12" font-weight="bold">700</text>
+                        <text x="45" y="34" fill="#3b82f6" font-size="10.5" opacity="0.85">P₀ = 700 mmHg (過飽和)</text>
+                        
+                        <line x1="40" y1="105" x2="280" y2="105" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="1.8"/>
+                        <text x="14" y="109" fill="#ef4444" font-size="12" font-weight="bold">23</text>
+                        <text x="45" y="99" fill="#ef4444" font-size="10.5" opacity="0.85">飽和蒸氣壓 = 23 mmHg</text>
+                        
+                        <g clip-path="url(#clip-sync-3)">
+                            <path id="path-sync-3-l-P" d="M 40 40 Q 90 100, 160 105 L 280 105" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="220" y="96" fill="#3b82f6" font-size="13" font-weight="bold">P H2O</text>
+                        </g>
+                        
+                        <line id="cursor-sync-3-left" x1="280" y1="20" x2="280" y2="148" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-3-left">
+                            <text id="dyn-3-l-P" class="dynamic-label" font-size="13" fill="#3b82f6" opacity="0">P</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="170" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 3)" onmouseleave="resetProcessGraphs(3)" />
+                    </svg>
+                </div>
+
+                <!-- 下圖：速率圖 -->
+                <div style="font-size: 0.9rem; color: var(--accent-purple); font-weight: 700; margin: 4px 0 2px 0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <span>⏱️ 反應速率隨時間變化</span>
+                    <span style="color: #a78bfa; font-size: 0.82rem;">平衡時 r蒸發 = r凝結</span>
+                </div>
+                <div class="dg-body diagram-panel" style="height: 180px; flex-shrink: 0;">
+                    <svg viewBox="0 0 300 170">
+                        <line x1="40" y1="140" x2="280" y2="140" stroke="white" stroke-width="2"/>
+                        <line x1="40" y1="140" x2="40" y2="20" stroke="white" stroke-width="2"/>
+                        <text x="250" y="160" fill="white" font-size="12">反應時間</text>
+                        <text x="10" y="20" fill="white" font-size="12">速率</text>
+                        <line x1="160" y1="20" x2="160" y2="148" stroke="rgba(255,255,255,0.4)" stroke-dasharray="5,5"/>
+                        <text x="160" y="160" fill="#a78bfa" font-size="13" text-anchor="middle" font-weight="bold">達平衡</text>
+                        
+                        <g clip-path="url(#clip-sync-3)">
+                            <path id="path-sync-3-r-re" d="M 40 105 L 280 105" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                            <text x="75" y="120" fill="#3b82f6" font-size="13" font-weight="bold">r蒸發 (定值)</text>
+                            
+                            <path id="path-sync-3-r-rc" d="M 40 40 Q 90 95, 160 105 L 280 105" fill="none" stroke="#a855f7" stroke-width="3"/>
+                            <text x="75" y="60" fill="#a855f7" font-size="13" font-weight="bold">r凝結</text>
+
+                            <text x="195" y="96" fill="#a78bfa" font-size="12" font-weight="bold">r蒸發 = r凝結</text>
+                        </g>
+
+                        <!-- Rate law formula box -->
+                        <rect x="170" y="10" width="122" height="38" rx="4" fill="rgba(0,0,0,0.65)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                        <text font-size="10.5" font-family="Georgia, serif">
+                            <tspan x="175" y="24" fill="#3b82f6" font-weight="bold">R</tspan><tspan fill="#3b82f6" font-size="8.5" dy="2">蒸發</tspan><tspan fill="white" dy="-2"> = k[液水]</tspan><tspan fill="#fbbf24" font-size="8.5" dy="-4">m</tspan>
+                        </text>
+                        <text font-size="10.5" font-family="Georgia, serif">
+                            <tspan x="175" y="40" fill="#a855f7" font-weight="bold">R</tspan><tspan fill="#a855f7" font-size="8.5" dy="2">凝結</tspan><tspan fill="white" dy="-2"> = k[H₂O(g)]</tspan><tspan fill="#fbbf24" font-size="8.5" dy="-4">n</tspan>
+                        </text>
+
+                        <line id="cursor-sync-3-right" x1="280" y1="20" x2="280" y2="148" stroke="yellow" stroke-width="1.5" opacity="0" pointer-events="none"/>
+                        
+                        <g id="labels-sync-3-right">
+                            <text id="dyn-3-r-re" class="dynamic-label" font-size="13" fill="#3b82f6" opacity="0">r蒸發</text>
+                            <text id="dyn-3-r-rc" class="dynamic-label" font-size="13" fill="#a855f7" opacity="0">r凝結</text>
+                        </g>
+
+                        <rect x="40" y="0" width="240" height="170" fill="transparent" style="cursor: ew-resize;" onmousemove="syncProcessGraphs(event, 3)" onmouseleave="resetProcessGraphs(3)" />
+                    </svg>
+                </div>
+                
+                <div class="feature-note" style="margin-top: 6px; font-size: 0.88rem; line-height: 1.45; border-left-color: var(--accent-purple);">
+                    💡 初期 $r_{\text{凝結}} > r_{\text{蒸發}}$，過量氣體大量凝結，分壓由 $700$ 下降至 $23\text{ mmHg}$ 達平衡。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchProcessTab(idx) {
+    const tabs = document.querySelectorAll('#slide-equil-process .process-tab');
+    const contents = document.querySelectorAll('#slide-equil-process .process-content');
+    tabs.forEach((t, i) => {
+        if (i === idx) t.classList.add('active');
+        else t.classList.remove('active');
+    });
+    contents.forEach((c, i) => {
+        if (i === idx) c.classList.add('active');
+        else c.classList.remove('active');
+    });
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+}
+
+function getYOnPath(pathNode, x) {
+    if (!pathNode || !pathNode.getTotalLength) return 0;
+    let len = pathNode.getTotalLength();
+    if (len === 0) return 0;
+    let l = 0, r = len;
+    let pt;
+    for (let i = 0; i < 12; i++) {
+        let mid = (l + r) / 2;
+        pt = pathNode.getPointAtLength(mid);
+        if (pt.x < x) l = mid;
+        else r = mid;
+    }
+    return pt.y;
+}
+
+const syncConfig = {
+    0: {
+        left: [{p: 'path-sync-0-l-A', t: 'dyn-0-l-A'}, {p: 'path-sync-0-l-B', t: 'dyn-0-l-B'}, {p: 'path-sync-0-l-C', t: 'dyn-0-l-C'}],
+        right: [{p: 'path-sync-0-r-rf', t: 'dyn-0-r-rf'}, {p: 'path-sync-0-r-rr', t: 'dyn-0-r-rr'}]
+    },
+    1: {
+        left: [{p: 'path-sync-1-l-C', t: 'dyn-1-l-C'}, {p: 'path-sync-1-l-B', t: 'dyn-1-l-B'}, {p: 'path-sync-1-l-A', t: 'dyn-1-l-A'}],
+        right: [{p: 'path-sync-1-r-rr', t: 'dyn-1-r-rr'}, {p: 'path-sync-1-r-rf', t: 'dyn-1-r-rf'}]
+    },
+    2: {
+        left: [{p: 'path-sync-2-l-P', t: 'dyn-2-l-P'}],
+        right: [{p: 'path-sync-2-r-re', t: 'dyn-2-r-re'}, {p: 'path-sync-2-r-rc', t: 'dyn-2-r-rc'}]
+    },
+    3: {
+        left: [{p: 'path-sync-3-l-P', t: 'dyn-3-l-P'}],
+        right: [{p: 'path-sync-3-r-re', t: 'dyn-3-r-re'}, {p: 'path-sync-3-r-rc', t: 'dyn-3-r-rc'}]
+    }
+};
+
+function updateLabels(sideArr, x) {
+    let pts = [];
+    sideArr.forEach(item => {
+        const pNode = document.getElementById(item.p);
+        const tNode = document.getElementById(item.t);
+        if (pNode && tNode) {
+            let y = getYOnPath(pNode, x);
+            pts.push({y: y, tNode: tNode});
+            tNode.style.opacity = '1';
+        }
+    });
+    
+    pts.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < pts.length; i++) {
+        if (pts[i].y - pts[i-1].y < 16) {
+            pts[i].y = pts[i-1].y + 16;
+        }
+    }
+    
+    pts.forEach(pt => {
+        pt.tNode.setAttribute('x', x + 5);
+        pt.tNode.setAttribute('y', pt.y + 4);
+    });
+}
+
+function syncProcessGraphs(e, syncId) {
+    const svg = e.target.ownerSVGElement;
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    let x = svgP.x;
+    if (x < 40) x = 40;
+    if (x > 280) x = 280;
+    
+    const clipRect = document.getElementById('rect-sync-' + syncId);
+    if (clipRect) clipRect.setAttribute('width', x - 40);
+    
+    const curL = document.getElementById('cursor-sync-' + syncId + '-left');
+    const curR = document.getElementById('cursor-sync-' + syncId + '-right');
+    if(curL) { curL.setAttribute('x1', x); curL.setAttribute('x2', x); curL.style.opacity = '1'; }
+    if(curR) { curR.setAttribute('x1', x); curR.setAttribute('x2', x); curR.style.opacity = '1'; }
+    
+    const config = syncConfig[syncId];
+    if (config) {
+        if (config.left) updateLabels(config.left, x);
+        if (config.right) updateLabels(config.right, x);
+    }
+}
+
+function resetProcessGraphs(syncId) {
+    const clipRect = document.getElementById('rect-sync-' + syncId);
+    if (clipRect) clipRect.setAttribute('width', 240);
+    const curL = document.getElementById('cursor-sync-' + syncId + '-left');
+    const curR = document.getElementById('cursor-sync-' + syncId + '-right');
+    if(curL) curL.style.opacity = '0';
+    if(curR) curR.style.opacity = '0';
+    
+    const config = syncConfig[syncId];
+    if (config) {
+        const hideLabels = arr => arr.forEach(item => {
+            const tNode = document.getElementById(item.t);
+            if (tNode) tNode.style.opacity = '0';
+        });
+        if (config.left) hideLabels(config.left);
+        if (config.right) hideLabels(config.right);
+    }
+}
+</script>
+
+        </div>
+    </div>
+</div>
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.updateSlides = function() {};
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>2-7 擴散與逸散 · 範例 5</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;user-select:none;}
+html,body{
+  width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow:hidden;
+  background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+}
+#app{position:relative;width:100vw;height:100vh;overflow:hidden;}
+#slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
+.slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
+h1{
+  color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.35rem;
+  display:flex;align-items:center;gap:.55rem;
+  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
+}
+h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(.92rem,1.15vw,1.12rem);margin-bottom:.2rem;font-weight:700;flex-shrink:0;}
+p,li{font-size:clamp(.82rem,.96vw,.95rem);line-height:1.56;}
+strong{color:var(--cyan);font-weight:700;}
+em{color:var(--yellow);font-style:normal;font-weight:600;}
+.grid2{display:grid;grid-template-columns:1.1fr 1fr;gap:.78rem;flex:1;min-height:0;overflow:hidden;}
+.panel{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;
+  padding:.75rem 1rem;backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow-y:auto;gap:.46rem;
+}
+.panel::-webkit-scrollbar{width:4px;}
+.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
+.tag{display:inline-block;padding:.12rem .58rem;border-radius:10px;font-size:.8rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
+.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
+.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
+.rule-card{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .82rem;}
+.formula-box{
+  background:rgba(0,0,0,.38);border-radius:8px;border-left:4px solid var(--cyan);
+  padding:.45rem .75rem;text-align:center;font-size:1.15rem;margin:.22rem 0;
+}
+.step-block{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--blue);
+  border-radius:8px;padding:.48rem .78rem;line-height:1.56;font-size:.88rem;
+}
+.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
+.step-block.y{border-left-color:var(--yellow);background:rgba(251,191,36,.04);}
+.btn-action{
+  background:linear-gradient(135deg,var(--cyan),var(--purple));color:#0f172a;
+  border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:.2s;
+  touch-action:manipulation;padding:9px 16px;font-size:.92rem;width:100%;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+}
+.btn-action:hover{transform:scale(1.02);box-shadow:0 0 12px rgba(34,211,238,.4);}
+.solution-card{display:none;opacity:0;transform:translateY(8px);transition:opacity .32s,transform .32s;flex-direction:column;gap:.55rem;}
+.solution-card.revealed{display:flex;opacity:1;transform:translateY(0);}
+@media(max-width:900px){.grid2{grid-template-columns:1fr!important;overflow-y:auto;}html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}}
+</style>
+</head>
+
+<body><div id="app"><div id="slides-container"><div class="slide active">
+<h1>2-7 擴散與逸散 · 範例 5：速率比較與溫度效應</h1>
+
+<div class="grid2">
+  <!-- 左：題目 -->
+  <div class="panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
+      <div style="display:flex;align-items:center;gap:.45rem;">
+        <span class="tag tag-y">範例 5</span>
+        <h2 style="color:var(--yellow);margin:0;">溫度與分子量對運動速率的影響</h2>
+      </div>
+      <span style="font-size:.78rem;color:rgba(255,255,255,.45);">進階綜合題</span>
+    </div>
+
+    <div class="rule-card">
+      <p style="font-size:1.02rem;line-height:1.65;">
+        已知氮氣 $\text{N}_2$ 之分子量為 28，氧氣 $\text{O}_2$ 之分子量為 32：<br><br>
+        <strong>(1) $\text{N}_2$ 在 $27^\circ\text{C}$ 時的方均根速率為 $v_1$，在 $327^\circ\text{C}$ 時的方均根速率為 $v_2$，試求 $v_1 : v_2$。</strong><br><br>
+        <strong>(2) 在 $27^\circ\text{C}$ 下，$\text{N}_2$ 與 $\text{O}_2$ 的方均根速率比 $v_{\text{N}_2} : v_{\text{O}_2}$ 為何？</strong>
+      </p>
+    </div>
+
+
+    <div style="margin-top:auto;padding-top:.5rem;">
+      <button class="btn-action" onclick="toggleSolution('sol-ex5')">
+        <span>💡 顯示／隱藏詳細解答</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 右：詳解（預設空白） -->
+  <div class="panel">
+    <div id="sol-ex5" class="solution-card">
+      <div style="display:flex;align-items:center;gap:.45rem;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
+        <span class="tag tag-g">詳細解析</span>
+        <h2 style="color:var(--green);margin:0;">正解：(1) $1 : \sqrt{2}$；(2) $2\sqrt{2} : \sqrt{7}$</h2>
+      </div>
+
+      <div class="step-block g">
+        <strong style="color:var(--green);">⚡ (1) 同種氣體、溫度改變之速率比：</strong><br>
+        <strong>⚠️ 關鍵提醒：務必轉換為絕對溫度凱氏溫標（$\text{K}$）！</strong><br>
+        $T_1 = 27 + 273 = 300\text{ K}$<br>
+        $T_2 = 327 + 273 = 600\text{ K}$<br>
+        $$\frac{v_1}{v_2} = \sqrt{\frac{T_1}{T_2}} = \sqrt{\frac{300}{600}} = \sqrt{\frac{1}{2}} = \frac{1}{\sqrt{2}}$$
+        $$\mathbf{\therefore v_1 : v_2 = 1 : \sqrt{2}}$$
+      </div>
+
+      <div class="step-block y">
+        <strong style="color:var(--yellow);">⚡ (2) 同溫、不同分子量之速率比：</strong><br>
+        在同溫 $27^\circ\text{C}$（$300\text{ K}$）下，$T$ 相等：
+        $$\frac{v_{\text{N}_2}}{v_{\text{O}_2}} = \sqrt{\frac{M_{\text{O}_2}}{M_{\text{N}_2}}} = \sqrt{\frac{32}{28}} = \sqrt{\frac{8}{7}} = \frac{2\sqrt{2}}{\sqrt{7}}$$
+        $$\mathbf{\therefore v_{\text{N}_2} : v_{\text{O}_2} = 2\sqrt{2} : \sqrt{7} \approx 1.07 : 1}$$
+      </div>
+
+      <div class="step-block">
+        <strong style="color:var(--blue);">🔍 觀念深化：</strong><br>
+        $\text{N}_2$ 分子量（28）略輕於 $\text{O}_2$（32），因此同溫下氮氣分子熱運動速率略快於氧氣。
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div></div>
+
+<script>
+window.toggleSolution = function(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const on = el.classList.contains('revealed');
+  if (on) {
+    el.classList.remove('revealed');
+  } else {
+    el.classList.add('revealed');
+    if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(()=>{});
+  }
+};
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body></html>

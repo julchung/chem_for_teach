@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>8-4 酸鹼中和與滴定 · 範例 3：弱鹼強酸滴定計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.5; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.95rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+        .tag-blue { background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .data-table {
+            width: 100%; border-collapse: collapse; font-size: 0.84rem;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid rgba(255,255,255,0.15); padding: 0.25rem 0.4rem; text-align: center;
+        }
+        .data-table th { background: rgba(34,211,238,0.15); color: var(--accent-cyan); }
+        .data-table tr.eq-pt { background: rgba(248,113,113,0.15); font-weight: bold; }
+        .data-table tr.half-eq { background: rgba(251,191,36,0.12); font-weight: bold; }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.65rem 0.85rem; line-height: 1.55;
+        }
+        .step-block.eq { border-left-color: var(--accent-red); background: rgba(248,113,113,0.06); }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.06); }
+        .step-block.yellow { border-left-color: var(--accent-yellow); background: rgba(251,191,36,0.06); }
+
+        #s7-chart-wrap {
+            width: 100%; height: 160px; position: relative; margin-top: 4px;
+            background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>8-4 酸鹼中和與滴定 · 範例 3：弱鹼強酸滴定計算 (NH₃ + HCl)</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目、資料表與滴定曲線 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.4rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span class="tag tag-yellow">範例 3</span>
+                                <h2 style="color: var(--accent-yellow); margin: 0;">弱鹼強酸滴定 pH 變化與酸性當量點</h2>
+                            </div>
+                            <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">一題一頁 · 標準範例</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 0.65rem 0.85rem;">
+                            <p style="font-size: 0.95rem; line-height: 1.6;">
+                                <strong>題目說明：</strong><br>
+                                取 <span style="color:var(--accent-blue); font-weight:bold;">$0.1\,\mathrm{M}\ \mathrm{NH_3}\ 100\,\mathrm{mL}$</span> ($K_b = 1.8 \times 10^{-5}$)，以 <span style="color:var(--accent-red); font-weight:bold;">$0.1\,\mathrm{M}\ \mathrm{HCl}$</span> 進行滴定。<br>
+                                反應式：$$\mathrm{NH_{3(aq)} + HCl_{(aq)} \longrightarrow NH_4Cl_{(aq)}}$$
+                                試求滴入 $\mathrm{HCl}$ 體積為 <strong>0 mL、20 mL、50 mL (半當量點)、75 mL、99 mL、100 mL (當量點)、101 mL、120 mL</strong> 時之 $\mathrm{pH}$ 值。
+                            </p>
+                        </div>
+
+                        <!-- 滴定數據對照表 -->
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>加入 HCl (mL)</th>
+                                    <th>$[\mathrm{H^+}]$ (M)</th>
+                                    <th>$\mathrm{pH}$ 值</th>
+                                    <th>狀態與支配成分</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>0</td><td>$7.45 \times 10^{-12}$</td><td><strong>11.13</strong></td><td>滴定前（純弱鹼解離）</td></tr>
+                                <tr><td>20</td><td>$1.39 \times 10^{-10}$</td><td><strong>9.86</strong></td><td>緩衝區（鹼過剩）</td></tr>
+                                <tr class="half-eq"><td style="color:var(--accent-yellow)">50 (½當量)</td><td>$5.56 \times 10^{-10}$</td><td style="color:var(--accent-yellow)"><strong>9.26</strong></td><td>⭐ $\mathbf{pOH = p}K_b \implies \mathbf{pH = 9.26}$</td></tr>
+                                <tr><td>75</td><td>$1.67 \times 10^{-9}$</td><td><strong>8.78</strong></td><td>緩衝區</td></tr>
+                                <tr><td>99</td><td>$5.50 \times 10^{-8}$</td><td><strong>7.26</strong></td><td>突躍起始前夕</td></tr>
+                                <tr class="eq-pt"><td style="color:var(--accent-red)">100 ★</td><td>$5.27 \times 10^{-6}$</td><td style="color:var(--accent-red)"><strong>5.28</strong></td><td>⭐ 當量點（弱鹼陽離子水解呈酸性）</td></tr>
+                                <tr><td>101</td><td>$4.98 \times 10^{-4}$</td><td><strong>3.30</strong></td><td>突躍結束（強酸過量主導）</td></tr>
+                                <tr><td>120</td><td>$9.09 \times 10^{-3}$</td><td><strong>2.04</strong></td><td>強酸過量飽和區</td></tr>
+                            </tbody>
+                        </table>
+
+                        <!-- 滴定曲線圖表 -->
+                        <div id="s7-chart-wrap">
+                            <canvas id="s7-canvas" style="width:100%; height:100%; display:block;"></canvas>
+                        </div>
+
+                        <!-- 顯示詳解按鈕 -->
+                        <div style="margin-top: auto; padding-top: 0.3rem;">
+                            <button class="btn-action" onclick="toggleSolution('s7-solution')" style="width: 100%; padding: 8px 18px; font-size: 0.96rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設空白，點擊展開） -->
+                    <div class="panel" style="background: rgba(255,255,255,0.02); position: relative;">
+                        <!-- 預設提示 -->
+                        <div id="solution-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.45); text-align: center; gap: 0.8rem;">
+                            <div style="font-size: 2.4rem;">💡</div>
+                            <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent-cyan);">點擊左下方「💡 顯示詳解 / 隱藏」查看計算詳解</div>
+                            <p style="font-size: 0.88rem; max-width: 320px; line-height: 1.6;">
+                                詳細拆解弱鹼強酸滴定特色：初值鹼性、半當量點鹼性緩衝 ($\mathrm{pOH}=\mathrm{p}K_b$)、當量點銨離子水解酸性 ($\mathrm{pH}=5.28$) 及指示劑限定甲基紅/甲基橙之原理。
+                            </p>
+                        </div>
+
+                        <!-- 詳解內容盒 -->
+                        <div id="s7-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.4rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>✓</span> 完整計算步驟詳解
+                                </h2>
+                                <span class="tag" style="background: rgba(56,189,248,0.15); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4);">弱鹼 + 強酸</span>
+                            </div>
+
+                            <!-- 階段 1：滴定前 -->
+                            <div class="step-block">
+                                <strong style="color: var(--accent-cyan);">① 滴定前（0 mL HCl）：純弱鹼解離</strong><br>
+                                $\mathrm{NH_3 + H_2O \rightleftharpoons NH_4^+ + OH^-}$，由公式：
+                                $$[\mathrm{OH^-}] = \sqrt{C_b \cdot K_b} = \sqrt{0.1 \times 1.8 \times 10^{-5}} \approx 1.34 \times 10^{-3}\,\mathrm{M}$$
+                                $$\mathrm{pOH = -\log(1.34 \times 10^{-3}) = 2.87} \implies \mathbf{pH = 14 - 2.87 = 11.13}$$
+                            </div>
+
+                            <!-- 階段 2：緩衝區與半當量點 -->
+                            <div class="step-block yellow">
+                                <strong style="color: var(--accent-yellow);">② 滴定中（緩衝區）與半當量點（50 mL ★）：</strong><br>
+                                初始 $\mathrm{NH_3} = 0.1 \times 100 = 10\,\mathrm{mmol}$。<br>
+                                滴入 $\mathrm{HCl}$ 後，生成 $\mathrm{NH_4Cl}$，形成 $\mathrm{NH_3} / \mathrm{NH_4^+}$ 鹼性緩衝對：
+                                $$[\mathrm{OH^-}] = K_b \times \frac{[\mathrm{NH_3}]}{[\mathrm{NH_4^+}]} = K_b \times \frac{n_{\text{鹼}}}{n_{\text{鹽}}}$$
+                                • <strong>加入 50 mL 時（半當量點）：</strong><br>
+                                消耗 $5\,\mathrm{mmol}\ \mathrm{NH_3}$ 生成 $5\,\mathrm{mmol}\ \mathrm{NH_4^+}$，剩餘弱鹼 $= 5\,\mathrm{mmol}$。<br>
+                                因 $[\mathrm{NH_3}] = [\mathrm{NH_4^+}]$：
+                                $$[\mathrm{OH^-}] = K_b = 1.8 \times 10^{-5}\,\mathrm{M} \implies \mathrm{pOH = p}K_b \approx 4.74$$
+                                $$\mathbf{pH = 14 - 4.74 = 9.26}$$
+                            </div>
+
+                            <!-- 階段 3：當量點水解 -->
+                            <div class="step-block eq">
+                                <strong style="color: var(--accent-red);">③ 當量點（100 mL HCl ★）：鹽類水解呈酸性</strong><br>
+                                恰好完全中和，生成 $10\,\mathrm{mmol}\ \mathrm{NH_4Cl}$。<br>
+                                總體積 $V = 100 + 100 = 200\,\mathrm{mL}$，鹽濃度 $C_s = \frac{10}{200} = 0.05\,\mathrm{M}$。<br>
+                                $\mathrm{NH_4^+}$ 陽離子水解：$\mathrm{NH_4^+ + H_2O \rightleftharpoons NH_3 + H_3O^+}$
+                                $$K_h = \frac{K_w}{K_b} = \frac{1.0 \times 10^{-14}}{1.8 \times 10^{-5}} \approx 5.56 \times 10^{-10}$$
+                                $$[\mathrm{H^+}] = \sqrt{C_s \cdot K_h} = \sqrt{0.05 \times 5.56 \times 10^{-10}} \approx 5.27 \times 10^{-6}\,\mathrm{M}$$
+                                $$\mathbf{pH = -\log(5.27 \times 10^{-6}) = 5.28 \ (酸性！)}$$
+                            </div>
+
+                            <!-- 階段 4：當量點後與指示劑選用 -->
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">④ 當量點後（101 mL）與指示劑挑選原則：</strong><br>
+                                加入 $101\,\mathrm{mL}$ 時，過量強酸 $\mathrm{HCl} = 0.1\,\mathrm{mmol}$，總體積 $201\,\mathrm{mL}$：
+                                $$[\mathrm{H^+}] \approx \frac{0.1\,\mathrm{mmol}}{201\,\mathrm{mL}} \approx 4.98 \times 10^{-4}\,\mathrm{M} \implies \mathbf{pH \approx 3.30}$$
+                                ⭐ <strong>指示劑限定原則：</strong><br>
+                                弱鹼強酸滴定的突躍範圍縮小至 <strong>pH 7 ~ 4</strong>，當量點 $\mathrm{pH} = 5.28$：<br>
+                                • <strong>最佳選用：甲基紅 (4.2 ~ 6.3) 或 甲基橙 (3.1 ~ 4.4)</strong>，變色範圍完整跨越當量點！<br>
+                                • <span style="color:var(--accent-red); font-weight:bold;">✖ 絕對禁用酚酞</span>：酚酞在 $\mathrm{pH} = 8.2$ 就退為無色，此時滴定根本尚未完成（還在緩衝區），滴定誤差嚴重！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    const placeholder = document.getElementById('solution-placeholder');
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+        if (placeholder) placeholder.style.display = 'flex';
+    } else {
+        el.classList.add('revealed');
+        if (placeholder) placeholder.style.display = 'none';
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+
+// 繪製滴定曲線
+function drawS7Chart() {
+    const canvas = document.getElementById('s7-canvas');
+    if (!canvas) return;
+    const wrap = document.getElementById('s7-chart-wrap');
+    canvas.width = wrap.clientWidth;
+    canvas.height = wrap.clientHeight;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const ml = 38, mr = 15, mt = 12, mb = 28;
+    const pw = W - ml - mr, ph = H - mt - mb;
+    const py = (p) => mt + ph * (1 - p / 14);
+    const vx = (v) => ml + pw * (v / 120);
+
+    // 突躍區域背景 (pH 3.5~7.0)
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+    ctx.fillRect(ml, py(7.0), pw, py(3.5) - py(7.0));
+
+    // 甲基紅變色帶 (pH 4.2~6.3)
+    ctx.fillStyle = 'rgba(248, 113, 113, 0.14)';
+    ctx.fillRect(ml, py(6.3), pw, py(4.2) - py(6.3));
+    ctx.fillStyle = 'rgba(248, 113, 113, 0.7)'; ctx.font = '9px sans-serif';
+    ctx.fillText('甲基紅變色範圍 4.2~6.3', ml + 6, py(5.25));
+
+    // 格線
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1;
+    for (let p = 0; p <= 14; p += 2) {
+        ctx.beginPath(); ctx.moveTo(ml, py(p)); ctx.lineTo(W - mr, py(p)); ctx.stroke();
+    }
+    for (let v = 0; v <= 120; v += 20) {
+        ctx.beginPath(); ctx.moveTo(vx(v), mt); ctx.lineTo(vx(v), H - mb); ctx.stroke();
+    }
+
+    // 軸線
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(ml, mt); ctx.lineTo(ml, H - mb); ctx.lineTo(W - mr, H - mb); ctx.stroke();
+
+    // 標籤
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    for (let p = 0; p <= 14; p += 2) ctx.fillText(p, ml - 4, py(p) + 3);
+    ctx.textAlign = 'center';
+    for (let v = 0; v <= 120; v += 20) ctx.fillText(v, vx(v), H - mb + 12);
+    ctx.fillText('HCl (mL)', ml + pw / 2, H - 2);
+
+    // 當量點虛線 (V=100)
+    ctx.strokeStyle = 'rgba(248,113,113,0.5)'; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(vx(100), mt); ctx.lineTo(vx(100), H - mb); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 滴定曲線數據點 (下降型)
+    const pts = [
+        { v: 0, p: 11.13 }, { v: 10, p: 10.21 }, { v: 20, p: 9.86 }, { v: 50, p: 9.26 },
+        { v: 75, p: 8.78 }, { v: 90, p: 8.30 }, { v: 95, p: 7.98 }, { v: 99, p: 7.26 },
+        { v: 99.8, p: 6.56 }, { v: 100, p: 5.28 }, { v: 100.5, p: 3.6 }, { v: 101, p: 3.30 },
+        { v: 110, p: 2.32 }, { v: 120, p: 2.04 }
+    ];
+
+    ctx.strokeStyle = 'var(--accent-blue)';
+    ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    pts.forEach((pt, idx) => {
+        const x = vx(pt.v), y = py(pt.p);
+        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // 半當量點黃點 (50 mL, pH 9.26)
+    const hX = vx(50), hY = py(9.26);
+    ctx.beginPath(); ctx.arc(hX, hY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#fbbf24'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = '#fbbf24'; ctx.font = '9px sans-serif';
+    ctx.fillText('半當量 (pOH=pKb)', hX + 50, hY - 6);
+
+    // 當量點紅星 (100 mL, pH 5.28)
+    const eqX = vx(100), eqY = py(5.28);
+    ctx.beginPath(); ctx.arc(eqX, eqY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#f87171'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#f87171'; ctx.font = 'bold 10px sans-serif';
+    ctx.fillText('當量點 (pH 5.28)', eqX - 50, eqY - 4);
+}
+
+window.addEventListener('resize', drawS7Chart);
+window.addEventListener('DOMContentLoaded', () => setTimeout(drawS7Chart, 200));
+setTimeout(drawS7Chart, 400);
+</script>
+</body>
+</html>

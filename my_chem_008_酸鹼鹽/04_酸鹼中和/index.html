@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-4 酸鹼中和與滴定曲線 · 互動教學</title>
+
+    <style>
+        :root {
+            --header-height: 58px;
+            --slide-height:  calc(100vh - var(--header-height));
+            --toolbar-space: 70px;
+            --header-bg:     #1e293b;
+            --accent:        #22d3ee;
+            --accent2:       #a78bfa;
+            --primary-bg:    #0f172a;
+            --card-border:   rgba(34,211,238,0.22);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%; height: 100%;
+            background: var(--primary-bg);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--header-height);
+        }
+
+        /* ── 頂端固定標頭 ── */
+        #chapter-header {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: var(--header-height);
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 9999;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+        }
+
+        .header-left { display: flex; align-items: center; gap: 14px; }
+
+        .header-badge {
+            font-size: 0.72rem;
+            color: var(--accent2);
+            background: rgba(167,139,250,0.12);
+            border: 1px solid rgba(167,139,250,0.35);
+            padding: 2px 10px;
+            border-radius: 40px;
+            letter-spacing: 0.06em;
+        }
+
+        .header-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 頁碼指示器 */
+        #page-counter {
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+
+        /* 捷徑按鈕區 */
+        #jump-bar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .jump-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.6);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .jump-btn:hover { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+        .jump-btn.active-pg { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+        .jump-btn.quiz-btn { border-color: var(--accent2); color: var(--accent2); }
+        .jump-btn.quiz-btn.active-pg { background: var(--accent2); color: #0f172a; }
+
+        /* ── 主捲動容器 ── */
+        #main-scroller {
+            margin-top: var(--header-height);
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            background: var(--primary-bg);
+        }
+
+        .slide-frame-wrap {
+            width: 100%;
+            height: var(--slide-height);
+            min-height: 540px;
+            box-sizing: border-box;
+            padding: 10px var(--toolbar-space) 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 2px solid var(--card-border);
+            scroll-margin-top: var(--header-height);
+            overflow: hidden;
+        }
+
+        .slide-frame-wrap iframe {
+            width: 100%;
+            max-width: 1440px;
+            height: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.45);
+            display: block;
+            background: var(--primary-bg);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .slide-frame-wrap iframe:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent), 0 10px 35px rgba(0,0,0,0.6);
+        }
+
+        /* 檢核通關題外框 */
+        .quiz-frame-wrap {
+            height: auto;
+            min-height: var(--slide-height);
+            padding-bottom: 40px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 3px solid var(--accent2);
+            overflow: visible;
+        }
+
+        .quiz-frame-wrap iframe {
+            min-height: 740px;
+            max-width: 1100px;
+        }
+
+        .loading-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255,255,255,0.35);
+            font-size: 0.95rem;
+            gap: 10px;
+        }
+        .loading-placeholder::before {
+            content: '';
+            width: 18px; height: 18px;
+            border: 2px solid var(--accent);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- ── 頂端固定標頭 ── -->
+    <header id="chapter-header">
+        <div class="header-left">
+            <span class="header-badge">選修化學三 · 酸鹼鹽</span>
+            <span class="header-title">8-4 酸鹼中和與滴定曲線</span>
+        </div>
+        <div class="header-right">
+            <div id="jump-bar"></div>
+            <div id="page-counter">— / —</div>
+        </div>
+    </header>
+
+    <!-- ── 主體：iframe 堆疊容器 ── -->
+    <main id="main-scroller"></main>
+
+    <script>
+    (() => {
+        const scroller      = document.getElementById('main-scroller');
+        const pageCounter   = document.getElementById('page-counter');
+        const jumpBar       = document.getElementById('jump-bar');
+
+        const SLIDES = [];
+        let currentVisible = 0;
+        const wrappers = [];
+
+        async function detectSlides() {
+            const detected = [];
+            let idx = 1;
+            const MAX_DETECT = 30;
+            let probeBlocked = false;
+
+            while (idx <= MAX_DETECT) {
+                const filename = `slidepage${idx}.html`;
+                let exists = false;
+                try {
+                    let res = await fetch(filename, { method: 'HEAD' });
+                    if (res.status === 405) {
+                        res = await fetch(filename, { method: 'GET' });
+                    }
+                    exists = res.ok;
+                } catch (e) {
+                    exists = false;
+                    if (idx === 1) probeBlocked = true;
+                }
+
+                if (exists) {
+                    detected.push({ file: filename, label: String(idx) });
+                    idx++;
+                } else {
+                    break;
+                }
+            }
+
+            if (probeBlocked || detected.length === 0) {
+                console.warn('[AutoDetect] 本地 fetch 受限，啟用預設備援頁數（9頁）');
+                for (let k = 1; k <= 9; k++) {
+                    detected.push({ file: `slidepage${k}.html`, label: String(k) });
+                }
+            }
+
+            detected.push({ file: 'quiz.html', label: '🎮 檢核', isQuiz: true });
+            return detected;
+        }
+
+        function buildUI(slideList) {
+            slideList.forEach((item, index) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'slide-frame-wrap' + (item.isQuiz ? ' quiz-frame-wrap' : '');
+                wrap.id = `slide-wrap-${index}`;
+                wrap.dataset.index = index;
+
+                const placeholder = document.createElement('div');
+                placeholder.className = 'loading-placeholder';
+                placeholder.textContent = `載入中 ${item.label}...`;
+                wrap.appendChild(placeholder);
+
+                const iframe = document.createElement('iframe');
+                iframe.title = `Slide ${item.label}`;
+                iframe.loading = index < 3 ? 'eager' : 'lazy';
+                iframe.src = item.file;
+
+                iframe.addEventListener('load', () => {
+                    if (wrap.contains(placeholder)) wrap.removeChild(placeholder);
+                    if (item.isQuiz) adjustQuizIframeHeight(iframe);
+                });
+
+                wrap.appendChild(iframe);
+                scroller.appendChild(wrap);
+                wrappers.push(wrap);
+
+                const btn = document.createElement('button');
+                btn.className = 'jump-btn' + (item.isQuiz ? ' quiz-btn' : '');
+                btn.textContent = item.label;
+                btn.title = `跳至第 ${item.label} 頁`;
+                btn.dataset.index = index;
+                btn.addEventListener('click', () => scrollToSlide(index));
+                jumpBar.appendChild(btn);
+            });
+
+            updateCounter(0, slideList.length);
+            initObserver(slideList);
+        }
+
+        function scrollToSlide(index) {
+            const target = wrappers[index];
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function adjustQuizIframeHeight(iframe) {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (doc) {
+                    const h = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+                    if (h > 600) iframe.style.height = (h + 30) + 'px';
+                }
+            } catch (e) {}
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'RESIZE_IFRAME') {
+                const quizWrap = document.querySelector('.quiz-frame-wrap iframe');
+                if (quizWrap && e.data.height) {
+                    quizWrap.style.height = (e.data.height + 40) + 'px';
+                }
+            }
+            if (e.data && e.data.type === 'SECTION_COMPLETE') {
+                console.log('章節完成通報：', e.data);
+            }
+            if (e.data && e.data.type === 'NAVIGATE_SECTION') {
+                window.location.href = '../06_緩衝溶液/index.html';
+            }
+        });
+
+        function updateCounter(current, total) {
+            const curLabel = SLIDES[current] ? SLIDES[current].label : (current + 1);
+            pageCounter.textContent = `${curLabel} / ${total}`;
+
+            const btns = jumpBar.querySelectorAll('.jump-btn');
+            btns.forEach((btn, i) => {
+                btn.classList.toggle('active-pg', i === current);
+            });
+        }
+
+        function initObserver(slideList) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const idx = parseInt(entry.target.dataset.index, 10);
+                        if (!isNaN(idx)) {
+                            currentVisible = idx;
+                            updateCounter(idx, slideList.length);
+                        }
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.4
+            });
+
+            wrappers.forEach((w) => observer.observe(w));
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (['ArrowDown', 'PageDown', 'j'].includes(e.key)) {
+                if (currentVisible < wrappers.length - 1) {
+                    e.preventDefault();
+                    scrollToSlide(currentVisible + 1);
+                }
+            } else if (['ArrowUp', 'PageUp', 'k'].includes(e.key)) {
+                if (currentVisible > 0) {
+                    e.preventDefault();
+                    scrollToSlide(currentVisible - 1);
+                }
+            }
+        });
+
+        detectSlides().then(slides => {
+            SLIDES.push(...slides);
+            buildUI(SLIDES);
+        });
+    })();
+    </script>
+
+    <!-- ── 捲動位置中繼器 ── -->
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+    <!-- ── Chem Whiteboard Scroll Sync Bridge ── -->
+    <script id="__chem_scroll_bridge">
+    (function() {
+      if (window.__chemScrollBridgeInstalled) return;
+      window.__chemScrollBridgeInstalled = true;
+
+      function getScrollPos() {
+        var sy = window.scrollY || window.pageYOffset || 0;
+        var sx = window.scrollX || window.pageXOffset || 0;
+        if (document.documentElement) {
+          sy = Math.max(sy, document.documentElement.scrollTop || 0);
+          sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+        }
+        if (document.body) {
+          sy = Math.max(sy, document.body.scrollTop || 0);
+          sx = Math.max(sx, document.body.scrollLeft || 0);
+        }
+        var scroller = document.getElementById('main-scroller');
+        if (scroller) {
+          sy = Math.max(sy, scroller.scrollTop || 0);
+          sx = Math.max(sx, scroller.scrollLeft || 0);
+        }
+        return { sx: sx, sy: sy };
+      }
+
+      function reportScroll() {
+        if (window.parent && window.parent !== window) {
+          var pos = getScrollPos();
+          window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+        }
+      }
+
+      window.__chemReportScroll = reportScroll;
+
+      window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+      document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+      window.addEventListener('wheel', function() {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 40);
+        setTimeout(reportScroll, 120);
+      }, { capture: true, passive: true });
+      window.addEventListener('touchmove', function() {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 40);
+        setTimeout(reportScroll, 120);
+      }, { capture: true, passive: true });
+      window.addEventListener('keydown', function(e) {
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End', 'j', 'k'].indexOf(e.key) !== -1) {
+          requestAnimationFrame(reportScroll);
+          setTimeout(reportScroll, 60);
+          setTimeout(reportScroll, 180);
+        }
+      }, { passive: true });
+      window.addEventListener('resize', reportScroll);
+
+      window.addEventListener('message', function(e) {
+        if (!e.data) return;
+        if (e.data.type === '__chem_scroll_by') {
+          var dy = e.data.deltaY || 0;
+          var dx = e.data.deltaX || 0;
+          window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+          if (document.documentElement) document.documentElement.scrollTop += dy;
+          if (document.body) document.body.scrollTop += dy;
+          var scroller = document.getElementById('main-scroller');
+          if (scroller) scroller.scrollTop += dy;
+          reportScroll();
+        } else if (e.data.type === '__chem_get_scroll') {
+          reportScroll();
+        }
+      });
+
+      reportScroll();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', reportScroll);
+      }
+      window.addEventListener('load', reportScroll);
+      setTimeout(reportScroll, 150);
+      setTimeout(reportScroll, 500);
+      setTimeout(reportScroll, 1200);
+    })();
+    </script>
+</body>
+</html>

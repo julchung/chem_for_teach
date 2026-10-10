@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>氣體的通性與水銀壓力計 - 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+            --mercury: #94a3b8;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { display: none !important; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
+
+        /* make slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 2rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 1.5rem 1.5rem 1.5rem; } }
+        
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+        
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+        
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; }
+        
+        #toolbar { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: rgba(15, 23, 42, 0.9); padding: 10px 5px; border-radius: 20px; display: flex; flex-direction: column; gap: 8px; align-items: center; z-index: 2000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.5); backdrop-filter: blur(10px); width: 45px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: normal; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; width: 100%; text-align: center; }
+        .btn-tool:hover { background: rgba(255,255,255,0.1); }
+        .btn-tool.active-tool, .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool svg { width: 20px; height: 20px; fill: currentColor; }
+        
+        .color-picker { display: none; grid-template-columns: 1fr; width: 100%; padding-top: 5px; gap: 4px; }
+        .color-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 1.5px solid transparent; transition: transform 0.2s; margin: 0 auto; }
+        .color-swatch.selected { border-color: white; transform: scale(1.1); }
+        
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; padding: 2px 0; margin-bottom: 5px; margin-top: -5px; user-select: none; font-size: 1.2rem; line-height: 0.5; }
+        #slide-info { position: absolute; bottom: 20px; left: 20px; z-index: 15; font-size: 1.2rem; font-weight: bold; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .left-dot { margin-left: auto; }
+        .right-dot { margin-right: auto; }
+        .dot:hover { transform: translateY(-50%) scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+
+        .manometer-svg { width: 100%; max-width: 300px; height: auto; }
+        .mercury-fill { fill: var(--mercury); stroke: #475569; stroke-width: 1; }
+        .glass-tube { fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 4; stroke-linecap: round; }
+        .dimension-line { stroke: var(--accent-yellow); stroke-width: 2; stroke-dasharray: 4; }
+        .label-text { fill: white; font-size: 14px; font-family: sans-serif; }
+
+        /* --- Add/refine toolbar & draw-related styles from ref_index.html --- */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+
+        /* drawing layer tweaks */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* color dots (use same class as ref_index) */
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+
+        /* Back-to-top button */
+        #btn-top { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Random Draw styles */
+        .draw-ball {
+            width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff;
+            position: relative; z-index: 1; transition: all 0.3s;
+        }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+
+        #random-draw-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        #btn-do-draw { background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color: #0f172a; border: none; padding: 10px 30px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        #btn-do-draw:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); }
+        #btn-do-draw:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+        .draw-input-group { display: flex; align-items: center; gap: 10px; color: #fff; }
+        .draw-input-group input { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--accent-cyan); color: #fff; padding: 5px 10px; border-radius: 5px; width: 60px; text-align: center; font-size: 1rem; }
+        #btn-close-draw { position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #btn-close-draw:hover { opacity: 1; }
+
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">氣體的通性與水銀壓力計</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">互動式全螢幕教學系統</p>
+            <button id="btn-start" class="btn-tool primary" style="font-size: clamp(1.2rem, 2.5vw, 1.5rem); padding: 15px 40px; width: auto; border-radius: 50px;">▶ 進入教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+                <!-- Slide 1: General Properties -->
+                <div class="slide active">
+                    <h1>氣體的性質與通性</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1; padding: 2rem;">
+                            <h2 class="text-yellow">氣體的通性</h2>
+                            <ul style="margin-bottom: 2rem;">
+                                <li><strong class="text-cyan">壓縮性 (Compressibility)</strong>：受壓體積大幅縮小。</li>
+                                <li><strong class="text-cyan">膨脹性 (Expansibility)</strong>：充滿整個容器空間。</li>
+                                <li><strong class="text-cyan">擴散 (Diffusion)</strong>：氣體分子混入另一介質。</li>
+                                <li><strong class="text-cyan">逸散 (Effusion)</strong>：由小孔逃逸至真空。</li>
+                            </ul>
+                            <h2 class="text-yellow" style="margin-top: 1rem;">溫度與平均動能</h2>
+                            <p>升高溫度，平均動能增加，分子運動速率增快。</p>
+                            <div class="formula-box">
+                                $E_k = \frac{1}{2}mv^2 = \frac{3}{2}KT$
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: Pressure Definition -->
+                <div class="slide">
+                    <h1>氣體壓力的定義</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1;">
+                            <h2 class="text-yellow">壓力的定義 (Pressure)</h2>
+                            <p>單位面積上所受的垂直作用力。</p>
+                            <div class="formula-box">
+                                $P = \frac{F}{A} = \frac{m \times a}{A}$
+                            </div>
+                            <h2 class="text-yellow" style="margin-top: 1rem;">流體壓力公式</h2>
+                            <p>液體產生的壓力與深度及密度有關。</p>
+                            <div class="formula-box" style="border-left-color: var(--accent-blue);">
+                                $P = h \times d$
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1; border-left: 2px dashed rgba(255,255,255,0.1);">
+                            <h2 class="text-green">氣體壓力的導証</h2>
+                            <p>密閉容器壓力因氣體分子快速運動碰撞器壁產生的衝量而形成：</p>
+                            <div class="rule-card" style="background: rgba(52, 211, 153, 0.05); border-color: var(--accent-green);">
+                                <p>1. 動量 (Momentum)：</p>
+                                <div style="text-align: center; font-size: 1.3rem; margin: 0.5rem 0;">$p = mv$</div>
+                                <p>2. 作用力 (Force)：</p>
+                                <div style="text-align: center; font-size: 1.3rem; margin: 0.5rem 0;">$F = ma = \frac{mv' - mv}{t}$</div>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--accent-cyan);">* 壓力即為單位時間、單位面積內，大量分子碰撞器壁之動量變化量的總和。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: Units -->
+                <div class="slide">
+                    <h1>壓力單位的換算</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 2;">
+                            <h2 class="text-yellow">標準大氣壓 (1 atm) 的多重身份</h2>
+                            <table class="table-chem">
+                                <thead>
+                                    <tr><th>單位</th><th>數值</th><th>說明</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>cmHg</td><td>76</td><td>水銀柱高度</td></tr>
+                                    <tr><td>mmHg (torr)</td><td>760</td><td>托里切利單位</td></tr>
+                                    <tr><td>cm $H_2O$</td><td>1033.6</td><td>水柱高度</td></tr>
+                                    <tr><td>Pa ($N/m^2$)</td><td>$1.013 \times 10^5$</td><td>SI 單位</td></tr>
+                                    <tr><td>mb (hPa)</td><td>1013</td><td>氣象常用</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex-col" style="flex: 1; border-left: 5px solid var(--accent-red);">
+                            <h2 class="text-red">重要轉換</h2>
+                            <div class="rule-card" style="font-size: 1.1rem;">
+                                $1 \text{ atm} = 76 \text{ cmHg}$<br>
+                                $1 \text{ Pa} = 1 \text{ N/m}^2$
+                            </div>
+                            <p style="font-size: 1rem; opacity: 0.8;">
+                                水銀密度是水的 13.6 倍，故 1 atm 的水柱高約 10 公尺。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 4: Open Manometer -->
+                <div class="slide">
+                    <h1>開口式水銀壓力計</h1>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <h2 class="text-cyan">(A) $P_{\text{gas}} > P_{\text{atm}}$</h2>
+                            <div style="display: flex; justify-content: center;">
+                                <svg viewBox="0 0 200 220" class="manometer-svg" style="max-width: 260px;">
+                                    <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                    <ellipse cx="50" cy="180" rx="30" ry="5" fill="none" stroke="white" stroke-width="2" />
+                                    <rect x="42" y="100" width="16" height="10" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                    <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                    <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 120,70 V 160 A 20,20 0 0 0 160,160 V 30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                    <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 126,64 V 160 A 14,14 0 0 0 154,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 120,135 V 160 A 20,20 0 0 0 160,160 V 85" fill="none" stroke="var(--mercury)" stroke-width="10" />
+                                    <text x="50" y="150" text-anchor="middle" class="label-text" style="font-size: 14px; fill: var(--accent-yellow); font-weight: bold;">Pgas</text>
+                                    <text x="160" y="12" text-anchor="middle" class="label-text" style="font-size: 12px; fill: var(--accent-yellow); font-weight: bold;">Patm</text>
+                                    <path d="M 160,16 L 160,28" stroke="var(--accent-yellow)" stroke-width="2" />
+                                    <line x1="110" y1="135" x2="195" y2="135" class="dimension-line" />
+                                    <line x1="160" y1="85" x2="195" y2="85" class="dimension-line" />
+                                    <path d="M 185,135 V 85" stroke="var(--accent-yellow)" stroke-width="1" />
+                                    <text x="190" y="115" class="label-text" style="fill: var(--accent-yellow);">h</text>
+                                </svg>
+                            </div>
+                            <div class="formula-box" style="font-size: 1.2rem;">
+                                $P_{\text{gas}} = P_{\text{atm}} + h$
+                            </div>
+                        </div>
+                        <div class="flex-col">
+                            <h2 class="text-cyan">(B) $P_{\text{gas}} < P_{\text{atm}}$</h2>
+                            <div style="display: flex; justify-content: center;">
+                                <svg viewBox="0 0 200 220" class="manometer-svg" style="max-width: 260px;">
+                                    <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                    <ellipse cx="50" cy="180" rx="30" ry="5" fill="none" stroke="white" stroke-width="2" />
+                                    <rect x="42" y="100" width="16" height="10" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                    <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                    <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 120,70 V 160 A 20,20 0 0 0 160,160 V 30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                    <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 126,64 V 160 A 14,14 0 0 0 154,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                    <path d="M 120,85 V 160 A 20,20 0 0 0 160,160 V 135" fill="none" stroke="var(--mercury)" stroke-width="10" />
+                                    <text x="50" y="150" text-anchor="middle" class="label-text" style="font-size: 14px; fill: var(--accent-yellow); font-weight: bold;">Pgas</text>
+                                    <text x="160" y="12" text-anchor="middle" class="label-text" style="font-size: 12px; fill: var(--accent-yellow); font-weight: bold;">Patm</text>
+                                    <path d="M 160,16 L 160,28" stroke="var(--accent-yellow)" stroke-width="2" />
+                                    <line x1="110" y1="135" x2="195" y2="135" class="dimension-line" />
+                                    <line x1="160" y1="85" x2="195" y2="85" class="dimension-line" />
+                                    <path d="M 185,135 V 85" stroke="var(--accent-yellow)" stroke-width="1" />
+                                    <text x="190" y="115" class="label-text" style="fill: var(--accent-yellow);">h</text>
+                                </svg>
+                            </div>
+                            <div class="formula-box" style="font-size: 1.2rem;">
+                                $P_{\text{gas}} = P_{\text{atm}} - h$
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 5: Closed Manometer -->
+                <div class="slide">
+                    <h1>閉口式水銀壓力計</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.2;">
+                            <h2 class="text-yellow">原理</h2>
+                            <p>右端抽成 <strong class="text-red">真空 (Vacuum)</strong>，不計大氣壓力。</p>
+                            <p>此時水銀柱高度差 $h$ 即代表氣體壓力。</p>
+                            <div class="formula-box" style="margin-top: 2rem;">
+                                $P_{\text{gas}} = h \text{ mmHg}$
+                            </div>
+                            <div class="rule-card" style="margin-top: 1rem; border-color: var(--accent-purple);">
+                                <p><strong class="text-purple">注意：</strong>不論外界大氣壓如何改變，閉口式壓力計的 $h$ 僅隨氣體壓力改變。</p>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 0.8; justify-content: center; align-items: center;">
+                            <svg viewBox="0 0 200 220" class="manometer-svg" style="max-width: 260px;">
+                                <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                <ellipse cx="50" cy="180" rx="30" ry="5" fill="none" stroke="white" stroke-width="2" />
+                                <rect x="42" y="100" width="16" height="10" fill="rgba(255,255,255,0.05)" stroke="white" stroke-width="2" />
+                                <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                <path d="M 120,70 V 160 A 20,20 0 0 0 160,160 V 30" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="12" />
+                                <circle cx="160" cy="30" r="6" fill="rgba(255,255,255,0.1)" />
+                                <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                <path d="M 120,135 V 160 A 20,20 0 0 0 160,160 V 90" fill="none" stroke="var(--mercury)" stroke-width="10" />
+                                <text x="50" y="150" text-anchor="middle" class="label-text" style="font-size: 14px; fill: var(--accent-yellow); font-weight: bold;">Pgas</text>
+                                <text x="160" y="22" text-anchor="middle" class="label-text" style="font-size: 12px; fill: var(--accent-red); font-weight: bold;">Vacuum</text>
+                                <line x1="110" y1="135" x2="195" y2="135" class="dimension-line" />
+                                <line x1="160" y1="90" x2="195" y2="90" class="dimension-line" />
+                                <path d="M 185,135 V 90" stroke="var(--accent-yellow)" stroke-width="1" />
+                                <text x="190" y="115" class="label-text" style="fill: var(--accent-yellow);">h</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 6: Practice -->
+                <div class="slide">
+                    <h1>綜合練習</h1>
+                    
+                    <!-- 例題 1 -->
+                    <div class="flex-row" style="gap: 40px; align-items: stretch; margin-bottom: 40px; min-height: 350px;">
+                        <div class="flex-col" style="flex: 1; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; position: relative;">
+                            <div style="flex: 0 0 auto;">
+                                <h2 class="text-yellow">例題 1</h2>
+                                <p style="font-size: 1.1rem; line-height: 1.6;">將氣體緩緩加入連接開口壓力計的容器中，直到右管水銀面較左管高 $150 \text{ mm}$。若一大氣壓為 $760 \text{ mmHg}$，改用 <strong class="text-cyan">閉口式</strong> 壓力計，則高度差為何？</p>
+                            </div>
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); border-bottom: 1px dashed rgba(255,255,255,0.2); padding: 15px 0;">
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,255,0,0.2)" stroke="white" stroke-width="2" />
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,130 V 160 A 26,26 0 0 0 166,160 V 70 H 154 V 160 A 14,14 0 0 1 126,160 V 130 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 126,64 V 160 A 14,14 0 0 0 154,160 V 30" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="70" x2="195" y2="70" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="126" y1="130" x2="195" y2="130" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,70 V 130" stroke="white" stroke-width="1" />
+                                        <polygon points="185,70 182,75 188,75" fill="white" />
+                                        <polygon points="185,130 182,125 188,125" fill="white" />
+                                        <text x="188" y="105" fill="yellow" font-size="24" dominant-baseline="middle">150</text>
+                                    </svg>
+                                    <div style="color: var(--accent-cyan); font-size: 1.2rem; margin-top: 5px;">(開口式)</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,255,0,0.2)" stroke="white" stroke-width="2" />
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,140 V 160 A 26,26 0 0 0 166,160 V 50 H 154 V 160 A 14,14 0 0 1 126,160 V 140 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="50" x2="195" y2="50" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="126" y1="140" x2="195" y2="140" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,50 V 140" stroke="white" stroke-width="1" />
+                                        <polygon points="185,50 182,55 188,55" fill="white" />
+                                        <polygon points="185,140 182,135 188,135" fill="white" />
+                                        <text x="188" y="100" fill="yellow" font-size="32" dominant-baseline="middle">h'=?</text>
+                                    </svg>
+                                    <div style="color: var(--accent-red); font-size: 1.2rem; margin-top: 5px;">(閉口式)</div>
+                                </div>
+                            </div>
+                            <div style="flex: 0 0 auto; margin-top: 10px;">
+                                <button class="btn-tool" style="width: 100%;" onclick="toggleOverlay('overlay-ans-1')">顯示解答</button>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center;">
+                            <div id="overlay-ans-1" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; text-align: center; border: 4px solid var(--accent-red); box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.4);">
+                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px rgba(239, 68, 68, 0.9);">解答：910 mm</div>
+                                <div style="color: white; font-size: 1.2rem; margin-top: 20px; padding: 0 20px; line-height: 1.6;">
+                                    $P_{\text{gas}} = P_{\text{atm}} + h = 760 + 150 = 910 \text{ mmHg}$<br>
+                                    改用閉口式，$P_{\text{gas}} = h' = 910 \text{ mm}$
+                                </div>
+                                <button class="btn-tool" style="margin-top: 30px; width: auto; padding: 10px 30px; background: var(--accent-red);" onclick="toggleOverlay('overlay-ans-1')">隱藏解答</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 例題 2 -->
+                    <div class="flex-row" style="gap: 40px; align-items: stretch; margin-bottom: 40px; min-height: 350px;">
+                        <div class="flex-col" style="flex: 1; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; position: relative;">
+                            <div style="flex: 0 0 auto;">
+                                <h2 class="text-yellow">例題 2</h2>
+                                <p style="font-size: 1.1rem; line-height: 1.6;">某閉口式壓力計充入 A 氣體後，高度差為 $h$。換成 B 氣體後，高度差變為 $1.5h$。則 $P_B / P_A$ 之值為何？</p>
+                            </div>
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); border-bottom: 1px dashed rgba(255,255,255,0.2); padding: 15px 0;">
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,100,100,0.2)" stroke="white" stroke-width="2" />
+                                        <text x="50" y="160" fill="rgba(255,100,100,0.8)" font-size="40" text-anchor="middle">A</text>
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,120 V 160 A 26,26 0 0 0 166,160 V 80 H 154 V 160 A 14,14 0 0 1 126,160 V 120 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="80" x2="195" y2="80" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="126" y1="120" x2="195" y2="120" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,80 V 120" stroke="white" stroke-width="1" />
+                                        <polygon points="185,80 182,85 188,85" fill="white" />
+                                        <polygon points="185,120 182,115 188,115" fill="white" />
+                                        <text x="188" y="105" fill="yellow" font-size="28" dominant-baseline="middle">h</text>
+                                    </svg>
+                                    <div style="color: var(--accent-red); font-size: 1.2rem; margin-top: 5px;">閉口式(A)</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(100,255,100,0.2)" stroke="white" stroke-width="2" />
+                                        <text x="50" y="160" fill="rgba(100,255,100,0.8)" font-size="40" text-anchor="middle">B</text>
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,130 V 160 A 26,26 0 0 0 166,160 V 70 H 154 V 160 A 14,14 0 0 1 126,160 V 130 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="70" x2="195" y2="70" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="126" y1="130" x2="195" y2="130" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,70 V 130" stroke="white" stroke-width="1" />
+                                        <polygon points="185,70 182,75 188,75" fill="white" />
+                                        <polygon points="185,130 182,125 188,125" fill="white" />
+                                        <text x="188" y="105" fill="yellow" font-size="28" dominant-baseline="middle">1.5h</text>
+                                    </svg>
+                                    <div style="color: var(--accent-red); font-size: 1.2rem; margin-top: 5px;">閉口式(B)</div>
+                                </div>
+                            </div>
+                            <div style="flex: 0 0 auto; margin-top: 10px;">
+                                <button class="btn-tool" style="width: 100%;" onclick="toggleOverlay('overlay-ans-2')">顯示解答</button>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center;">
+                            <div id="overlay-ans-2" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; text-align: center; border: 4px solid var(--accent-red); box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.4);">
+                                <div style="color: var(--accent-red); font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px rgba(239, 68, 68, 0.9);">解答：1.5</div>
+                                <div style="color: white; font-size: 1.2rem; margin-top: 20px; padding: 0 20px; line-height: 1.6;">
+                                    $P_A = h$, $P_B = 1.5h$<br>
+                                    $P_B / P_A = 1.5$
+                                </div>
+                                <button class="btn-tool" style="margin-top: 30px; width: auto; padding: 10px 30px; background: var(--accent-red);" onclick="toggleOverlay('overlay-ans-2')">隱藏解答</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 例題 3 -->
+                    <div class="flex-row" style="gap: 40px; align-items: stretch; margin-bottom: 40px; min-height: 350px;">
+                        <div class="flex-col" style="flex: 1; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 15px; position: relative;">
+                            <div style="flex: 0 0 auto;">
+                                <h2 class="text-yellow">例題 3</h2>
+                                <p style="font-size: 1.2rem; line-height: 1.6;">某閉口式壓力計充入 A 氣體後，<strong class="text-cyan">閉口端</strong>水銀柱高度為<strong class="text-cyan">氣室端</strong>的 3 倍；再改換 B 氣體後，閉口端水銀柱高度為氣室端的 4 倍。則 B 氣體的壓力為 A 氣體的若干倍？<br>
+                                <span style="font-size: 1.3rem; margin-top: 10px; display: block;">(A) 1.2 &nbsp;&nbsp; (B) 1.4 &nbsp;&nbsp; (C) 1.6 &nbsp;&nbsp; (D) 1.8</span></p>
+                            </div>
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.2); border-bottom: 1px dashed rgba(255,255,255,0.2); padding: 15px 0;">
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(255,100,100,0.2)" stroke="white" stroke-width="2" />
+                                        <text x="50" y="160" fill="rgba(255,100,100,0.8)" font-size="40" text-anchor="middle">A</text>
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,130 V 160 A 26,26 0 0 0 166,160 V 70 H 154 V 160 A 14,14 0 0 1 126,160 V 130 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="70" x2="195" y2="70" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="114" y1="130" x2="90" y2="130" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="120" y1="160" x2="195" y2="160" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="120" y1="160" x2="90" y2="160" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,70 V 160" stroke="white" stroke-width="1" />
+                                        <polygon points="185,70 182,75 188,75" fill="white" />
+                                        <polygon points="185,160 182,155 188,155" fill="white" />
+                                        <text x="188" y="115" fill="yellow" font-size="24" dominant-baseline="middle">3h</text>
+                                        <path d="M 100,130 V 160" stroke="white" stroke-width="1" />
+                                        <polygon points="100,130 97,135 103,135" fill="white" />
+                                        <polygon points="100,160 97,155 103,155" fill="white" />
+                                        <text x="90" y="145" fill="yellow" font-size="24" dominant-baseline="middle" text-anchor="end">h</text>
+                                    </svg>
+                                    <div style="color: var(--accent-red); font-size: 0.9rem; margin-top: 5px;">閉口式 (A)</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <svg viewBox="0 0 240 220" style="width: 200px; height: 200px;">
+                                        <path d="M 20,180 L 80,180 L 58,110 L 42,110 Z" fill="rgba(100,255,100,0.2)" stroke="white" stroke-width="2" />
+                                        <text x="50" y="160" fill="rgba(100,255,100,0.8)" font-size="40" text-anchor="middle">B</text>
+                                        <path d="M 40,100 L 60,100 L 58,110 L 42,110 Z" fill="#444" stroke="white" stroke-width="1" />
+                                        <path d="M 50,105 V 70 H 120" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" />
+                                        <path d="M 44,105 V 64 H 126" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 56,105 V 76 H 114" fill="none" stroke="white" stroke-width="1.5" />
+                                        <path d="M 114,140 V 160 A 26,26 0 0 0 166,160 V 80 H 154 V 160 A 14,14 0 0 1 126,160 V 140 Z" fill="#9ca3af" />
+                                        <path d="M 114,76 V 160 A 26,26 0 0 0 166,160 V 30 A 6,6 0 0 0 154,30 V 160 A 14,14 0 0 1 126,160 V 64" fill="none" stroke="white" stroke-width="1.5" />
+                                        <line x1="166" y1="80" x2="195" y2="80" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="114" y1="140" x2="90" y2="140" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="120" y1="160" x2="195" y2="160" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <line x1="120" y1="160" x2="90" y2="160" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                        <path d="M 185,80 V 160" stroke="white" stroke-width="1" />
+                                        <polygon points="185,80 182,85 188,85" fill="white" />
+                                        <polygon points="185,160 182,155 188,155" fill="white" />
+                                        <text x="188" y="120" fill="yellow" font-size="24" dominant-baseline="middle">4h'</text>
+                                        <path d="M 100,140 V 160" stroke="white" stroke-width="1" />
+                                        <polygon points="100,140 97,145 103,145" fill="white" />
+                                        <polygon points="100,160 97,155 103,155" fill="white" />
+                                        <text x="90" y="150" fill="yellow" font-size="24" dominant-baseline="middle" text-anchor="end">h'</text>
+                                    </svg>
+                                    <div style="color: var(--accent-red); font-size: 0.9rem; margin-top: 5px;">閉口式 (B)</div>
+                                </div>
+                            </div>
+                            <div style="flex: 0 0 auto; margin-top: 10px;">
+                                <button class="btn-tool" style="width: 100%;" onclick="toggleOverlay('overlay-ans-3')">顯示解答</button>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center;">
+                            <div id="overlay-ans-3" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 50; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; text-align: center; border: 4px solid var(--accent-red); box-shadow: inset 0 0 100px rgba(239, 68, 68, 0.4);">
+                                <div style="color: var(--accent-red); font-size: 4rem; font-weight: 900; text-shadow: 0 0 20px rgba(239, 68, 68, 0.9);">解答：(A)</div>
+                                <div style="color: white; font-size: 1.4rem; margin-top: 20px; padding: 0 20px; line-height: 1.6;">
+                                    $P_A = h_R - h_L = 3h_L - h_L = 2h_L = 0.5C$<br>
+                                    $P_B = h_R - h_L = 4h_L - h_L = 3h_L = 0.6C$<br>
+                                    $P_B / P_A = 0.6 / 0.5 = 1.2$
+                                </div>
+                                <button class="btn-tool" style="margin-top: 30px; width: auto; padding: 10px 30px; background: var(--accent-red);" onclick="toggleOverlay('overlay-ans-3')">隱藏解答</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ★ 核心通關檢核：氣體通性與水銀壓力計 -->
+            </div>
+            <canvas id="drawing-layer"></canvas>
+        </div>
+
+        
+
+
+        <div id="toolbar">
+            <div id="drag-handle">≡</div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+            <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:2px;">
+                <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
+            </div>
+            <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+            </div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+        </div>
+    </div>
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.95); border: 1px solid var(--accent-cyan); box-shadow: 0 0 30px rgba(34, 211, 238, 0.3); border-radius: 20px; padding: 20px; z-index: 10000; backdrop-filter: blur(10px); width: 600px; max-width: 90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns: repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+        </div>
+    </div>
+
+    <script>
+        let isDrawingMode = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let slideDrawings = {};
+        let lastX = 0, lastY = 0, isDrawing = false;
+        const currentSlideKey = 'global';
+
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        const btnHome = document.getElementById('btn-home');
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+
+        function toggleOverlay(id) {
+            const overlay = document.getElementById(id);
+            if (!overlay) return;
+            const wasHidden = (overlay.style.display === 'none' || overlay.style.display === '');
+            overlay.style.display = wasHidden ? 'flex' : 'none';
+            if (wasHidden) {
+                try {
+                    isDrawingMode = false;
+                    canvas && canvas.classList && canvas.classList.remove('drawing-active');
+                    const cp = document.getElementById('color-picker'); if (cp) cp.style.display = 'none';
+                    const et = document.getElementById('eraser-tools'); if (et) et.style.display = 'none';
+                    const btnDrawEl = document.getElementById('btn-draw'); if (btnDrawEl) btnDrawEl.classList.remove('active-tool');
+                } catch (e) { /* ignore errors */ }
+            }
+        }
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.width = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            restoreDrawing();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true; [lastX, lastY] = getCoords(e);
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = Math.max(20, penSize * 10); }
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; ctx.lineWidth = Math.max(2, penSize); }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); [lastX, lastY] = [x, y];
+        }
+        function stopDrawing() { if (isDrawing) { isDrawing = false; slideDrawings[currentSlideKey] = canvas.toDataURL(); } }
+        function restoreDrawing() { if (!ctx) return; ctx.clearRect(0, 0, canvas.width, canvas.height); if (slideDrawings[currentSlideKey]) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = slideDrawings[currentSlideKey]; } }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        btnStart.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+            setTimeout(resizeCanvas, 100);
+        });
+
+        if (btnHome) btnHome.addEventListener('click', () => { window.location.href = '../../index.html'; });
+
+        const btnDraw = document.getElementById('btn-draw');
+        btnDraw.addEventListener('click', (e) => {
+            isDrawingMode = !isDrawingMode; if (isDrawingMode) drawMode = 'pen';
+            e.currentTarget.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            const cp = document.getElementById('color-picker'); if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+            const et = document.getElementById('eraser-tools'); if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        const btnEraser = document.getElementById('btn-eraser');
+        if (btnEraser) btnEraser.addEventListener('click', (e) => { drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser'); e.currentTarget.classList.toggle('active-tool', drawMode === 'eraser'); });
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white'; penColor = dot.dataset.color; drawMode = 'pen';
+                document.getElementById('btn-eraser') && document.getElementById('btn-eraser').classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => { ctx.clearRect(0,0,canvas.width,canvas.height); slideDrawings[currentSlideKey] = null; });
+
+        document.getElementById('btn-top').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // Random Draw Logic
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const btnDoDraw = document.getElementById('btn-do-draw');
+            const drawTotalInput = document.getElementById('draw-total-input');
+
+            let totalBalls = 40;
+            let drawBalls = [];
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = '';
+                drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball';
+                    ball.textContent = i;
+                    ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball);
+                    drawBalls.push(ball);
+                }
+            }
+
+            btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+                if (!drawModal) return;
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none';
+                    btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block';
+                    btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+                }
+            });
+
+            btnCloseDraw && btnCloseDraw.addEventListener('click', () => { if (drawModal) drawModal.style.display = 'none'; btnRandomDraw && btnRandomDraw.classList.remove('active-tool'); });
+
+            drawTotalInput && drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1; drawTotalInput.value = val; totalBalls = val; renderBalls();
+            });
+
+            let drawInterval, drawTimeout;
+            btnDoDraw && btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+                const availableBalls = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (availableBalls.length === 0) { alert('所有號碼都已抽出！'); return; }
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+                const currentAvailable = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (currentAvailable.length === 0) { alert('所有號碼都已抽出！'); return; }
+                btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+                const flickerDuration = 2000; const flickerSpeed = 50;
+                drawInterval = setInterval(() => { currentAvailable.forEach(b => b.classList.remove('flicker')); const randomIdx = Math.floor(Math.random() * currentAvailable.length); currentAvailable[randomIdx].classList.add('flicker'); }, flickerSpeed);
+                drawTimeout = setTimeout(() => { clearInterval(drawInterval); currentAvailable.forEach(b => b.classList.remove('flicker')); const winnerIdx = Math.floor(Math.random() * currentAvailable.length); const winnerBall = currentAvailable[winnerIdx]; winnerBall.classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, flickerDuration);
+            });
+        })();
+
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false;
+        let dragOffY = 0;
+
+        dragHandle.addEventListener('mousedown', (e) => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+        window.addEventListener('mousemove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('mouseup', () => isDraggingToolbar = false);
+        dragHandle.addEventListener('touchstart', (e) => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; });
+        window.addEventListener('touchmove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('touchend', () => isDraggingToolbar = false);
+    </script>
+
+<style>
+    /* ── 核心檢核：氣體通性與水銀壓力計 CSS ── */
+    .quiz-container-full {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        flex: 1;
+    }
+    .quiz-scenario-box {
+        background: rgba(52, 211, 153, 0.08);
+        border: 1px solid rgba(52, 211, 153, 0.3);
+        border-radius: 14px;
+        padding: 14px 18px;
+    }
+    .problem-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        border: 1px solid;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .quiz-grid-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        flex: 1;
+    }
+    @media (max-width: 700px) {
+        .quiz-grid-layout { grid-template-columns: 1fr; }
+    }
+    .quiz-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .quiz-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+    .quiz-card.card-correct {
+        border-color: rgba(52, 211, 153, 0.7) !important;
+        box-shadow: 0 0 16px rgba(52, 211, 153, 0.15) !important;
+    }
+    .quiz-card.card-wrong {
+        border-color: rgba(248, 113, 113, 0.7) !important;
+        box-shadow: 0 0 16px rgba(248, 113, 113, 0.15) !important;
+    }
+    .quiz-q {
+        font-size: 0.97rem;
+        line-height: 1.55;
+        color: #f8fafc;
+        font-weight: 500;
+    }
+    .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+    .quiz-opt {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 9px 14px;
+        color: #cbd5e1;
+        font-size: 0.92rem;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.18s;
+        line-height: 1.4;
+    }
+    .quiz-opt:hover { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.5); color: #f8fafc; }
+    .quiz-opt.selected { background: rgba(56, 189, 248, 0.18); border-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+    .quiz-opt.verified-pass { background: rgba(52, 211, 153, 0.22) !important; border-color: #34d399 !important; color: #34d399 !important; font-weight: 700; }
+    .quiz-opt.verified-fail { background: rgba(248, 113, 113, 0.22) !important; border-color: #f87171 !important; color: #f87171 !important; font-weight: 700; }
+    .quiz-action-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 16px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        flex-wrap: wrap;
+    }
+    .quiz-feedback-msg {
+        flex: 1;
+        min-width: 0;
+        font-size: 0.9rem;
+        color: #94a3b8;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .quiz-feedback-msg.success {
+        background: rgba(52, 211, 153, 0.12);
+        color: #34d399;
+        border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .quiz-feedback-msg.fail {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.3);
+    }
+    .btn-submit-exam {
+        flex-shrink: 0;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, #38bdf8, #34d399);
+        color: #0b1120;
+        font-size: 0.97rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        white-space: nowrap;
+    }
+    .btn-submit-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-submit-exam:disabled { opacity: 0.55; cursor: default; transform: none; }
+    .btn-retry-exam {
+        flex-shrink: 0;
+        padding: 10px 22px;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: white;
+        font-size: 0.97rem;
+        font-weight: 700;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.1s;
+        white-space: nowrap;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+    }
+    .btn-retry-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+    @keyframes gasintro-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+    .text-cyan { color: var(--accent-cyan); }
+    /* ── 概念連連看互動區 CSS ── */
+    .match-game-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 8px;
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 12px;
+        padding: 14px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+    }
+    .match-game-cols {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        gap: 28px;
+        z-index: 2;
+    }
+    .match-col {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 44%;
+    }
+    .match-item {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1.5px solid rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+        padding: 9px 14px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+        touch-action: none;
+        font-size: 0.92rem;
+        color: #f1f5f9;
+        min-height: 48px;
+    }
+    .match-item:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.12); }
+    .match-item.selected { border-color: #38bdf8; background: rgba(56, 189, 248, 0.22); box-shadow: 0 0 12px rgba(56, 189, 248, 0.35); }
+    .match-item.connected { border-color: rgba(56, 189, 248, 0.65); background: rgba(56, 189, 248, 0.12); }
+    .match-item.match-correct { border-color: #34d399 !important; background: rgba(52, 211, 153, 0.18) !important; color: #6ee7b7 !important; box-shadow: 0 0 12px rgba(52, 211, 153, 0.3) !important; }
+    .match-item.match-wrong { border-color: #f87171 !important; background: rgba(248, 113, 113, 0.18) !important; color: #fca5a5 !important; box-shadow: 0 0 12px rgba(248, 113, 113, 0.3) !important; }
+    .match-item-text { flex: 1; pointer-events: none; }
+    .match-item-badge { font-size: 0.9rem; font-weight: 800; margin: 0 4px; pointer-events: none; }
+    .match-dot {
+        width: 16px; height: 16px;
+        background: #38bdf8;
+        border: 2px solid white;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: all 0.2s;
+        z-index: 5;
+        box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+    }
+    .match-item[data-side="left"] .match-dot { right: -8px; }
+    .match-item[data-side="right"] .match-dot { left: -8px; }
+    .match-dot.active { transform: translateY(-50%) scale(1.3); background: #fbbf24; box-shadow: 0 0 12px #fbbf24; }
+    .match-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+</style>
+
+<div id="slides-container-extra">
+    <div class="slide" id="slide-checkpoint" style="padding: 1.2rem 15% 1.5rem 10%;">
+        <div class="quiz-container-full">
+            <!-- 標頭 -->
+            <div class="quiz-scenario-box">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                    <span class="problem-badge" style="background:rgba(52,211,153,0.2); border-color:rgba(52,211,153,0.4); color:#34d399;">
+                        🏆 單元 2-1 · 核心通關檢核
+                    </span>
+                    <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成共 3 小題（含第(1)題連連看），點擊右下角「確定作答」提交檢核</span>
+                </div>
+                <p style="font-size:0.94rem; line-height:1.6; color:#f8fafc; margin:0;">
+                    <strong style="color:#fbbf24;">【氣體通性與壓力計核心應用】</strong>
+                    第(1)題為概念連連看（任意拖曳或點選配對），第(2)(3)題為選擇題，全部正確即可通關解鎖下一單元。
+                </p>
+            </div>
+
+            <!-- ★ 第(1)題：概念連連看 -->
+            <div class="quiz-card" id="quiz-matching-card" style="width:100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <div class="quiz-q" style="margin:0;">
+                        <span class="text-cyan">(1) 概念配對連連看</span> 請將左側概念連線至右側對應科學描述（可拖曳或點選圓點任意連線）。
+                    </div>
+                    <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                        重設連線 ↺
+                    </button>
+                </div>
+                <div class="match-game-wrapper" id="match-game-wrapper">
+                    <svg id="match-svg" class="match-svg"></svg>
+                    <div class="match-game-cols">
+                        <div class="match-col" id="match-col-left"></div>
+                        <div class="match-col" id="match-col-right"></div>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                    <p style="font-size:0.8rem; color:#64748b; margin:0;">💡 操作說明：點擊左側再點擊右側，或直接按住拖曳連線。提交前可任意重連。</p>
+                    <span id="match-count-badge" style="font-size:0.82rem; color:#38bdf8; font-weight:600;">已連線：0 / 5</span>
+                </div>
+            </div>
+
+            <!-- 左右雙欄：(2)(3) -->
+            <div class="quiz-grid-layout" style="align-items:start;">
+                <!-- 左欄：題 2 -->
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="quiz-card" data-q="2" data-ans="1">
+                        <div class="quiz-q">
+                            <span class="text-cyan">(2)</span> 在開口式壓力計中，若水銀柱高度差 $h = 20$ cmHg，且大氣壓為 $76$ cmHg，則氣體壓力為何？
+                        </div>
+                        <div class="quiz-options">
+                            <button type="button" class="quiz-opt" data-idx="0">A. 56 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="1">B. 96 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="2">C. 20 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="3">D. 76 cmHg</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右欄：題 3 -->
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="quiz-card" data-q="3" data-ans="2">
+                        <div class="quiz-q">
+                            <span class="text-cyan">(3)</span> 在閉口式壓力計中，封閉端水銀面比氣室端高 $30$ cmHg，則被測氣體的壓力為何？
+                        </div>
+                        <div class="quiz-options">
+                            <button type="button" class="quiz-opt" data-idx="0">A. 46 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="1">B. 106 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="2">C. 30 cmHg</button>
+                            <button type="button" class="quiz-opt" data-idx="3">D. 76 cmHg</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部操作列 -->
+            <div class="quiz-action-bar">
+                <div class="quiz-feedback-msg" id="quiz-feedback-msg-gasIntro">
+                    <span>💡 請先完成第(1)題連連看配對，再作答第(2)(3)題，完成後點擊「確定作答」。</span>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button type="button" id="btn-retry-exam-gasIntro" class="btn-retry-exam">
+                        🔄 再試一次
+                    </button>
+                    <button type="button" id="btn-submit-exam-gasIntro" class="btn-submit-exam">
+                        確定作答 🚀
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通關成功橫幅 -->
+        <div id="section-complete-banner" style="
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 40vh;
+            padding: 3rem 2rem;
+            background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0) 70%);
+            border-top: 1px solid rgba(52,211,153,0.25);
+            margin-top: 2rem;
+            border-radius: 20px;
+        ">
+            <div style="font-size:4rem; margin-bottom:0.8rem; animation: gasintro-pulse 1.5s ease-in-out infinite;">🏆</div>
+            <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+            <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜你 3 題全數通過！已完成氣體通性與水銀壓力計核心檢核 🎉</p>
+            <p style="color:#94a3b8; font-size:0.95rem;">下一單元已自動解鎖，請從左側目錄切換繼續學習</p>
+            <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                <div style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:12px 22px; color:#34d399; font-weight:700;">
+                    ✅ 2-1 氣體通性與壓力計 — 通關
+                </div>
+                <div style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:12px 22px; color:#38bdf8; font-weight:700;">
+                    🔓 下一單元 — 已解鎖
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── 氣體通性與水銀壓力計核心檢核系統 ──
+    (function initGasIntroCheckpoint() {
+        const MATCH_DATA = [
+            { id: 0, left: '氣體通性：可壓縮性', right: '外壓增大，體積大幅縮小' },
+            { id: 1, left: '開口式壓力計（氣壓 > 大氣壓）', right: '$P_{\text{gas}} = P_{\text{atm}} + h$' },
+            { id: 2, left: '閉口式壓力計', right: '$P_{\text{gas}} = h_{\text{Hg}}$' },
+            { id: 3, left: '流體壓力公式', right: '$P = h \times d$' },
+            { id: 4, left: '1 大氣壓（cmHg）', right: '76 cmHg' }
+        ];
+
+        let selectedAnswers = {};
+        let isPassed = false;
+        let isVerified = false;
+
+        let connections = [];
+        let selectedItem = null;
+        let isDraggingMatch = false;
+        let dragStartItem = null;
+        let tempMatchLine = null;
+
+        const leftCol = document.getElementById('match-col-left');
+        const rightCol = document.getElementById('match-col-right');
+        const matchSvg = document.getElementById('match-svg');
+        const matchWrapper = document.getElementById('match-game-wrapper');
+        const matchCountBadge = document.getElementById('match-count-badge');
+        const resetMatchBtn = document.getElementById('btn-reset-match');
+
+        const quizCards = document.querySelectorAll('#slide-checkpoint .quiz-grid-layout .quiz-card');
+        const submitBtn = document.getElementById('btn-submit-exam-gasIntro');
+        const retryBtn = document.getElementById('btn-retry-exam-gasIntro');
+        const feedbackMsg = document.getElementById('quiz-feedback-msg-gasIntro');
+
+        // 1. 初始化連連看 DOM
+        function renderMatchGame() {
+            if (!leftCol || !rightCol || !matchSvg) return;
+            leftCol.innerHTML = '';
+            rightCol.innerHTML = '';
+            matchSvg.innerHTML = '';
+            connections = [];
+            selectedItem = null;
+            updateMatchBadge();
+
+            MATCH_DATA.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'match-item';
+                el.dataset.side = 'left';
+                el.dataset.id = item.id;
+                el.innerHTML = `
+                    <span class="match-item-text">${item.left}</span>
+                    <span class="match-item-badge"></span>
+                    <div class="match-dot"></div>
+                `;
+                bindMatchItemEvents(el);
+                leftCol.appendChild(el);
+            });
+
+            const shuffledRight = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+            shuffledRight.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'match-item';
+                el.dataset.side = 'right';
+                el.dataset.id = item.id;
+                el.innerHTML = `
+                    <div class="match-dot"></div>
+                    <span class="match-item-badge"></span>
+                    <span class="match-item-text">${item.right}</span>
+                `;
+                bindMatchItemEvents(el);
+                rightCol.appendChild(el);
+            });
+
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([document.getElementById('quiz-matching-card')]);
+            }
+        }
+
+        function bindMatchItemEvents(item) {
+            item.addEventListener('pointerdown', (e) => {
+                if (isPassed || isVerified) return;
+                isDraggingMatch = true;
+                dragStartItem = item;
+                item.querySelector('.match-dot').classList.add('active');
+
+                const rect = matchWrapper.getBoundingClientRect();
+                const dotRect = item.querySelector('.match-dot').getBoundingClientRect();
+                const startX = dotRect.left + dotRect.width / 2 - rect.left;
+                const startY = dotRect.top + dotRect.height / 2 - rect.top;
+
+                if (tempMatchLine) tempMatchLine.remove();
+                tempMatchLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                tempMatchLine.setAttribute('x1', startX);
+                tempMatchLine.setAttribute('y1', startY);
+                tempMatchLine.setAttribute('x2', startX);
+                tempMatchLine.setAttribute('y2', startY);
+                tempMatchLine.setAttribute('stroke', '#38bdf8');
+                tempMatchLine.setAttribute('stroke-width', '3');
+                tempMatchLine.setAttribute('stroke-dasharray', '5,5');
+                matchSvg.appendChild(tempMatchLine);
+
+                if (e.pointerType === 'mouse') e.preventDefault();
+            });
+
+            item.addEventListener('click', (e) => {
+                if (isPassed || isVerified) return;
+                handleItemClick(item);
+            });
+        }
+
+        function handleItemClick(item) {
+            if (!selectedItem) {
+                selectedItem = item;
+                item.classList.add('selected');
+            } else if (selectedItem === item) {
+                selectedItem.classList.remove('selected');
+                selectedItem = null;
+            } else if (selectedItem.dataset.side === item.dataset.side) {
+                selectedItem.classList.remove('selected');
+                selectedItem = item;
+                item.classList.add('selected');
+            } else {
+                selectedItem.classList.remove('selected');
+                const left = selectedItem.dataset.side === 'left' ? selectedItem : item;
+                const right = selectedItem.dataset.side === 'right' ? selectedItem : item;
+                applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+                selectedItem = null;
+            }
+        }
+
+        window.addEventListener('pointermove', (e) => {
+            if (!isDraggingMatch || !tempMatchLine) return;
+            const rect = matchWrapper.getBoundingClientRect();
+            tempMatchLine.setAttribute('x2', e.clientX - rect.left);
+            tempMatchLine.setAttribute('y2', e.clientY - rect.top);
+        });
+
+        window.addEventListener('pointerup', (e) => {
+            if (!isDraggingMatch) return;
+            isDraggingMatch = false;
+
+            if (dragStartItem) {
+                dragStartItem.querySelector('.match-dot').classList.remove('active');
+            }
+
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            const targetItem = target ? target.closest('.match-item') : null;
+
+            if (targetItem && targetItem !== dragStartItem && targetItem.dataset.side !== dragStartItem.dataset.side) {
+                const left = dragStartItem.dataset.side === 'left' ? dragStartItem : targetItem;
+                const right = dragStartItem.dataset.side === 'right' ? dragStartItem : targetItem;
+                applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+            }
+
+            if (tempMatchLine) {
+                tempMatchLine.remove();
+                tempMatchLine = null;
+            }
+            dragStartItem = null;
+            drawAllConnections();
+        });
+
+        function applyConnection(leftId, rightId) {
+            connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+            connections.push({ leftId, rightId, status: null });
+            updateMatchBadge();
+            drawAllConnections();
+        }
+
+        function updateMatchBadge() {
+            if (matchCountBadge) {
+                matchCountBadge.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+                matchCountBadge.style.color = (connections.length === MATCH_DATA.length) ? '#34d399' : '#38bdf8';
+            }
+        }
+
+        function drawAllConnections() {
+            if (!matchSvg || !matchWrapper) return;
+            matchSvg.innerHTML = '';
+            const rect = matchWrapper.getBoundingClientRect();
+
+            const allItems = matchWrapper.querySelectorAll('.match-item');
+            allItems.forEach(el => {
+                if (!isVerified) {
+                    el.classList.remove('connected', 'match-correct', 'match-wrong');
+                    el.querySelector('.match-item-badge').textContent = '';
+                }
+            });
+
+            connections.forEach(c => {
+                const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                if (!leftEl || !rightEl) return;
+
+                if (!isVerified) {
+                    leftEl.classList.add('connected');
+                    rightEl.classList.add('connected');
+                }
+
+                const dot1 = leftEl.querySelector('.match-dot').getBoundingClientRect();
+                const dot2 = rightEl.querySelector('.match-dot').getBoundingClientRect();
+
+                const x1 = dot1.left + dot1.width / 2 - rect.left;
+                const y1 = dot1.top + dot1.height / 2 - rect.top;
+                const x2 = dot2.left + dot2.width / 2 - rect.left;
+                const y2 = dot2.top + dot2.height / 2 - rect.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('stroke-linecap', 'round');
+
+                if (c.status === 'correct') {
+                    line.setAttribute('stroke', '#34d399');
+                    line.setAttribute('stroke-width', '4');
+                    line.setAttribute('filter', 'drop-shadow(0 0 4px #34d399)');
+                } else if (c.status === 'wrong') {
+                    line.setAttribute('stroke', '#f87171');
+                    line.setAttribute('stroke-width', '3.5');
+                    line.setAttribute('stroke-dasharray', '5,4');
+                    line.setAttribute('filter', 'drop-shadow(0 0 4px #f87171)');
+                } else {
+                    line.setAttribute('stroke', '#38bdf8');
+                    line.setAttribute('stroke-width', '3.5');
+                    line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(56,189,248,0.5))');
+                }
+                matchSvg.appendChild(line);
+            });
+        }
+
+        window.addEventListener('resize', drawAllConnections);
+        window.addEventListener('scroll', drawAllConnections, { passive: true });
+
+        if (resetMatchBtn) {
+            resetMatchBtn.addEventListener('click', () => {
+                if (isPassed) return;
+                isVerified = false;
+                connections = [];
+                selectedItem = null;
+                const allItems = matchWrapper.querySelectorAll('.match-item');
+                allItems.forEach(el => {
+                    el.classList.remove('selected', 'connected', 'match-correct', 'match-wrong');
+                    el.querySelector('.match-item-badge').textContent = '';
+                });
+                updateMatchBadge();
+                drawAllConnections();
+                if (retryBtn) retryBtn.style.display = 'none';
+                if (submitBtn) submitBtn.disabled = false;
+                feedbackMsg.className = 'quiz-feedback-msg';
+                feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新進行概念配對。</span>';
+            });
+        }
+
+        // 2. 選擇題點擊綁定
+        quizCards.forEach(card => {
+            const qId = card.dataset.q;
+            const options = card.querySelectorAll('.quiz-opt');
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (isPassed) return;
+                    if (isVerified) {
+                        card.classList.remove('card-wrong');
+                        options.forEach(o => o.classList.remove('verified-fail'));
+                    }
+                    options.forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    selectedAnswers[qId] = parseInt(opt.dataset.idx, 10);
+                });
+            });
+        });
+
+        // 3. 「確定作答」檢核按鈕
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                if (isPassed) return;
+
+                if (connections.length < MATCH_DATA.length) {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = `<span>⚠️ 第(1)題連連看尚有未配對項目（已完成 ${connections.length}/${MATCH_DATA.length} 組），請將 5 組概念全部連線！</span>`;
+                    return;
+                }
+
+                if (Object.keys(selectedAnswers).length < quizCards.length) {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = '<span>⚠️ 第(2)(3)題尚有未作答！請完成全部 2 小題選擇題後再提交。</span>';
+                    return;
+                }
+
+                isVerified = true;
+                let matchingAllCorrect = true;
+                connections.forEach(c => {
+                    const isCorrect = (c.leftId === c.rightId);
+                    c.status = isCorrect ? 'correct' : 'wrong';
+                    if (!isCorrect) matchingAllCorrect = false;
+
+                    const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                    const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+
+                    if (leftEl) {
+                        leftEl.classList.remove('match-correct', 'match-wrong');
+                        leftEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                        leftEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                        leftEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                    }
+                    if (rightEl) {
+                        rightEl.classList.remove('match-correct', 'match-wrong');
+                        rightEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                        rightEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                        rightEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                    }
+                });
+                drawAllConnections();
+
+                let mcAllCorrect = true;
+                quizCards.forEach(card => {
+                    const qId = card.dataset.q;
+                    const correctAns = parseInt(card.dataset.ans, 10);
+                    const userAns = selectedAnswers[qId];
+                    const isCorrect = (userAns === correctAns);
+
+                    card.classList.remove('card-correct', 'card-wrong');
+                    card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+
+                    card.querySelectorAll('.quiz-opt').forEach(opt => {
+                        opt.classList.remove('verified-pass', 'verified-fail');
+                        const idx = parseInt(opt.dataset.idx, 10);
+                        if (idx === userAns) {
+                            opt.classList.add(isCorrect ? 'verified-pass' : 'verified-fail');
+                        }
+                    });
+
+                    if (!isCorrect) mcAllCorrect = false;
+                });
+
+                const allPassed = matchingAllCorrect && mcAllCorrect;
+
+                if (allPassed) {
+                    isPassed = true;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '檢核通過 ✅';
+                    if (retryBtn) retryBtn.style.display = 'none';
+
+                    feedbackMsg.className = 'quiz-feedback-msg success';
+                    feedbackMsg.innerHTML = '<span>🎉 檢核通過！3 題全部答對，氣體通性與水銀壓力計單元已成功解鎖通關！</span>';
+
+                    notifyGasIntroSectionComplete();
+                } else {
+                    feedbackMsg.className = 'quiz-feedback-msg fail';
+                    feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示正確（綠色）與錯誤（紅色）部分，請點擊「再試一次」進行修正！</span>';
+
+                    submitBtn.disabled = true;
+                    if (retryBtn) {
+                        retryBtn.style.display = 'inline-flex';
+                        retryBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            });
+        }
+
+        // 4. 「再試一次」按鈕
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                if (isPassed) return;
+                isVerified = false;
+
+                connections = connections.filter(c => {
+                    if (c.status === 'correct') {
+                        return true;
+                    } else {
+                        const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                        const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                        if (leftEl) {
+                            leftEl.classList.remove('match-wrong', 'connected');
+                            leftEl.querySelector('.match-item-badge').textContent = '';
+                        }
+                        if (rightEl) {
+                            rightEl.classList.remove('match-wrong', 'connected');
+                            rightEl.querySelector('.match-item-badge').textContent = '';
+                        }
+                        return false;
+                    }
+                });
+
+                updateMatchBadge();
+                drawAllConnections();
+
+                quizCards.forEach(card => {
+                    const qId = card.dataset.q;
+                    const correctAns = parseInt(card.dataset.ans, 10);
+                    if (selectedAnswers[qId] !== correctAns) {
+                        card.classList.remove('card-wrong');
+                        card.querySelectorAll('.quiz-opt').forEach(opt => {
+                            opt.classList.remove('selected', 'verified-fail');
+                        });
+                        delete selectedAnswers[qId];
+                    }
+                });
+
+                retryBtn.style.display = 'none';
+                submitBtn.disabled = false;
+                feedbackMsg.className = 'quiz-feedback-msg';
+                feedbackMsg.innerHTML = '<span>✏️ 請重新連線錯誤的概念，並修正答錯的題目，完成後再次點擊「確定作答」。</span>';
+            });
+        }
+
+        // 5. 通關通知母網頁
+        function notifyGasIntroSectionComplete() {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'SECTION_COMPLETE' }, '*');
+            }
+            const banner = document.getElementById('section-complete-banner');
+            if (banner) {
+                banner.style.display = 'flex';
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        renderMatchGame();
+    })();
+</script>
+
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>

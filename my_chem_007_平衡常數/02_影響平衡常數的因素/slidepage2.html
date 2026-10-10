@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>濃度效應（一）：加入與移走反應物 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-concentration">
+    <h1>濃度效應對平衡的影響（一）：反應物的增減</h1>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">🧪 (1) 加入反應物 A</button>
+        <button class="tab-btn" onclick="switchTab(1)">🧪 (2) 移走反應物 A</button>
+    </div>
+    <div class="tab-pane active">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <!-- 引導教學 -->
+        <div class="panel scroll-panel" style="min-height: 400px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0;">🧪 濃度效應引導教學</h2>
+            </div>
+            
+            <p style="margin-top:0.8rem; font-size:1.1rem; color:rgba(255,255,255,0.9);">
+                <strong>(1) 增大反應物濃度，或降低生成物濃度，平衡向右移動。</strong>
+            </p>
+            <p style="color:var(--accent-yellow); margin-top:0.4rem; font-size:1.05rem;">
+                反應 $2\text{A} \rightleftharpoons 3\text{B}$，達平衡後再加入<strong>少量的 A</strong> 破壞平衡，則：
+            </p>
+            
+            <div style="font-size: 1.05rem; line-height: 2.2; margin-top: 0.6rem; color: rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left: 1.5rem;">
+                    <li>瞬間 $Q = \frac{[\text{B}]^3_{原平衡}}{[\text{A}]^2_{瞬間}}$ 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $K = \frac{[\text{B}]^3_{原平衡}}{[\text{A}]^2_{原平衡}}$ 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">&gt;</span> 
+                        瞬間逆反應速率 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">右</span> 
+                        進行達到新平衡 
+                        <span style="font-size:0.85rem; color:#888;">(向左/向右/不移動)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        原平衡常數 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>且達新平衡時，反應物 $[\text{A}]_{新平衡}$ 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">&gt;</span> 
+                        $[\text{A}]_{原平衡}$
+                    </li>
+                    <li>生成物 $[\text{B}]_{新平衡}$ 
+                        <span class="step-target blank-box" onclick="this.classList.add('revealed')">&gt;</span> 
+                        $[\text{B}]_{原平衡}$ 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                </ol>
+            </div>
+            
+            <div class="step-target blank-box" style="margin-top:0.8rem; font-size: 0.95rem; color: var(--accent-green); text-align:right; border:none;" onclick="this.classList.add('revealed')">
+                <em>註：濃度變化量比 $\Delta[\text{A}] : \Delta[\text{B}] = 2 : 3$</em>
+            </div>
+        </div>
+        
+        <!-- 圖形分析 -->
+        <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 0.8rem; flex:1; min-height:0;">
+            <h2 style="margin-bottom: 0.2rem;">📊 圖形分析：加入反應物 A</h2>
+            
+            <!-- Global SVG Defs for ClipPaths -->
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-all"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-all"/></clipPath>
+                    <clipPath id="clip-concA-all"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-all"/></clipPath>
+                    <clipPath id="clip-concB-all"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-all"/></clipPath>
+                </defs>
+            </svg>
+            
+            <!-- Concentration Graphs (Moved to TOP) -->
+            <div style="display:flex; gap:0.5rem; flex:1; min-height:0;">
+                <!-- [A] Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        
+                        <g clip-path="url(#clip-concA-all)">
+                            <line x1="15" y1="65" x2="140" y2="65" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="65" x2="45" y2="65" stroke="#f87171" stroke-width="2.5"/>
+                            
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- spike -->
+                            <line x1="45" y1="65" x2="45" y2="25" stroke="#f87171" stroke-width="2.5"/>
+                            <!-- curve down to y=45 -->
+                            <path d="M 45 25 Q 65 25, 105 45" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="45" x2="140" y2="45" stroke="#f87171" stroke-width="2.5"/>
+                        </g>
+                        <!-- Tracker Line -->
+                        <line id="tracker-concA" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- [B] Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        
+                        <g clip-path="url(#clip-concB-all)">
+                            <line x1="15" y1="65" x2="140" y2="65" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="65" x2="45" y2="65" stroke="#38bdf8" stroke-width="2.5"/>
+                            
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- curve up to y=35 -->
+                            <path d="M 45 65 Q 65 65, 105 35" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="35" x2="140" y2="35" stroke="#38bdf8" stroke-width="2.5"/>
+                        </g>
+                        <!-- Tracker Line -->
+                        <line id="tracker-concB" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rate Graph (Moved to BOTTOM) with Aligned Slider -->
+            <div style="flex:1.2; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative; min-height:0; display:flex; flex-direction:column;">
+                <div style="font-size:0.85rem; color:#aaa; font-weight: bold; margin-bottom: 5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex; flex-direction:row; flex:1; min-height:0; gap: 10px;">
+                    <!-- Left 2/3: Graph and Slider -->
+                    <div style="flex: 2; display:flex; flex-direction:column; min-width:0;">
+                        <div style="position:relative; flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                                <defs>
+                                    <marker id="arrow1" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)" />
+                                    </marker>
+                                </defs>
+                                <!-- Axes -->
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow1)"/>
+                                <text x="15" y="73" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                
+                                <g clip-path="url(#clip-rate-all)">
+                                    <line x1="20" y1="70" x2="280" y2="70" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="70" x2="80" y2="70" stroke="#a78bfa" stroke-width="2.5"/>
+                                    
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">加入 A</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    
+                                    <!-- r_f: spikes to y=20, curves to y=45 -->
+                                    <line x1="80" y1="70" x2="80" y2="20" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 20 Q 110 20, 210 45" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="45" x2="280" y2="45" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="140" y="15" fill="#34d399" font-size="11" font-weight="bold">正反應速率 (r_f)</text>
+                
+                                    <!-- r_r: curves from y=70 to y=45 -->
+                                    <path d="M 80 70 Q 130 70, 210 45" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="140" y="85" fill="#38bdf8" font-size="11" font-weight="bold">逆反應速率 (r_r)</text>
+                                </g>
+                                <!-- Tracker Line -->
+                                <line id="tracker-rate" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                            </svg>
+                        </div>
+                        <!-- Time Slider Aligned to X-axis -->
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 加入反應物 A 反應時間軸：<span id="slider-label-1" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider'); sl.value=0; updateGraphTime(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider'); sl.value=25; updateGraphTime(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider'); sl.value=100; updateGraphTime(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider" min="0" max="100" value="0" oninput="updateGraphTime(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    
+                    <!-- Right 1/3: Text Box -->
+                    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; border-left: 1px dashed rgba(255,255,255,0.2); padding-left: 15px; font-size: 1.15rem;">
+                        <div style="color: #34d399; font-weight: bold; margin-bottom: 0.8rem;">
+                            $r_f = k_f[\text{A}]^m$
+                        </div>
+                        <div style="color: #38bdf8; font-weight: bold;">
+                            $r_r = k_r[\text{B}]^n$
+                        </div>
+                        <div style="font-size: 0.85rem; color: #888; margin-top: 0.8rem;">
+                            <i class="fas fa-info-circle"></i> 當 $[\text{A}]$ 瞬間增加，則正反應速率 $r_f$ 也隨之瞬間激增。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let blanksRevealed = false;
+    function updateGraphTime(val) {
+        const v = parseFloat(val); // 0 to 100
+        
+        // Rate Graph: SVG is 300 wide. Axis goes from x=20 to x=280. 
+        // Slider 0->100 covers this span of width 260.
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-all').setAttribute('width', rateWidth);
+        
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        
+        // Conc Graphs: SVG is 150 wide. Axis goes from x=15 to x=140. 
+        // Slider 0->100 covers this span of width 125.
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-all').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-all').setAttribute('width', concWidth);
+        
+        const concX = 15 + concWidth;
+        const tA = document.getElementById('tracker-concA');
+        tA.setAttribute('x1', concX); tA.setAttribute('x2', concX);
+        tA.style.opacity = v > 0 ? '0.8' : '0';
+        const tB = document.getElementById('tracker-concB');
+        tB.setAttribute('x1', concX); tB.setAttribute('x2', concX);
+        tB.style.opacity = v > 0 ? '0.8' : '0';
+        
+        // Reveal blanks when dragging reaches near the end
+        if (v > 95 && !blanksRevealed) {
+            blanksRevealed = true;
+            document.querySelectorAll('.step-target').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    // Initialize clip regions to 0 width
+    updateGraphTime(0);
+    </script>
+
+    </div>
+    <div class="tab-pane">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <!-- 引導教學 -->
+        <div class="panel scroll-panel" style="min-height: 400px;">
+            <p style="margin-top:0.2rem; font-size:1.1rem; color:rgba(255,255,255,0.9);">
+                <strong>(2) 增大生成物濃度，或降低反應物濃度，平衡向左移動。</strong>
+            </p>
+            <p style="color:var(--accent-yellow); margin-top:0.4rem; font-size:1.05rem;">
+                反應 $2\text{A} \rightleftharpoons 3\text{B}$，達平衡後再<strong>移走少量的 A</strong> 破壞平衡，則：
+            </p>
+            
+            <div style="font-size: 1.05rem; line-height: 2.2; margin-top: 0.6rem; color: rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left: 1.5rem;">
+                    <li>瞬間 $Q = \frac{[\text{B}]^3_{原平衡}}{[\text{A}]^2_{瞬間}}$ 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">&gt;</span> 
+                        $K = \frac{[\text{B}]^3_{原平衡}}{[\text{A}]^2_{原平衡}}$ 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        瞬間逆反應速率 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應向 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">左</span> 
+                        進行達到新平衡 
+                        <span style="font-size:0.85rem; color:#888;">(向左/向右/不移動)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">=</span> 
+                        原平衡常數 
+                        <span style="font-size:0.85rem; color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>且達新平衡時，反應物 $[\text{A}]_{新平衡}$ 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $[\text{A}]_{原平衡}$
+                    </li>
+                    <li>生成物 $[\text{B}]_{新平衡}$ 
+                        <span class="step-target2 blank-box" onclick="this.classList.add('revealed')">&lt;</span> 
+                        $[\text{B}]_{原平衡}$ 
+                        <span style="font-size:0.85rem; color:#888;">(增加或減少)</span>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- 圖形分析 -->
+        <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding: 0.8rem; flex:1; min-height:0;">
+            <h2 style="margin-bottom: 0.2rem;">📊 圖形分析：移走反應物 A</h2>
+            
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-all-2"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-all-2"/></clipPath>
+                    <clipPath id="clip-concA-all-2"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-all-2"/></clipPath>
+                    <clipPath id="clip-concB-all-2"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-all-2"/></clipPath>
+                </defs>
+            </svg>
+            
+            <div style="display:flex; gap:0.5rem; flex:1; min-height:0;">
+                <!-- [A] Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-all-2)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="rgba(248,113,113,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="50" x2="45" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            
+                            <!-- spike down -->
+                            <line x1="45" y1="50" x2="45" y2="75" stroke="#f87171" stroke-width="2.5"/>
+                            <!-- curve up to new eq lower than original (y=65 is lower conc than 50) -->
+                            <path d="M 45 75 Q 65 75, 105 65" fill="none" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="105" y1="65" x2="140" y2="65" stroke="#f87171" stroke-width="2.5"/>
+                        </g>
+                        <line id="tracker-concA-2" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- [B] Graph -->
+                <div style="flex:1; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative;">
+                    <div style="position:absolute; top:8px; left:12px; font-size:0.85rem; color:#aaa; font-weight: bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-all-2)">
+                            <line x1="15" y1="40" x2="140" y2="40" stroke="rgba(56,189,248,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="15" y1="40" x2="45" y2="40" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <line x1="105" y1="10" x2="105" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                            <!-- curve down to new eq (y=55) -->
+                            <path d="M 45 40 Q 65 40, 105 55" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="105" y1="55" x2="140" y2="55" stroke="#38bdf8" stroke-width="2.5"/>
+                        </g>
+                        <line id="tracker-concB-2" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rate Graph -->
+            <div style="flex:1.2; background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; position:relative; min-height:0; display:flex; flex-direction:column;">
+                <div style="font-size:0.85rem; color:#aaa; font-weight: bold; margin-bottom: 5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex; flex-direction:row; flex:1; min-height:0; gap: 10px;">
+                    <div style="flex: 2; display:flex; flex-direction:column; min-width:0;">
+                        <div style="position:relative; flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%; height:100%; display:block; overflow:visible;">
+                                <defs>
+                                    <marker id="arrow2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)" />
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow2)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow2)"/>
+                                <text x="15" y="73" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                
+                                <g clip-path="url(#clip-rate-all-2)">
+                                    <line x1="20" y1="40" x2="280" y2="40" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                    <line x1="20" y1="40" x2="80" y2="40" stroke="#a78bfa" stroke-width="2.5"/>
+                                    
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">移走 A</text>
+                                    <line x1="210" y1="10" x2="210" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="210" y="115" text-anchor="middle" fill="#aaa" font-size="10">新平衡</text>
+                                    
+                                    <!-- r_f: spikes down to y=80, curves up to y=60 -->
+                                    <line x1="80" y1="40" x2="80" y2="80" stroke="#34d399" stroke-width="2.5"/>
+                                    <path d="M 80 80 Q 110 80, 210 60" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                                    <line x1="210" y1="60" x2="280" y2="60" stroke="#34d399" stroke-width="2.5"/>
+                                    <text x="140" y="90" fill="#34d399" font-size="11" font-weight="bold">正反應速率 (r_f)</text>
+                
+                                    <!-- r_r: curves down from y=40 to y=60 -->
+                                    <path d="M 80 40 Q 130 40, 210 60" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <text x="140" y="30" fill="#38bdf8" font-size="11" font-weight="bold">逆反應速率 (r_r)</text>
+                                </g>
+                                <line id="tracker-rate-2" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none; opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 移走反應物 A 反應時間軸：<span id="slider-label-2" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-2'); sl.value=0; updateGraphTime2(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-2'); sl.value=25; updateGraphTime2(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-2'); sl.value=100; updateGraphTime2(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-2" min="0" max="100" value="0" oninput="updateGraphTime2(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; border-left: 1px dashed rgba(255,255,255,0.2); padding-left: 15px; font-size: 1.15rem;">
+                        <div style="color: #34d399; font-weight: bold; margin-bottom: 0.8rem;">$r_f = k_f[\text{A}]^m$</div>
+                        <div style="color: #38bdf8; font-weight: bold;">$r_r = k_r[\text{B}]^n$</div>
+                        <div style="font-size: 0.85rem; color: #888; margin-top: 0.8rem;"><i class="fas fa-info-circle"></i> 當 $[\text{A}]$ 瞬間減少，正反應速率 $r_f$ 隨之瞬間驟降。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let blanksRevealed2 = false;
+    function updateGraphTime2(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-all-2').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-2');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-all-2').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-all-2').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        const tA = document.getElementById('tracker-concA-2');
+        tA.setAttribute('x1', concX); tA.setAttribute('x2', concX);
+        tA.style.opacity = v > 0 ? '0.8' : '0';
+        const tB = document.getElementById('tracker-concB-2');
+        tB.setAttribute('x1', concX); tB.setAttribute('x2', concX);
+        tB.style.opacity = v > 0 ? '0.8' : '0';
+        
+        if (v > 95 && !blanksRevealed2) {
+            blanksRevealed2 = true;
+            document.querySelectorAll('.step-target2').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTime2(0);
+    </script>
+
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+// Enhance slider labels dynamically
+const orig_updateGraphTime = window.updateGraphTime;
+window.updateGraphTime = function(val) {
+    if (typeof orig_updateGraphTime === 'function') orig_updateGraphTime(val);
+    const lbl = document.getElementById('slider-label-1');
+    if (lbl) {
+        const v = parseFloat(val);
+        if (v === 0) lbl.textContent = '原平衡 (t₀)';
+        else if (v < 30) lbl.textContent = '加入 A 瞬間 (t₁)';
+        else if (v < 95) lbl.textContent = '向右進行調適中...';
+        else lbl.textContent = '新平衡達成 (t₂)';
+    }
+};
+
+const orig_updateGraphTime2 = window.updateGraphTime2;
+window.updateGraphTime2 = function(val) {
+    if (typeof orig_updateGraphTime2 === 'function') orig_updateGraphTime2(val);
+    const lbl = document.getElementById('slider-label-2');
+    if (lbl) {
+        const v = parseFloat(val);
+        if (v === 0) lbl.textContent = '原平衡 (t₀)';
+        else if (v < 30) lbl.textContent = '移走 A 瞬間 (t₁)';
+        else if (v < 95) lbl.textContent = '向左進行調適中...';
+        else lbl.textContent = '新平衡達成 (t₂)';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateGraphTime === 'function') updateGraphTime(0);
+    if (typeof updateGraphTime2 === 'function') updateGraphTime2(0);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-4 奧夫堡規則 (Aufbau Principle)</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.3fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.7;
+    }
+    .rule-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rule-title {
+      color: #fbbf24;
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .formula-bar {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 10px;
+      border-left: 5px solid #34d399;
+      padding: 10px 14px;
+      font-size: clamp(0.95rem, 1.2vw, 1.25rem);
+      color: #6ee7b7;
+      text-align: center;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    /* SVG Container */
+    .svg-wrapper {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 12px;
+      border: 1px solid #334155;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      min-height: 340px;
+      position: relative;
+    }
+    .orb-circle {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .orb-circle:hover {
+      filter: brightness(1.4);
+      transform-origin: center;
+    }
+    .active-orb circle {
+      fill: rgba(56, 189, 248, 0.4) !important;
+      stroke: #38bdf8 !important;
+      stroke-width: 3.5 !important;
+      filter: drop-shadow(0 0 8px #38bdf8);
+    }
+    .active-orb text {
+      font-weight: 800;
+      fill: #38bdf8 !important;
+    }
+    .orb-inspect-box {
+      margin-top: 10px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">4-4 電子組態</span>
+      <h1>奧夫堡規則 (Aufbau Principle)</h1>
+    </div>
+    <div class="subtitle">構築原則 · 低能階優先填寫 · $(n+l)$ 能量判定</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Left Column: Concepts & Rules -->
+    <div class="card">
+      <div class="card-title">📖 原理定義與 $(n+l)$ 規則</div>
+      
+      <div class="info-card">
+        <strong>奧夫堡規則（Aufbau Principle，構築原則）：</strong><br>
+        電子在原子核外的基態排列時，會優先填入<strong>能量最低</strong>的可用軌域，待該軌域填滿後，再循序填入較高能量的軌域。
+      </div>
+
+      <div class="rule-box">
+        <div class="rule-title">⚡ 軌域能量高低判斷準則 (多電子原子)：</div>
+        <ol style="margin-left: 20px; line-height: 1.8; font-size: clamp(0.95rem, 1.1vw, 1.05rem);">
+          <li>
+            <strong>$(n + l)$ 規則：</strong><br>
+            主量子數 $n$ 與角量子數 $l$ 之和 $(n + l)$ 愈大者，軌域能量愈高。<br>
+            <span style="color:#94a3b8; font-size:0.9rem;">例如：4s ($n+l=4+0=4$) < 3d ($n+l=3+2=5$)，故電子先填 4s 再填 3d！</span>
+          </li>
+          <li>
+            <strong>$(n + l)$ 相等時：</strong><br>
+            若兩軌域之 $(n + l)$ 總和相同，則 <strong>主量子數 $n$ 愈大者，能量愈高</strong>。<br>
+            <span style="color:#94a3b8; font-size:0.9rem;">例如：2p ($2+1=3$) 與 3s ($3+0=3$)，因 $n=3 > 2$，故能量 2p < 3s。</span>
+          </li>
+        </ol>
+      </div>
+
+      <div class="formula-bar">
+        $$1s < 2s < 2p < 3s < 3p < 4s < 3d < 4p < 5s < 4d < 5p < 6s < 4f < 5d \dots$$
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Aufbau Filling Diagram -->
+    <div class="card">
+      <div class="card-title">
+        <span>🧭 軌域填寫對角線順序圖</span>
+        <span style="font-size:0.85rem; color:#94a3b8; margin-left:auto;">(點擊下方軌域可即時檢視量子數)</span>
+      </div>
+
+      <div class="svg-wrapper">
+        <svg width="100%" height="100%" viewBox="20 15 220 375" style="max-height: 400px;">
+          <defs>
+            <marker id="arrowDiag" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="#38bdf8" />
+            </marker>
+          </defs>
+
+          <!-- Diagonal Lines -->
+          <line x1="75" y1="25" x2="25" y2="75" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="75" y1="75" x2="25" y2="125" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="125" y1="75" x2="25" y2="175" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="125" y1="125" x2="25" y2="225" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="175" y1="125" x2="25" y2="275" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="175" y1="175" x2="25" y2="325" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="225" y1="175" x2="25" y2="375" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+          <line x1="225" y1="225" x2="75" y2="375" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrowDiag)"/>
+
+          <!-- Orbitals Groups -->
+          <!-- s col -->
+          <g class="orb-circle" data-n="1" data-l="0" data-cap="2" data-name="1s" transform="translate(50,50)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">1s</text></g>
+          <g class="orb-circle" data-n="2" data-l="0" data-cap="2" data-name="2s" transform="translate(50,100)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">2s</text></g>
+          <g class="orb-circle" data-n="3" data-l="0" data-cap="2" data-name="3s" transform="translate(50,150)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">3s</text></g>
+          <g class="orb-circle" data-n="4" data-l="0" data-cap="2" data-name="4s" transform="translate(50,200)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">4s</text></g>
+          <g class="orb-circle" data-n="5" data-l="0" data-cap="2" data-name="5s" transform="translate(50,250)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">5s</text></g>
+          <g class="orb-circle" data-n="6" data-l="0" data-cap="2" data-name="6s" transform="translate(50,300)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">6s</text></g>
+          <g class="orb-circle" data-n="7" data-l="0" data-cap="2" data-name="7s" transform="translate(50,350)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">7s</text></g>
+
+          <!-- p col -->
+          <g class="orb-circle" data-n="2" data-l="1" data-cap="6" data-name="2p" transform="translate(100,100)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">2p</text></g>
+          <g class="orb-circle" data-n="3" data-l="1" data-cap="6" data-name="3p" transform="translate(100,150)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">3p</text></g>
+          <g class="orb-circle" data-n="4" data-l="1" data-cap="6" data-name="4p" transform="translate(100,200)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">4p</text></g>
+          <g class="orb-circle" data-n="5" data-l="1" data-cap="6" data-name="5p" transform="translate(100,250)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">5p</text></g>
+          <g class="orb-circle" data-n="6" data-l="1" data-cap="6" data-name="6p" transform="translate(100,300)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">6p</text></g>
+          <g class="orb-circle" data-n="7" data-l="1" data-cap="6" data-name="7p" transform="translate(100,350)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">7p</text></g>
+
+          <!-- d col -->
+          <g class="orb-circle" data-n="3" data-l="2" data-cap="10" data-name="3d" transform="translate(150,150)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">3d</text></g>
+          <g class="orb-circle" data-n="4" data-l="2" data-cap="10" data-name="4d" transform="translate(150,200)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">4d</text></g>
+          <g class="orb-circle" data-n="5" data-l="2" data-cap="10" data-name="5d" transform="translate(150,250)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">5d</text></g>
+          <g class="orb-circle" data-n="6" data-l="2" data-cap="10" data-name="6d" transform="translate(150,300)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">6d</text></g>
+
+          <!-- f col -->
+          <g class="orb-circle" data-n="4" data-l="3" data-cap="14" data-name="4f" transform="translate(200,200)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">4f</text></g>
+          <g class="orb-circle" data-n="5" data-l="3" data-cap="14" data-name="5f" transform="translate(200,250)"><circle r="18" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="2"/><text y="5" fill="#fff" font-size="14" text-anchor="middle">5f</text></g>
+        </svg>
+
+        <div class="orb-inspect-box" id="inspect-box">
+          <span id="inspect-name" style="font-weight:700; color:#38bdf8; font-size:1.1rem;">選取軌域：4s</span>
+          <span id="inspect-details">主量子數 $n=4$ · 角量子數 $l=0$ · $n+l=4$ · 最多容納 2 個電子</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  <script>
+    const orbs = document.querySelectorAll('.orb-circle');
+    const inspectName = document.getElementById('inspect-name');
+    const inspectDetails = document.getElementById('inspect-details');
+
+    orbs.forEach(orb => {
+      orb.addEventListener('click', () => {
+        orbs.forEach(o => o.classList.remove('active-orb'));
+        orb.classList.add('active-orb');
+
+        const name = orb.dataset.name;
+        const n = parseInt(orb.dataset.n);
+        const l = parseInt(orb.dataset.l);
+        const cap = orb.dataset.cap;
+        const sum = n + l;
+
+        inspectName.textContent = `選取軌域：${name}`;
+        inspectDetails.innerHTML = `主量子數 $n=${n}$ · 角量子數 $l=${l}$ · $n+l=${sum}$ · 最多容納 ${cap} 個電子`;
+        if (window.MathJax) MathJax.typesetPromise([inspectDetails]);
+      });
+    });
+  </script>
+</body>
+</html>

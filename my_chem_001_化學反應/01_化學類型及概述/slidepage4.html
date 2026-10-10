@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-1 化學反應與守恆 · 範例 1：觀察法平衡化學反應式 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.05rem, 1.35vw, 1.3rem); margin-bottom: 0.3rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.9rem, 1.05vw, 1.05rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.95rem 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.65rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 4.5px solid var(--accent-blue);
+            padding: 0.65rem 0.9rem; text-align: center;
+            font-size: 1.15rem; flex-shrink: 0;
+        }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.6rem 0.85rem; line-height: 1.6;
+        }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+        .step-block.yellow { border-left-color: var(--accent-yellow); background: rgba(251,191,36,0.05); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>1-1 化學反應與守恆 · 範例 1：觀察法平衡化學反應式</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目呈現 -->
+                    <div class="panel">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 0.4rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                                <span class="tag tag-yellow">範例 1</span>
+                                <h2 style="color: var(--accent-yellow); margin: 0;">鐵在潮濕空氣中生鏽反應之係數平衡</h2>
+                            </div>
+                            <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5);">一題一頁 · 觀察法演練</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 0.8rem 1rem;">
+                            <p style="font-size: 1.05rem; line-height: 1.8; color: #f8fafc;">
+                                <strong>題目說明：</strong><br>
+                                鐵釘在潮濕的空氣中長期暴露，會與氧氣和水反應生成紅褐色的氫氧化鐵：
+                                $$\mathrm{Fe_{(s)} + O_{2(g)} + H_2O_{(l)} \longrightarrow Fe(OH)_{3(s)}}$$
+                                試利用<strong>「觀察法」</strong>求出平衡後各物質的最簡整數係數比，並計算反應式中<strong>所有係數的總和</strong>為何？
+                            </p>
+                        </div>
+
+                        <!-- 引導提示框 -->
+                        <div style="background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.25); border-radius: 8px; padding: 0.75rem 1rem;">
+                            <strong style="color: var(--accent-green); font-size: 0.95rem; display: block; margin-bottom: 0.35rem;">
+                                💡 思考導引提示：
+                            </strong>
+                            <ol style="margin-left: 1.2rem; line-height: 1.7; font-size: 0.92rem; color: #cbd5e1;">
+                                <li>全式中哪一種物質的組成最複雜、原子數最多？先將其係數設為多少？</li>
+                                <li>先平衡出現次數較少之金屬鐵 (Fe) 與氫 (H)。</li>
+                                <li>單質氣體 $\mathrm{O_2}$ 留至最後微調，若出現分數該如何化整？</li>
+                            </ol>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.3rem;">
+                            <button class="btn-action" onclick="toggleSolution('s4-solution')" style="width: 100%; padding: 9px 18px; font-size: 0.98rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設留空白，點擊開合） -->
+                    <div class="panel scroll-panel" style="background: rgba(255,255,255,0.025); position: relative;">
+                        <!-- 預設留空 -->
+
+                        <!-- 詳解內容盒 -->
+                        <div id="s4-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.4rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>✓</span> 完整觀察法解析步驟
+                                </h2>
+                                <span class="tag" style="background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4);">
+                                    答案：係數和 = 17
+                                </span>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-cyan);">Step 1：定基準（選最複雜者為 1）</strong><br>
+                                生成物 $\mathrm{Fe(OH)_3}$ 分子最複雜（含 1 個 Fe、3 個 O、3 個 H，共 7 個原子），暫定其係數為 <strong>1</strong>：
+                                $$\mathrm{Fe + O_2 + H_2O \longrightarrow 1\,Fe(OH)_3}$$
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-blue);">Step 2：依原子守恆平衡 Fe 與 H</strong><br>
+                                • <strong>平衡 Fe：</strong>右邊有 $1$ 個 Fe，故左側 $\mathrm{Fe}$ 係數為 <strong>1</strong>：
+                                $$\mathrm{1\,Fe + O_2 + H_2O \longrightarrow 1\,Fe(OH)_3}$$
+                                • <strong>平衡 H：</strong>右邊有 $3$ 個 H，左邊 $\mathrm{H_2O}$ 每個分子有 2 個 H，故 $\mathrm{H_2O}$ 係數定為 $\mathbf{\frac{3}{2}}$：
+                                $$\mathrm{1\,Fe + O_2 + \frac{3}{2}\,H_2O \longrightarrow 1\,Fe(OH)_3}$$
+                            </div>
+
+                            <div class="step-block yellow">
+                                <strong style="color: var(--accent-yellow);">Step 3：留最後平衡單質 $\mathrm{O_2}$</strong><br>
+                                右邊總氧原子數為 $3$。<br>
+                                左側 $\frac{3}{2}\,\mathrm{H_2O}$ 已提供 $\frac{3}{2}$ 個 O，尚不足：$3 - \frac{3}{2} = \frac{3}{2}$ 個 O。<br>
+                                由於每個 $\mathrm{O_2}$ 提供 2 個氧原子，故 $\mathrm{O_2}$ 係數為 $\frac{3}{2} \div 2 = \mathbf{\frac{3}{4}}$：
+                                $$\mathrm{1\,Fe + \frac{3}{4}\,O_2 + \frac{3}{2}\,H_2O \longrightarrow 1\,Fe(OH)_3}$$
+                            </div>
+
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">Step 4：去分母化為最簡整數比</strong><br>
+                                全式各項係數同乘以分母最小公倍數 <strong>4</strong>：
+                                $$\mathbf{4\,Fe_{(s)} + 3\,O_{2(g)} + 6\,H_2O_{(l)} \longrightarrow 4\,Fe(OH)_{3(s)}}$$
+                                檢驗兩側原子數：$\mathrm{Fe: 4=4}$；$\mathrm{O: 6+6=12}$；$\mathrm{H: 12=12}$（完全守恆）。<br>
+                                <strong>全式係數總和：</strong> $4 + 3 + 6 + 4 = \mathbf{17}$。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+    } else {
+        el.classList.add('revealed');
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+</script>
+</body>
+</html>

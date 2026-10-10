@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4-5 範例 03：跨週期元素大小排列</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(14px, 2.2vw, 24px);
+      box-sizing: border-box;
+      background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+      background-size: 30px 30px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .badge {
+      background: #0284c7;
+      color: #fff;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: clamp(1.3rem, 2vw, 1.85rem);
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+      color: #94a3b8;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(14px, 2vw, 22px);
+      flex: 1;
+      min-height: 0;
+    }
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: clamp(16px, 2vw, 22px);
+      border: 1px solid #334155;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+    }
+    .card-title {
+      font-size: clamp(1.05rem, 1.3vw, 1.25rem);
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+    .info-card {
+      background: rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      border-left: 4px solid #38bdf8;
+      font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+      line-height: 1.7;
+    }
+    .formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+      border-left: 5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.25rem;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="badge">範例 03</span>
+      <h1>範例 03：跨週期元素大小排列</h1>
+    </div>
+    <div class="subtitle">綜合同週期與同族二維位置判定原子大小</div>
+  </div>
+
+  
+<div class="main-grid">
+  <!-- Left Column: Problem & Toggle Button ONLY -->
+  <div class="card">
+    <div class="card-title">📝 題目內容</div>
+    
+    <div style="background: #0f172a; border-left: 4px solid #38bdf8; padding: 20px; border-radius: 0 12px 12px 0; font-size: clamp(1rem, 1.2vw, 1.2rem); line-height: 1.9; color: #f1f5f9;">
+      試將<strong>氧（O）</strong>、<strong>硫（S）</strong>、<strong>氟（F）</strong>、<strong>氯（Cl）</strong>四個元素的<strong>原子半徑</strong>由<strong>大到小</strong>依序排列。
+    </div>
+
+    <button id="btn-toggle" style="margin-top: auto; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 14px 28px; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.25s ease; box-shadow: 0 4px 14px rgba(2,132,199,0.35);">
+      <span>👁️ 顯示詳解答案</span>
+    </button>
+  </div>
+
+  <!-- Right Column: Blank until toggled -->
+  <div class="card">
+    <div class="card-title">💡 詳解與步驟分析</div>
+
+    <div id="placeholder-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; color: #64748b; font-size: 1.05rem; border: 2px dashed #334155; border-radius: 14px; padding: 20px; text-align: center; gap: 10px;">
+      <span style="font-size: 2rem;">💭</span>
+      <span>點擊左下方「顯示詳解答案」按鈕即可在此處檢視完整解析</span>
+    </div>
+
+    <div id="solution-panel" style="display: none; flex-direction: column; gap: 16px; background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 22px; flex: 1;">
+      <div style="border-left: 3px solid #34d399; padding-left: 14px; font-size: 1rem; line-height: 1.8;">
+        <div style="font-weight: 700; color: #34d399; margin-bottom: 6px;">步驟一：建立二維週期表位置矩陣</div>
+        <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 0.95rem; margin-top: 6px;">
+          <tr style="color: #94a3b8; border-bottom: 1px solid #334155;">
+            <th>週期 \ 族</th><th>VIA 族 (16)</th><th>VIIA 族 (17)</th>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="color: #38bdf8; font-weight: 700;">第 2 週期</td>
+            <td>O (73 pm)</td><td>F (72 pm)</td>
+          </tr>
+          <tr>
+            <td style="color: #fbbf24; font-weight: 700;">第 3 週期</td>
+            <td>S (104 pm)</td><td>Cl (99 pm)</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="border-left: 3px solid #38bdf8; padding-left: 14px; font-size: 1rem; line-height: 1.8;">
+        <div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px;">步驟二：分維度邏輯推導</div>
+        • <strong>同族比較（層數主導）：</strong>S > O（3層 > 2層）；Cl > F（3層 > 2層）。<br>
+        • <strong>同週期比較（左大右小）：</strong>S > Cl（第3週期）；O > F（第2週期）。<br>
+        • <strong>跨週期整合：</strong>第三週期最右側的 Cl（99 pm）仍遠大於第二週期左側的 O（73 pm），故第三週期整體大於第二週期。
+      </div>
+
+      <div style="background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid #059669; padding: 14px 18px; border-radius: 10px; font-weight: 800; font-size: 1.25rem; text-align: center; margin-top: auto;">
+        🎯 正確排序：$\text{S} > \text{Cl} > \text{O} > \text{F}$<br>
+        <span style="font-size: 0.95rem; font-weight: 600; color: #cbd5e1;">（實驗測得數據：104 pm > 99 pm > 73 pm > 72 pm）</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+  
+<script>
+  const btn = document.getElementById('btn-toggle');
+  const panel = document.getElementById('solution-panel');
+  const ph = document.getElementById('placeholder-box');
+  let shown = false;
+  btn.addEventListener('click', () => {
+    shown = !shown;
+    panel.style.display = shown ? 'flex' : 'none';
+    ph.style.display = shown ? 'none' : 'flex';
+    btn.innerHTML = shown ? '<span>🙈 隱藏詳解答案</span>' : '<span>👁️ 顯示詳解答案</span>';
+    if (shown && window.MathJax) MathJax.typesetPromise();
+  });
+</script>
+
+</body>
+</html>

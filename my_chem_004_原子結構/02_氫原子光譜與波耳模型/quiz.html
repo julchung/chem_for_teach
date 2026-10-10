@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4-2 氫原子光譜與波耳模型 · 核心通關檢核 | 互動教學</title>
+    <meta name="description" content="選修化學：氫原子光譜與波耳模型（光子能量、波耳假設、芮得柏公式、能階躍遷、譜線數計算）核心通關檢核與章節解鎖">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --accent-pink: #ec4899;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%; min-height: 100vh;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(167,139,250,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative; width: 100%; min-height: 100vh;
+            padding: clamp(16px, 2.5vw, 36px) clamp(14px, 2.5vw, 32px) 4rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%; max-width: 1100px;
+            display: flex; flex-direction: column; gap: 18px;
+        }
+
+        /* 標頭情境框 */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 16px; padding: 1.2rem 1.6rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.88rem; padding: 0.25rem 0.9rem; border-radius: 30px;
+            font-weight: 700; border: 1px solid rgba(168, 85, 247, 0.4);
+            background: rgba(168, 85, 247, 0.15); color: #c084fc;
+            letter-spacing: 0.05em; display: inline-block; margin-bottom: 0.4rem;
+        }
+
+        h1 {
+            font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+            font-weight: 800; color: #f8fafc; margin-top: 4px;
+        }
+
+        /* 選擇題四方排列佈局 */
+        .quiz-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        @media (max-width: 860px) {
+            .quiz-grid-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Quiz Card */
+        .quiz-card {
+            background: rgba(19, 27, 46, 0.88);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px; padding: 16px 20px;
+            display: flex; flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .quiz-card:hover { border-color: rgba(167, 139, 250, 0.35); }
+        .quiz-card.card-correct { border-color: rgba(52, 211, 153, 0.7) !important; box-shadow: 0 0 16px rgba(52, 211, 153, 0.18) !important; }
+        .quiz-card.card-wrong   { border-color: rgba(248, 113, 113, 0.7) !important; box-shadow: 0 0 16px rgba(248, 113, 113, 0.18) !important; }
+
+        .quiz-q-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+        }
+        .quiz-q-tag {
+            font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+            background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.35);
+            color: var(--accent-purple);
+        }
+
+        .quiz-q { font-size: 0.96rem; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.6; }
+
+        .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+
+        .quiz-opt {
+            padding: 9px 13px; border-radius: 8px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+            color: var(--text-main); cursor: pointer; text-align: left;
+            font-size: 0.9rem; line-height: 1.45; transition: all 0.15s ease;
+            display: flex; align-items: center; user-select: none; font-family: inherit;
+        }
+        .quiz-opt:hover         { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.4); color: #fff; }
+        .quiz-opt.opt-selected  { background: rgba(167,139,250,0.22); border-color: var(--accent-purple); color: #fff; font-weight: 700; }
+        .quiz-opt.opt-correct   { background: rgba(52,211,153,0.25) !important; border-color: var(--accent-green) !important; color: #fff !important; font-weight: 700; }
+        .quiz-opt.opt-wrong     { background: rgba(248,113,113,0.25) !important; border-color: var(--accent-red) !important; color: #fff !important; }
+
+        .quiz-card-feedback {
+            font-size: 0.85rem; margin-top: 10px; padding: 10px 14px;
+            border-radius: 8px; display: none; line-height: 1.6;
+        }
+        .quiz-card-feedback.fb-show { display: block; }
+        .quiz-card-feedback.fb-ok  { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+        .quiz-card-feedback.fb-err { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; }
+
+        /* 連連看組件 */
+        .match-game-wrapper {
+            position: relative; width: 100%; min-height: 320px;
+            margin: 12px 0 6px; user-select: none;
+        }
+        .match-svg {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 2;
+        }
+        .match-game-cols {
+            display: flex; justify-content: space-between;
+            position: relative; z-index: 1; gap: 40px;
+        }
+        @media (max-width: 768px) {
+            .match-game-cols { gap: 20px; }
+        }
+        .match-col { display: flex; flex-direction: column; gap: 10px; width: 46%; }
+
+        .match-item {
+            position: relative; background: rgba(30,41,59,0.95);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 10px; padding: 10px 16px;
+            color: var(--text-main); font-size: 0.88rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: space-between;
+            min-height: 50px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            line-height: 1.45;
+        }
+        .match-item:hover     { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.5); transform: translateY(-1px); }
+        .match-item.selected  { border-color: var(--accent-yellow) !important; background: rgba(251,191,36,0.15) !important; box-shadow: 0 0 12px rgba(251,191,36,0.35) !important; }
+        .match-item.connected { border-color: var(--accent-purple); background: rgba(167,139,250,0.1); }
+        .match-item.match-correct { border-color: var(--accent-green) !important; background: rgba(52,211,153,0.15) !important; box-shadow: 0 0 10px rgba(52,211,153,0.2) !important; }
+        .match-item.match-wrong   { border-color: var(--accent-red) !important; background: rgba(248,113,113,0.15) !important; box-shadow: 0 0 10px rgba(248,113,113,0.2) !important; }
+
+        .match-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: #64748b; border: 2px solid #fff;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            transition: all 0.2s; z-index: 4;
+        }
+        .match-col#match-col-left  .match-dot { right: -7px; }
+        .match-col#match-col-right .match-dot { left: -7px; }
+        .match-dot.active, .match-item.connected .match-dot {
+            background: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);
+            transform: translateY(-50%) scale(1.25);
+        }
+
+        /* 操作列 */
+        .quiz-action-bar {
+            background: rgba(30,41,59,0.85); border: 1.5px solid var(--glass-border);
+            border-radius: 14px; padding: 14px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .quiz-feedback-msg { font-size: 0.92rem; font-weight: 600; color: var(--accent-blue); flex: 1; min-width: 260px; }
+
+        .btn-submit-exam, .btn-retry-exam {
+            padding: 10px 24px; border-radius: 10px; font-size: 0.95rem;
+            font-weight: 700; cursor: pointer; transition: all 0.2s ease; border: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-submit-exam {
+            background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;
+            box-shadow: 0 4px 14px rgba(168,85,247,0.35);
+        }
+        .btn-submit-exam:hover:not(:disabled) {
+            filter: brightness(1.1); transform: translateY(-1px);
+        }
+        .btn-submit-exam:disabled {
+            opacity: 0.55; cursor: not-allowed; filter: grayscale(0.5);
+        }
+
+        .btn-retry-exam {
+            background: rgba(255,255,255,0.08); color: var(--accent-yellow);
+            border: 1px solid rgba(251,191,36,0.4); display: none;
+        }
+        .btn-retry-exam:hover {
+            background: rgba(251,191,36,0.15); border-color: var(--accent-yellow);
+        }
+
+        /* 通關橫幅 */
+        #section-complete-banner {
+            display: none; flex-direction: column; align-items: center;
+            text-align: center; padding: 2.2rem 1.5rem;
+            background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(15,23,42,0.95) 75%);
+            border: 2px solid rgba(52,211,153,0.35); border-radius: 20px;
+            margin-top: 0.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-next-chapter {
+            margin-top: 1.2rem; padding: 12px 32px;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: #0b1120; font-size: 1.05rem; font-weight: 800;
+            border: none; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+            transition: all 0.2s ease;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-next-chapter:hover { transform: scale(1.05); filter: brightness(1.15); }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 -->
+        <div class="quiz-scenario-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <span class="problem-badge">🏆 CH 04-2 氫原子光譜與波耳模型 · 核心通關檢核</span>
+                <span style="font-size:0.88rem; color:var(--accent-purple);">📌 完成第 (1) 題配對與隨機 4 道核心評量題，答對率 100% 即可解鎖下一單元！</span>
+            </div>
+            <h1>氫原子光譜與波耳模型・核心概念檢定</h1>
+            <p style="font-size:0.95rem; line-height:1.6; color:#94a3b8; margin-top:8px;">
+                【核心概念檢定】：涵蓋<strong>光子能量、波耳氫原子三大假設、芮得柏公式與各光譜系列能階躍遷、光譜線數計算、波耳軌道半徑與能階、類氫離子游離能</strong>等重點觀念。
+            </p>
+        </div>
+
+        <!-- ★ 第(1)題：概念配對連連看 -->
+        <div class="quiz-card" id="quiz-matching-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="quiz-q" style="margin:0;">
+                    <span style="color:var(--accent-cyan);">(1) 概念配對連連看</span> 請將左側光譜名詞與波耳理論，連線至右側對應的物理化學特徵。
+                </div>
+                <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer;">
+                    重設連線 ↺
+                </button>
+            </div>
+
+            <div class="match-game-wrapper" id="match-game-wrapper">
+                <svg class="match-svg" id="match-svg"></svg>
+                <div class="match-game-cols">
+                    <div class="match-col" id="match-col-left"></div>
+                    <div class="match-col" id="match-col-right"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span style="font-size:0.82rem; color:var(--text-sub);">💡 點選左側項目後，再點選右側項目即可連線（再次點擊可更換連線）。</span>
+                <span id="match-count-badge" style="font-size:0.85rem; font-weight:700; color:var(--accent-blue);">已連線：0 / 5</span>
+            </div>
+            <div class="quiz-card-feedback" id="fb-q1"></div>
+        </div>
+
+        <!-- ★ 第(2)~(5)題：由題庫中隨機選出 4 題 -->
+        <div class="quiz-grid-layout" id="dynamic-questions-container">
+            <!-- 由 JavaScript 動態抽題渲染 -->
+        </div>
+
+        <!-- ★ 底部操作列 -->
+        <div class="quiz-action-bar">
+            <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                <span>請完成上方配對與隨機 4 道評量題後點擊「確定作答」</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" class="btn-retry-exam" id="btn-retry-exam">
+                    換題重測 ↺
+                </button>
+                <button type="button" class="btn-submit-exam" id="btn-submit-exam">
+                    確定作答 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- ★ 通關成功橫幅 -->
+        <div id="section-complete-banner">
+            <div style="font-size:2.8rem; margin-bottom:0.5rem;">🎉 🏆 🌟</div>
+            <h2 style="font-size:1.6rem; color:var(--accent-green); margin-bottom:0.6rem;">
+                恭喜通關！掌握氫原子光譜與波耳模型核心知識！
+            </h2>
+            <p style="max-width:620px; line-height:1.7; color:#cbd5e1; font-size:0.96rem;">
+                您已全面精通光子能量計算、波耳軌道量子化與定態假設、芮得柏公式與各光譜系列能階躍遷、光譜線數統計分析！
+            </p>
+            <a href="../03_原子軌域/index.html" class="btn-next-chapter" target="_top">
+                解鎖下一單元：4-3 原子軌域 ➔
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script>
+(function() {
+    // ── 題庫資料 (共 12 題) ──
+    const QUESTION_BANK = [
+        {
+            id: "q1",
+            tag: "光子能量與反應熱",
+            question: "波長 $6500\\text{ \\AA}$ 之紅光 $15.7$ 莫耳被葉綠素吸收時，植物可經光合作用生成 $1$ 莫耳葡萄糖。合成 $1$ 莫耳葡萄糖所需能量約為多少？（普朗克常數 $h = 6.626 \\times 10^{-34}\\text{ J}\\cdot\\text{s}$，光速 $c = 3.0 \\times 10^8\\text{ m/s}$）",
+            options: [
+                "(A) $2890\\text{ kJ}$",
+                "(B) $289\\text{ kJ}$",
+                "(C) $28.9\\text{ kJ}$",
+                "(D) $2.89\\text{ kJ}$"
+            ],
+            ans: 0,
+            explanation: "<strong>解析：</strong><br>1. 單個紅光光子之能量：<br>$$E = \\dfrac{hc}{\\lambda} = \\dfrac{6.626 \\times 10^{-34} \\times 3.0 \\times 10^8}{6500 \\times 10^{-10}\\text{ m}} \\approx 3.058 \\times 10^{-19}\\text{ J}$$<br>2. 每莫耳光子（愛因斯坦能量單位）：<br>$$E_{\\text{mol}} = 3.058 \\times 10^{-19} \\times 6.022 \\times 10^{23} \\approx 184.2\\text{ kJ/mol}$$<br>3. $15.7$ 莫耳紅光所含總能量：<br>$$E_{\\text{total}} = 15.7 \\times 184.2\\text{ kJ} \\approx 2891\\text{ kJ} \\approx 2890\\text{ kJ}$$<br>故選 <strong>(A)</strong>。"
+        },
+        {
+            id: "q2",
+            tag: "波耳原子模型假設",
+            question: "下列關於波耳氫原子模型的敘述，何者<strong>錯誤</strong>？",
+            options: [
+                "(A) 電子圍繞原子核運動，如同行星繞太陽，有特定圓形軌道",
+                "(B) 電子在定態軌道上運動時，具有特定能量且不輻射電磁波",
+                "(C) 電子軌道的遠近可任意改變，能階呈現連續性分佈",
+                "(D) 電子軌道離原子核愈遠，主量子數 $n$ 愈大，電子能量愈高"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>• 波耳模型核心假設為「軌道與角動量量子化」，軌道半徑為特定不連續值 $r_n = n^2 r_1$（$r_1 \\approx 0.53\\text{ \\AA}$），能量亦為不連續之特定能階 $E_n = -\\dfrac{13.6}{n^2}\\text{ eV}$。<br>• 電子軌道半徑不能任意連續變動，能階並非連續分佈，故 (C) 錯誤。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            id: "q3",
+            tag: "譜線波長極限計算",
+            question: "已知來曼系列中波長最長的譜線其波長為 $121.5\\text{ nm}$，則巴耳麥系列中波長最短的譜線，其波長約為多少？",
+            options: [
+                "(A) $365\\text{ nm}$",
+                "(B) $91.5\\text{ nm}$",
+                "(C) $161.5\\text{ nm}$",
+                "(D) $502\\text{ nm}$"
+            ],
+            ans: 0,
+            explanation: "<strong>解析：</strong><br>1. 來曼系列波長最長（能量差最小）：由 $n=2 \\to 1$，<br>$$\\Delta E_1 = R_H \\left(\\dfrac{1}{1^2} - \\dfrac{1}{2^2}\\right) = \\dfrac{3}{4}R_H$$<br>2. 巴耳麥系列波長最短（能量差最大）：由 $n=\\infty \\to 2$，<br>$$\\Delta E_2 = R_H \\left(\\dfrac{1}{2^2} - \\dfrac{1}{\\infty^2}\\right) = \\dfrac{1}{4}R_H$$<br>3. 光子波長與能量差成反比：<br>$$\\dfrac{\\lambda_2}{\\lambda_1} = \\dfrac{\\Delta E_1}{\\Delta E_2} = \\dfrac{\\frac{3}{4}R_H}{\\frac{1}{4}R_H} = 3$$<br>4. 因此 $\\lambda_2 = 3 \\times 121.5\\text{ nm} = 364.5\\text{ nm} \\approx 365\\text{ nm}$。<br>故選 <strong>(A)</strong>。"
+        },
+        {
+            id: "q4",
+            tag: "能階躍遷光子波長比",
+            question: "氫原子的電子從 $n=4$ 落回 $n=2$ 所放出的光波長為 $\\lambda$，則電子由 $n=2$ 落回 $n=1$ 所放出的光波長為？",
+            options: [
+                "(A) $\\dfrac{1}{6}\\lambda$",
+                "(B) $\\dfrac{1}{4}\\lambda$",
+                "(C) $\\dfrac{1}{2}\\lambda$",
+                "(D) $\\dfrac{4}{3}\\lambda$"
+            ],
+            ans: 1,
+            explanation: "<strong>解析：</strong><br>1. $n=4 \\to 2$ 放出光之能量：<br>$$\\Delta E_A = R_H \\left(\\dfrac{1}{2^2} - \\dfrac{1}{4^2}\\right) = R_H \\left(\\dfrac{1}{4} - \\dfrac{1}{16}\\right) = \\dfrac{3}{16}R_H$$<br>2. $n=2 \\to 1$ 放出光之能量：<br>$$\\Delta E_B = R_H \\left(\\dfrac{1}{1^2} - \\dfrac{1}{2^2}\\right) = R_H \\left(1 - \\dfrac{1}{4}\\right) = \\dfrac{3}{4}R_H = \\dfrac{12}{16}R_H$$<br>3. 能量比為 $\\Delta E_B : \\Delta E_A = \\dfrac{3}{4} : \\dfrac{3}{16} = 4 : 1$。<br>4. 光子能量與波長成反比，因此 $\\lambda_B = \\dfrac{1}{4}\\lambda_A = \\dfrac{1}{4}\\lambda$。<br>故選 <strong>(B)</strong>。"
+        },
+        {
+            id: "q5",
+            tag: "能階躍遷能量最大值",
+            question: "氫原子中受激發的電子在下列哪一種能階轉移過程中，會放出<strong>波長最短</strong>的光（即光子能量最大）？",
+            options: [
+                "(A) 由 $n=2$ 躍遷至 $n=1$",
+                "(B) 由 $n=3$ 躍遷至 $n=1$",
+                "(C) 由 $n=4$ 躍遷至 $n=2$",
+                "(D) 由 $n=8$ 躍遷至 $n=4$",
+                "(E) 由 $n=5$ 躍遷至 $n=4$"
+            ],
+            ans: 1,
+            explanation: "<strong>解析：</strong><br>放出光之能量公式為 $\\Delta E = 13.6 \\left(\\dfrac{1}{n_{\\text{低}}^2} - \\dfrac{1}{n_{\\text{高}}^2}\\right)\\text{ eV}$，波長最短對應能量差 $\\Delta E$ 最大：<br>• (A) $n=2 \\to 1$：$\\Delta E \\propto 1 - \\dfrac{1}{4} = 0.75$<br>• (B) $n=3 \\to 1$：$\\Delta E \\propto 1 - \\dfrac{1}{9} \\approx 0.889$（最大！）<br>• (C) $n=4 \\to 2$：$\\Delta E \\propto \\dfrac{1}{4} - \\dfrac{1}{16} = 0.1875$<br>• (D) $n=8 \\to 4$：$\\Delta E \\propto \\dfrac{1}{16} - \\dfrac{1}{64} \\approx 0.0469$<br>• (E) $n=5 \\to 4$：$\\Delta E \\propto \\dfrac{1}{16} - \\dfrac{1}{25} = 0.0225$<br>故 (B) 能量差最大，放出波長最短的光。<br>故選 <strong>(B)</strong>。"
+        },
+        {
+            id: "q6",
+            tag: "波耳學說核心內涵",
+            question: "下列敘述中，哪一項<strong>不是</strong>波耳氫原子模型學說的內容？",
+            options: [
+                "(A) 電子可以在一組特定能階（穩定狀態定態）之一存在而不向外輻射電磁波",
+                "(B) 電子由低能階躍遷至高能階時，必須吸收特定頻率的輻射能量",
+                "(C) 電子由高能階落至低能階時，所減少的能量係以單一光子形式放出",
+                "(D) 電子在軌道上繞核運轉，如彗星軌道般時而接近核、時而遠離核"
+            ],
+            ans: 3,
+            explanation: "<strong>解析：</strong><br>• 波耳模型假設電子是在一系列特定的「同心圓形軌道」上繞核作圓周運動，每條特定軌道半徑為定值 $r_n = n^2 r_1$，並非如彗星般之橢圓軌道（時近時遠）。<br>• (A)、(B)、(C) 皆為波耳定態假設與躍遷假設之核心內容。<br>故選 <strong>(D)</strong>。"
+        },
+        {
+            id: "q7",
+            tag: "激發態各光區譜線數",
+            question: "氫原子的電子由激發態 $n=5$ 能階躍遷落回基態（$n=1$）的過程中，所釋放的各譜線中，紫外光區、可見光區、紅外光區的譜線數分別各為多少條？",
+            options: [
+                "(A) 4、3、2 條",
+                "(B) 5、4、3 條",
+                "(C) 4、3、3 條",
+                "(D) 3、2、1 條"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>由 $n=5$ 激發態落回基態，總譜線數為 $C^5_2 = \\dfrac{5 \\times 4}{2} = 10$ 條：<br>1. <strong>紫外光區</strong>（來曼系列，終點為 $n=1$）：$5\\to 1, 4\\to 1, 3\\to 1, 2\\to 1$，共 <strong>4</strong> 條。<br>2. <strong>可見光區</strong>（巴耳麥系列，終點為 $n=2$）：$5\\to 2, 4\\to 2, 3\\to 2$，共 <strong>3</strong> 條。<br>3. <strong>紅外光區</strong>（終點為 $n=3$ 帕申系列與 $n=4$ 布拉開系列）：<br>• 帕申系列（落至 $n=3$）：$5\\to 3, 4\\to 3$（2 條）<br>• 布拉開系列（落至 $n=4$）：$5\\to 4$（1 條）<br>• 紅外光區總計 $= 2 + 1 =$ <strong>3</strong> 條。<br>因此依序為 4、3、3 條。<br>故選 <strong>(C)</strong>。"
+        },
+        {
+            id: "q8",
+            tag: "氫原子光譜觀念辨析",
+            question: "關於氫原子發射光譜與能階之敘述，下列何者<strong>錯誤</strong>？",
+            options: [
+                "(A) 氫原子發射光譜為明線光譜，證明氫原子內各軌道之能量具有不連續性（量子化）",
+                "(B) 主量子數 $n$ 愈大的高能階軌道，其相鄰兩軌道間之「能量差 $\\Delta E$」愈小",
+                "(C) 在帕申系列中，波長最長的光譜線為電子由 $n=4$ 躍遷至 $n=3$ 所產生",
+                "(D) 每一條光譜線所具備的能量，恰等於電子在該特定單一軌道上的能量",
+                "(E) 巴耳麥系列所有譜線中，波長最長與波長最短之比值為 $9 : 5$"
+            ],
+            ans: 3,
+            explanation: "<strong>解析：</strong><br>• (D) 錯誤：每條光譜線所具備的能量 $E = h\\nu$ 為電子在兩軌道躍遷時的「能量差 $\\Delta E = E_{\\text{高}} - E_{\\text{低}}$」，並非「單一軌道上的能量」。<br>• (B) 正確：$\\Delta E_{n \\to n+1} = R_H\\left(\\dfrac{1}{n^2} - \\dfrac{1}{(n+1)^2}\\right)$，$n$ 愈大相鄰能量差愈小，高能階愈密集。<br>• (C) 正確：帕申系列落回 $n=3$，波長最長對應能量最小，為 $n=4 \\to 3$。<br>• (E) 正確：巴耳麥系列最長波長為 $3 \\to 2$（$\\Delta E = \\frac{5}{36}R_H$）；最短波長為 $\\infty \\to 2$（$\\Delta E = \\frac{1}{4}R_H$）。波長比為能量反比，$\\lambda_{\\max}/\\lambda_{\\min} = \\dfrac{1/4}{5/36} = \\dfrac{9}{5}$。<br>故選 <strong>(D)</strong>。"
+        },
+        {
+            id: "q9",
+            tag: "波耳理論與元素性質",
+            question: "為了紀念波耳（Niels Bohr）對原子結構量子化之重大貢獻，第 107 號元素命名為 Bohrium（𨨏，Bh）。下列關於波耳理論或 Bh 原子的敘述，何者<strong>正確</strong>？",
+            options: [
+                "(A) 在波耳原子模型中，電子在 $n=0$ 軌道時具有最小的基態能量",
+                "(B) 氫原子只有一個電子，故氫原子的發射光譜僅有一條特定譜線",
+                "(C) 電子距離原子核愈近，受核靜電引力愈大，其位能愈大",
+                "(D) Bh（原子序 107）在元素週期表中屬於第七週期第 7 族（VIIB 族）元素",
+                "(E) Bh 基態原子的電子組態在 M 層（主量子數 $n=3$）共有 32 個電子"
+            ],
+            ans: 3,
+            explanation: "<strong>解析：</strong><br>• (A) 錯誤：主量子數 $n$ 為正整數（$n=1, 2, 3\\dots$），$n=1$ 為基態，$n=0$ 不存在。<br>• (B) 錯誤：氫原子雖只有 1 個電子，但電子受激發可跳至不同高能階，落回不同能階產生多組系列、無數條譜線。<br>• (C) 錯誤：庫侖位能 $V = -k\\dfrac{Ze^2}{r}$，距離 $r$ 愈近，位能為絕對值愈大的負值，即位能愈小（愈低、愈穩定）。<br>• (D) 正確：原子序 107 的 Bh 位於第七週期第 7 族（過渡金屬，與錳、鎝、錸同族）。電子組態為 $[\\text{Rn}] 5f^{14} 6d^5 7s^2$。<br>• (E) 錯誤：M 層（$n=3$）包含 $3s^2 3p^6 3d^{10}$，最多填入 18 個電子（非 32 個）。<br>故選 <strong>(D)</strong>。"
+        },
+        {
+            id: "q10",
+            tag: "光譜系列頻率波長比較",
+            question: "在氫原子光譜中，包含紫外光區的來曼系列與可見光區的巴耳末系列。下列關於此兩大光譜系列各譜線能量 $E$、頻率 $\\nu$ 或波長 $\\lambda$ 的比較，何者<strong>正確</strong>？",
+            options: [
+                "(A) 來曼系列所有譜線之頻率，皆高於巴耳末系列所有譜線之頻率",
+                "(B) 巴耳末系列譜線中波長最短者，其波長小於來曼系列波長最長者",
+                "(C) 電子由 $n=3 \\to 1$ 放出光子之能量，等於 $n=3 \\to 2$ 與 $n=2 \\to 1$ 兩光子能量之相乘積",
+                "(D) 來曼系列各譜線在底片上的間距，由長波長向短波長方向看呈現愈來愈寬的分佈",
+                "(E) 巴耳末系列中第 1 條譜線（紅光 $\\text{H}_\\alpha$）對應的能階躍遷為 $n=2 \\to 1$"
+            ],
+            ans: 0,
+            explanation: "<strong>解析：</strong><br>• (A) 正確：來曼系列能量最小之譜線（$n=2 \\to 1$）能量為 $0.75 R_H$，而巴耳末系列能量最大之極限譜線（$n=\\infty \\to 2$）能量僅為 $0.25 R_H$。因此來曼系列任一譜線之能量與頻率，皆嚴格高於巴耳末系列的所有譜線！<br>• (B) 錯誤：來曼系列波長均在紫外光區（$\\le 121.5\\text{ nm}$），巴耳末系列波長均大於 $364.5\\text{ nm}$，巴耳末波長恆大於來曼系列。<br>• (C) 錯誤：能量具可加性，應為 $E_{3 \\to 1} = E_{3 \\to 2} + E_{2 \\to 1}$（相加非相乘）。<br>• (D) 錯誤：主量子數 $n$ 愈大能階愈密集，故朝短波長（高能量）端，譜線分佈愈來愈密集收斂至極限線。<br>• (E) 錯誤：巴耳末系列第 1 條紅光譜線為 $n=3 \\to 2$。<br>故選 <strong>(A)</strong>。"
+        },
+        {
+            id: "q11",
+            tag: "波耳半徑與能階計算",
+            question: "依據波耳氫原子模型，若氫原子基態（$n=1$）之軌道半徑為 $r_1 = 0.53\\text{ \\AA}$，能量為 $E_1 = -13.6\\text{ eV}$。則當電子處於第 2 激發態（$n=3$）時，其軌道半徑與能量分別為多少？",
+            options: [
+                "(A) $1.59\\text{ \\AA}$，$-4.53\\text{ eV}$",
+                "(B) $4.77\\text{ \\AA}$，$-1.51\\text{ eV}$",
+                "(C) $2.12\\text{ \\AA}$，$-3.40\\text{ eV}$",
+                "(D) $4.77\\text{ \\AA}$，$-4.53\\text{ eV}$"
+            ],
+            ans: 1,
+            explanation: "<strong>解析：</strong><br>1. 「第 2 激發態」對應的主量子數為 $n = 1 + 2 = 3$（基態為 $n=1$，第 1 激發態為 $n=2$）。<br>2. 軌道半徑與 $n^2$ 成正比：<br>$$r_3 = 3^2 \\times r_1 = 9 \\times 0.53\\text{ \\AA} = 4.77\\text{ \\AA}$$<br>3. 能階能量與 $n^2$ 成反比：<br>$$E_3 = \\dfrac{E_1}{3^2} = \\dfrac{-13.6\\text{ eV}}{9} \\approx -1.51\\text{ eV}$$<br>故選 <strong>(B)</strong>。"
+        },
+        {
+            id: "q12",
+            tag: "類氫離子游離能計算",
+            question: "波耳理論亦適用於核外僅有單一電子的「類氫離子」（能量公式 $E_n = -13.6 \\times \\dfrac{Z^2}{n^2}\\text{ eV}$）。欲使處於基態的 $\\text{He}^+$ 離子（原子序 $Z=2$）完全游離出其電子，所需之游離能為多少？",
+            options: [
+                "(A) $13.6\\text{ eV}$",
+                "(B) $27.2\\text{ eV}$",
+                "(C) $54.4\\text{ eV}$",
+                "(D) $108.8\\text{ eV}$"
+            ],
+            ans: 2,
+            explanation: "<strong>解析：</strong><br>1. $\\text{He}^+$ 具有單電子，原子序 $Z = 2$。<br>2. 其基態（$n=1$）能量為：<br>$$E_1 = -13.6 \\times \\dfrac{2^2}{1^2} = -13.6 \\times 4 = -54.4\\text{ eV}$$<br>3. 游離能為將基態電子移至無窮遠（$n=\\infty, E_\\infty = 0$）所需能量：<br>$$\\text{IE} = E_\\infty - E_1 = 0 - (-54.4\\text{ eV}) = 54.4\\text{ eV}$$<br>（此為氫原子游離能 $13.6\\text{ eV}$ 的 $Z^2 = 4$ 倍）。<br>故選 <strong>(C)</strong>。"
+        }
+    ];
+
+    // ── 第 1 題連連看配對資料 ──
+    const MATCH_DATA = [
+        { id: 0, left: "來曼系列 (Lyman Series)", right: "電子落回 $n=1$ 能階，位於紫外光區（能量最大、頻率最高）" },
+        { id: 1, left: "巴耳麥系列 (Balmer Series)", right: "電子落回 $n=2$ 能階，包含可見光區四條明線（紅、藍綠、藍紫、紫）" },
+        { id: 2, left: "帕申系列 (Paschen Series)", right: "電子落回 $n=3$ 能階，位於紅外光區（波長較長、能量較低）" },
+        { id: 3, left: "波耳角動量量子化", right: "電子軌道角動量 $mvr = n\\dfrac{h}{2\\pi}$，在定態軌道運動不向外輻射電磁波" },
+        { id: 4, left: "氫原子游離能", right: "$E_\\infty - E_1 = 13.6\\text{ eV} = 1312\\text{ kJ/mol}$，將基態電子完全移離原子核所需能量" }
+    ];
+
+    // ── 連連看互動邏輯 ──
+    const matchColLeft = document.getElementById('match-col-left');
+    const matchColRight = document.getElementById('match-col-right');
+    const matchSvg = document.getElementById('match-svg');
+    const matchCountBadge = document.getElementById('match-count-badge');
+    const fbQ1 = document.getElementById('fb-q1');
+    const btnResetMatch = document.getElementById('btn-reset-match');
+
+    let selectedLeft = null;
+    let selectedRight = null;
+    let connections = {}; // leftId -> rightId
+    let isMatchLocked = false;
+
+    // 洗牌演算法
+    function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // 初始化連連看 UI
+    function initMatchGame() {
+        matchColLeft.innerHTML = '';
+        matchColRight.innerHTML = '';
+        connections = {};
+        selectedLeft = null;
+        selectedRight = null;
+        isMatchLocked = false;
+        fbQ1.className = 'quiz-card-feedback';
+        fbQ1.style.display = 'none';
+        document.getElementById('quiz-matching-card').className = 'quiz-card';
+
+        const shuffledRight = shuffle(MATCH_DATA);
+
+        MATCH_DATA.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<span><strong>${item.id + 1}.</strong> ${item.left}</span><div class="match-dot"></div>`;
+            el.addEventListener('click', () => onLeftItemClick(item.id, el));
+            matchColLeft.appendChild(el);
+        });
+
+        shuffledRight.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.id = item.id;
+            el.innerHTML = `<div class="match-dot"></div><span>${item.right}</span>`;
+            el.addEventListener('click', () => onRightItemClick(item.id, el));
+            matchColRight.appendChild(el);
+        });
+
+        updateMatchBadge();
+        drawLines();
+
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([document.getElementById('quiz-matching-card')]).catch(e => console.log(e));
+        }
+    }
+
+    function onLeftItemClick(id, el) {
+        if (isMatchLocked) return;
+        if (selectedLeft === id) {
+            selectedLeft = null;
+            el.classList.remove('selected');
+            return;
+        }
+        document.querySelectorAll('#match-col-left .match-item').forEach(i => i.classList.remove('selected'));
+        selectedLeft = id;
+        el.classList.add('selected');
+
+        if (selectedRight !== null) {
+            makeConnection(selectedLeft, selectedRight);
+        }
+    }
+
+    function onRightItemClick(id, el) {
+        if (isMatchLocked) return;
+        if (selectedRight === id) {
+            selectedRight = null;
+            el.classList.remove('selected');
+            return;
+        }
+        document.querySelectorAll('#match-col-right .match-item').forEach(i => i.classList.remove('selected'));
+        selectedRight = id;
+        el.classList.add('selected');
+
+        if (selectedLeft !== null) {
+            makeConnection(selectedLeft, selectedRight);
+        }
+    }
+
+    function makeConnection(leftId, rightId) {
+        for (let l in connections) {
+            if (connections[l] === rightId) delete connections[l];
+        }
+        connections[leftId] = rightId;
+
+        selectedLeft = null;
+        selectedRight = null;
+        document.querySelectorAll('.match-item').forEach(i => i.classList.remove('selected'));
+
+        updateItemClasses();
+        updateMatchBadge();
+        drawLines();
+    }
+
+    function updateItemClasses() {
+        document.querySelectorAll('#match-col-left .match-item').forEach(el => {
+            const id = parseInt(el.dataset.id);
+            if (connections[id] !== undefined) {
+                el.classList.add('connected');
+            } else {
+                el.classList.remove('connected');
+            }
+        });
+        const connectedRightIds = Object.values(connections);
+        document.querySelectorAll('#match-col-right .match-item').forEach(el => {
+            const id = parseInt(el.dataset.id);
+            if (connectedRightIds.includes(id)) {
+                el.classList.add('connected');
+            } else {
+                el.classList.remove('connected');
+            }
+        });
+    }
+
+    function updateMatchBadge() {
+        const count = Object.keys(connections).length;
+        matchCountBadge.textContent = `已連線：${count} / ${MATCH_DATA.length}`;
+        matchCountBadge.style.color = count === MATCH_DATA.length ? 'var(--accent-green)' : 'var(--accent-blue)';
+    }
+
+    function drawLines() {
+        const wrapper = document.getElementById('match-game-wrapper');
+        const rect = wrapper.getBoundingClientRect();
+        matchSvg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+        matchSvg.innerHTML = '';
+
+        for (let lId in connections) {
+            const rId = connections[lId];
+            const leftEl = document.querySelector(`#match-col-left .match-item[data-id="${lId}"] .match-dot`);
+            const rightEl = document.querySelector(`#match-col-right .match-item[data-id="${rId}"] .match-dot`);
+            if (!leftEl || !rightEl) continue;
+
+            const lRect = leftEl.getBoundingClientRect();
+            const rRect = rightEl.getBoundingClientRect();
+
+            const x1 = lRect.left + lRect.width / 2 - rect.left;
+            const y1 = lRect.top + lRect.height / 2 - rect.top;
+            const x2 = rRect.left + rRect.width / 2 - rect.left;
+            const y2 = rRect.top + rRect.height / 2 - rect.top;
+
+            const cx = (x1 + x2) / 2;
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#a78bfa');
+            path.setAttribute('stroke-width', '2.5');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('filter', 'drop-shadow(0 0 4px rgba(167,139,250,0.5))');
+            path.dataset.leftId = lId;
+            matchSvg.appendChild(path);
+        }
+    }
+
+    window.addEventListener('resize', drawLines);
+    btnResetMatch.addEventListener('click', initMatchGame);
+
+    // ── 隨機抽取 4 題選擇題 ──
+    let activeQuestions = [];
+    let userAnswers = {}; // qIndex (0..3) -> optIndex
+
+    function sampleQuestions() {
+        const shuffled = shuffle(QUESTION_BANK);
+        activeQuestions = shuffled.slice(0, 4);
+        userAnswers = {};
+    }
+
+    function renderDynamicQuestions() {
+        const container = document.getElementById('dynamic-questions-container');
+        container.innerHTML = '';
+
+        activeQuestions.forEach((q, idx) => {
+            const qNum = idx + 2; // (2) ~ (5)
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.id = `quiz-card-${idx}`;
+
+            let optHtml = '';
+            q.options.forEach((optText, oIdx) => {
+                optHtml += `<div class="quiz-opt" data-qidx="${idx}" data-oidx="${oIdx}">${optText}</div>`;
+            });
+
+            card.innerHTML = `
+                <div class="quiz-q-header">
+                    <span class="quiz-q-tag">第 (${qNum}) 題 · ${q.tag}</span>
+                </div>
+                <div class="quiz-q">${q.question}</div>
+                <div class="quiz-options">
+                    ${optHtml}
+                </div>
+                <div class="quiz-card-feedback" id="fb-card-${idx}"></div>
+            `;
+            container.appendChild(card);
+        });
+
+        // 綁定選項點擊事件
+        container.querySelectorAll('.quiz-opt').forEach(optEl => {
+            optEl.addEventListener('click', function() {
+                if (isExamSubmitted && isAllPassed) return;
+                const qIdx = parseInt(this.dataset.qidx);
+                const oIdx = parseInt(this.dataset.oidx);
+
+                userAnswers[qIdx] = oIdx;
+
+                // 更新當前卡片選項樣式
+                const parent = this.parentElement;
+                parent.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('opt-selected'));
+                this.classList.add('opt-selected');
+            });
+        });
+
+        // 重新排版 MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([container]).catch(e => console.log('MathJax error:', e));
+        }
+    }
+
+    // ── 提交與重測邏輯 ──
+    const btnSubmit = document.getElementById('btn-submit-exam');
+    const btnRetry = document.getElementById('btn-retry-exam');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const completeBanner = document.getElementById('section-complete-banner');
+
+    let isExamSubmitted = false;
+    let isAllPassed = false;
+
+    btnSubmit.addEventListener('click', () => {
+        // 1. 檢核第 1 題連連看是否完整配對
+        const matchCount = Object.keys(connections).length;
+        if (matchCount < MATCH_DATA.length) {
+            alert(`請先完成第 (1) 題所有 ${MATCH_DATA.length} 組概念配對（目前已完成 ${matchCount} 組）！`);
+            document.getElementById('quiz-matching-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // 2. 檢核第 (2) ~ (5) 題是否全部作答
+        for (let i = 0; i < 4; i++) {
+            if (userAnswers[i] === undefined) {
+                alert(`請完成第 (${i + 2}) 題作答後再提交檢核！`);
+                document.getElementById(`quiz-card-${i}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+        }
+
+        isExamSubmitted = true;
+        let errors = 0;
+
+        // ── 驗證第 1 題連連看 ──
+        let matchCorrectCount = 0;
+        const matchingCard = document.getElementById('quiz-matching-card');
+
+        for (let lId in connections) {
+            const rId = connections[lId];
+            const isPairCorrect = (parseInt(lId) === parseInt(rId));
+            const leftEl = document.querySelector(`#match-col-left .match-item[data-id="${lId}"]`);
+            const rightEl = document.querySelector(`#match-col-right .match-item[data-id="${rId}"]`);
+            const path = matchSvg.querySelector(`path[data-left-id="${lId}"]`);
+
+            if (isPairCorrect) {
+                matchCorrectCount++;
+                if (leftEl) leftEl.classList.add('match-correct');
+                if (rightEl) rightEl.classList.add('match-correct');
+                if (path) path.setAttribute('stroke', '#34d399');
+            } else {
+                if (leftEl) leftEl.classList.add('match-wrong');
+                if (rightEl) rightEl.classList.add('match-wrong');
+                if (path) path.setAttribute('stroke', '#f87171');
+            }
+        }
+
+        if (matchCorrectCount === MATCH_DATA.length) {
+            matchingCard.className = 'quiz-card card-correct';
+            fbQ1.className = 'quiz-card-feedback fb-show fb-ok';
+            fbQ1.innerHTML = '<strong>✅ 第 (1) 題配對完全正確！</strong>成功掌握氫原子各光譜系列能階躍遷與波耳量子化條件。';
+        } else {
+            errors++;
+            matchingCard.className = 'quiz-card card-wrong';
+            fbQ1.className = 'quiz-card-feedback fb-show fb-err';
+            fbQ1.innerHTML = `<strong>❌ 第 (1) 題配對有誤（${matchCorrectCount}/${MATCH_DATA.length} 正確）：</strong>紅線標示之配對未正確，請參考正確光譜系列對照修正。`;
+        }
+
+        // ── 驗證第 (2) ~ (5) 題 ──
+        activeQuestions.forEach((q, idx) => {
+            const card = document.getElementById(`quiz-card-${idx}`);
+            const fbBox = document.getElementById(`fb-card-${idx}`);
+            const chosen = userAnswers[idx];
+            const isCorrect = (chosen === q.ans);
+
+            const optEls = card.querySelectorAll('.quiz-opt');
+            optEls.forEach((el, oIdx) => {
+                el.classList.remove('opt-correct', 'opt-wrong');
+                if (oIdx === q.ans) el.classList.add('opt-correct');
+                else if (oIdx === chosen && !isCorrect) el.classList.add('opt-wrong');
+            });
+
+            if (isCorrect) {
+                card.className = 'quiz-card card-correct';
+                fbBox.className = 'quiz-card-feedback fb-show fb-ok';
+                fbBox.innerHTML = `✅ <strong>回答正確！</strong><br>${q.explanation}`;
+            } else {
+                errors++;
+                card.className = 'quiz-card card-wrong';
+                fbBox.className = 'quiz-card-feedback fb-show fb-err';
+                fbBox.innerHTML = `❌ <strong>回答錯誤！</strong>正確答案為 <strong>${q.options[q.ans].substring(0, 3)}</strong><br>${q.explanation}`;
+            }
+        });
+
+        // 重新排版 MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch(e => console.log('MathJax error:', e));
+        }
+
+        // ── 成績反饋與解鎖機制 ──
+        if (errors === 0) {
+            isAllPassed = true;
+            feedbackMsg.innerHTML = '<span style="color:var(--accent-green);">🎉 恭喜全部 5 題全數正確！核心檢核順利通關！</span>';
+            btnSubmit.style.display = 'none';
+            btnRetry.style.display = 'none';
+            completeBanner.style.display = 'flex';
+
+            // 儲存通關進度
+            try {
+                localStorage.setItem('chem_progress_ch4_s2', 'PASSED');
+                localStorage.setItem('chem_unlocked_ch4_s3', 'true');
+            } catch (e) {}
+
+            // 向外層 SPA 框架發送通關訊息
+            window.parent.postMessage({
+                type: 'QUIZ_PASSED',
+                sectionId: 'ch4_s2',
+                nextSection: 'ch4_s3',
+                nextUrl: '../03_原子軌域/index.html'
+            }, '*');
+
+            completeBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            feedbackMsg.innerHTML = `<span style="color:var(--accent-red);">⚠️ 共有 ${errors} 題回答有誤（已標記詳解與正確答案）。請點擊「換題重測 ↺」重新抽題挑戰！</span>`;
+            btnRetry.style.display = 'inline-flex';
+            alert(`測驗未達 100% 正確（共有 ${errors} 題需再加強），各題詳解已為您展開。請點擊「換題重測 ↺」換上全新 4 題再次檢定！`);
+        }
+    });
+
+    // ── 換題重測邏輯 ──
+    btnRetry.addEventListener('click', () => {
+        isExamSubmitted = false;
+        isAllPassed = false;
+        feedbackMsg.innerHTML = '<span>請完成上方配對與隨機 4 道評量題後點擊「確定作答」</span>';
+        btnRetry.style.display = 'none';
+        btnSubmit.style.display = 'inline-flex';
+        completeBanner.style.display = 'none';
+
+        // 重新抽取 4 題並渲染
+        sampleQuestions();
+        renderDynamicQuestions();
+
+        // 平滑滾動至第 2 題
+        document.getElementById('dynamic-questions-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ── 初始啟動 ──
+    initMatchGame();
+    sampleQuestions();
+    renderDynamicQuestions();
+
+})();
+</script>
+</body>
+</html>

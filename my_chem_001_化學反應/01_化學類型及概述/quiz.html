@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>1-1 化學反應與守恆 · 核心通關檢核</title>
+    <meta name="description" content="選修化學三：化學反應類型與質量守恆核心概念連連看通關檢核與章節解鎖">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.2rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.1rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid var(--accent-purple);
+            background: rgba(167,139,250,0.15);
+            color: var(--accent-purple);
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+
+        .quiz-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 16px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: visible;
+            user-select: none;
+        }
+
+        #game-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: visible;
+        }
+
+        .match-columns-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 70px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-col-header {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            border-bottom: 2px solid rgba(34, 211, 238, 0.3);
+            padding-bottom: 6px;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-item {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            min-height: 52px;
+        }
+
+        #col-left .match-item {
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        #col-right .match-item {
+            justify-content: flex-start;
+            gap: 14px;
+        }
+
+        .match-item:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.1);
+            transform: translateX(2px);
+        }
+
+        .match-item.selected {
+            border-color: var(--accent-yellow);
+            background: rgba(251, 191, 36, 0.15);
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
+        }
+
+        .match-item.connected {
+            border-color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.match-wrong {
+            border-color: var(--accent-red) !important;
+            background: rgba(248, 113, 113, 0.18) !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .match-item.selected .dot {
+            background: var(--accent-yellow);
+            border-color: #fff;
+            transform: scale(1.3);
+        }
+
+        .match-item.connected .dot {
+            background: var(--accent-blue);
+            border-color: #fff;
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 4px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-game {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-game:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .complete-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), rgba(34, 211, 238, 0.15));
+            border: 2px solid var(--accent-green);
+            border-radius: 14px;
+            padding: 1.2rem 1.6rem;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 0 30px rgba(52, 211, 153, 0.25);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .match-columns-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 -->
+        <div class="quiz-scenario-box">
+            <span class="problem-badge">1-1 核心檢核 · 通關挑戰</span>
+            <h1 style="color:var(--accent-cyan); font-size:clamp(1.4rem, 2.2vw, 1.9rem); margin-bottom:0.4rem;">
+                🎯 化學反應類型與質量守恆 · 概念連連看大挑戰
+            </h1>
+            <p style="font-size:0.96rem; color:var(--text-sub); line-height:1.6;">
+                請將左側<strong>核心概念與反應模式</strong>，連線至右側對應的<strong>理論本質、通式或判定法則</strong>。<br>
+                💡 操作提示：點擊左側項目後再點擊右側特徵即可建立連線，全數 8 組配對成功後即可<strong>解鎖下一節：1-2 化學計量與限量試劑</strong>！
+            </p>
+        </div>
+
+        <!-- 遊戲互動卡片 -->
+        <div class="quiz-card">
+            <div class="match-game-wrapper" id="game-wrapper">
+                <svg id="game-svg"></svg>
+                <div class="match-columns-grid">
+                    <!-- 左欄 -->
+                    <div class="match-col" id="col-left">
+                        <div class="match-col-header">
+                            <span>化學概念 / 反應類型</span>
+                            <span style="font-size:0.8rem; color:var(--accent-purple);">左側點選</span>
+                        </div>
+                    </div>
+
+                    <!-- 右欄 -->
+                    <div class="match-col" id="col-right">
+                        <div class="match-col-header">
+                            <span>本質 / 特徵 / 守恆判定</span>
+                            <span style="font-size:0.8rem; color:var(--accent-cyan);">右側配對</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 控制列 -->
+            <div class="controls-bar">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span id="score-counter" style="font-weight:700; color:var(--accent-cyan); font-size:0.95rem;">已連線：0 / 8 組</span>
+                    <button class="btn-reset" onclick="resetConnections()">↺ 重置連線</button>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn-game" onclick="checkAnswers()">
+                        <span>✓ 送出檢核</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 反饋提示區 -->
+            <div id="feedback-msg" style="font-size:0.95rem; min-height:24px; padding:0 4px;"></div>
+
+            <!-- 通關賀卡 -->
+            <div id="complete-banner" class="complete-banner">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h2 style="color:var(--accent-green); font-size:1.25rem; display:flex; align-items:center; gap:8px;">
+                            <span>🏆</span> 恭喜通關！本章節檢核完成
+                        </h2>
+                        <p style="font-size:0.92rem; color:#e2e8f0; margin-top:4px;">
+                            您已精準掌握化學反應本質、質量守恆與五大反應分類。<br>
+                            下一單元<strong>「1-2 化學計量與限量試劑」</strong>已正式解鎖！
+                        </p>
+                    </div>
+                    <button class="btn-game" onclick="goToNextSection()" style="background:linear-gradient(135deg, var(--accent-green), var(--accent-cyan)); padding:11px 24px;">
+                        <span>前往 1-2 氧化數 →</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const PAIRS_DATA = [
+        {
+            id: 'rxn_essence',
+            left: '化學反應的微觀實質',
+            right: '舊化學鍵斷裂、新化學鍵生成，原子重新排列組合'
+        },
+        {
+            id: 'must_conserve',
+            left: '化學反應前後「必守恆」之項目',
+            right: '原子的種類、原子總數、反應系統總質量、總電荷數'
+        },
+        {
+            id: 'not_conserve',
+            left: '化學反應前後「不一定守恆」之項目',
+            right: '分子的總個數、氣體總莫耳數、氣體總體積'
+        },
+        {
+            id: 'synthesis_def',
+            left: '化合反應 (Synthesis)',
+            right: '兩種或多種物質結合生成一種新物質<br><span style="color:var(--accent-cyan); font-weight:600;">(A + B → AB)</span>'
+        },
+        {
+            id: 'decomp_def',
+            left: '分解反應 (Decomposition)',
+            right: '單一化合物受熱、通電或催化分解為多種物質<br><span style="color:var(--accent-cyan); font-weight:600;">(AB → A + B)</span>'
+        },
+        {
+            id: 'single_def',
+            left: '單置換反應 (Single Displacement)',
+            right: '活性較強的單質置換出化合物中較弱的元素<br><span style="color:var(--accent-cyan); font-weight:600;">(A + BC → AC + B)</span>'
+        },
+        {
+            id: 'double_def',
+            left: '雙置換反應 (Double Displacement)',
+            right: '兩種化合物互相交換離子成分生成沉澱、水或氣體<br><span style="color:var(--accent-cyan); font-weight:600;">(AB + CD → AD + CB)</span>'
+        },
+        {
+            id: 'inspection_rule',
+            left: '觀察法平衡方程式之首要原則',
+            right: '挑選結構最複雜、原子數最多的物質將其係數暫定設為 1'
+        }
+    ];
+
+    const GAME_COUNT = PAIRS_DATA.length;
+    let selectedLeftId = null;
+    let userConnections = [];
+    let isPassed = false;
+
+    const gameWrapper = document.getElementById('game-wrapper');
+    const svgCanvas = document.getElementById('game-svg');
+    const colLeft = document.getElementById('col-left');
+    const colRight = document.getElementById('col-right');
+    const scoreCounter = document.getElementById('score-counter');
+    const feedbackMsg = document.getElementById('feedback-msg');
+    const completeBanner = document.getElementById('complete-banner');
+
+    function initGame() {
+        colLeft.innerHTML = '<div class="match-col-header"><span>化學概念 / 反應類型</span><span style="font-size:0.8rem; color:var(--accent-purple);">左側點選</span></div>';
+        colRight.innerHTML = '<div class="match-col-header"><span>本質 / 特徵 / 守恆判定</span><span style="font-size:0.8rem; color:var(--accent-cyan);">右側配對</span></div>';
+
+        // Left items
+        PAIRS_DATA.forEach(pair => {
+            const item = document.createElement('div');
+            item.className = 'match-item';
+            item.setAttribute('data-id', pair.id);
+            item.innerHTML = `
+                <span style="font-size:0.92rem; line-height:1.4; color:#f8fafc; text-align:left; flex:1;">${pair.left}</span>
+                <span class="dot"></span>
+            `;
+            item.onclick = () => selectLeft(pair.id);
+            colLeft.appendChild(item);
+        });
+
+        // Right items (shuffled)
+        const shuffledRights = [...PAIRS_DATA].sort(() => Math.random() - 0.5);
+        shuffledRights.forEach(pair => {
+            const item = document.createElement('div');
+            item.className = 'match-item';
+            item.setAttribute('data-id', pair.id);
+            item.innerHTML = `
+                <span class="dot"></span>
+                <span style="font-size:0.9rem; line-height:1.45; color:#e2e8f0; text-align:left; flex:1;">${pair.right}</span>
+            `;
+            item.onclick = () => selectRight(pair.id);
+            colRight.appendChild(item);
+        });
+
+        updateUI();
+    }
+
+    function selectLeft(id) {
+        if (isPassed) return;
+        selectedLeftId = id;
+        colLeft.querySelectorAll('.match-item').forEach(el => {
+            if (el.getAttribute('data-id') === id) el.classList.add('selected');
+            else el.classList.remove('selected');
+        });
+    }
+
+    function selectRight(rightId) {
+        if (isPassed) return;
+        if (!selectedLeftId) {
+            feedbackMsg.innerHTML = '<span style="color:var(--accent-yellow);">💡 請先點選左側概念，再點選右側特徵進行配對！</span>';
+            return;
+        }
+
+        userConnections = userConnections.filter(c => c.leftId !== selectedLeftId && c.rightId !== rightId);
+        userConnections.push({ leftId: selectedLeftId, rightId: rightId });
+
+        selectedLeftId = null;
+        colLeft.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+
+        feedbackMsg.innerHTML = '';
+        updateUI();
+        drawAllLines();
+    }
+
+    window.resetConnections = function() {
+        if (isPassed) return;
+        userConnections = [];
+        selectedLeftId = null;
+        feedbackMsg.innerHTML = '';
+        colLeft.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected', 'connected', 'match-wrong'));
+        colRight.querySelectorAll('.match-item').forEach(el => el.classList.remove('connected', 'match-wrong'));
+        drawAllLines();
+        updateUI();
+    };
+
+    function updateUI() {
+        scoreCounter.textContent = `已連線：${userConnections.length} / ${GAME_COUNT} 組`;
+
+        colLeft.querySelectorAll('.match-item').forEach(el => {
+            const id = el.getAttribute('data-id');
+            if (userConnections.some(c => c.leftId === id)) el.classList.add('connected');
+            else el.classList.remove('connected');
+        });
+
+        colRight.querySelectorAll('.match-item').forEach(el => {
+            const id = el.getAttribute('data-id');
+            if (userConnections.some(c => c.rightId === id)) el.classList.add('connected');
+            else el.classList.remove('connected');
+        });
+    }
+
+    function drawAllLines() {
+        svgCanvas.innerHTML = '';
+        const wrapRect = gameWrapper.getBoundingClientRect();
+
+        userConnections.forEach(conn => {
+            const leftEl = colLeft.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = colRight.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+            if (leftEl && rightEl) {
+                const leftDot = leftEl.querySelector('.dot');
+                const rightDot = rightEl.querySelector('.dot');
+
+                const lRect = leftDot.getBoundingClientRect();
+                const rRect = rightDot.getBoundingClientRect();
+
+                const x1 = lRect.left + lRect.width / 2 - wrapRect.left;
+                const y1 = lRect.top + lRect.height / 2 - wrapRect.top;
+                const x2 = rRect.left + rRect.width / 2 - wrapRect.left;
+                const y2 = rRect.top + rRect.height / 2 - wrapRect.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#38bdf8');
+                line.setAttribute('stroke-width', '2.8');
+                line.setAttribute('stroke-linecap', 'round');
+                svgCanvas.appendChild(line);
+            }
+        });
+    }
+
+    window.addEventListener('resize', drawAllLines);
+
+    window.checkAnswers = function() {
+        if (isPassed) return;
+
+        if (userConnections.length < GAME_COUNT) {
+            feedbackMsg.innerHTML = '<span style="color:#f87171;">⚠️ 尚有項目未完成連線配對，請完成所有 8 組後再送出檢核！</span>';
+            return;
+        }
+
+        let wrongCount = 0;
+        userConnections.forEach(conn => {
+            const isCorrect = (conn.leftId === conn.rightId);
+            const leftEl = colLeft.querySelector(`.match-item[data-id="${conn.leftId}"]`);
+            const rightEl = colRight.querySelector(`.match-item[data-id="${conn.rightId}"]`);
+
+            if (!isCorrect) {
+                wrongCount++;
+                if (leftEl) leftEl.classList.add('match-wrong');
+                if (rightEl) rightEl.classList.add('match-wrong');
+            } else {
+                if (leftEl) leftEl.classList.remove('match-wrong');
+                if (rightEl) rightEl.classList.remove('match-wrong');
+            }
+        });
+
+        if (wrongCount === 0) {
+            isPassed = true;
+            feedbackMsg.innerHTML = '<span style="color:#34d399; font-weight:bold;">🎉 太棒了！全部 8 組配對完美正確！章節已正式解鎖！</span>';
+            completeBanner.style.display = 'flex';
+            notifySectionComplete();
+            reportIframeHeight();
+        } else {
+            feedbackMsg.innerHTML = `<span style="color:#f87171;">❌ 共有 ${wrongCount} 組配對錯誤（已用紅框標出），請修正後重新檢核！</span>`;
+        }
+    };
+
+    function notifySectionComplete() {
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: 'ch1_s1',
+            sectionFolder: '01_化學類型及概述',
+            nextSectionId: 'ch1_s2',
+            unlockSections: ['ch1_s2', 'ch9_s1'],
+            timestamp: Date.now()
+        };
+        try {
+            window.parent.postMessage(payload, '*');
+            localStorage.setItem('chem_progress_ch1_s1', 'PASSED');
+            localStorage.setItem('chem_unlocked_ch1_s2', 'true');
+            localStorage.setItem('chem_unlocked_ch9_s1', 'true');
+        } catch(e) {}
+    }
+
+    window.goToNextSection = function() {
+        notifySectionComplete();
+        try {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'NAVIGATE_SECTION', target: '01_氧化數', sectionId: 'ch1_s2' }, '*');
+            } else {
+                window.location.href = '../../my_chem_009_氧化還原/01_氧化數/index.html';
+            }
+        } catch(e) {
+            window.location.href = '../../my_chem_009_氧化還原/01_氧化數/index.html';
+        }
+    };
+
+    function reportIframeHeight() {
+        setTimeout(() => {
+            const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'RESIZE_IFRAME', height: h }, '*');
+            }
+        }, 120);
+    }
+
+    window.addEventListener('load', () => {
+        initGame();
+        reportIframeHeight();
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-4 沸點上升與凝固點下降 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.85rem, 0.96vw, 1rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.6rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.35);
+            border-left: 4px solid var(--accent-green);
+            padding: 0.5rem 0.85rem; border-radius: 8px;
+            font-size: 1.1rem; color: #fff; margin: 3px 0; text-align: center;
+        }
+        .formula-box.blue { border-left-color: var(--accent-cyan); }
+
+        .info-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 8px; padding: 0.6rem 0.9rem;
+        }
+        .info-card.yellow { border-color: var(--accent-yellow); border-left: 4px solid var(--accent-yellow); background: rgba(251,191,36,0.08); }
+
+        .img-grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .img-box {
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px; padding: 4px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .img-box img {
+            width: 100%; max-height: 17vh; object-fit: contain; border-radius: 6px;
+        }
+        .img-label {
+            font-size: 0.76rem; color: #94a3b8; margin-top: 4px; font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-4 溶液的依數性質 &middot; 沸點上升 ($\Delta T_b$) 與凝固點下降 ($\Delta T_f$)</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：沸點上升 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、沸點上升 ($\Delta T_b$) 原理與公式</h2>
+                    <p>當非揮發性非電解質溶質溶於液體時，溶液蒸氣壓下降。欲達到外界大氣壓（$1\text{ atm}$）而沸騰，溶液必須加熱至更高的溫度，故<strong>沸點升高</strong>。</p>
+                    
+                    <div class="formula-box">
+                        $$\Delta T_b = T_{b,溶液} - T_{b,純溶劑} = K_b \times C_m \times i$$
+                    </div>
+                    <ul style="margin-left:1.2rem; font-size:0.85rem; color:#cbd5e1; margin-top:4px;">
+                        <li>$K_b$：莫耳沸點上升常數（僅由溶劑種類決定，水之 $K_b = 0.52\text{ }^\circ\text{C/m}$）</li>
+                        <li>$C_m$：重量莫耳濃度（$\text{mol 溶質} / \text{kg 溶劑}$）</li>
+                        <li>$i$：凡特荷夫因子（非電解質 $i=1$；強電解質如 $\text{NaCl}\ i=2$）</li>
+                    </ul>
+                </div>
+
+                <div class="img-grid-2">
+                    <div class="img-box">
+                        <img src="2.png" alt="蒸氣壓與沸點變化曲線">
+                        <span class="img-label">📈 蒸氣壓曲線與沸點升高示意</span>
+                    </div>
+                    <div class="img-box">
+                        <img src="3.png" alt="相圖分析">
+                        <span class="img-label">📊 溶液相圖中沸點與凝固點位移</span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <span style="font-weight:700; color:var(--accent-blue); font-size:0.86rem;">📌 沸騰條件：</span>
+                    <span style="font-size:0.84rem; color:#e2e8f0;">蒸氣壓 = 外界壓力。因溶液蒸氣壓線下移，與 $1\text{ atm}$ 交點右移至較高溫度。</span>
+                </div>
+            </div>
+
+            <!-- 右欄：凝固點下降 -->
+            <div class="panel">
+                <div>
+                    <h2 style="color:var(--accent-cyan);">二、凝固點下降 ($\Delta T_f$) 原理與公式</h2>
+                    <p>溶液在凝固時，溶質粒子的存在阻礙溶劑分子規則排列為晶體。無論溶質是否具揮發性，溶液的凝固點均會比純溶劑<strong>更低</strong>。</p>
+                    
+                    <div class="formula-box blue">
+                        $$\Delta T_f = T_{f,純溶劑} - T_{f,溶液} = K_f \times C_m \times i$$
+                    </div>
+                    <ul style="margin-left:1.2rem; font-size:0.85rem; color:#cbd5e1; margin-top:4px;">
+                        <li>$K_f$：莫耳凝固點下降常數（水之 $K_f = 1.86\text{ }^\circ\text{C/m}$，苯之 $K_f = 5.12\text{ }^\circ\text{C/m}$）</li>
+                        <li>注意：水溶液凝固點為 $T_f = 0 - \Delta T_f = - \Delta T_f$（為負值）</li>
+                    </ul>
+                </div>
+
+                <div class="img-box" style="margin-top:2px;">
+                    <img src="4.png" alt="冷卻曲線比較" style="max-height:18vh;">
+                    <span class="img-label">📉 純溶劑（定溫凝固平原）vs 溶液（濃度漸濃使溫度持續下降）</span>
+                </div>
+
+                <div class="info-card yellow">
+                    <span style="font-weight:700; color:var(--accent-yellow); font-size:0.86rem;">❄️ 凝固過程特徵：</span>
+                    <p style="font-size:0.84rem; color:#e2e8f0; margin-top:2px;">
+                        純水凝固時為水平水平線（$0^\circ\text{C}$）；而溶液析出純冰後，殘餘溶液<strong>濃度變濃</strong>，因此凝固點<strong>隨結冰過程持續向下傾斜</strong>，無固定平原。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

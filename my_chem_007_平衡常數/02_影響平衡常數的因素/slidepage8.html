@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>催化劑對平衡的影響與機制 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.35rem, 2.3vw, 2rem);
+            margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.05rem, 1.5vw, 1.3rem); margin: 0.2rem 0 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.92rem, 1.18vw, 1.08rem); line-height: 1.6; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.95rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .formula-box-purple {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-purple);
+            padding: 0.65rem 0.85rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.4vw, 1.25rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(34,211,238,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .info-card-orange {
+            background: rgba(251,146,60,0.08); border-radius: 11px;
+            padding: 0.75rem 0.9rem; border: 1px solid rgba(251,146,60,0.28); margin: 0.4rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 18px; font-size: 0.82rem; font-weight: 700; margin-right: 0.25rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        .tag-cyan { background: rgba(34,211,238,0.12); border: 1px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .k-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 0.65rem 0.8rem; margin: 0.35rem 0;
+        }
+        .k-card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.4rem; }
+        .k-card-text { font-size: 0.92rem; color: rgba(255,255,255,0.85); line-height: 1.5; }
+
+        .blank-box {
+            display: inline-block; min-width: 40px; text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.6); cursor: pointer; color: transparent;
+            transition: color 0.3s, border-color 0.3s; font-weight: bold; padding: 0 4px;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-color: var(--accent-yellow) !important;
+        }
+
+        .btn-action {
+            background: var(--accent-cyan); color: #0f172a; border: none; padding: 0.65rem 1.4rem;
+            border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 0.95rem;
+            align-self: flex-start; margin-top: 0.4rem; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .solution-card {
+            display: none; flex-direction: column; gap: 0.8rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab Switcher Styles - Scrollable & Responsive */
+        .tab-bar {
+            display: flex; gap: 8px; margin-bottom: 0.6rem; flex-shrink: 0;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.75);
+            padding: 6px 16px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; font-size: 0.92rem; transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: rgba(34,211,238,0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+        .tab-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0f172a;
+            box-shadow: 0 0 12px rgba(34,211,238,0.4);
+        }
+        .tab-pane {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
+        .tab-pane.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-pane::-webkit-scrollbar { width: 5px; }
+        .tab-pane::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.3); border-radius: 3px; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        
+        /* ---- Enhanced Slider & Controller Styling ---- */
+        .slider-ctrl-box {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1.5px solid rgba(34, 211, 238, 0.45);
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
+        }
+        .slider-ctrl-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .slider-ctrl-title {
+            font-size: 0.92rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .jump-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .time-jump-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .time-jump-btn:hover {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34,211,238,0.5);
+        }
+        input[type="range"].time-range-input {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100% !important;
+            margin: 6px 0 2px 0 !important;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.22);
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+        input[type="range"].time-range-input:hover {
+            background: rgba(34, 211, 238, 0.35);
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: grab;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(34, 211, 238, 0.95);
+            transition: transform 0.15s, background-color 0.15s;
+        }
+        input[type="range"].time-range-input::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #ffffff;
+        }
+        input[type="range"].time-range-input:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.3);
+        }
+        .slider-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active" id="slide-catalyst">
+    <h1>催化劑對平衡的影響與機制</h1>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">⚡ 催化劑作用機制與位能圖</button>
+        <button class="tab-btn" onclick="switchTab(1)">📊 催化劑效應教學範例 (加入催化劑)</button>
+    </div>
+    <div class="tab-pane active">
+            <div class="grid-2">
+        <div class="panel scroll-panel">
+            <h2>⚡ 催化劑的作用機制</h2>
+            <div class="info-card-cyan">
+                <p>催化劑降低反應的<strong>活化能</strong>，使正反應與逆反應速率<em>等比例增大</em>，從而<strong>加速達到平衡</strong>，但不改變平衡的位置。</p>
+            </div>
+            <div class="k-card" style="margin-top:0.5rem;">
+                <div class="k-card-title">對平衡的影響（一覽表）</div>
+                <div class="k-card-text">
+                    <table class="rxn-table" style="margin-top:0.3rem; font-size:0.9rem;">
+                        <thead><tr><th>量</th><th>加催化劑後</th></tr></thead>
+                        <tbody>
+                            <tr><td>正反應速率 $k_f$</td><td style="color:var(--accent-green);">增大 ✓</td></tr>
+                            <tr><td>逆反應速率 $k_r$</td><td style="color:var(--accent-green);">增大 ✓</td></tr>
+                            <tr><td>平衡常數 $K$</td><td style="color:var(--accent-yellow);">不變 ✗</td></tr>
+                            <tr><td>平衡位置</td><td style="color:var(--accent-yellow);">不移動 ✗</td></tr>
+                            <tr><td>各物種平衡濃度</td><td style="color:var(--accent-yellow);">不變 ✗</td></tr>
+                            <tr><td>達到平衡的時間</td><td style="color:var(--accent-green);">縮短 ✓</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="panel" style="align-items:center;">
+            <h2>📊 位能圖比較</h2>
+            <div class="svg-wrap" style="flex:1; width:100%;">
+                <svg viewBox="0 0 320 220" style="width:100%; max-height:100%;">
+                    <!-- Axes -->
+                    <line x1="30" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    <line x1="30" y1="200" x2="30" y2="20" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                    <text x="165" y="218" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="12">反應進程</text>
+                    <text x="14" y="110" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="12" writing-mode="vertical-rl">位能</text>
+                    <!-- Reactant level -->
+                    <line x1="40" y1="150" x2="80" y2="150" stroke="#38bdf8" stroke-width="3"/>
+                    <text x="60" y="168" text-anchor="middle" fill="#38bdf8" font-size="11">反應物</text>
+                    <!-- Product level -->
+                    <line x1="230" y1="170" x2="280" y2="170" stroke="#38bdf8" stroke-width="3"/>
+                    <text x="255" y="188" text-anchor="middle" fill="#38bdf8" font-size="11">生成物</text>
+                    <!-- No catalyst path -->
+                    <path d="M 60 150 C 100 20, 180 20, 255 170" fill="none" stroke="#f87171" stroke-width="2.5" stroke-dasharray="6,4"/>
+                    <text x="160" y="28" text-anchor="middle" fill="#f87171" font-size="11">無催化劑（高活化能）</text>
+                    <!-- Catalyst path -->
+                    <path d="M 60 150 C 100 75, 180 75, 255 170" fill="none" stroke="#34d399" stroke-width="2.5"/>
+                    <text x="162" y="90" text-anchor="middle" fill="#34d399" font-size="11">有催化劑（低活化能）</text>
+                    <!-- Activation energy arrows -->
+                    <line x1="155" y1="30" x2="155" y2="75" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-en)"/>
+                    <text x="170" y="58" fill="#fbbf24" font-size="10">降低活化能</text>
+                    <defs>
+                        <marker id="arr-en" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+            <div class="info-card-purple" style="flex-shrink:0; margin-top:0.5rem; font-size:0.95rem;">
+                <p>催化劑降低<strong>正、逆反應</strong>的活化能幅度<strong>相同</strong>，所以平衡位置不移動，只是更快到達。</p>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    <div class="tab-pane">
+            <div class="grid-2" style="flex:1; min-height:0;">
+        <!-- 左：填充題 -->
+        <div class="panel scroll-panel" style="min-height:400px;">
+            <h2 style="color:var(--accent-yellow);">⚡ 催化劑效應教學範例</h2>
+            <p style="margin-top:0.5rem; font-size:1.05rem; color:rgba(255,255,255,0.9);">
+                反應 $2\text{A}_{(g)} \rightleftharpoons 3\text{B}_{(g)}$，<span style="color:var(--accent-red);font-weight:700;">$\Delta H &lt; 0$</span>，
+                達平衡後再<strong>加入催化劑</strong>，破壞平衡，則：
+            </p>
+            <div style="font-size:1.05rem; line-height:2.3; margin-top:0.7rem; color:rgba(255,255,255,0.9);">
+                <ol class="spacing-list" style="margin-left:1.5rem;">
+                    <li>
+                        瞬間 $r'_{正(瞬間)} = m\,r_{正(原平衡)}$；$r'_{逆(瞬間)} = n\,r_{逆(原平衡)}$<br>
+                        且 $m$
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $1$；$n$
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">&gt;</span>
+                        $1$；$m$
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">=</span>
+                        $n$ <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>此時瞬間正反應速率
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">=</span>
+                        瞬間逆反應速率 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                    <li>反應
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">不移動</span>
+                        達到新平衡 <span style="font-size:0.85rem;color:#888;">(向左或向右或不移動)</span>
+                    </li>
+                    <li>反應物 $[\text{A}]$
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">不變</span>
+                        ，生成物 $[\text{B}]$
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">不變</span>
+                        <span style="font-size:0.85rem;color:#888;">(增加或減少)</span>
+                    </li>
+                    <li>達新平衡時，新平衡常數
+                        <span class="step-target-cat blank-box" onclick="this.classList.add('revealed')">=</span>
+                        原平衡常數 <span style="font-size:0.85rem;color:#888;">(&gt;, &lt;, =)</span>
+                    </li>
+                </ol>
+            </div>
+            <div class="info-card-yellow" style="margin-top:0.8rem; font-size:0.92rem;">
+                <p>💡 加入催化劑後，正逆反應的活化能等量降低，使得正逆速率等比例激增（$m=n$），因此平衡不移動，$K$ 值也不變。</p>
+            </div>
+        </div>
+
+        <!-- 右：圖形分析 -->
+        <div class="panel scroll-panel" style="display:flex;flex-direction:column;gap:0.5rem;padding:0.8rem;flex:1;min-height:0;">
+            <h2 style="margin-bottom:0.2rem;">📊 圖形分析：加入催化劑</h2>
+
+            <svg width="0" height="0" style="position:absolute;">
+                <defs>
+                    <clipPath id="clip-rate-cat"><rect x="20" y="0" width="0" height="150" id="rect-clip-rate-cat"/></clipPath>
+                    <clipPath id="clip-concA-cat"><rect x="15" y="0" width="0" height="120" id="rect-clip-concA-cat"/></clipPath>
+                    <clipPath id="clip-concB-cat"><rect x="15" y="0" width="0" height="120" id="rect-clip-concB-cat"/></clipPath>
+                </defs>
+            </svg>
+
+            <div style="display:flex;gap:0.5rem;flex:1;min-height:0;">
+                <!-- [A] -->
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[A] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concA-cat)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="#f87171" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                        </g>
+                        <text x="45" y="100" text-anchor="middle" fill="#aaa" font-size="9">加催化劑</text>
+                        <line id="tracker-concA-cat" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+                <!-- [B] -->
+                <div style="flex:1;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:8px;left:12px;font-size:0.85rem;color:#aaa;font-weight:bold;">[B] vs 時間</div>
+                    <svg viewBox="0 0 150 100" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                        <line x1="15" y1="85" x2="140" y2="85" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <line x1="15" y1="85" x2="15" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+                        <g clip-path="url(#clip-concB-cat)">
+                            <line x1="15" y1="50" x2="140" y2="50" stroke="#38bdf8" stroke-width="2.5"/>
+                            <line x1="45" y1="10" x2="45" y2="85" stroke="rgba(255,255,255,0.3)" stroke-dasharray="2,2"/>
+                        </g>
+                        <text x="45" y="100" text-anchor="middle" fill="#aaa" font-size="9">加催化劑</text>
+                        <line id="tracker-concB-cat" x1="15" y1="10" x2="15" y2="85" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rate graph -->
+            <div style="flex:1.2;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;min-height:0;display:flex;flex-direction:column;">
+                <div style="font-size:0.85rem;color:#aaa;font-weight:bold;margin-bottom:5px;">速率 ($r$) vs 時間</div>
+                <div style="display:flex;flex-direction:row;flex:1;min-height:0;gap:10px;">
+                    <div style="flex:2;display:flex;flex-direction:column;min-width:0;">
+                        <div style="position:relative;flex:1;">
+                            <svg viewBox="0 0 300 120" preserveAspectRatio="none" style="width:100%;height:100%;display:block;overflow:visible;">
+                                <defs>
+                                    <marker id="arrow-cat" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(255,255,255,0.5)"/>
+                                    </marker>
+                                </defs>
+                                <line x1="20" y1="100" x2="280" y2="100" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-cat)"/>
+                                <line x1="20" y1="100" x2="20" y2="10" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" marker-end="url(#arrow-cat)"/>
+                                <text x="15" y="73" text-anchor="end" fill="#a78bfa" font-size="11">r</text>
+                                <g clip-path="url(#clip-rate-cat)">
+                                    <line x1="20" y1="70" x2="80" y2="70" stroke="#a78bfa" stroke-width="2.5"/>
+                                    <line x1="80" y1="10" x2="80" y2="100" stroke="rgba(255,255,255,0.3)" stroke-dasharray="3,3"/>
+                                    <text x="80" y="115" text-anchor="middle" fill="#aaa" font-size="10">加催化劑</text>
+                                    
+                                    <!-- Both rates jump to same higher level and stay flat -->
+                                    <line x1="80" y1="70" x2="80" y2="35" stroke="#34d399" stroke-width="4"/> <!-- slightly thicker to show overlap -->
+                                    <line x1="80" y1="35" x2="280" y2="35" stroke="#38bdf8" stroke-width="2.5"/>
+                                    <!-- Use dashed line for one to show overlap -->
+                                    <line x1="80" y1="35" x2="280" y2="35" stroke="#34d399" stroke-width="2.5" stroke-dasharray="8,8"/>
+                                    
+                                    <text x="180" y="25" fill="#34d399" font-size="10" font-weight="bold">正逆反應速率</text>
+                                    <text x="180" y="47" fill="#38bdf8" font-size="10" font-weight="bold">(r_f = r_r)</text>
+                                    <text x="22" y="66" fill="#a78bfa" font-size="9">r₀</text>
+                                </g>
+                                <line id="tracker-rate-cat" x1="20" y1="10" x2="20" y2="100" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-dasharray="2,2" style="pointer-events:none;opacity:0;"/>
+                            </svg>
+                        </div>
+                        <div class="slider-ctrl-box">
+    <div class="slider-ctrl-header">
+        <span class="slider-ctrl-title">⏱️ 催化劑加入時間軸：<span id="slider-label-cat" style="color:var(--accent-yellow);">原平衡 ($t_0$)</span></span>
+        <div class="jump-btn-group">
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-cat'); sl.value=0; updateGraphTimeCat(0);">⏮️ 原平衡</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-cat'); sl.value=25; updateGraphTimeCat(25);">⚡ 改變瞬間</button>
+            <button type="button" class="time-jump-btn" onclick="const sl=document.getElementById('graph-time-slider-cat'); sl.value=100; updateGraphTimeCat(100);">⏭️ 新平衡</button>
+        </div>
+    </div>
+    <input type="range" id="graph-time-slider-cat" min="0" max="100" value="0" oninput="updateGraphTimeCat(this.value)" class="time-range-input">
+    <div class="slider-scale-labels">
+        <span>原平衡 ($t_0$)</span>
+        <span style="color:var(--accent-cyan); font-weight:bold;">← 拖曳滑桿觀察動態變化 →</span>
+        <span>新平衡 ($t_2$)</span>
+    </div>
+</div>
+                    </div>
+                    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;border-left:1px dashed rgba(255,255,255,0.2);padding-left:15px;font-size:1.05rem;">
+                        <div style="color:#34d399;font-weight:bold;margin-bottom:0.6rem;">$r_f = k_f[\text{A}]^m$</div>
+                        <div style="color:#38bdf8;font-weight:bold;">$r_r = k_r[\text{B}]^n$</div>
+                        <div style="font-size:0.82rem;color:#888;margin-top:0.7rem;">加入催化劑後，正逆反應的速率常數 $k_f, k_r$ 增加相同的倍數，因此 $r_f$ 與 $r_r$ 等比例激增，兩者依然相等，不造成平衡移動。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let blanksRevealedCat = false;
+    function updateGraphTimeCat(val) {
+        const v = parseFloat(val);
+        const rateWidth = (v / 100) * 260;
+        document.getElementById('rect-clip-rate-cat').setAttribute('width', rateWidth);
+        const rateX = 20 + rateWidth;
+        const tRate = document.getElementById('tracker-rate-cat');
+        tRate.setAttribute('x1', rateX); tRate.setAttribute('x2', rateX);
+        tRate.style.opacity = v > 0 ? '0.8' : '0';
+        const concWidth = (v / 100) * 125;
+        document.getElementById('rect-clip-concA-cat').setAttribute('width', concWidth);
+        document.getElementById('rect-clip-concB-cat').setAttribute('width', concWidth);
+        const concX = 15 + concWidth;
+        const tA = document.getElementById('tracker-concA-cat');
+        tA.setAttribute('x1', concX); tA.setAttribute('x2', concX);
+        tA.style.opacity = v > 0 ? '0.8' : '0';
+        const tB = document.getElementById('tracker-concB-cat');
+        tB.setAttribute('x1', concX); tB.setAttribute('x2', concX);
+        tB.style.opacity = v > 0 ? '0.8' : '0';
+        if (v > 95 && !blanksRevealedCat) {
+            blanksRevealedCat = true;
+            document.querySelectorAll('.step-target-cat').forEach(el => el.classList.add('revealed'));
+        }
+    }
+    updateGraphTimeCat(0);
+    </script>
+
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+window.switchTab = function(idx, containerId) {
+    const cont = containerId ? document.getElementById(containerId) : document;
+    const btns = cont.querySelectorAll('.tab-btn');
+    const panes = cont.querySelectorAll('.tab-pane');
+    btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    panes.forEach((p, i) => p.classList.toggle('active', i === idx));
+    if (window.MathJax) {
+        window.MathJax.typesetPromise();
+    }
+};
+window.updateSlides = function() {};
+
+const orig_updateGraphTimeCat = window.updateGraphTimeCat;
+window.updateGraphTimeCat = function(val) {
+    if (typeof orig_updateGraphTimeCat === 'function') orig_updateGraphTimeCat(val);
+    const lbl = document.getElementById('slider-label-cat');
+    if (lbl) {
+        const v = parseFloat(val);
+        if (v === 0) lbl.textContent = '原平衡 (無催化劑)';
+        else if (v < 50) lbl.textContent = '加入催化劑 (正逆速率同等跳躍激增)';
+        else lbl.textContent = '平衡不移動 (加速達成，K值與平衡位置不變)';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateGraphTimeCat === 'function') updateGraphTimeCat(0);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>05 氫鍵 · 核心通關檢核</title>
+    <meta name="description" content="選修化學二：氫鍵核心觀念連連看通關檢核與章節解鎖">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 1.5rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-container-full {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .text-cyan { color: var(--accent-cyan); }
+
+        /* ── 標頭情境框 (參照波以耳定律 quiz-scenario-box) ── */
+        .quiz-scenario-box {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+
+        .problem-badge {
+            font-size: 0.85rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 700;
+            border: 1px solid;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+
+        /* ── 測驗卡片外框 (quiz-card) ── */
+        .quiz-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+
+        .quiz-q {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.5;
+        }
+
+        /* ── 連連看互動區 CSS (完全對齊波以耳定律 match-game-wrapper) ── */
+        .match-game-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .match-game-cols {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            gap: 28px;
+            z-index: 2;
+        }
+
+        .match-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 44%;
+        }
+
+        .match-item {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 9px 14px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            touch-action: none;
+            font-size: 0.92rem;
+            color: #f1f5f9;
+            min-height: 48px;
+        }
+
+        .match-item:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.selected {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.22);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+        }
+
+        .match-item.connected {
+            border-color: rgba(56, 189, 248, 0.65);
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .match-item.match-correct {
+            border-color: #34d399 !important;
+            background: rgba(52, 211, 153, 0.18) !important;
+            color: #6ee7b7 !important;
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.3) !important;
+        }
+
+        .match-item.match-wrong {
+            border-color: #f87171 !important;
+            background: rgba(248, 113, 113, 0.18) !important;
+            color: #fca5a5 !important;
+            box-shadow: 0 0 12px rgba(248, 113, 113, 0.3) !important;
+        }
+
+        .match-item-text {
+            flex: 1;
+            pointer-events: none;
+            line-height: 1.4;
+        }
+
+        .match-item-badge {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin: 0 4px;
+            pointer-events: none;
+        }
+
+        .match-dot {
+            width: 16px;
+            height: 16px;
+            background: #38bdf8;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.2s;
+            z-index: 5;
+            box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+            pointer-events: none;
+        }
+
+        .match-item[data-side="left"] .match-dot {
+            right: -8px;
+        }
+
+        .match-item[data-side="right"] .match-dot {
+            left: -8px;
+        }
+
+        .match-dot.active {
+            transform: translateY(-50%) scale(1.3);
+            background: #fbbf24;
+            box-shadow: 0 0 12px #fbbf24;
+        }
+
+        .match-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── 操作反饋列與提交按鈕 (quiz-action-bar) ── */
+        .quiz-action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .quiz-feedback-msg {
+            flex: 1;
+            min-width: 260px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #94a3b8;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .quiz-feedback-msg.success {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+
+        .quiz-feedback-msg.fail {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.35);
+        }
+
+        .btn-submit-exam {
+            flex-shrink: 0;
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #38bdf8, #34d399);
+            color: #0b1120;
+            font-size: 0.97rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+        }
+
+        .btn-submit-exam:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-submit-exam:disabled { opacity: 0.55; cursor: default; transform: none; box-shadow: none; }
+
+        .btn-retry-exam {
+            flex-shrink: 0;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 0.97rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-retry-exam:hover { opacity: 0.92; transform: translateY(-1px); }
+
+        /* ── 通關完成橫幅 (完全對齊波以耳定律樣式) ── */
+        #section-complete-banner {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 40vh;
+            padding: 3rem 2rem;
+            background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0.85) 70%);
+            border-top: 1px solid rgba(52,211,153,0.25);
+            margin-top: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+            animation: fadeInBanner 0.6s ease forwards;
+        }
+
+        @keyframes fadeInBanner {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse-trophy {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .banner-badge-item {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .match-game-cols { gap: 14px; }
+            .match-col { width: 48%; }
+            .match-item { font-size: 0.82rem; padding: 7px 10px; min-height: 44px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="quiz-container-full">
+        <!-- 標頭情境框 (波以耳定律標準格式) -->
+        <div class="quiz-scenario-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                <span class="problem-badge" style="background:rgba(52,211,153,0.2); border-color:rgba(52,211,153,0.4); color:#34d399;">
+                    🏆 單元 5-5 · 核心通關檢核
+                </span>
+                <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成概念連連看配對，點擊右下角「確定作答」提交檢核</span>
+            </div>
+            <p style="font-size:0.94rem; line-height:1.6; color:#f8fafc; margin:0;">
+                <strong style="color:#fbbf24;">【氫鍵核心概念與實例應用】</strong>
+                請將左側概念連線至右側對應科學成因與性質描述（可按住拖曳或點選圓點任意連線），5 組配對全部正確即可通關解鎖下一單元。
+            </p>
+        </div>
+
+        <!-- ★ 第(1)題：概念連連看（互動連線，橫跨全欄） -->
+        <div class="quiz-card" id="quiz-matching-card" style="width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div class="quiz-q" style="margin:0;">
+                    <span class="text-cyan">(1) 概念配對連連看</span> 請將左側概念連線至右側對應科學描述（可拖曳或點選圓點任意連線）。
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" id="btn-shuffle-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#38bdf8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                        隨機抽題 🔀
+                    </button>
+                    <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                        重設連線 ↺
+                    </button>
+                </div>
+            </div>
+
+            <!-- 連連看畫布與題目兩欄 -->
+            <div class="match-game-wrapper" id="match-game-wrapper">
+                <svg id="match-svg" class="match-svg"></svg>
+                <div class="match-game-cols">
+                    <div class="match-col" id="match-col-left"></div>
+                    <div class="match-col" id="match-col-right"></div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <p style="font-size:0.8rem; color:#64748b; margin:0;">💡 操作說明：點擊左側再點擊右側，或直接按住拖曳連線。提交前可任意重連。</p>
+                <span id="match-count-badge" style="font-size:0.82rem; color:#38bdf8; font-weight:600;">已連線：0 / 5</span>
+            </div>
+        </div>
+
+        <!-- 底部操作列 (包含反饋訊息、再試一次按鈕、確定作答按鈕) -->
+        <div class="quiz-action-bar">
+            <div class="quiz-feedback-msg" id="quiz-feedback-msg">
+                <span>💡 請完成 5 組概念配對連線，完成後點擊「確定作答」。</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button type="button" id="btn-retry-exam" class="btn-retry-exam">
+                    🔄 再試一次
+                </button>
+                <button type="button" id="btn-submit-exam" class="btn-submit-exam">
+                    確定作答 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- 通關成功橫幅 (波以耳定律標準解鎖格式) -->
+        <div id="section-complete-banner">
+            <div style="font-size:4rem; margin-bottom:0.8rem; animation: pulse-trophy 1.5s ease-in-out infinite;">🏆</div>
+            <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+            <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜你 5 組配對全數答對！已完成氫鍵專題核心檢核 🎉</p>
+            <p style="color:#94a3b8; font-size:0.95rem;">下一單元已自動解鎖，請從左側目錄切換繼續學習</p>
+            <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;">
+                <div class="banner-badge-item" style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); color:#34d399;">
+                    ✅ 5-5 氫鍵專題 — 通關
+                </div>
+                <div class="banner-badge-item" style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#38bdf8;">
+                    🔓 下一單元 — 已解鎖
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── 氫鍵核心檢核系統 (依波以耳定律標準連連看檢核模式實作) ──
+(function initHydrogenBondCheckpoint() {
+    // 氫鍵完整題庫池 (15 題，隨機挑選 5 題配對)
+    const FULL_QUESTION_POOL = [
+        { left: '氫鍵的表示符號', right: 'X—H···Y' },
+        { left: '氫鍵施體之核心鍵型', right: 'F—H、O—H、N—H' },
+        { left: '形成強氫鍵關鍵條件', right: 'X 電負度大且原子半徑小' },
+        { left: 'H₂O 沸點異常高於同族', right: '大量分子間氫鍵網絡' },
+        { left: '鄰硝基苯酚沸點低於對位', right: '形成分子內氫鍵' },
+        { left: 'DNA 鹼基配對 G 與 C', right: '形成 3 條氫鍵' },
+        { left: 'DNA 鹼基配對 A 與 T', right: '形成 2 條氫鍵' },
+        { left: '蛋白質 α-螺旋結構維持', right: '靠主鏈 N—H···O=C 氫鍵' },
+        { left: 'Cl 電負度高卻不易成氫鍵', right: '因原子半徑較大、電荷密度低' },
+        { left: '氫鍵幾何方向性特徵', right: 'X—H···Y 鍵角傾向直線 (180°)' },
+        { left: '乙醇與水能完全互溶', right: '形成分子間 O—H···O 氫鍵' },
+        { left: 'HF 比 HCl 沸點顯著偏高', right: '存在強烈的分子間氫鍵' },
+        { left: '典型氫鍵鍵能範圍', right: '5 ~ 40 kJ/mol' },
+        { left: '冰中水分子平均氫鍵數', right: '每個水分子平均形成 4 條' },
+        { left: '分子間氫鍵的主要影響', right: '提高沸點、熔點與在水之溶解度' }
+    ];
+
+    let MATCH_DATA = [];
+    const GAME_COUNT = 5;
+
+    // 狀態變數 (與波以耳定律完全一致)
+    let isPassed = false;
+    let isVerified = false; // 是否已按下「確定作答」
+    let connections = [];   // 連連看狀態: [{ leftId: 0, rightId: 0, status: null|'correct'|'wrong' }]
+    let selectedItem = null; // 點選配對模式當前選中項
+    let isDraggingMatch = false;
+    let dragStartItem = null;
+    let tempMatchLine = null;
+
+    const leftCol = document.getElementById('match-col-left');
+    const rightCol = document.getElementById('match-col-right');
+    const matchSvg = document.getElementById('match-svg');
+    const matchWrapper = document.getElementById('match-game-wrapper');
+    const matchCountBadge = document.getElementById('match-count-badge');
+    const resetMatchBtn = document.getElementById('btn-reset-match');
+    const shuffleMatchBtn = document.getElementById('btn-shuffle-match');
+
+    const submitBtn = document.getElementById('btn-submit-exam');
+    const retryBtn = document.getElementById('btn-retry-exam');
+    const feedbackMsg = document.getElementById('quiz-feedback-msg');
+    const completeBanner = document.getElementById('section-complete-banner');
+
+    // 1. 初始化題目數據與 DOM
+    function renderMatchGame() {
+        if (!leftCol || !rightCol || !matchSvg) return;
+        leftCol.innerHTML = '';
+        rightCol.innerHTML = '';
+        matchSvg.innerHTML = '';
+        connections = [];
+        selectedItem = null;
+        isPassed = false;
+        isVerified = false;
+
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '確定作答 🚀';
+        }
+        if (retryBtn) retryBtn.style.display = 'none';
+        if (completeBanner) completeBanner.style.display = 'none';
+
+        feedbackMsg.className = 'quiz-feedback-msg';
+        feedbackMsg.innerHTML = '<span>💡 請完成 5 組概念配對連線，完成後點擊「確定作答」。</span>';
+
+        // 從題庫中隨機選取 5 題
+        const poolCopy = [...FULL_QUESTION_POOL];
+        MATCH_DATA = [];
+        for (let i = 0; i < GAME_COUNT && poolCopy.length > 0; i++) {
+            const randIdx = Math.floor(Math.random() * poolCopy.length);
+            const item = poolCopy.splice(randIdx, 1)[0];
+            MATCH_DATA.push({ id: i, left: item.left, right: item.right });
+        }
+
+        updateMatchBadge();
+
+        // 左側依照原本順序排列
+        MATCH_DATA.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.side = 'left';
+            el.dataset.id = item.id;
+            el.innerHTML = `
+                <span class="match-item-text">${item.left}</span>
+                <span class="match-item-badge"></span>
+                <div class="match-dot"></div>
+            `;
+            bindMatchItemEvents(el);
+            leftCol.appendChild(el);
+        });
+
+        // 右側隨機洗牌
+        const shuffledRight = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+        shuffledRight.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'match-item';
+            el.dataset.side = 'right';
+            el.dataset.id = item.id;
+            el.innerHTML = `
+                <div class="match-dot"></div>
+                <span class="match-item-badge"></span>
+                <span class="match-item-text">${item.right}</span>
+            `;
+            bindMatchItemEvents(el);
+            rightCol.appendChild(el);
+        });
+
+        reportIframeHeight();
+    }
+
+    // 2. 綁定連連看項目的拖曳與點擊事件 (波以耳定律標準指標事件)
+    function bindMatchItemEvents(item) {
+        item.addEventListener('pointerdown', (e) => {
+            if (isPassed || isVerified) return;
+            // 標記拖曳開始
+            isDraggingMatch = true;
+            dragStartItem = item;
+            item.querySelector('.match-dot').classList.add('active');
+
+            // 建立預覽暫存虛線條
+            const rect = matchWrapper.getBoundingClientRect();
+            const dotRect = item.querySelector('.match-dot').getBoundingClientRect();
+            const startX = dotRect.left + dotRect.width / 2 - rect.left;
+            const startY = dotRect.top + dotRect.height / 2 - rect.top;
+
+            if (tempMatchLine) tempMatchLine.remove();
+            tempMatchLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tempMatchLine.setAttribute('x1', startX);
+            tempMatchLine.setAttribute('y1', startY);
+            tempMatchLine.setAttribute('x2', startX);
+            tempMatchLine.setAttribute('y2', startY);
+            tempMatchLine.setAttribute('stroke', '#38bdf8');
+            tempMatchLine.setAttribute('stroke-width', '3');
+            tempMatchLine.setAttribute('stroke-dasharray', '5,5');
+            matchSvg.appendChild(tempMatchLine);
+
+            if (e.pointerType === 'mouse') e.preventDefault();
+        });
+
+        // 支援直接點選配對
+        item.addEventListener('click', () => {
+            if (isPassed || isVerified) return;
+            handleItemClick(item);
+        });
+    }
+
+    function handleItemClick(item) {
+        if (!selectedItem) {
+            selectedItem = item;
+            item.classList.add('selected');
+        } else if (selectedItem === item) {
+            selectedItem.classList.remove('selected');
+            selectedItem = null;
+        } else if (selectedItem.dataset.side === item.dataset.side) {
+            // 同側切換選取
+            selectedItem.classList.remove('selected');
+            selectedItem = item;
+            item.classList.add('selected');
+        } else {
+            // 兩側配對
+            selectedItem.classList.remove('selected');
+            const left = selectedItem.dataset.side === 'left' ? selectedItem : item;
+            const right = selectedItem.dataset.side === 'right' ? selectedItem : item;
+            applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+            selectedItem = null;
+        }
+    }
+
+    // 全域指標移動與放開
+    window.addEventListener('pointermove', (e) => {
+        if (!isDraggingMatch || !tempMatchLine) return;
+        const rect = matchWrapper.getBoundingClientRect();
+        tempMatchLine.setAttribute('x2', e.clientX - rect.left);
+        tempMatchLine.setAttribute('y2', e.clientY - rect.top);
+    });
+
+    window.addEventListener('pointerup', (e) => {
+        if (!isDraggingMatch) return;
+        isDraggingMatch = false;
+
+        if (dragStartItem) {
+            dragStartItem.querySelector('.match-dot').classList.remove('active');
+        }
+
+        const target = document.elementFromPoint(e.clientX, e.clientY);
+        const targetItem = target ? target.closest('.match-item') : null;
+
+        if (targetItem && targetItem !== dragStartItem && targetItem.dataset.side !== dragStartItem.dataset.side) {
+            const left = dragStartItem.dataset.side === 'left' ? dragStartItem : targetItem;
+            const right = dragStartItem.dataset.side === 'right' ? dragStartItem : targetItem;
+            applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+        }
+
+        if (tempMatchLine) {
+            tempMatchLine.remove();
+            tempMatchLine = null;
+        }
+        dragStartItem = null;
+        drawAllConnections();
+    });
+
+    // 建立或更新連線 (1 對 1 排他配對)
+    function applyConnection(leftId, rightId) {
+        connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+        connections.push({ leftId, rightId, status: null });
+        updateMatchBadge();
+        drawAllConnections();
+    }
+
+    function updateMatchBadge() {
+        if (matchCountBadge) {
+            matchCountBadge.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+            matchCountBadge.style.color = (connections.length === MATCH_DATA.length) ? '#34d399' : '#38bdf8';
+        }
+    }
+
+    // 繪製所有連線 (波以耳定律色彩與外觀規範)
+    function drawAllConnections() {
+        if (!matchSvg || !matchWrapper) return;
+        matchSvg.innerHTML = '';
+        const rect = matchWrapper.getBoundingClientRect();
+
+        // 重設所有 item 的連線外觀（保留正確/錯誤標記若處於驗證狀態）
+        const allItems = matchWrapper.querySelectorAll('.match-item');
+        allItems.forEach(el => {
+            if (!isVerified) {
+                el.classList.remove('connected', 'match-correct', 'match-wrong');
+                el.querySelector('.match-item-badge').textContent = '';
+            }
+        });
+
+        connections.forEach(c => {
+            const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+            const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+            if (!leftEl || !rightEl) return;
+
+            if (!isVerified) {
+                leftEl.classList.add('connected');
+                rightEl.classList.add('connected');
+            }
+
+            const dot1 = leftEl.querySelector('.match-dot').getBoundingClientRect();
+            const dot2 = rightEl.querySelector('.match-dot').getBoundingClientRect();
+
+            const x1 = dot1.left + dot1.width / 2 - rect.left;
+            const y1 = dot1.top + dot1.height / 2 - rect.top;
+            const x2 = dot2.left + dot2.width / 2 - rect.left;
+            const y2 = dot2.top + dot2.height / 2 - rect.top;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke-linecap', 'round');
+
+            if (c.status === 'correct') {
+                line.setAttribute('stroke', '#34d399');
+                line.setAttribute('stroke-width', '4');
+                line.setAttribute('filter', 'drop-shadow(0 0 4px #34d399)');
+            } else if (c.status === 'wrong') {
+                line.setAttribute('stroke', '#f87171');
+                line.setAttribute('stroke-width', '3.5');
+                line.setAttribute('stroke-dasharray', '5,4');
+                line.setAttribute('filter', 'drop-shadow(0 0 4px #f87171)');
+            } else {
+                line.setAttribute('stroke', '#38bdf8');
+                line.setAttribute('stroke-width', '3.5');
+                line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(56,189,248,0.5))');
+            }
+
+            matchSvg.appendChild(line);
+        });
+    }
+
+    // 視窗調整或捲動時重繪
+    window.addEventListener('resize', () => {
+        drawAllConnections();
+        reportIframeHeight();
+    });
+    window.addEventListener('scroll', drawAllConnections, { passive: true });
+
+    // 重設連線按鈕
+    if (resetMatchBtn) {
+        resetMatchBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            isVerified = false;
+            connections = [];
+            selectedItem = null;
+            const allItems = matchWrapper.querySelectorAll('.match-item');
+            allItems.forEach(el => {
+                el.classList.remove('selected', 'connected', 'match-correct', 'match-wrong');
+                el.querySelector('.match-item-badge').textContent = '';
+            });
+            updateMatchBadge();
+            drawAllConnections();
+            if (retryBtn) retryBtn.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = false;
+            feedbackMsg.className = 'quiz-feedback-msg';
+            feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新進行概念配對。</span>';
+        });
+    }
+
+    // 隨機抽題按鈕
+    if (shuffleMatchBtn) {
+        shuffleMatchBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            renderMatchGame();
+        });
+    }
+
+    // 3. 「確定作答」檢核按鈕 (核心通關判定)
+    if (submitBtn) {
+        submitBtn.addEventListener('click', () => {
+            if (isPassed) return;
+
+            // ① 檢查連連看是否 5 組皆完成連線
+            if (connections.length < MATCH_DATA.length) {
+                feedbackMsg.className = 'quiz-feedback-msg fail';
+                feedbackMsg.innerHTML = `<span>⚠️ 概念連連看尚有未配對項目（已完成 ${connections.length}/${MATCH_DATA.length} 組），請將 5 組概念全部連線！</span>`;
+                return;
+            }
+
+            // ② 進行檢核判定
+            isVerified = true;
+            let allCorrect = true;
+
+            connections.forEach(c => {
+                const isCorrect = (c.leftId === c.rightId);
+                c.status = isCorrect ? 'correct' : 'wrong';
+                if (!isCorrect) allCorrect = false;
+
+                const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+
+                if (leftEl) {
+                    leftEl.classList.remove('match-correct', 'match-wrong');
+                    leftEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                    leftEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                    leftEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                }
+                if (rightEl) {
+                    rightEl.classList.remove('match-correct', 'match-wrong');
+                    rightEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                    rightEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                    rightEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                }
+            });
+
+            drawAllConnections();
+
+            // ③ 判定結果反饋
+            if (allCorrect) {
+                // 全部答對通關
+                isPassed = true;
+                submitBtn.disabled = true;
+                submitBtn.textContent = '檢核通過 ✅';
+                if (retryBtn) retryBtn.style.display = 'none';
+
+                feedbackMsg.className = 'quiz-feedback-msg success';
+                feedbackMsg.innerHTML = '<span>🎉 檢核通過！5 組概念配對全數答對，氫鍵單元已成功解鎖通關！</span>';
+
+                // 展開通關成功橫幅
+                if (completeBanner) {
+                    completeBanner.style.display = 'flex';
+                    reportIframeHeight();
+                    setTimeout(() => {
+                        completeBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 250);
+                }
+
+                notifyHydrogenBondSectionComplete();
+            } else {
+                // 未全對：標記錯誤並呈現「再試一次」按鈕
+                feedbackMsg.className = 'quiz-feedback-msg fail';
+                feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示正確（綠色）與錯誤（紅色）部分，請點擊「再試一次」進行修正！</span>';
+
+                submitBtn.disabled = true;
+                if (retryBtn) {
+                    retryBtn.style.display = 'inline-flex';
+                    retryBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        });
+    }
+
+    // 4. 「再試一次」按鈕：保留答對連線，清除答錯連線供再次作答 (波以耳定律招牌特性)
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            if (isPassed) return;
+            isVerified = false;
+
+            // 保留正確連線，移除答錯的連線
+            connections = connections.filter(c => {
+                if (c.status === 'correct') {
+                    return true;
+                } else {
+                    // 答錯的項目重設
+                    const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                    const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                    if (leftEl) {
+                        leftEl.classList.remove('match-wrong', 'connected');
+                        leftEl.querySelector('.match-item-badge').textContent = '';
+                    }
+                    if (rightEl) {
+                        rightEl.classList.remove('match-wrong', 'connected');
+                        rightEl.querySelector('.match-item-badge').textContent = '';
+                    }
+                    return false;
+                }
+            });
+
+            updateMatchBadge();
+            drawAllConnections();
+
+            retryBtn.style.display = 'none';
+            submitBtn.disabled = false;
+            feedbackMsg.className = 'quiz-feedback-msg';
+            feedbackMsg.innerHTML = '<span>✏️ 請重新連線錯誤的概念，完成後再次點擊「確定作答」。</span>';
+        });
+    }
+
+    // 5. 通關通知外層母網頁 SPA
+    function notifyHydrogenBondSectionComplete() {
+        const payload = {
+            type: 'SECTION_COMPLETE',
+            sectionId: 'ch5_s5',
+            title: '氫鍵專題 (Hydrogen Bond)'
+        };
+
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage(payload, '*');
+        }
+        if (window.top && window.top !== window && window.top !== window.parent) {
+            window.top.postMessage(payload, '*');
+        }
+    }
+
+    // 回報本頁高度給父層以動態調整 iframe 高度
+    function reportIframeHeight() {
+        setTimeout(() => {
+            const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'RESIZE_IFRAME', height: h }, '*');
+            }
+        }, 200);
+    }
+
+    // 啟動連連看
+    renderMatchGame();
+})();
+</script>
+
+</body>
+</html>

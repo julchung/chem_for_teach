@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2-1 氣體通性與水銀壓力計 · 經典範例 2：閉口式壓力計高度差比值 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --mercury: #94a3b8;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.02rem, 1.25vw, 1.2rem); margin-bottom: 0.25rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.88rem, 1.02vw, 1.02rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.55rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.82rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.55rem 0.85rem; line-height: 1.6; font-size: 0.88rem;
+        }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 8px; border-left: 4px solid var(--accent-yellow);
+            padding: 0.5rem 0.8rem; text-align: center;
+            font-size: 1.15rem; margin: 0.3rem 0;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>2-1 氣體通性與水銀壓力計 · 經典範例 2：閉口式壓力計高度差與氣壓比值</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目呈現 -->
+                    <div class="panel">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:0.35rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="tag tag-yellow">經典範例 2</span>
+                                <h2 style="color: var(--accent-yellow); margin:0;">閉口式壓力計之高度差與壓力比值</h2>
+                            </div>
+                            <span style="font-size:0.8rem; color:rgba(255,255,255,0.5);">一題一頁 · 比值分析</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 0.75rem 0.95rem;">
+                            <p style="font-size: 0.96rem; line-height: 1.7; color: #f8fafc;">
+                                <strong>題目說明：</strong><br>
+                                某閉口式水銀壓力計充入 <strong>A 氣體</strong> 後，左右兩管水銀面高度差為 $h$；將 A 氣體抽空並改換充入 <strong>B 氣體</strong> 後，水銀面高度差變為 $1.5h$。<br>
+                                試問 B 氣體的壓力與 A 氣體的壓力之比值（$P_B / P_A$）為何？
+                            </p>
+                        </div>
+
+                        <!-- 題目示意圖 -->
+                        <div style="display:flex; align-items:center; justify-content:space-around; background:rgba(0,0,0,0.25); border-radius:10px; padding:0.4rem 0;">
+                            <!-- A 氣體圖 -->
+                            <div style="text-align:center;">
+                                <svg viewBox="0 0 200 170" style="width:145px; height:125px;">
+                                    <path d="M 15,140 L 65,140 L 48,90 L 32,90 Z" fill="rgba(255,100,100,0.15)" stroke="white" stroke-width="1.5" />
+                                    <text x="40" y="125" fill="var(--accent-red)" font-size="20" font-weight="bold" text-anchor="middle">A</text>
+                                    <path d="M 32,80 L 48,80 L 46,90 L 34,90 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 40,85 V 60 H 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                                    <path d="M 35,85 V 55 H 105" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 45,85 V 65 H 95" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 95,100 V 135 A 20,20 0 0 0 135,135 V 70 H 125 V 135 A 10,10 0 0 1 105,135 V 100 Z" fill="#9ca3af" />
+                                    <path d="M 95,65 V 135 A 20,20 0 0 0 135,135 V 25 A 5,5 0 0 0 125,25 V 135 A 10,10 0 0 1 105,135 V 55" fill="none" stroke="white" stroke-width="1.2" />
+                                    <line x1="135" y1="70" x2="160" y2="70" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="105" y1="100" x2="160" y2="100" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <path d="M 150,70 V 100" stroke="yellow" stroke-width="1.5" />
+                                    <text x="155" y="87" fill="yellow" font-size="14" dominant-baseline="middle">h</text>
+                                </svg>
+                                <div style="color:var(--accent-red); font-size:0.85rem; font-weight:700;">閉口計 (A氣體, 高差 h)</div>
+                            </div>
+
+                            <div style="font-size:1.4rem; color:var(--accent-yellow);">➔</div>
+
+                            <!-- B 氣體圖 -->
+                            <div style="text-align:center;">
+                                <svg viewBox="0 0 200 170" style="width:145px; height:125px;">
+                                    <path d="M 15,140 L 65,140 L 48,90 L 32,90 Z" fill="rgba(100,255,100,0.15)" stroke="white" stroke-width="1.5" />
+                                    <text x="40" y="125" fill="var(--accent-green)" font-size="20" font-weight="bold" text-anchor="middle">B</text>
+                                    <path d="M 32,80 L 48,80 L 46,90 L 34,90 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 40,85 V 60 H 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                                    <path d="M 35,85 V 55 H 105" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 45,85 V 65 H 95" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 95,110 V 135 A 20,20 0 0 0 135,135 V 55 H 125 V 135 A 10,10 0 0 1 105,135 V 110 Z" fill="#9ca3af" />
+                                    <path d="M 95,65 V 135 A 20,20 0 0 0 135,135 V 25 A 5,5 0 0 0 125,25 V 135 A 10,10 0 0 1 105,135 V 55" fill="none" stroke="white" stroke-width="1.2" />
+                                    <line x1="135" y1="55" x2="160" y2="55" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="105" y1="110" x2="160" y2="110" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <path d="M 150,55 V 110" stroke="yellow" stroke-width="1.5" />
+                                    <text x="155" y="84" fill="yellow" font-size="14" dominant-baseline="middle">1.5h</text>
+                                </svg>
+                                <div style="color:var(--accent-green); font-size:0.85rem; font-weight:700;">閉口計 (B氣體, 高差 1.5h)</div>
+                            </div>
+                        </div>
+
+                        <!-- 思考導引提示 -->
+                        <div style="background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.25); border-radius: 8px; padding: 0.6rem 0.85rem;">
+                            <strong style="color: var(--accent-green); font-size: 0.88rem; display: block; margin-bottom: 0.2rem;">
+                                💡 思考導引提示：
+                            </strong>
+                            <ol style="margin-left: 1.15rem; line-height: 1.55; font-size: 0.85rem; color: #cbd5e1;">
+                                <li>確認該壓力計為<strong>閉口式</strong>：真空端壓強為 $0$。</li>
+                                <li>對於閉口式壓力計而言，氣體壓強與水銀柱高差成嚴格正比：$P \propto h$。</li>
+                            </ol>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.2rem;">
+                            <button class="btn-action" onclick="toggleSolution('s7-solution')" style="width: 100%; padding: 8px 16px; font-size: 0.95rem;">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設空白） -->
+                    <div class="panel scroll-panel" style="background: rgba(255,255,255,0.025); position: relative;">
+                        <div id="s7-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.35rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                    <span>✓</span> 完整詳解與比值計算
+                                </h2>
+                                <span class="tag" style="background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4);">
+                                    正解：1.5
+                                </span>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-blue);">Step 1：寫出 A、B 兩氣體之壓力方程式</strong><br>
+                                由於右端封閉抽成真空，氣體壓力直接由水銀柱高度差 $h$ 給出：
+                                <ul style="margin-left: 1.2rem; margin-top: 0.25rem; line-height: 1.7;">
+                                    <li>充入 A 氣體時：$$P_A = h$$</li>
+                                    <li>充入 B 氣體時：$$P_B = 1.5h$$</li>
+                                </ul>
+                            </div>
+
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">Step 2：求兩者壓力比值</strong><br>
+                                將兩式相除即可求出壓力比：
+                                <div class="formula-box" style="border-left-color: var(--accent-green);">
+                                    $$\frac{P_B}{P_A} = \frac{1.5h}{h} = \mathbf{1.5}$$
+                                </div>
+                            </div>
+
+                            <div class="step-block" style="border-left-color: var(--accent-purple);">
+                                <strong style="color: var(--accent-purple);">💡 重要考點延伸思考：</strong><br>
+                                若此題目改為<strong>開口式壓力計</strong>，則比值計算將會如何？<br>
+                                答：若為開口式，則 $P_A = P_{\text{atm}} + h$ 且 $P_B = P_{\text{atm}} + 1.5h$。此時 $\frac{P_B}{P_A} = \frac{P_{\text{atm}} + 1.5h}{P_{\text{atm}} + h} \neq 1.5$！因此讀題時務必先確認是<strong>開口式</strong>還是<strong>閉口式</strong>！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+    } else {
+        el.classList.add('revealed');
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+</script>
+</body>
+</html>

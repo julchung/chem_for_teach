@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>碰撞學說 | 互動教學</title>
+    <meta name="description" content="選修化學二：碰撞學說、正確位向、活化能與低限能互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1.5vh; left: 3vw; right: 4px; bottom: 2vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.6rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+        h1 {
+            color: var(--accent-blue); font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+            margin-bottom: 0.55rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(56,189,248,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 26px; background: var(--accent-blue); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-yellow); font-size: clamp(0.95rem, 1.45vw, 1.2rem); margin: 0.25rem 0; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.84rem, 1.12vw, 1.02rem); line-height: 1.48; margin-bottom: 0.3rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-blue); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.2rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 0.9rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.65rem; margin: 0.4rem 0; text-align: center;
+            font-size: clamp(1rem, 1.5vw, 1.3rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .warning-box {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(251,191,36,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        .success-box {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.65rem; border: 1px solid rgba(52,211,153,0.3); margin: 0.35rem 0; flex-shrink: 0;
+        }
+        /* Mechanism Practice Slide */
+        .mech-tab-btn {
+            padding: 0.45rem 1.5rem; border-radius: 999px; border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #cbd5e1; cursor: pointer;
+            font-size: 1rem; font-weight: 600; transition: all 0.2s;
+        }
+        .mech-tab-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+        .mech-tab-active { background: var(--accent-blue) !important; color: #0f172a !important; border-color: var(--accent-blue) !important; }
+        .mech-reveal-btn {
+            margin-top: 0.6rem; padding: 0.5rem 1.2rem; border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: #fff; border: none; cursor: pointer; font-size: 0.95rem; font-weight: 700;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: opacity 0.2s; align-self: flex-start;
+        }
+        .mech-reveal-btn:hover { opacity: 0.85; }
+        .mech-case { display: flex; flex-direction: column; gap: 0.4rem; height: 100%; }
+
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.75rem, 0.95vw, 0.9rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.45rem 0.6rem; text-align: center; }
+        table.data-table th { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 20px 40px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 50px; height: 12vh; max-height: 90px; position: relative;
+            font-size: clamp(0.85rem, 1.3vw, 1.2rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; padding-right: 30px; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; padding-left: 30px; }
+        .dot {
+            width: 20px; height: 20px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-blue); color: #0f172a; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56,189,248,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Intro Screen */
+        #intro-screen {
+            position: fixed; inset: 0; background: var(--bg-dark); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-image: radial-gradient(rgba(56,189,248,0.15) 1.5px, transparent 1.5px);
+            background-size: 40px 40px; transition: opacity 0.5s ease; text-align: center;
+        }
+        #intro-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem); border: none; margin-bottom: 1rem; color: #fff;
+            text-shadow: 0 0 20px rgba(56,189,248,0.5);
+        }
+        #intro-screen h1::before { display: none; }
+        .btn-start {
+            padding: 1rem 3rem; font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: bold;
+            background: rgba(56,189,248,0.15); color: #fff; border: 2px solid var(--accent-blue);
+            border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56,189,248,0.3); backdrop-filter: blur(5px);
+        }
+        .btn-start:hover {
+            background: var(--accent-blue); color: var(--bg-dark); box-shadow: 0 0 35px rgba(56,189,248,0.7);
+            transform: scale(1.05);
+        }
+        .slide-intro h1 { font-size: clamp(1.85rem, 3.2vw, 2.6rem); }
+        .slide-intro h2 { font-size: clamp(1.2rem, 1.95vw, 1.55rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.05rem, 1.55vw, 1.22rem); line-height: 1.55; }
+
+        /* Animation canvas */
+        #collision-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+        #energy-canvas { border-radius: 12px; border: 1.5px solid var(--glass-border); display: block; width: 100%; }
+
+        /* Orientation animation */
+        .orient-container { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-height: 0; }
+        .orient-row { display: flex; gap: 0.7rem; flex: 1; min-height: 0; }
+        .orient-box {
+            flex: 1; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1.5px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 0.5rem; position: relative; overflow: hidden;
+        }
+        .orient-label {
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px;
+            white-space: nowrap;
+        }
+        .label-fail { background: rgba(248,113,113,0.2); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .label-ok { background: rgba(52,211,153,0.2); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+
+        /* Energy diagram styles */
+        .energy-diagram-wrapper { flex: 1; min-height: 0; position: relative; }
+        .energy-label-box {
+            position: absolute; background: rgba(15,23,42,0.85); border-radius: 8px;
+            padding: 3px 8px; font-size: 0.78rem; font-weight: 700; pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* Slider styles */
+        .slider-row { display: flex; align-items: center; gap: 0.7rem; flex-shrink: 0; margin-top: 0.4rem; }
+        .slider-row label { font-size: 0.9rem; color: var(--accent-yellow); white-space: nowrap; }
+        input[type=range] { flex: 1; accent-color: var(--accent-blue); cursor: pointer; }
+
+        /* btn-action */
+        .btn-action {
+            padding: 0.5rem 1.2rem; border-radius: 10px; font-size: 1rem; cursor: pointer;
+            border: 1.5px solid var(--accent-blue); background: rgba(56,189,248,0.12);
+            color: #fff; font-weight: 700; transition: 0.2s; flex-shrink: 0;
+        }
+        .btn-action:hover { background: var(--accent-blue); color: #0f172a; }
+
+        /* Badge */
+        .badge {
+            display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.82rem;
+            font-weight: 700; margin: 0 3px;
+        }
+        .badge-red { background: rgba(248,113,113,0.18); color: var(--accent-red); border: 1px solid rgba(248,113,113,0.4); }
+        .badge-green { background: rgba(52,211,153,0.18); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4); }
+        .badge-yellow { background: rgba(251,191,36,0.18); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.4); }
+        .badge-blue { background: rgba(56,189,248,0.18); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.4); }
+        .badge-orange { background: rgba(251,146,60,0.18); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.4); }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+        }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide slide-intro active" id="slide-example2">
+                <h1>實戰演練：判斷正逆反應活化能與位能圖</h1>
+                <div class="grid-2" style="height:100%; gap:1rem; align-items:stretch;">
+                    <!-- 左欄：題目 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.5rem; padding:1rem;">
+                        <h2 style="color:var(--accent-yellow);">題目</h2>
+                        <p style="font-size:1.05rem; line-height:1.6;">
+                            反應 $\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$ 的位能反應座標圖如下所示，$E_1 = 230 \text{ kJ/mol}$，$E_2 = 138 \text{ kJ/mol}$，回答下列問題：
+                        </p>
+                        <div style="background:rgba(0,0,0,0.25); border-radius:12px; padding:0.5rem; text-align:center;">
+                            <canvas id="example2-canvas" style="width:100%; max-width:390px; height:200px; border-radius:8px; border:1px solid var(--glass-border); display:inline-block;"></canvas>
+                        </div>
+                        <ul style="font-size:1.05rem; line-height:1.8; margin-left:1.2rem; margin-top:0.3rem;">
+                            <li>(1) 正反應活化能 $E_{a(\text{正})}$ 為何？</li>
+                            <li>(2) 逆反應活化能 $E_{a(\text{逆})}$ 為何？</li>
+                            <li>(3) 此反應的反應熱 $\Delta H$ 為何？放熱或吸熱？</li>
+                            <li>(4) 此反應在一般條件下是否容易自發進行？</li>
+                        </ul>
+                    </div>
+                    <!-- 右欄：詳解 -->
+                    <div class="panel scroll-panel" style="display:flex; flex-direction:column; gap:0.4rem; padding:1rem; position:relative;">
+                        <div id="solution-ex2" style="display:none; flex-direction:column; gap:0.4rem; padding-bottom:3rem;">
+                            <h2 style="color:var(--accent-green); margin-bottom:0;">詳解</h2>
+                            <div class="info-card" style="margin-bottom:0.3rem;">
+                                <p style="margin:0; font-size:0.93rem; line-height:1.5;">
+                                    <strong>圖形分析：</strong>$E_1$ 為反應物到活化錯合物的能量差（正反應活化能），$E_2$ 為產物到活化錯合物的能量差（逆反應活化能）。
+                                </p>
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(1) 正反應活化能</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-yellow);">
+                                $$E_{a(\text{正})} = E_1 = \mathbf{230 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(2) 逆反應活化能</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-purple);">
+                                $$E_{a(\text{逆})} = E_2 = \mathbf{138 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(3) 反應熱</p>
+                            <div class="formula-box" style="font-size:1.05rem; padding:0.4rem; border-left-color:var(--accent-green);">
+                                $$\Delta H = E_{a(\text{正})} - E_{a(\text{逆})} = 230 - 138 = \mathbf{+92 \text{ kJ/mol}}$$
+                            </div>
+                            <p style="font-size:0.93rem;">$\Delta H > 0$，故為<strong style="color:var(--accent-red);">吸熱反應</strong>（逆向合成氨為吸熱）。</p>
+                            <p style="font-weight:bold; color:var(--accent-yellow); margin-top:0.2rem; margin-bottom:0;">(4) 自發性討論</p>
+                            <p style="font-size:0.93rem; line-height:1.5;">正反應活化能 230 kJ/mol 相當高，在一般溫度下分子難以具有足夠能量，反應速率極慢，需加<strong>催化劑（鐵催化劑）</strong>和<strong>高溫高壓</strong>條件才能使工業合成氨具有可行的速率。</p>
+                        </div>
+                        <button onclick="toggleSolution('solution-ex2')" style="position:absolute; bottom:15px; right:15px; padding:10px 20px; background:var(--accent-blue); color:#0f172a; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem; z-index:100; box-shadow:0 4px 10px rgba(0,0,0,0.3);">詳解 / 隱藏</button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === "none" || el.style.display === "") ? "flex" : "none";
+};
+window.updateSlides = function() {};
+
+function drawExample2Canvas() {
+    const cvs = document.getElementById("example2-canvas");
+    if (!cvs) return;
+    const ctx = cvs.getContext("2d");
+
+    // 依據容器寬度設定真實像素，支援高解析度顯示
+    const rect = cvs.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = rect.width > 50 ? rect.width : 360;
+    const displayH = rect.height > 50 ? rect.height : 210;
+
+    cvs.width = Math.round(displayW * dpr);
+    cvs.height = Math.round(displayH * dpr);
+    ctx.scale(dpr, dpr);
+
+    const W = displayW;
+    const H = displayH;
+
+    // 背景微漸層
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#1e293b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // 邊距與繪圖區域
+    const padL = 50, padR = 24, padT = 32, padB = 34;
+    const gW = W - padL - padR;
+    const gH = H - padT - padB;
+
+    const ox = padL;
+    const oy = H - padB;
+
+    // 坐標軸
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(ox, padT - 12);
+    ctx.lineTo(ox, oy);
+    ctx.lineTo(W - padR + 12, oy);
+    ctx.stroke();
+
+    // 坐標軸箭頭
+    ctx.fillStyle = "#94a3b8";
+    ctx.beginPath();
+    ctx.moveTo(ox - 4, padT - 8); ctx.lineTo(ox, padT - 16); ctx.lineTo(ox + 4, padT - 8);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(W - padR + 8, oy - 4); ctx.lineTo(W - padR + 16, oy); ctx.lineTo(W - padR + 8, oy + 4);
+    ctx.fill();
+
+    // 坐標軸文字
+    ctx.font = "bold 11px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText("反應途徑 (反應座標)", ox + gW / 2, oy + 8);
+
+    ctx.save();
+    ctx.translate(ox - 32, padT + gH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textBaseline = "middle";
+    ctx.fillText("位能 (kJ/mol)", 0, 0);
+    ctx.restore();
+
+    // 能階設定 (吸熱反應：反應物能量低，產物能量高，頂峰為活化錯合物)
+    // E1 = 230 (反應物到頂峰), E2 = 138 (產物到頂峰), ΔH = +92 (反應物到產物)
+    const yReactant = oy - gH * 0.18;   // 反應物水平 (最下方)
+    const yPeak     = padT + gH * 0.12;  // 活化錯合物頂峰 (最上方)
+    const yProduct  = oy - gH * 0.52;   // 產物水平 (中間偏上)
+
+    const x1 = ox + 8;
+    const x2 = ox + gW * 0.22;
+    const x3 = ox + gW * 0.50; // 頂峰位置
+    const x4 = ox + gW * 0.78;
+    const x5 = ox + gW - 8;
+
+    // 參考水平虛線
+    function drawDashedHLine(sy, ex, color) {
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(ox, sy);
+        ctx.lineTo(ex, sy);
+        ctx.stroke();
+        ctx.restore();
+    }
+    drawDashedHLine(yPeak, x5, "rgba(255,255,255,0.22)");
+    drawDashedHLine(yProduct, x5, "rgba(255,255,255,0.22)");
+    drawDashedHLine(yReactant, x5, "rgba(255,255,255,0.22)");
+
+    // 主位能曲線
+    ctx.strokeStyle = "#34d399";
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(x1, yReactant);
+    ctx.lineTo(x2, yReactant);
+    ctx.bezierCurveTo(x2 + gW * 0.1, yReactant, x3 - gW * 0.1, yPeak, x3, yPeak);
+    ctx.bezierCurveTo(x3 + gW * 0.1, yPeak, x4 - gW * 0.1, yProduct, x4, yProduct);
+    ctx.lineTo(x5, yProduct);
+    ctx.stroke();
+
+    // 反應物標示：N₂ + 3H₂
+    ctx.fillStyle = "#38bdf8";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("N₂ + 3H₂ (反應物)", x1 + 2, yReactant - 6);
+
+    // 產物標示：2NH₃
+    ctx.fillStyle = "#f87171";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("2NH₃ (產物)", x5 - 2, yProduct - 6);
+
+    // 活化錯合物頂峰標記
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(x3, yPeak, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("活化錯合物", x3, yPeak - 6);
+
+    // 繪製垂直雙箭頭通用函式
+    function drawDoubleArrow(x, yTop, yBottom, color, label, valText, alignRight=false) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, yTop + 6);
+        ctx.lineTo(x, yBottom - 6);
+        ctx.stroke();
+
+        // 上箭頭
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x, yTop);
+        ctx.lineTo(x - 4, yTop + 8);
+        ctx.lineTo(x + 4, yTop + 8);
+        ctx.fill();
+
+        // 下箭頭
+        ctx.beginPath();
+        ctx.moveTo(x, yBottom);
+        ctx.lineTo(x - 4, yBottom - 8);
+        ctx.lineTo(x + 4, yBottom - 8);
+        ctx.fill();
+
+        // 文字標記
+        const midY = (yTop + yBottom) / 2;
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = alignRight ? "right" : "left";
+        ctx.textBaseline = "middle";
+        const tx = alignRight ? (x - 7) : (x + 7);
+        ctx.fillText(label, tx, midY - 6);
+        ctx.font = "10px sans-serif";
+        ctx.fillText(valText, tx, midY + 7);
+    }
+
+    // 正反應活化能 E1
+    const xE1 = ox + gW * 0.32;
+    drawDoubleArrow(xE1, yPeak, yReactant, "#fbbf24", "E₁ (正反應活化能)", "230 kJ/mol", true);
+
+    // 逆反應活化能 E2
+    const xE2 = ox + gW * 0.68;
+    drawDoubleArrow(xE2, yPeak, yProduct, "#a78bfa", "E₂ (逆反應活化能)", "138 kJ/mol", false);
+
+    // 反應熱 ΔH 標註 (中央)
+    const xDH = x3;
+    ctx.strokeStyle = "#34d399";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(xDH, yProduct + 5);
+    ctx.lineTo(xDH, yReactant - 5);
+    ctx.stroke();
+    // 箭頭朝上表示吸熱 ΔH > 0
+    ctx.fillStyle = "#34d399";
+    ctx.beginPath();
+    ctx.moveTo(xDH, yProduct);
+    ctx.lineTo(xDH - 3.5, yProduct + 7);
+    ctx.lineTo(xDH + 3.5, yProduct + 7);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(xDH, yReactant);
+    ctx.lineTo(xDH - 3.5, yReactant - 7);
+    ctx.lineTo(xDH + 3.5, yReactant - 7);
+    ctx.fill();
+
+    ctx.font = "bold 10px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("ΔH = +92", xDH, (yProduct + yReactant) / 2);
+}
+
+// 頁面加載完成後繪製，並監聽尺寸變化
+window.addEventListener("DOMContentLoaded", drawExample2Canvas);
+window.addEventListener("load", drawExample2Canvas);
+window.addEventListener("resize", drawExample2Canvas);
+setTimeout(drawExample2Canvas, 50);
+setTimeout(drawExample2Canvas, 250);
+</script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2-2 波以耳定律 · 經典範例 5：J 型管抽出水銀之液面位移 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+            --mercury: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.02rem, 1.25vw, 1.2rem); margin-bottom: 0.25rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.88rem, 1.02vw, 1.02rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.55rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.82rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.55rem 0.85rem; line-height: 1.6; font-size: 0.88rem;
+        }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+        .step-block.red { border-left-color: var(--accent-red); background: rgba(248,113,113,0.05); }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 8px; border-left: 4px solid var(--accent-cyan);
+            padding: 0.5rem 0.8rem; text-align: center;
+            font-size: 1.15rem; margin: 0.3rem 0;
+        }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>2-2 波以耳定律 &middot; 經典範例 5：J 型管中抽出水銀之綜合位移問題</h1>
+                <div class="grid-2">
+
+                    <!-- 左欄：題目呈現與引導 -->
+                    <div class="panel">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:0.35rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="tag tag-yellow">經典範例 5</span>
+                                <h2 style="color: var(--accent-yellow); margin:0;">J 型管水銀抽取體積求值</h2>
+                            </div>
+                            <span style="font-size:0.8rem; color:rgba(255,255,255,0.5);">一題一頁 &middot; 雙管連動位移</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 0.75rem 0.95rem;">
+                            <p style="font-size: 0.95rem; line-height: 1.65; color: #f8fafc;">
+                                <strong>題目說明：</strong><br>
+                                在 25&#8451;、1 atm（76 cmHg）下，一截面積為 1 cm&#178; 之 J 型玻璃管，左管頂端封閉，管中封有氦氣。初時左管氦氣柱高 20 cm，右管水銀液面高於左管液面 34 cm，故初壓 P&#8321; = 76 + 34 = 110 cmHg，初體積 V&#8321; = 20 cm&#179;。<br>
+                                現從系統中緩慢抽走部分水銀，使氦氣體積增大至 V&#8322; = 25 cm&#179;。
+                            </p>
+                            <p style="font-size: 0.95rem; line-height: 1.65; color: var(--accent-yellow); margin-top: 0.4rem;">
+                                <strong>問：</strong>共從 J 型管中抽走了多少 mL 的水銀？
+                            </p>
+                        </div>
+
+                        <!-- J 型管初態示意圖 SVG -->
+                        <div style="background: rgba(0,0,0,0.28); border-radius: 12px; padding: 0.8rem; display: flex; justify-content: center; align-items: center; flex: 1; min-height: 230px; margin: 0.4rem 0;">
+                            <svg viewBox="0 0 320 225" style="width: 100%; max-width: 420px; height: 240px;">
+                                <!-- 外界大氣壓標示與向下推箭頭 -->
+                                <text x="175" y="8" fill="var(--accent-yellow)" font-size="12" font-weight="bold" text-anchor="middle">Patm = 76 cmHg</text>
+                                <path d="M 175,12 V 28" stroke="var(--accent-yellow)" stroke-width="2" />
+                                <polygon points="175,30 171,22 179,22" fill="var(--accent-yellow)" />
+
+                                <!-- 玻璃管厚度背景 -->
+                                <path d="M 85,50 V 155 A 35,35 0 0 0 175,155 V 12" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="18" />
+                                <!-- 玻璃內外壁輪廓線 -->
+                                <path d="M 76,50 V 155 A 44,44 0 0 0 184,155 V 12" fill="none" stroke="white" stroke-width="1.8" />
+                                <path d="M 94,50 V 155 A 26,26 0 0 0 166,155 V 12" fill="none" stroke="white" stroke-width="1.8" />
+
+                                <!-- 左管頂端封閉蓋 -->
+                                <path d="M 76,50 A 9,9 0 0 1 94,50" fill="white" stroke="white" stroke-width="2" />
+
+                                <!-- 氦氣柱 (左管，高 20cm 示意) -->
+                                <path d="M 85,50 V 105" stroke="rgba(56,189,248,0.4)" stroke-width="15" />
+                                <text x="85" y="42" fill="var(--accent-cyan)" font-size="13" font-weight="bold" text-anchor="middle">He 氣體</text>
+
+                                <!-- 水銀充填 (左液面在 y=105，右液面在 y=50，高差 34cm) -->
+                                <path d="M 85,105 V 155 A 35,35 0 0 0 175,155 V 50" fill="none" stroke="var(--mercury)" stroke-width="15" />
+
+                                <!-- 高度標註：左氣柱 20 cm -->
+                                <line x1="60" y1="50" x2="74" y2="50" stroke="var(--accent-cyan)" stroke-width="1.2" />
+                                <line x1="60" y1="105" x2="74" y2="105" stroke="var(--accent-cyan)" stroke-width="1.2" />
+                                <line x1="66" y1="50" x2="66" y2="105" stroke="var(--accent-cyan)" stroke-width="1.8" />
+                                <polygon points="66,50 62,58 70,58" fill="var(--accent-cyan)" />
+                                <polygon points="66,105 62,97 70,97" fill="var(--accent-cyan)" />
+                                <text x="58" y="82" fill="var(--accent-cyan)" font-size="13" font-weight="bold" text-anchor="end">20 cm</text>
+
+                                <!-- 高度標註：液面差 34 cm -->
+                                <line x1="184" y1="50" x2="225" y2="50" stroke="var(--accent-yellow)" stroke-width="1.2" stroke-dasharray="3,2" />
+                                <line x1="94" y1="105" x2="225" y2="105" stroke="var(--accent-yellow)" stroke-width="1.2" stroke-dasharray="3,2" />
+                                <line x1="215" y1="50" x2="215" y2="105" stroke="var(--accent-yellow)" stroke-width="1.8" />
+                                <polygon points="215,50 211,58 219,58" fill="var(--accent-yellow)" />
+                                <polygon points="215,105 211,97 219,97" fill="var(--accent-yellow)" />
+                                <text x="228" y="82" fill="var(--accent-yellow)" font-size="14" font-weight="bold">&#916;h = 34 cm</text>
+
+                                <!-- 截面積與初壓標註 -->
+                                <text x="250" y="135" fill="#94a3b8" font-size="12">截面積 A = 1 cm&#178;</text>
+                                <text x="250" y="155" fill="var(--accent-cyan)" font-size="12" font-weight="bold">V&#8321; = 20 cm&#179;</text>
+                                <text x="250" y="175" fill="var(--accent-yellow)" font-size="12" font-weight="bold">P&#8321; = 110 cmHg</text>
+                            </svg>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.4rem;">
+                            <button class="btn-action" onclick="toggleSolution('s8-solution')" style="width: 100%; padding: 10px 18px; font-size: 1rem;">
+                                &#128161; 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設空白） -->
+                    <div class="panel scroll-panel" style="background: rgba(255,255,255,0.025); position: relative;">
+                        <div id="s8-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.35rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                    <span>&#10003;</span> 完整詳解與雙管位移剖析
+                                </h2>
+                                <span class="tag" style="background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4);">
+                                    正解：32 mL
+                                </span>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-blue);">Step 1：由波以耳定律計算末狀態壓力</strong><br>
+                                初始狀態：P&#8321; = 76 + 34 = 110 cmHg，V&#8321; = 20 cm&#179;<br>
+                                末了狀態：V&#8322; = 25 cm&#179;。由 P&#8321;V&#8321; = P&#8322;V&#8322;：
+                                <div class="formula-box">
+                                    $$110 \times 20 = P_2 \times 25 \implies \mathbf{P_2 = 88\text{ cmHg}}$$
+                                </div>
+                                末了兩管水銀高度差：
+                                $$h' = P_2 - P_{\text{atm}} = 88 - 76 = \mathbf{12\text{ cm}}$$（右管仍高於左管）
+                            </div>
+
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">Step 2：雙管液面實體移動距離分析</strong><br>
+                                <ul style="margin-left: 1.2rem; line-height: 1.6;">
+                                    <li><strong>左管液面變化：</strong>氦氣體積由 20 cm&#179; &#8594; 25 cm&#179;，左液面<strong>下降了 5 cm</strong>。</li>
+                                    <li><strong>右管相對變化：</strong>右管液面高於左管的距離由原本的 +34 cm 縮小為 +12 cm，即右管液面<strong>相對於左管下降了 34 - 12 = 22 cm</strong>。</li>
+                                    <li><strong>右管絕對位移：</strong>因左管自身已下降 5 cm，故右管水銀面相對於管子共下降了：
+                                        $$\Delta h_{\text{右}} = 5\text{ cm} + 22\text{ cm} = \mathbf{27\text{ cm}}$$
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-yellow);">Step 3：計算抽取水銀總體積</strong><br>
+                                從系統中取出的水銀總量 = (左管空出的體積) + (右管下降的體積)：
+                                <div class="formula-box" style="border-left-color: var(--accent-yellow); margin: 0.3rem 0;">
+                                    $$\Delta V_{\text{總}} = (5\text{ cm} + 27\text{ cm}) \times 1\text{ cm}^2 = \mathbf{32\text{ mL}}$$
+                                </div>
+                            </div>
+
+                            <div class="step-block red">
+                                <strong style="color: var(--accent-red);">&#128161; 易錯警示（連通管守恆陷阱）：</strong><br>
+                                同學最常誤將抽出量直接算成 34 - 12 = 22 mL，這忽略了<strong>左管氣體膨脹時，左側液面本身也往下推擠了 5 cm</strong>！務必記住雙管需同時考慮絕對位移基準。
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+    } else {
+        el.classList.add('revealed');
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return;
+    window.__chemScrollBridgeInstalled = true;
+    function getScrollPos() {
+        var sy = window.scrollY || window.pageYOffset || 0;
+        var sx = window.scrollX || window.pageXOffset || 0;
+        if (document.documentElement) {
+            sy = Math.max(sy, document.documentElement.scrollTop || 0);
+            sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+        }
+        if (document.body) {
+            sy = Math.max(sy, document.body.scrollTop || 0);
+            sx = Math.max(sx, document.body.scrollLeft || 0);
+        }
+        var app = document.getElementById('app');
+        if (app) {
+            sy = Math.max(sy, app.scrollTop || 0);
+            sx = Math.max(sx, app.scrollLeft || 0);
+        }
+        return { sx: sx, sy: sy };
+    }
+    function reportScroll() {
+        if (window.parent && window.parent !== window) {
+            var pos = getScrollPos();
+            window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+        }
+    }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('wheel', function () {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 40);
+        setTimeout(reportScroll, 120);
+    }, { capture: true, passive: true });
+    window.addEventListener('touchmove', function () {
+        requestAnimationFrame(reportScroll);
+        setTimeout(reportScroll, 40);
+        setTimeout(reportScroll, 120);
+    }, { capture: true, passive: true });
+    window.addEventListener('keydown', function (e) {
+        if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+            requestAnimationFrame(reportScroll);
+            setTimeout(reportScroll, 60);
+            setTimeout(reportScroll, 180);
+        }
+    }, { passive: true });
+    window.addEventListener('message', function (e) {
+        if (!e.data) return;
+        if (e.data.type === '__chem_scroll_by') {
+            var dy = e.data.deltaY || 0;
+            var dx = e.data.deltaX || 0;
+            window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+            if (document.documentElement) document.documentElement.scrollTop += dy;
+            if (document.body) document.body.scrollTop += dy;
+            var app = document.getElementById('app');
+            if (app) app.scrollTop += dy;
+            reportScroll();
+        } else if (e.data.type === '__chem_get_scroll') {
+            reportScroll();
+        }
+    });
+    reportScroll();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', reportScroll);
+    }
+    window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>

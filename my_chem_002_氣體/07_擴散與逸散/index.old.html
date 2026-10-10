@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>擴散與逸散 - 互動教學</title>
+    <meta name="description" content="擴散與逸散 — 格銳目定律、氣體動力論、互動例題與連連看">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b1120;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a855f7;
+            --accent-cyan: #22d3ee;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html { width: 100%; min-height: 100%; background-color: var(--bg-dark); color: var(--text-main); font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; overflow-y: auto; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 30px 30px; scroll-behavior: smooth; }
+        #app { position: relative; width: 100%; min-height: 100vh; overflow-x: hidden; }
+        #start-overlay { display: none !important; }
+        #presentation-area { position: relative; width: 100%; min-height: 100vh; background: transparent; }
+        #slides-container { position: relative; padding: 2vh 5vw 5vh 5vw; }
+
+        /* slides flow vertically */
+        .slide { position: relative; width: 100%; padding: 0.5rem 4rem 2rem 2rem; opacity: 1; pointer-events: auto; display: flex; flex-direction: column; overflow: visible; border-bottom: 2px dashed rgba(255,255,255,0.06); }
+        @media (max-width: 768px) { .slide { padding: 0.5rem 4rem 1.5rem 1.5rem; } }
+
+        .slide h1 { color: var(--accent-blue); font-size: clamp(1.8rem, 2.5vw, 2.4rem); margin-bottom: 0.5rem; text-align: center; border-bottom: 2px solid rgba(56, 189, 248, 0.3); padding-bottom: 0.4rem; flex-shrink: 0; }
+        .slide h2 { color: var(--accent-yellow); font-size: clamp(1.4rem, 2vw, 1.8rem); margin-top: 0.5rem; margin-bottom: 0.8rem; }
+        .slide p, .slide li { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.6; margin-bottom: 0.6rem; }
+        .slide ul { margin-left: 1.5rem; margin-bottom: 0.6rem; }
+
+        .text-red { color: var(--accent-red); }
+        .text-blue { color: var(--accent-blue); }
+        .text-green { color: var(--accent-green); }
+        .text-yellow { color: var(--accent-yellow); }
+        .text-cyan { color: var(--accent-cyan); }
+        .text-purple { color: var(--accent-purple); }
+
+        .formula-box { background: rgba(0,0,0,0.3); border-left: 5px solid var(--accent-green); padding: clamp(0.5rem, 1.5vw, 1rem); border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: clamp(1.2rem, 2vw, 1.8rem); text-align: center; overflow-x: auto; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 1rem; flex: 1; min-height: 0; }
+        .flex-col { flex: 1 1 400px; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 10px; overflow-x: auto; display: flex; flex-direction: column; }
+        .rule-card { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 1rem; border-radius: 10px; margin-bottom: 1rem; }
+
+        /* Drawing layer – matches whole scrollable document */
+        #drawing-layer { position: absolute; top: 0; left: 0; z-index: 20; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+
+        /* Toolbar */
+        #toolbar { position: fixed; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px; display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7); backdrop-filter: blur(20px); width: 50px; }
+        .btn-tool { background: transparent; color: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.25s; font-size: 1rem; }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-cyan); color: #0f172a; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34,211,238,0.5); }
+        .btn-tool.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #000; }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        .color-dot { border-radius: 50%; cursor: pointer; transition: transform 0.15s; }
+        .color-dot:hover { transform: scale(1.2); }
+        #btn-top { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Tables */
+        .table-chem { width: 100%; border-collapse: collapse; margin: 1rem 0; background: rgba(30, 41, 59, 0.5); border-radius: 10px; overflow: hidden; }
+        .table-chem th, .table-chem td { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .table-chem th { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+
+        /* Game items */
+        .game-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 12px; display: flex; align-items: center; width: 100%; min-height: 45px; height: 9vh; max-height: 80px; transition: transform 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s; position: relative; font-size: 1.2rem; }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot { width: 22px; height: 22px; background: #fff; border-radius: 50%; cursor: crosshair; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: transform 0.2s, background 0.2s; flex-shrink: 0; z-index: 5; }
+        .left-dot { margin-left: auto; }
+        .right-dot { margin-right: auto; }
+        .dot:hover { transform: scale(1.3); background: var(--accent-blue); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); }
+
+        /* Example question layout: left 1.3 / right 1 */
+        .ex-split-row { display: flex; gap: 2rem; margin-top: 1rem; align-items: stretch; min-height: 67vh; }
+        .ex-left  { flex: 1.3; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ex-right { flex: 1;   background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15); border-radius: 14px; padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 67vh; position: relative; }
+        .ex-options { list-style: none; margin: 0.8rem 0; padding: 0; }
+        .ex-options li { padding: 0.35rem 0; font-size: clamp(1rem, 1.4vw, 1.3rem); line-height: 1.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .ex-options li:last-child { border-bottom: none; }
+        .ex-answer-box { background: rgba(0,0,0,0.4); border-left: 5px solid var(--accent-green); border-radius: 0 10px 10px 0; padding: 1rem 1.5rem; margin: 0.8rem 0; width: 100%; display: none; }
+        .ex-answer-box.visible { display: block; }
+        .ans-label { color: var(--accent-green); font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
+        .ans-body  { color: white; font-size: 1.1rem; line-height: 1.8; }
+        .btn-show-ans { margin-top: auto; align-self: flex-start; padding: 8px 24px; background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .btn-show-ans:hover { background: rgba(255,255,255,0.1); }
+        .btn-show-ans.shown { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
+
+        /* Random Draw styles */
+        .draw-ball { width: 100%; aspect-ratio: 1/1; border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(0.75rem, 2.5vw, 1.1rem); color: #fff; position: relative; z-index: 1; transition: all 0.3s; }
+        .draw-ball.flicker { background: #fff; color: #000; transform: scale(1.35); box-shadow: 0 0 25px #fff, 0 0 15px var(--accent-cyan); border-color: #fff; z-index: 10; }
+        .draw-ball.drawn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+        .draw-ball.winner { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #000; transform: scale(1.25); box-shadow: 0 0 25px var(--accent-yellow); z-index: 10; }
+
+        /* Demo canvas */
+        .demo-canvas { width: 100%; max-width: 340px; height: 120px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(0,0,0,0.5); display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div id="start-overlay">
+            <h1 style="color: var(--accent-blue); font-size: clamp(2.5rem, 5vw, 4rem); margin-bottom: 1rem; text-align: center;">擴散與逸散</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 3rem; text-align: center;">格銳目定律及其應用</p>
+            <button id="btn-start" class="btn-tool primary" style="width: auto; padding: 15px 40px; font-size: clamp(1.2rem, 2.5vw, 1.5rem); border-radius: 30px;">▶ 點擊進入全螢幕教學</button>
+        </div>
+
+        <div id="presentation-area">
+            <div id="slides-container">
+
+                <!-- Slide 1: 擴散與逸散概念 -->
+                <div class="slide">
+                    <h1>擴散與逸散的概念</h1>
+                    <div class="flex-row">
+                        <!-- Left: Diffusion -->
+                        <div class="flex-col" style="background: rgba(56,189,248,0.05); border: 1px solid rgba(56,189,248,0.2);">
+                            <h2 class="text-yellow">擴散 (Diffusion)</h2>
+                            <p>氣體分子因自身運動而由<strong class="text-cyan">高濃度</strong>向<strong class="text-cyan">低濃度</strong>擴展，最終達到均勻分布。</p>
+                            <p>例如：香水味在室內傳播、氨氣擴散到空氣中。</p>
+                            <div class="rule-card">
+                                <p><strong class="text-yellow">📌 特點：</strong></p>
+                                <p>需要介質（如空氣），速率受到碰撞干擾，比逸散慢。</p>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; margin-top:auto;">
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.5); margin-bottom:4px;">▼ 擴散動態演示</p>
+                                <canvas id="diffusion-canvas" class="demo-canvas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Right: Effusion -->
+                        <div class="flex-col" style="background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.2);">
+                            <h2 class="text-yellow">逸散 (Effusion)</h2>
+                            <p>氣體分子穿過<strong class="text-purple">微小孔徑</strong>進入另一空間（或真空）的過程。</p>
+                            <p>例如：氣球慢慢洩氣、鈾濃縮中 UF₆ 的分離。</p>
+                            <div class="rule-card" style="border-color: var(--accent-purple);">
+                                <p><strong style="color:var(--accent-purple);">📌 特點：</strong></p>
+                                <p>在真空中進行，速率僅受分子量影響，格銳目定律直接適用。</p>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:center; margin-top:auto;">
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.5); margin-bottom:4px;">▼ 逸散動態演示</p>
+                                <canvas id="effusion-canvas" class="demo-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: 格銳目定律 -->
+                <div class="slide">
+                    <h1>格銳目定律 (Graham's Law)</h1>
+                    <div class="flex-row" style="gap: 1.5rem;">
+                        <div class="flex-col" style="flex: 1.3;">
+                            <h2 class="text-yellow">定律內容</h2>
+                            <p>在<strong class="text-cyan">同溫同壓</strong>下，氣體的逸散速率（$r$）與其分子量（$M$）的<strong class="text-red">平方根成反比</strong>。</p>
+                            <div class="formula-box">
+                                $r \propto \dfrac{1}{\sqrt{M}}$
+                            </div>
+                            <div class="formula-box" style="border-left-color: var(--accent-cyan);">
+                                $\dfrac{r_1}{r_2} = \sqrt{\dfrac{M_2}{M_1}}$
+                            </div>
+                            <h2 class="text-yellow" style="margin-top: 1rem;">速率的多種表達方式</h2>
+                            <ul>
+                                <li>莫耳數比：$\dfrac{n_1}{n_2}$（相同時間內）</li>
+                                <li>體積比：$\dfrac{V_1}{V_2}$（相同時間、同溫同壓）</li>
+                                <li>移動距離比：$\dfrac{L_1}{L_2}$（相同時間）</li>
+                                <li>時間反比：$\dfrac{t_2}{t_1}$（相同距離）</li>
+                            </ul>
+                        </div>
+                        <div class="flex-col" style="flex: 1; background: rgba(255,255,255,0.02);">
+                            <h2 class="text-green">平均動能與均方根速率</h2>
+                            <p>相同溫度下，各氣體分子的<strong class="text-yellow">平均動能相等</strong>：</p>
+                            <div class="formula-box" style="border-left-color: var(--accent-red);">
+                                $\overline{E_k} = \dfrac{3}{2}kT$
+                            </div>
+                            <p>均方根速率（方均根速率）：</p>
+                            <div class="formula-box" style="border-left-color: var(--accent-purple);">
+                                $v_{rms} = \sqrt{\dfrac{3RT}{M}}$
+                            </div>
+                            <div class="rule-card" style="border-color:var(--accent-yellow);">
+                                <p><strong class="text-yellow">📌 格銳目定律的時間形式：</strong></p>
+                                <div style="text-align:center; font-size:1.3rem; margin-top:0.5rem;">$\dfrac{t_1}{t_2} = \sqrt{\dfrac{M_1}{M_2}}$</div>
+                                <p style="font-size:0.9rem; margin-top:0.5rem;">（相同距離下，分子量大的需要更長時間）</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 3: 氣體動力論 -->
+                <div class="slide">
+                    <h1>氣體動力論 (Kinetic Molecular Theory)</h1>
+                    <div class="flex-row">
+                        <div class="flex-col" style="flex: 1.2;">
+                            <h2 class="text-yellow">五大基本假設 (Postulates)</h2>
+                            <ul>
+                                <li>氣體由大量粒子組成，粒子本身體積<strong class="text-cyan">可忽略</strong>。</li>
+                                <li>分子呈<strong class="text-cyan">隨機運動</strong>，遵守牛頓力學。</li>
+                                <li>分子間<strong class="text-cyan">無作用力</strong>（除碰撞瞬間外）。</li>
+                                <li>碰撞為<strong class="text-cyan">完全彈性碰撞</strong>（無能量損失）。</li>
+                                <li>平均動能僅與<strong class="text-cyan">絕對溫度 ($T$)</strong> 有關。</li>
+                            </ul>
+                            <div class="rule-card" style="margin-top:1rem;">
+                                <p><strong class="text-yellow">📌 理想氣體 vs 真實氣體</strong></p>
+                                <p style="font-size:0.9rem; margin-top:0.5rem;">真實氣體在<strong>低溫高壓</strong>時偏離理想氣體行為，因分子體積與分子間引力不可忽視。</p>
+                            </div>
+                        </div>
+                        <div class="flex-col" style="flex: 1.5; font-size: 1.1rem;">
+                            <h2 class="text-green">壓力公式推導</h2>
+                            <p>1. 單個分子碰撞器壁的力（一維）：</p>
+                            <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:5px; margin-bottom:1rem; text-align:center;">
+                                $F = \dfrac{\Delta p}{\Delta t} = \dfrac{mv_x^2}{L}$
+                            </div>
+                            <p>2. $N$ 個分子總壓力（考慮三維 $\overline{v^2} = 3\overline{v_x^2}$）：</p>
+                            <div class="formula-box" style="margin:0 0 1rem 0;">
+                                $P = \dfrac{1}{3}\dfrac{Nm\overline{v^2}}{V}$
+                            </div>
+                            <p>3. 結合理想氣體方程式 $PV=nRT$：</p>
+                            <div style="background:rgba(56,189,248,0.1); padding:10px; border-radius:5px; margin-bottom:0.5rem; text-align:center;">
+                                $\dfrac{1}{2}m\overline{v^2} = \dfrac{3}{2}kT \implies \overline{E_k} = \dfrac{3}{2}kT$
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Molecular speed distribution SVG -->
+                    <div class="flex-row" style="margin-top:1.5rem;">
+                        <div class="flex-col" style="background:#ccc; border-radius:10px; padding:15px; align-items:center; justify-content:center;">
+                            <h3 style="color:#333; font-size:1.1rem; margin-bottom:10px; font-weight:bold;">分子速率分布曲線（$T_2 > T_1$）</h3>
+                            <svg viewBox="0 0 400 280" style="width:100%; max-width:420px; height:auto; font-family:Arial,sans-serif;">
+                                <rect x="50" y="30" width="330" height="210" fill="white" stroke="#333" stroke-width="1"/>
+                                <g stroke="#000" stroke-width="1">
+                                    <line x1="50" y1="240" x2="50" y2="245"/>
+                                    <line x1="116" y1="240" x2="116" y2="245"/>
+                                    <line x1="182" y1="240" x2="182" y2="245"/>
+                                    <line x1="248" y1="240" x2="248" y2="245"/>
+                                    <line x1="314" y1="240" x2="314" y2="245"/>
+                                    <line x1="380" y1="240" x2="380" y2="245"/>
+                                </g>
+                                <g font-size="10" text-anchor="middle" fill="#000">
+                                    <text x="50" y="258">0</text>
+                                    <text x="116" y="258">400</text>
+                                    <text x="182" y="258">800</text>
+                                    <text x="248" y="258">1200</text>
+                                    <text x="314" y="258">1600</text>
+                                    <text x="380" y="258">2000</text>
+                                </g>
+                                <g transform="translate(15,135) rotate(-90)" font-size="11" text-anchor="middle" fill="#000" font-style="italic">
+                                    <text y="0">Fraction of molecules</text>
+                                    <text y="12">at a particular speed</text>
+                                </g>
+                                <line x1="50" y1="35" x2="50" y2="240" stroke="#000" stroke-width="1.5"/>
+                                <text x="215" y="275" font-size="12" font-weight="bold" text-anchor="middle" fill="#000">Molecular speed (m/s)</text>
+                                <line x1="50" y1="240" x2="380" y2="240" stroke="#000" stroke-width="1.5"/>
+                                <!-- T1 Curve -->
+                                <path d="M 50 240 C 70 240, 100 40, 120 40 C 145 40, 170 210, 330 240" fill="none" stroke="#333" stroke-width="2.5"/>
+                                <text x="140" y="45" font-size="14" font-weight="bold" fill="#333">T1</text>
+                                <!-- T2 Curve -->
+                                <path d="M 50 240 C 100 240, 180 120, 220 120 C 270 120, 330 210, 380 230" fill="none" stroke="#777" stroke-width="2.5"/>
+                                <text x="250" y="130" font-size="14" font-weight="bold" fill="#777">T2</text>
+                                <text x="300" y="60" font-size="12" font-weight="bold" fill="#000">(T2 &gt; T1)</text>
+                            </svg>
+                        </div>
+                        <div class="flex-col" style="justify-content:center;">
+                            <h2 class="text-yellow">從圖形讀出的重點</h2>
+                            <ul>
+                                <li>溫度升高 → 曲線<strong class="text-red">向右移動</strong>且<strong class="text-red">變寬平</strong>。</li>
+                                <li>最可能速率 ($v_p$) 隨溫度升高而<strong class="text-red">增大</strong>。</li>
+                                <li>曲線下面積恆等於 1（代表所有分子）。</li>
+                                <li>高溫時，高速分子比例<strong class="text-cyan">明顯增多</strong>。</li>
+                            </ul>
+                            <div class="rule-card" style="margin-top:1rem; border-color:var(--accent-green);">
+                                <p><strong class="text-green">📌 三種速率比較：</strong></p>
+                                <p style="font-size:0.95rem; margin-top:0.4rem;">$v_p < \overline{v} < v_{rms}$（最可能速率 &lt; 平均速率 &lt; 均方根速率）</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 1 -->
+                <div class="slide">
+                    <h1>例題 1 逸散速率比</h1>
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:5px solid var(--accent-blue); margin-bottom:10px;">
+                                <p style="font-size:1.25rem; line-height:1.5;">在同溫同壓下，試比較下列各組氣體的逸散速率比 $r_1 : r_2$（括號內為分子量）：</p>
+                            </div>
+                            <ul class="ex-options">
+                                <li>(1) $H_2$（$M=2$）與 $O_2$（$M=32$）</li>
+                                <li>(2) $CH_4$（$M=16$）與 $SO_2$（$M=64$）</li>
+                                <li>(3) $N_2$（$M=28$）與 $CO_2$（$M=44$）</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ans-1">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ans-1" class="ex-answer-box">
+                                <div class="ans-label">解答與解析：</div>
+                                <div class="ans-body">
+                                    <p>利用格銳目定律：$\dfrac{r_1}{r_2} = \sqrt{\dfrac{M_2}{M_1}}$</p>
+                                    <p><b>(1) $H_2$ vs $O_2$：</b></p>
+                                    <p>$\dfrac{r_{H_2}}{r_{O_2}} = \sqrt{\dfrac{32}{2}} = \sqrt{16} = 4$</p>
+                                    <p style="color:var(--accent-yellow);">∴ $r_{H_2} : r_{O_2} = 4 : 1$</p>
+                                    <p><b>(2) $CH_4$ vs $SO_2$：</b></p>
+                                    <p>$\dfrac{r_{CH_4}}{r_{SO_2}} = \sqrt{\dfrac{64}{16}} = \sqrt{4} = 2$</p>
+                                    <p style="color:var(--accent-yellow);">∴ $r_{CH_4} : r_{SO_2} = 2 : 1$</p>
+                                    <p><b>(3) $N_2$ vs $CO_2$：</b></p>
+                                    <p>$\dfrac{r_{N_2}}{r_{CO_2}} = \sqrt{\dfrac{44}{28}} = \sqrt{\dfrac{11}{7}} \approx 1.25$</p>
+                                    <p style="color:var(--accent-yellow);">∴ $r_{N_2} : r_{CO_2} = \sqrt{11} : \sqrt{7}$</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 2 -->
+                <div class="slide">
+                    <h1>例題 2 逸散時間計算</h1>
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:5px solid var(--accent-yellow); margin-bottom:10px;">
+                                <p style="font-size:1.25rem; line-height:1.5;">在同溫同壓下，$H_2$ 擴散通過一小孔需要 $t_1 = 10$ 分鐘。同條件下，某未知氣體 X 需要 $t_2 = 40$ 分鐘才能通過同一小孔。試求氣體 X 的分子量。</p>
+                            </div>
+                            <div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:10px; padding:12px; margin-bottom:10px;">
+                                <p style="color:var(--accent-purple); font-weight:bold;">解題思路：</p>
+                                <p style="font-size:1rem;">逸散時間的格銳目定律為：$\dfrac{t_1}{t_2} = \sqrt{\dfrac{M_1}{M_2}}$</p>
+                            </div>
+                            <button class="btn-show-ans" data-ans="ans-2">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ans-2" class="ex-answer-box">
+                                <div class="ans-label">解答與解析：</div>
+                                <div class="ans-body">
+                                    <p>已知：$M_{H_2} = 2$，$t_{H_2} = 10$ min，$t_X = 40$ min</p>
+                                    <p>代入公式：</p>
+                                    <p>$\dfrac{t_{H_2}}{t_X} = \sqrt{\dfrac{M_{H_2}}{M_X}}$</p>
+                                    <p>$\dfrac{10}{40} = \sqrt{\dfrac{2}{M_X}}$</p>
+                                    <p>$\dfrac{1}{4} = \sqrt{\dfrac{2}{M_X}}$</p>
+                                    <p>$\dfrac{1}{16} = \dfrac{2}{M_X}$</p>
+                                    <p style="color:var(--accent-yellow); font-size:1.2rem;">$\therefore M_X = 32$</p>
+                                    <p style="color:var(--accent-cyan); margin-top:0.5rem;">∴ 氣體 X 的分子量為 32，可能是 $O_2$（$M=32$）。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 3 -->
+                <div class="slide">
+                    <h1>例題 3 選擇題 — 逸散速率應用</h1>
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:5px solid var(--accent-green); margin-bottom:10px;">
+                                <p style="font-size:1.25rem; line-height:1.5;">在同溫同壓下，以下各種說法何者正確？</p>
+                            </div>
+                            <ul class="ex-options">
+                                <li>(A) 分子量越大，逸散速率越快</li>
+                                <li>(B) 相同溫度下，所有氣體分子的平均速率相同</li>
+                                <li>(C) $H_2$ 與 $O_2$ 的逸散速率比為 $4:1$</li>
+                                <li>(D) 提高溫度，氣體分子速率分布曲線向左移並變窄</li>
+                                <li>(E) 在同溫下，分子量大的氣體平均動能也較大</li>
+                            </ul>
+                            <button class="btn-show-ans" data-ans="ans-3">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ans-3" class="ex-answer-box">
+                                <div class="ans-label">解答與解析：</div>
+                                <div class="ans-body">
+                                    <p><b>正確答案：(C)</b></p>
+                                    <p><b>(A) 錯誤：</b>分子量越大，逸散速率<strong style="color:var(--accent-red);">越慢</strong>（$r \propto 1/\sqrt{M}$）。</p>
+                                    <p><b>(B) 錯誤：</b>相同溫度下，分子量不同，平均速率也不同（$v_{rms} \propto 1/\sqrt{M}$）。</p>
+                                    <p><b>(C) 正確：</b>$\dfrac{r_{H_2}}{r_{O_2}} = \sqrt{\dfrac{32}{2}} = 4$。</p>
+                                    <p><b>(D) 錯誤：</b>提高溫度，曲線向<strong style="color:var(--accent-green);">右</strong>移並<strong style="color:var(--accent-green);">變寬</strong>。</p>
+                                    <p><b>(E) 錯誤：</b>在同溫下，所有氣體<strong style="color:var(--accent-red);">平均動能相等</strong>，均為 $\dfrac{3}{2}kT$。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 4 -->
+                <div class="slide">
+                    <h1>例題 4 擴散距離比較</h1>
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:5px solid var(--accent-purple); margin-bottom:10px;">
+                                <p style="font-size:1.25rem; line-height:1.5;">在同溫同壓下，將 $NH_3$（$M=17$）與 $HCl$（$M=36.5$）分別由一根密閉長管兩端同時通入，兩種氣體相遇反應生成白色固體 $NH_4Cl$（氯化銨）。若管長為 $L$ 公尺，試求白色固體出現的位置。</p>
+                            </div>
+                            <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px; margin-bottom:10px;">
+                                <p style="color:var(--accent-blue); font-size:0.95rem;">💡 提示：兩氣體逸散距離之比等於速率之比。</p>
+                            </div>
+                            <button class="btn-show-ans" data-ans="ans-4">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ans-4" class="ex-answer-box">
+                                <div class="ans-label">解答與解析：</div>
+                                <div class="ans-body">
+                                    <p>設 $NH_3$ 行進距離為 $d_{NH_3}$，$HCl$ 行進距離為 $d_{HCl}$：</p>
+                                    <p>$d_{NH_3} + d_{HCl} = L$</p>
+                                    <p>由格銳目定律：</p>
+                                    <p>$\dfrac{d_{NH_3}}{d_{HCl}} = \dfrac{r_{NH_3}}{r_{HCl}} = \sqrt{\dfrac{M_{HCl}}{M_{NH_3}}} = \sqrt{\dfrac{36.5}{17}}$</p>
+                                    <p>$\approx \sqrt{2.147} \approx 1.465$</p>
+                                    <p>設 $d_{HCl} = x$，則 $d_{NH_3} = 1.465x$：</p>
+                                    <p>$1.465x + x = L \implies x = \dfrac{L}{2.465}$</p>
+                                    <p style="color:var(--accent-yellow);">$\therefore$ 白色固體出現在距 $HCl$ 端約 $\dfrac{L}{2.465} \approx 0.406L$ 處</p>
+                                    <p style="color:var(--accent-cyan);">或距 $NH_3$ 端約 $0.594L$ 處（更靠近 $HCl$ 端）。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example 5 -->
+                <div class="slide">
+                    <h1>例題 5 速率比較與溫度</h1>
+                    <div class="ex-split-row">
+                        <div class="ex-left">
+                            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; border-left:5px solid var(--accent-red); margin-bottom:10px;">
+                                <p style="font-size:1.25rem; line-height:1.5;">同種氣體 $N_2$（$M=28$）：</p>
+                                <p style="font-size:1.25rem; margin-top:5px;">(1) 在 $27°C$ 時的均方根速率為 $v_1$，在 $327°C$ 時的均方根速率為 $v_2$，試求 $v_1 : v_2$。</p>
+                                <p style="font-size:1.25rem; margin-top:5px;">(2) 在 $27°C$ 時，$N_2$ 與 $O_2$（$M=32$）的均方根速率比為何？</p>
+                            </div>
+                            <button class="btn-show-ans" data-ans="ans-5">顯示解答</button>
+                        </div>
+                        <div class="ex-right">
+                            <div id="ans-5" class="ex-answer-box">
+                                <div class="ans-label">解答與解析：</div>
+                                <div class="ans-body">
+                                    <p><b>(1) 同種氣體，溫度改變：</b></p>
+                                    <p>$v_{rms} = \sqrt{\dfrac{3RT}{M}}$，分子量相同時 $v \propto \sqrt{T}$</p>
+                                    <p>$T_1 = 27 + 273 = 300\text{ K}$，$T_2 = 327 + 273 = 600\text{ K}$</p>
+                                    <p>$\dfrac{v_1}{v_2} = \sqrt{\dfrac{T_1}{T_2}} = \sqrt{\dfrac{300}{600}} = \sqrt{\dfrac{1}{2}} = \dfrac{1}{\sqrt{2}}$</p>
+                                    <p style="color:var(--accent-yellow);">$\therefore v_1 : v_2 = 1 : \sqrt{2}$</p>
+                                    <br>
+                                    <p><b>(2) 同溫，不同分子量：</b></p>
+                                    <p>$\dfrac{v_{N_2}}{v_{O_2}} = \sqrt{\dfrac{M_{O_2}}{M_{N_2}}} = \sqrt{\dfrac{32}{28}} = \sqrt{\dfrac{8}{7}}$</p>
+                                    <p style="color:var(--accent-yellow);">$\therefore v_{N_2} : v_{O_2} = \sqrt{8} : \sqrt{7} = 2\sqrt{2} : \sqrt{7}$</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════════════════
+                     核心通關檢核 Slide (整合互動連連看 + 選擇題 + 答對/答錯反饋與再試一次)
+                     ═══════════════════════════════════════════════════════════════ -->
+                <style>
+                    /* ── 單元 2-7 核心通關檢核 CSS ── */
+                    .quiz-container-full {
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                        flex: 1;
+                    }
+                    .quiz-scenario-box {
+                        background: rgba(52, 211, 153, 0.08);
+                        border: 1px solid rgba(52, 211, 153, 0.3);
+                        border-radius: 14px;
+                        padding: 14px 18px;
+                    }
+                    .problem-badge {
+                        display: inline-block;
+                        padding: 4px 14px;
+                        border-radius: 20px;
+                        border: 1px solid;
+                        font-size: 0.85rem;
+                        font-weight: 700;
+                        letter-spacing: 0.02em;
+                    }
+                    .quiz-grid-layout {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 14px;
+                        flex: 1;
+                    }
+                    @media (max-width: 820px) {
+                        .quiz-grid-layout { grid-template-columns: 1fr; }
+                    }
+                    .quiz-card {
+                        background: rgba(15, 23, 42, 0.7);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 14px;
+                        padding: 14px 16px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        transition: border-color 0.25s, box-shadow 0.25s;
+                    }
+                    .quiz-card:hover { border-color: rgba(56, 189, 248, 0.4); }
+                    .quiz-card.card-correct {
+                        border-color: rgba(52, 211, 153, 0.7) !important;
+                        box-shadow: 0 0 16px rgba(52, 211, 153, 0.15) !important;
+                    }
+                    .quiz-card.card-wrong {
+                        border-color: rgba(248, 113, 113, 0.7) !important;
+                        box-shadow: 0 0 16px rgba(248, 113, 113, 0.15) !important;
+                    }
+                    .quiz-q {
+                        font-size: 0.97rem;
+                        line-height: 1.55;
+                        color: #f8fafc;
+                        font-weight: 500;
+                    }
+                    .quiz-options {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 7px;
+                    }
+                    .quiz-opt {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        border-radius: 10px;
+                        padding: 9px 14px;
+                        color: #cbd5e1;
+                        font-size: 0.92rem;
+                        text-align: left;
+                        cursor: pointer;
+                        transition: all 0.18s;
+                        line-height: 1.4;
+                    }
+                    .quiz-opt:hover { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.5); color: #f8fafc; }
+                    .quiz-opt.selected { background: rgba(56, 189, 248, 0.18); border-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+                    .quiz-opt.verified-pass { background: rgba(52, 211, 153, 0.22) !important; border-color: #34d399 !important; color: #34d399 !important; font-weight: 700; }
+                    .quiz-opt.verified-fail { background: rgba(248, 113, 113, 0.22) !important; border-color: #f87171 !important; color: #f87171 !important; font-weight: 700; }
+                    
+                    .quiz-action-bar {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                        padding: 12px 16px;
+                        background: rgba(15, 23, 42, 0.6);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 14px;
+                        flex-wrap: wrap;
+                    }
+                    .quiz-feedback-msg {
+                        flex: 1;
+                        min-width: 0;
+                        font-size: 0.9rem;
+                        color: #94a3b8;
+                        padding: 6px 10px;
+                        border-radius: 8px;
+                        transition: all 0.2s;
+                    }
+                    .quiz-feedback-msg.success {
+                        background: rgba(52, 211, 153, 0.12);
+                        color: #34d399;
+                        border: 1px solid rgba(52, 211, 153, 0.3);
+                    }
+                    .quiz-feedback-msg.fail {
+                        background: rgba(248, 113, 113, 0.12);
+                        color: #f87171;
+                        border: 1px solid rgba(248, 113, 113, 0.3);
+                    }
+                    .btn-submit-exam {
+                        flex-shrink: 0;
+                        padding: 10px 24px;
+                        background: linear-gradient(135deg, #38bdf8, #34d399);
+                        color: #0b1120;
+                        font-size: 0.97rem;
+                        font-weight: 700;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: opacity 0.2s, transform 0.1s;
+                        white-space: nowrap;
+                    }
+                    .btn-submit-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+                    .btn-submit-exam:disabled { opacity: 0.55; cursor: default; transform: none; }
+                    
+                    .btn-retry-exam {
+                        flex-shrink: 0;
+                        padding: 10px 22px;
+                        background: linear-gradient(135deg, #f59e0b, #ef4444);
+                        color: white;
+                        font-size: 0.97rem;
+                        font-weight: 700;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: opacity 0.2s, transform 0.1s;
+                        white-space: nowrap;
+                        display: none;
+                        align-items: center;
+                        gap: 6px;
+                        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+                    }
+                    .btn-retry-exam:hover { opacity: 0.9; transform: translateY(-1px); }
+
+                    @keyframes diff-pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.15); }
+                    }
+                    .text-cyan { color: var(--accent-cyan, #38bdf8); }
+
+                    /* ── 第(1)題 概念連連看互動區 CSS ── */
+                    .match-game-wrapper {
+                        position: relative;
+                        width: 100%;
+                        margin-top: 8px;
+                        background: rgba(15, 23, 42, 0.5);
+                        border-radius: 12px;
+                        padding: 14px 18px;
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        overflow: hidden;
+                    }
+                    .match-game-cols {
+                        display: flex;
+                        justify-content: space-between;
+                        position: relative;
+                        gap: 28px;
+                        z-index: 2;
+                    }
+                    .match-col {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        width: 44%;
+                    }
+                    .match-item {
+                        background: rgba(30, 41, 59, 0.7);
+                        border: 1.5px solid rgba(255, 255, 255, 0.12);
+                        border-radius: 10px;
+                        padding: 9px 14px;
+                        display: flex;
+                        align-items: center;
+                        position: relative;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        user-select: none;
+                        touch-action: none;
+                        font-size: 0.92rem;
+                        color: #f1f5f9;
+                        min-height: 48px;
+                    }
+                    .match-item:hover {
+                        border-color: #38bdf8;
+                        background: rgba(56, 189, 248, 0.12);
+                    }
+                    .match-item.selected {
+                        border-color: #38bdf8;
+                        background: rgba(56, 189, 248, 0.22);
+                        box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+                    }
+                    .match-item.connected {
+                        border-color: rgba(56, 189, 248, 0.65);
+                        background: rgba(56, 189, 248, 0.12);
+                    }
+                    .match-item.match-correct {
+                        border-color: #34d399 !important;
+                        background: rgba(52, 211, 153, 0.18) !important;
+                        color: #6ee7b7 !important;
+                        box-shadow: 0 0 12px rgba(52, 211, 153, 0.3) !important;
+                    }
+                    .match-item.match-wrong {
+                        border-color: #f87171 !important;
+                        background: rgba(248, 113, 113, 0.18) !important;
+                        color: #fca5a5 !important;
+                        box-shadow: 0 0 12px rgba(248, 113, 113, 0.3) !important;
+                    }
+                    .match-item-text {
+                        flex: 1;
+                        pointer-events: none;
+                    }
+                    .match-item-badge {
+                        font-size: 0.9rem;
+                        font-weight: 800;
+                        margin: 0 4px;
+                        pointer-events: none;
+                    }
+                    .match-dot {
+                        width: 16px;
+                        height: 16px;
+                        background: #38bdf8;
+                        border: 2px solid white;
+                        border-radius: 50%;
+                        position: absolute;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        transition: all 0.2s;
+                        z-index: 5;
+                        box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+                    }
+                    .match-item[data-side="left"] .match-dot {
+                        right: -8px;
+                    }
+                    .match-item[data-side="right"] .match-dot {
+                        left: -8px;
+                    }
+                    .match-dot.active {
+                        transform: translateY(-50%) scale(1.3);
+                        background: #fbbf24;
+                        box-shadow: 0 0 12px #fbbf24;
+                    }
+                    .match-svg {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        pointer-events: none;
+                        z-index: 1;
+                    }
+                </style>
+
+                <div class="slide" id="slide-checkpoint" style="padding: 1.2rem 10% 1.5rem 10%; border: none; border-top: 3px solid var(--accent-purple);">
+                    <div class="quiz-container-full">
+                        <!-- 標頭 -->
+                        <div class="quiz-scenario-box">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+                                <span class="problem-badge" style="background:rgba(52,211,153,0.2); border-color:rgba(52,211,153,0.4); color:#34d399;">
+                                    🏆 單元 2-7 · 核心通關檢核
+                                </span>
+                                <span style="font-size:0.86rem; color:#38bdf8;">📌 請完成共 3 小題（含第(1)題連連看），點擊右下角「確定作答」提交檢核</span>
+                            </div>
+                            <p style="font-size:0.94rem; line-height:1.6; color:#f8fafc; margin:0;">
+                                <strong style="color:#fbbf24;">【擴散與逸散核心應用】</strong>
+                                第(1)題為概念連連看（任意拖曳或點選配對），第(2)~(3)題為計算與觀念檢核題，全部正確即可通關解鎖下一單元。
+                            </p>
+                        </div>
+
+                        <!-- ★ 第(1)題：概念連連看（互動連線，橫跨全欄） -->
+                        <div class="quiz-card" id="quiz-matching-card" style="width:100%;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <div class="quiz-q" style="margin:0;">
+                                    <span class="text-cyan">(1) 概念配對連連看</span> 請將左側概念連線至右側對應科學描述（可拖曳或點選圓點任意連線）。
+                                </div>
+                                <button type="button" id="btn-reset-match" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#94a3b8; font-size:0.8rem; padding:4px 12px; border-radius:8px; cursor:pointer; transition:all 0.2s;">
+                                    重設連線 ↺
+                                </button>
+                            </div>
+                            <div class="match-game-wrapper" id="match-game-wrapper">
+                                <svg id="match-svg" class="match-svg"></svg>
+                                <div class="match-game-cols">
+                                    <div class="match-col" id="match-col-left"></div>
+                                    <div class="match-col" id="match-col-right"></div>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                                <p style="font-size:0.8rem; color:#64748b; margin:0;">💡 操作說明：點擊左側再點擊右側，或直接按住圓點拖曳連線。提交前可任意重連。</p>
+                                <span id="match-count-badge" style="font-size:0.82rem; color:#38bdf8; font-weight:600;">已連線：0 / 5</span>
+                            </div>
+                        </div>
+
+                        <!-- 左右雙欄：(2)~(3) -->
+                        <div class="quiz-grid-layout" style="align-items:start;">
+                            <!-- 左欄：題 (2) -->
+                            <div class="quiz-card" data-q="2" data-ans="0">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(2)</span> 同狀況下，同體積某氣體擴散所需時間為 2 分，而 $\text{O}_2$ 需 8 分，則某氣體在 STP 時密度為何？
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt" data-idx="0">A. 0.0893 g/L</button>
+                                    <button type="button" class="quiz-opt" data-idx="1">B. 0.179 g/L</button>
+                                    <button type="button" class="quiz-opt" data-idx="2">C. 0.268 g/L</button>
+                                    <button type="button" class="quiz-opt" data-idx="3">D. 0.357 g/L</button>
+                                </div>
+                            </div>
+
+                            <!-- 右欄：題 (3) -->
+                            <div class="quiz-card" data-q="3" data-ans="0">
+                                <div class="quiz-q">
+                                    <span class="text-cyan">(3)</span> A 氣體之溫度較 B 氣體為高，則不論其壓力大小如何，下列敘述何者<u>錯誤</u>？（請選出所有錯誤項之組合）
+                                    <div style="margin: 8px 0; padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 8px; font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
+                                        (A) A 分子平均速率較快<br>
+                                        (B) A 分子間平均距離較大<br>
+                                        (C) A 分子之平均動量較高<br>
+                                        (D) A 分子之平均動能較高<br>
+                                        (E) A 分子之質量較大
+                                    </div>
+                                </div>
+                                <div class="quiz-options">
+                                    <button type="button" class="quiz-opt" data-idx="0">A. (A)(B)(C)(E)</button>
+                                    <button type="button" class="quiz-opt" data-idx="1">B. (A)(C)(E)</button>
+                                    <button type="button" class="quiz-opt" data-idx="2">C. (B)(C)(D)</button>
+                                    <button type="button" class="quiz-opt" data-idx="3">D. 僅 (D)</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 底部操作列 -->
+                        <div class="quiz-action-bar">
+                            <div class="quiz-feedback-msg" id="quiz-feedback-msg-diff">
+                                <span>💡 請先完成第(1)題連連看配對，再作答第(2)~(3)題，完成後點擊「確定作答」。</span>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button type="button" id="btn-retry-exam-diff" class="btn-retry-exam">
+                                    🔄 再試一次
+                                </button>
+                                <button type="button" id="btn-submit-exam-diff" class="btn-submit-exam">
+                                    確定作答 🚀
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 通關成功橫幅 -->
+                    <div id="section-complete-banner" style="
+                        display: none;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        text-align: center;
+                        min-height: 40vh;
+                        padding: 3rem 2rem;
+                        background: radial-gradient(ellipse at center, rgba(52,211,153,0.18) 0%, rgba(11,17,32,0) 70%);
+                        border-top: 1px solid rgba(52,211,153,0.25);
+                        margin-top: 2rem;
+                        border-radius: 20px;
+                    ">
+                        <div style="font-size:4rem; margin-bottom:0.8rem; animation: diff-pulse 1.5s ease-in-out infinite;">🏆</div>
+                        <h2 style="color:#34d399; font-size:clamp(1.8rem,3.2vw,2.4rem); font-weight:800; margin-bottom:0.5rem;">單元檢核通過！</h2>
+                        <p style="color:#6ee7b7; font-size:1.1rem; margin-bottom:0.3rem;">恭喜全數通過！已完成擴散與逸散核心檢核 🎉</p>
+                        <p style="color:#94a3b8; font-size:0.95rem;">第二章二補充小節與第 3 章已同步為您解鎖，請從目錄切換繼續學習</p>
+                        <div style="margin-top:1.5rem; display:flex; gap:0.8rem; flex-wrap:wrap; justify-content:center;">
+                            <div style="background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.4); border-radius:12px; padding:10px 18px; color:#34d399; font-weight:700; font-size:0.92rem;">
+                                ✅ 2-7 擴散與逸散 — 通關
+                            </div>
+                            <div style="background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.4); border-radius:12px; padding:10px 18px; color:#c084fc; font-weight:700; font-size:0.92rem;">
+                                🔓 （補充）凡得瓦方程式 — 已解鎖
+                            </div>
+                            <div style="background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.4); border-radius:12px; padding:10px 18px; color:#c084fc; font-weight:700; font-size:0.92rem;">
+                                🔓 （補充）理想氣體圖示 — 已解鎖
+                            </div>
+                            <div style="background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:10px 18px; color:#38bdf8; font-weight:700; font-size:0.92rem;">
+                                🚀 3-1 物質狀態與三相圖 — 同步解鎖！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end slides-container -->
+        </div><!-- end presentation-area -->
+
+        <canvas id="drawing-layer"></canvas>
+
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <div id="drag-handle">≡</div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-draw" title="手寫畫筆">✎</button>
+            <div id="color-picker" style="display:none; flex-direction:column; gap:7px; margin-top:2px;">
+                <div class="color-dot" style="width:22px;height:22px;background:#f8fafc;border:2px solid white;" data-color="#f8fafc"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#f87171;border:2px solid transparent;" data-color="#f87171"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#fbbf24;border:2px solid transparent;" data-color="#fbbf24"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#38bdf8;border:2px solid transparent;" data-color="#38bdf8"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#34d399;border:2px solid transparent;" data-color="#34d399"></div>
+                <div class="color-dot" style="width:22px;height:22px;background:#a78bfa;border:2px solid transparent;" data-color="#a78bfa"></div>
+            </div>
+            <div id="eraser-tools" style="display:none; width:100%; flex-direction:column; gap:7px; align-items:center; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">
+                <button type="button" class="btn-tool" id="btn-eraser" title="橡皮擦">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16.24,3.56L21.19,8.51C21.97,9.29 21.97,10.55 21.19,11.33L12.01,20.5H22V22.5H10.12L2.81,15.19C2.03,14.41 2.03,13.15 2.81,12.37L12,3.19C12.78,2.41 14.05,2.41 14.83,3.19L16.24,3.56M4.22,13.78L10.83,20.39L14.83,16.39L8.22,9.78L4.22,13.78Z"/></svg>
+                </button>
+                <button type="button" class="btn-tool" id="btn-clear" title="清除手寫">🗑</button>
+            </div>
+            <div style="height:1px;width:30px;background:rgba(255,255,255,0.2);margin:4px 0;"></div>
+            <button type="button" class="btn-tool" id="btn-random-draw" title="隨機抽號">🎲</button>
+            <button type="button" class="btn-tool" id="btn-home" title="回到目錄頁" onclick="window.location.href='../../index.html'">🏠</button>
+            <button type="button" class="btn-tool" id="btn-top" title="回到頂部" style="margin-top:4px;">↑</button>
+        </div>
+    </div><!-- end app -->
+
+    <!-- RANDOM DRAW MODAL -->
+    <div id="random-draw-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,23,42,0.95); border:1px solid var(--accent-cyan); box-shadow:0 0 30px rgba(34,211,238,0.3); border-radius:20px; padding:20px; z-index:10000; backdrop-filter:blur(10px); width:600px; max-width:90vw;">
+        <button id="btn-close-draw" title="關閉" style="position:absolute; top:10px; right:15px; background:transparent; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+        <div id="random-draw-balls" style="display:grid; grid-template-columns:repeat(10, 1fr); gap:8px; justify-content:center; margin:0 auto 20px auto; width:100%; max-width:500px;"></div>
+        <div id="random-draw-controls" style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+            <button id="btn-do-draw" style="background:linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); color:#0b1120; border:none; padding:10px 30px; border-radius:30px; font-size:1.1rem; font-weight:bold; cursor:pointer;">抽取號碼</button>
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;"><label for="draw-total-input">總人數：</label><input type="number" id="draw-total-input" value="40" min="1" max="100" style="background:rgba(0,0,0,0.3); border:1px solid var(--accent-cyan); color:#fff; padding:5px 10px; border-radius:5px; width:80px; text-align:center;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Start overlay ──
+        const startOverlay = document.getElementById('start-overlay');
+        const btnStart = document.getElementById('btn-start');
+        btnStart.addEventListener('click', () => {
+            startOverlay.style.display = 'none';
+            try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); } catch (e) {}
+            setTimeout(resizeCanvas, 100);
+        });
+
+        // ── Drawing layer ──
+        let isDrawingMode = false;
+        let drawMode = 'pen';
+        let penColor = '#f8fafc';
+        let penSize = 3;
+        let savedDrawing = null;
+        let lastX = 0, lastY = 0, isDrawing = false;
+
+        const canvas = document.getElementById('drawing-layer');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            if (!canvas) return;
+            const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+            const sh = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+            const ratio = window.devicePixelRatio || 1;
+            canvas.style.width = sw + 'px';
+            canvas.style.height = sh + 'px';
+            canvas.width  = Math.floor(sw * ratio);
+            canvas.height = Math.floor(sh * ratio);
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            restoreDrawing();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return [clientX - rect.left, clientY - rect.top];
+        }
+        function startDrawing(e) {
+            if (!isDrawingMode) return;
+            isDrawing = true; [lastX, lastY] = getCoords(e);
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            const [x, y] = getCoords(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y);
+            if (drawMode === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = Math.max(20, penSize * 10); }
+            else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = penColor; ctx.lineWidth = Math.max(2, penSize); }
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+            [lastX, lastY] = [x, y];
+        }
+        function stopDrawing() {
+            if (isDrawing) { isDrawing = false; savedDrawing = canvas.toDataURL(); }
+        }
+        function restoreDrawing() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (savedDrawing) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0); img.src = savedDrawing; }
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { if (isDrawingMode) e.preventDefault(); startDrawing(e); }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (isDrawingMode) e.preventDefault(); draw(e); }, {passive:false});
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // ── Toolbar interactions ──
+        const btnDraw = document.getElementById('btn-draw');
+        btnDraw.addEventListener('click', () => {
+            isDrawingMode = !isDrawingMode;
+            if (isDrawingMode) drawMode = 'pen';
+            btnDraw.classList.toggle('active-tool', isDrawingMode);
+            canvas.classList.toggle('drawing-active', isDrawingMode);
+            const cp = document.getElementById('color-picker');
+            const et = document.getElementById('eraser-tools');
+            if (cp) cp.style.display = isDrawingMode ? 'flex' : 'none';
+            if (et) et.style.display = isDrawingMode ? 'flex' : 'none';
+        });
+
+        const btnEraser = document.getElementById('btn-eraser');
+        if (btnEraser) btnEraser.addEventListener('click', () => {
+            drawMode = (drawMode === 'eraser' ? 'pen' : 'eraser');
+            btnEraser.classList.toggle('active-tool', drawMode === 'eraser');
+        });
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.style.borderColor = 'transparent');
+                dot.style.borderColor = 'white';
+                penColor = dot.dataset.color;
+                drawMode = 'pen';
+                btnEraser && btnEraser.classList.remove('active-tool');
+            });
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            savedDrawing = null;
+        });
+
+        document.getElementById('btn-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ── Toolbar drag ──
+        const toolbar = document.getElementById('toolbar');
+        const dragHandle = document.getElementById('drag-handle');
+        let isDraggingToolbar = false, dragOffY = 0;
+        dragHandle.addEventListener('mousedown', (e) => { isDraggingToolbar = true; dragOffY = e.clientY - toolbar.offsetTop; });
+        window.addEventListener('mousemove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('mouseup', () => isDraggingToolbar = false);
+        dragHandle.addEventListener('touchstart', (e) => { isDraggingToolbar = true; dragOffY = e.touches[0].clientY - toolbar.offsetTop; });
+        window.addEventListener('touchmove', (e) => { if (isDraggingToolbar) { toolbar.style.top = (e.touches[0].clientY - dragOffY) + 'px'; toolbar.style.bottom = 'auto'; toolbar.style.transform = 'none'; } });
+        window.addEventListener('touchend', () => isDraggingToolbar = false);
+
+        // ── Random Draw ──
+        (function() {
+            const btnRandomDraw = document.getElementById('btn-random-draw');
+            const drawModal = document.getElementById('random-draw-modal');
+            const btnCloseDraw = document.getElementById('btn-close-draw');
+            const drawBallsContainer = document.getElementById('random-draw-balls');
+            const btnDoDraw = document.getElementById('btn-do-draw');
+            const drawTotalInput = document.getElementById('draw-total-input');
+            let totalBalls = 40, drawBalls = [];
+
+            function renderBalls() {
+                drawBallsContainer.innerHTML = ''; drawBalls = [];
+                for (let i = 1; i <= totalBalls; i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'draw-ball'; ball.textContent = i; ball.dataset.num = i;
+                    drawBallsContainer.appendChild(ball); drawBalls.push(ball);
+                }
+            }
+
+            btnRandomDraw && btnRandomDraw.addEventListener('click', () => {
+                if (!drawModal) return;
+                if (drawModal.style.display === 'block') {
+                    drawModal.style.display = 'none'; btnRandomDraw.classList.remove('active-tool');
+                } else {
+                    drawModal.style.display = 'block'; btnRandomDraw.classList.add('active-tool');
+                    if (drawBalls.length === 0) { totalBalls = parseInt(drawTotalInput.value) || 40; renderBalls(); }
+                }
+            });
+            btnCloseDraw && btnCloseDraw.addEventListener('click', () => {
+                if (drawModal) drawModal.style.display = 'none';
+                btnRandomDraw && btnRandomDraw.classList.remove('active-tool');
+            });
+            drawTotalInput && drawTotalInput.addEventListener('change', () => {
+                let val = parseInt(drawTotalInput.value); if (isNaN(val) || val < 1) val = 1;
+                drawTotalInput.value = val; totalBalls = val; renderBalls();
+            });
+
+            let drawInterval, drawTimeout;
+            btnDoDraw && btnDoDraw.addEventListener('click', () => {
+                if (btnDoDraw.disabled) return;
+                const available = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (available.length === 0) { alert('所有號碼都已抽出！'); return; }
+                const prevWinner = drawBalls.find(b => b.classList.contains('winner'));
+                if (prevWinner) { prevWinner.classList.remove('winner'); prevWinner.classList.add('drawn'); }
+                const cur = drawBalls.filter(b => !b.classList.contains('drawn'));
+                if (cur.length === 0) { alert('所有號碼都已抽出！'); return; }
+                btnDoDraw.disabled = true; drawTotalInput.disabled = true;
+                drawInterval = setInterval(() => { cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('flicker'); }, 50);
+                drawTimeout = setTimeout(() => { clearInterval(drawInterval); cur.forEach(b => b.classList.remove('flicker')); cur[Math.floor(Math.random()*cur.length)].classList.add('winner'); btnDoDraw.disabled = false; drawTotalInput.disabled = false; }, 2000);
+            });
+        })();
+
+        // ── Show/Hide Answer buttons ──
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-show-ans');
+            if (btn) {
+                const ansId = btn.dataset.ans;
+                const ansBox = document.getElementById(ansId);
+                if (!ansBox) return;
+                const isVisible = ansBox.style.display !== 'none' && ansBox.style.display !== '';
+                if (isVisible) {
+                    ansBox.style.display = 'none';
+                    btn.textContent = '顯示解答';
+                    btn.classList.remove('shown');
+                } else {
+                    ansBox.style.display = 'block';
+                    btn.textContent = '隱藏解答';
+                    btn.classList.add('shown');
+                    if (window.MathJax && window.MathJax.typesetPromise) MathJax.typesetPromise([ansBox]).catch(()=>{});
+                }
+            }
+        });
+
+        // ── 核心通關檢核 (連連看 + 選擇題 + 即時連線 + 錯誤反饋與再試一次) ──
+        (function initDiffCheckpoint() {
+            const MATCH_DATA = [
+                { id: 0, left: '格銳目擴散定律', right: ' \propto \dfrac{1}{\sqrt{M}} \propto \dfrac{1}{\sqrt{d}}$' },
+                { id: 1, left: '擴散所需時間比', right: '$\dfrac{t_1}{t_2} = \sqrt{\dfrac{M_1}{M_2}}$' },
+                { id: 2, left: '分子平均動能公式', right: '$\overline{E_k} = \dfrac{3}{2}kT$' },
+                { id: 3, left: '均方根速率 {rms}$', right: '$\sqrt{\dfrac{3RT}{M}}$' },
+                { id: 4, left: '絕對溫度的物理意義', right: '氣體分子平均動能的量度' }
+            ];
+
+            // 選擇題狀態
+            let selectedAnswers = {};
+            let isPassed = false;
+            let isVerified = false; // 是否已按下「確定作答」
+
+            // 連連看狀態: [{ leftId: 0, rightId: 0, status: null|'correct'|'wrong' }]
+            let connections = [];
+            let selectedItem = null; // 點選配對模式
+            let isDraggingMatch = false;
+            let dragStartItem = null;
+            let tempMatchLine = null;
+
+            const leftCol = document.getElementById('match-col-left');
+            const rightCol = document.getElementById('match-col-right');
+            const matchSvg = document.getElementById('match-svg');
+            const matchWrapper = document.getElementById('match-game-wrapper');
+            const matchCountBadge = document.getElementById('match-count-badge');
+            const resetMatchBtn = document.getElementById('btn-reset-match');
+
+            const quizCards = document.querySelectorAll('#slide-checkpoint .quiz-grid-layout .quiz-card');
+            const submitBtn = document.getElementById('btn-submit-exam-diff');
+            const retryBtn = document.getElementById('btn-retry-exam-diff');
+            const feedbackMsg = document.getElementById('quiz-feedback-msg-diff');
+
+            // 1. 初始化連連看 DOM
+            function renderMatchGame() {
+                if (!leftCol || !rightCol || !matchSvg) return;
+                leftCol.innerHTML = '';
+                rightCol.innerHTML = '';
+                matchSvg.innerHTML = '';
+                connections = [];
+                selectedItem = null;
+                updateMatchBadge();
+
+                // 左側照常排列
+                MATCH_DATA.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'match-item';
+                    el.dataset.side = 'left';
+                    el.dataset.id = item.id;
+                    el.innerHTML = `
+                        <span class="match-item-text">${item.left}</span>
+                        <span class="match-item-badge"></span>
+                        <div class="match-dot"></div>
+                    `;
+                    bindMatchItemEvents(el);
+                    leftCol.appendChild(el);
+                });
+
+                // 右側隨機洗牌
+                const shuffledRight = [...MATCH_DATA].sort(() => Math.random() - 0.5);
+                shuffledRight.forEach(item => {
+                    const el = document.createElement('div');
+                    el.className = 'match-item';
+                    el.dataset.side = 'right';
+                    el.dataset.id = item.id;
+                    el.innerHTML = `
+                        <div class="match-dot"></div>
+                        <span class="match-item-badge"></span>
+                        <span class="match-item-text">${item.right}</span>
+                    `;
+                    bindMatchItemEvents(el);
+                    rightCol.appendChild(el);
+                });
+
+                if (window.MathJax && MathJax.typesetPromise) {
+                    MathJax.typesetPromise([document.getElementById('quiz-matching-card')]).catch(()=>{});
+                }
+            }
+
+            // 綁定連連看項目的拖曳與點擊事件
+            function bindMatchItemEvents(item) {
+                item.addEventListener('pointerdown', (e) => {
+                    if (isPassed || isVerified) return;
+                    isDraggingMatch = true;
+                    dragStartItem = item;
+                    item.querySelector('.match-dot').classList.add('active');
+
+                    const rect = matchWrapper.getBoundingClientRect();
+                    const dotRect = item.querySelector('.match-dot').getBoundingClientRect();
+                    const startX = dotRect.left + dotRect.width / 2 - rect.left;
+                    const startY = dotRect.top + dotRect.height / 2 - rect.top;
+
+                    if (tempMatchLine) tempMatchLine.remove();
+                    tempMatchLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    tempMatchLine.setAttribute('x1', startX);
+                    tempMatchLine.setAttribute('y1', startY);
+                    tempMatchLine.setAttribute('x2', startX);
+                    tempMatchLine.setAttribute('y2', startY);
+                    tempMatchLine.setAttribute('stroke', '#38bdf8');
+                    tempMatchLine.setAttribute('stroke-width', '3');
+                    tempMatchLine.setAttribute('stroke-dasharray', '5,5');
+                    matchSvg.appendChild(tempMatchLine);
+
+                    if (e.pointerType === 'mouse') e.preventDefault();
+                });
+
+                item.addEventListener('click', (e) => {
+                    if (isPassed || isVerified) return;
+                    handleItemClick(item);
+                });
+            }
+
+            function handleItemClick(item) {
+                if (!selectedItem) {
+                    selectedItem = item;
+                    item.classList.add('selected');
+                } else if (selectedItem === item) {
+                    selectedItem.classList.remove('selected');
+                    selectedItem = null;
+                } else if (selectedItem.dataset.side === item.dataset.side) {
+                    selectedItem.classList.remove('selected');
+                    selectedItem = item;
+                    item.classList.add('selected');
+                } else {
+                    selectedItem.classList.remove('selected');
+                    const left = selectedItem.dataset.side === 'left' ? selectedItem : item;
+                    const right = selectedItem.dataset.side === 'right' ? selectedItem : item;
+                    applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+                    selectedItem = null;
+                }
+            }
+
+            window.addEventListener('pointermove', (e) => {
+                if (!isDraggingMatch || !tempMatchLine) return;
+                const rect = matchWrapper.getBoundingClientRect();
+                tempMatchLine.setAttribute('x2', e.clientX - rect.left);
+                tempMatchLine.setAttribute('y2', e.clientY - rect.top);
+            });
+
+            window.addEventListener('pointerup', (e) => {
+                if (!isDraggingMatch) return;
+                isDraggingMatch = false;
+
+                if (dragStartItem) {
+                    dragStartItem.querySelector('.match-dot').classList.remove('active');
+                }
+
+                const target = document.elementFromPoint(e.clientX, e.clientY);
+                const targetItem = target ? target.closest('.match-item') : null;
+
+                if (targetItem && targetItem !== dragStartItem && targetItem.dataset.side !== dragStartItem.dataset.side) {
+                    const left = dragStartItem.dataset.side === 'left' ? dragStartItem : targetItem;
+                    const right = dragStartItem.dataset.side === 'right' ? dragStartItem : targetItem;
+                    applyConnection(parseInt(left.dataset.id, 10), parseInt(right.dataset.id, 10));
+                }
+
+                if (tempMatchLine) {
+                    tempMatchLine.remove();
+                    tempMatchLine = null;
+                }
+                dragStartItem = null;
+                drawAllConnections();
+            });
+
+            function applyConnection(leftId, rightId) {
+                connections = connections.filter(c => c.leftId !== leftId && c.rightId !== rightId);
+                connections.push({ leftId, rightId, status: null });
+                updateMatchBadge();
+                drawAllConnections();
+            }
+
+            function updateMatchBadge() {
+                if (matchCountBadge) {
+                    matchCountBadge.textContent = `已連線：${connections.length} / ${MATCH_DATA.length}`;
+                    matchCountBadge.style.color = (connections.length === MATCH_DATA.length) ? '#34d399' : '#38bdf8';
+                }
+            }
+
+            function drawAllConnections() {
+                if (!matchSvg || !matchWrapper) return;
+                matchSvg.innerHTML = '';
+                const rect = matchWrapper.getBoundingClientRect();
+
+                const allItems = matchWrapper.querySelectorAll('.match-item');
+                allItems.forEach(el => {
+                    if (!isVerified) {
+                        el.classList.remove('connected', 'match-correct', 'match-wrong');
+                        el.querySelector('.match-item-badge').textContent = '';
+                    }
+                });
+
+                connections.forEach(c => {
+                    const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                    const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                    if (!leftEl || !rightEl) return;
+
+                    if (!isVerified) {
+                        leftEl.classList.add('connected');
+                        rightEl.classList.add('connected');
+                    }
+
+                    const dot1 = leftEl.querySelector('.match-dot').getBoundingClientRect();
+                    const dot2 = rightEl.querySelector('.match-dot').getBoundingClientRect();
+
+                    const x1 = dot1.left + dot1.width / 2 - rect.left;
+                    const y1 = dot1.top + dot1.height / 2 - rect.top;
+                    const x2 = dot2.left + dot2.width / 2 - rect.left;
+                    const y2 = dot2.top + dot2.height / 2 - rect.top;
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke-linecap', 'round');
+
+                    if (c.status === 'correct') {
+                        line.setAttribute('stroke', '#34d399');
+                        line.setAttribute('stroke-width', '4');
+                        line.setAttribute('filter', 'drop-shadow(0 0 4px #34d399)');
+                    } else if (c.status === 'wrong') {
+                        line.setAttribute('stroke', '#f87171');
+                        line.setAttribute('stroke-width', '3.5');
+                        line.setAttribute('stroke-dasharray', '5,4');
+                        line.setAttribute('filter', 'drop-shadow(0 0 4px #f87171)');
+                    } else {
+                        line.setAttribute('stroke', '#38bdf8');
+                        line.setAttribute('stroke-width', '3.5');
+                        line.setAttribute('filter', 'drop-shadow(0 0 3px rgba(56,189,248,0.5))');
+                    }
+
+                    matchSvg.appendChild(line);
+                });
+            }
+
+            window.addEventListener('resize', drawAllConnections);
+            window.addEventListener('scroll', drawAllConnections, { passive: true });
+
+            if (resetMatchBtn) {
+                resetMatchBtn.addEventListener('click', () => {
+                    if (isPassed) return;
+                    isVerified = false;
+                    connections = [];
+                    selectedItem = null;
+                    const allItems = matchWrapper.querySelectorAll('.match-item');
+                    allItems.forEach(el => {
+                        el.classList.remove('selected', 'connected', 'match-correct', 'match-wrong');
+                        el.querySelector('.match-item-badge').textContent = '';
+                    });
+                    updateMatchBadge();
+                    drawAllConnections();
+                    if (retryBtn) retryBtn.style.display = 'none';
+                    if (submitBtn) submitBtn.disabled = false;
+                    feedbackMsg.className = 'quiz-feedback-msg';
+                    feedbackMsg.innerHTML = '<span>💡 已清空連線，請重新進行概念配對。</span>';
+                });
+            }
+
+            // 2. 選擇題點擊綁定
+            quizCards.forEach(card => {
+                const qId = card.dataset.q;
+                const options = card.querySelectorAll('.quiz-opt');
+                options.forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        if (isPassed) return;
+                        if (isVerified) {
+                            card.classList.remove('card-wrong');
+                            options.forEach(o => o.classList.remove('verified-fail'));
+                        }
+                        options.forEach(o => o.classList.remove('selected'));
+                        opt.classList.add('selected');
+                        selectedAnswers[qId] = parseInt(opt.dataset.idx, 10);
+                    });
+                });
+            });
+
+            // 3. 「確定作答」檢核按鈕
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    if (isPassed) return;
+
+                    // ① 檢查連連看是否 5 組皆完成連線
+                    if (connections.length < MATCH_DATA.length) {
+                        feedbackMsg.className = 'quiz-feedback-msg fail';
+                        feedbackMsg.innerHTML = `<span>⚠️ 第(1)題連連看尚有未配對項目（已完成 ${connections.length}/${MATCH_DATA.length} 組），請將 5 組概念全部連線！</span>`;
+                        return;
+                    }
+
+                    // ② 檢查第(2)~(6)題選擇題是否皆已作答
+                    if (Object.keys(selectedAnswers).length < quizCards.length) {
+                        feedbackMsg.className = 'quiz-feedback-msg fail';
+                        feedbackMsg.innerHTML = '<span>⚠️ 第(2)~(6)題尚有未作答！請完成全部 5 小題選擇題後再提交。</span>';
+                        return;
+                    }
+
+                    // ③ 檢核配對題
+                    isVerified = true;
+                    let matchingAllCorrect = true;
+                    connections.forEach(c => {
+                        const isCorrect = (c.leftId === c.rightId);
+                        c.status = isCorrect ? 'correct' : 'wrong';
+                        if (!isCorrect) matchingAllCorrect = false;
+
+                        const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                        const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+
+                        if (leftEl) {
+                            leftEl.classList.remove('match-correct', 'match-wrong');
+                            leftEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                            leftEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                            leftEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                        }
+                        if (rightEl) {
+                            rightEl.classList.remove('match-correct', 'match-wrong');
+                            rightEl.classList.add(isCorrect ? 'match-correct' : 'match-wrong');
+                            rightEl.querySelector('.match-item-badge').textContent = isCorrect ? '✓' : '✗';
+                            rightEl.querySelector('.match-item-badge').style.color = isCorrect ? '#34d399' : '#f87171';
+                        }
+                    });
+                    drawAllConnections();
+
+                    // ④ 檢核選擇題
+                    let mcAllCorrect = true;
+                    quizCards.forEach(card => {
+                        const qId = card.dataset.q;
+                        const correctAns = parseInt(card.dataset.ans, 10);
+                        const userAns = selectedAnswers[qId];
+                        const isCorrect = (userAns === correctAns);
+
+                        card.classList.remove('card-correct', 'card-wrong');
+                        card.classList.add(isCorrect ? 'card-correct' : 'card-wrong');
+
+                        card.querySelectorAll('.quiz-opt').forEach(opt => {
+                            opt.classList.remove('verified-pass', 'verified-fail');
+                            const idx = parseInt(opt.dataset.idx, 10);
+                            if (idx === userAns) {
+                                opt.classList.add(isCorrect ? 'verified-pass' : 'verified-fail');
+                            }
+                        });
+
+                        if (!isCorrect) mcAllCorrect = false;
+                    });
+
+                    const allPassed = matchingAllCorrect && mcAllCorrect;
+
+                    if (allPassed) {
+                        isPassed = true;
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = '檢核通過 ✅';
+                        if (retryBtn) retryBtn.style.display = 'none';
+
+                        feedbackMsg.className = 'quiz-feedback-msg success';
+                        feedbackMsg.innerHTML = '<span>🎉 檢核通過！6 題全部答對，擴散與逸散單元已成功解鎖通關！</span>';
+
+                        notifyDiffSectionComplete();
+                    } else {
+                        feedbackMsg.className = 'quiz-feedback-msg fail';
+                        feedbackMsg.innerHTML = '<span>❌ 檢核未通過：已標示正確（綠色）與錯誤（紅色）部分，請點擊「再試一次」進行修正！</span>';
+
+                        submitBtn.disabled = true;
+                        if (retryBtn) {
+                            retryBtn.style.display = 'inline-flex';
+                            retryBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }
+                });
+            }
+
+            // 4. 「再試一次」按鈕
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => {
+                    if (isPassed) return;
+                    isVerified = false;
+
+                    // (A) 連連看：保留正確連線，移除答錯的連線
+                    connections = connections.filter(c => {
+                        if (c.status === 'correct') {
+                            return true;
+                        } else {
+                            const leftEl = leftCol.querySelector(`.match-item[data-id="${c.leftId}"]`);
+                            const rightEl = rightCol.querySelector(`.match-item[data-id="${c.rightId}"]`);
+                            if (leftEl) {
+                                leftEl.classList.remove('match-wrong', 'connected');
+                                leftEl.querySelector('.match-item-badge').textContent = '';
+                            }
+                            if (rightEl) {
+                                rightEl.classList.remove('match-wrong', 'connected');
+                                rightEl.querySelector('.match-item-badge').textContent = '';
+                            }
+                            return false;
+                        }
+                    });
+
+                    updateMatchBadge();
+                    drawAllConnections();
+
+                    // (B) 選擇題：保留答對題目，清除答錯題目的作答
+                    quizCards.forEach(card => {
+                        const qId = card.dataset.q;
+                        const correctAns = parseInt(card.dataset.ans, 10);
+                        if (selectedAnswers[qId] !== correctAns) {
+                            card.classList.remove('card-wrong');
+                            card.querySelectorAll('.quiz-opt').forEach(opt => {
+                                opt.classList.remove('selected', 'verified-fail');
+                            });
+                            delete selectedAnswers[qId];
+                        }
+                    });
+
+                    // (C) 界面狀態更新
+                    retryBtn.style.display = 'none';
+                    submitBtn.disabled = false;
+                    feedbackMsg.className = 'quiz-feedback-msg';
+                    feedbackMsg.innerHTML = '<span>✏️ 請重新連線錯誤的概念，並修正答錯的題目，完成後再次點擊「確定作答」。</span>';
+                });
+            }
+
+            // 5. 通關通知母網頁：解鎖二補充小節並同時解鎖 3-1
+            function notifyDiffSectionComplete() {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'SECTION_COMPLETE',
+                        sectionId: 'ch2_s7',
+                        chapterId: 'ch2',
+                        unlockSections: ['ch2_s8', 'ch2_s9', 'ch3_s1']
+                    }, '*');
+                }
+                const banner = document.getElementById('section-complete-banner');
+                if (banner) {
+                    banner.style.display = 'flex';
+                    banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            // 啟動連連看
+            renderMatchGame();
+        })();
+
+        // ── Particle animations ──
+        (function() {
+            class Particle {
+                constructor(canvas, x, y, color, size, speedX, speedY) {
+                    this.canvas = canvas; this.ctx = canvas.getContext('2d');
+                    this.x = x; this.y = y; this.color = color; this.size = size;
+                    this.vx = speedX; this.vy = speedY;
+                }
+                update(mode) {
+                    this.x += this.vx; this.y += this.vy;
+                    if (mode === 'diffusion') {
+                        if (this.x < 0 || this.x > this.canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > this.canvas.height) this.vy *= -1;
+                    } else {
+                        const holeTop = this.canvas.height * 0.4;
+                        const holeBottom = this.canvas.height * 0.6;
+                        const midX = this.canvas.width / 2;
+                        if (this.x < 0 || this.x > this.canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > this.canvas.height) this.vy *= -1;
+                        const nextX = this.x + this.vx;
+                        if ((this.x < midX && nextX >= midX) || (this.x > midX && nextX <= midX)) {
+                            if (this.y < holeTop || this.y > holeBottom) this.vx *= -1;
+                        }
+                    }
+                    this.x = Math.max(0, Math.min(this.canvas.width, this.x));
+                    this.y = Math.max(0, Math.min(this.canvas.height, this.y));
+                }
+                draw() {
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    this.ctx.fillStyle = this.color;
+                    this.ctx.fill();
+                }
+            }
+
+            const diffCanvas = document.getElementById('diffusion-canvas');
+            const effCanvas  = document.getElementById('effusion-canvas');
+            if (!diffCanvas || !effCanvas) return;
+
+            let diffParticles = [], effParticles = [], lastReset = Date.now();
+
+            function initDemos() {
+                diffCanvas.width  = diffCanvas.offsetWidth  || 300;
+                diffCanvas.height = diffCanvas.offsetHeight || 120;
+                effCanvas.width   = effCanvas.offsetWidth   || 300;
+                effCanvas.height  = effCanvas.offsetHeight  || 120;
+                diffParticles = []; effParticles = [];
+                for (let i = 0; i < 40; i++) {
+                    const a = Math.random() * Math.PI * 2, s = 1.2;
+                    diffParticles.push(new Particle(diffCanvas, Math.random()*30, diffCanvas.height - Math.random()*30, '#38bdf8', 4, Math.cos(a)*s, Math.sin(a)*s));
+                }
+                for (let i = 0; i < 40; i++) {
+                    const a = Math.random() * Math.PI * 2, s = 1.2;
+                    effParticles.push(new Particle(effCanvas, Math.random()*(effCanvas.width/2-10), Math.random()*effCanvas.height, '#a855f7', 4, Math.cos(a)*s, Math.sin(a)*s));
+                }
+                lastReset = Date.now();
+            }
+
+            function animateDemos() {
+                if (Date.now() - lastReset > 6000) initDemos();
+
+                const dCtx = diffCanvas.getContext('2d');
+                dCtx.clearRect(0, 0, diffCanvas.width, diffCanvas.height);
+                diffParticles.forEach(p => { p.update('diffusion'); p.draw(); });
+
+                const eCtx = effCanvas.getContext('2d');
+                eCtx.clearRect(0, 0, effCanvas.width, effCanvas.height);
+                eCtx.strokeStyle = 'rgba(255,255,255,0.5)'; eCtx.lineWidth = 2;
+                eCtx.beginPath();
+                eCtx.moveTo(effCanvas.width/2, 0);
+                eCtx.lineTo(effCanvas.width/2, effCanvas.height * 0.4);
+                eCtx.moveTo(effCanvas.width/2, effCanvas.height * 0.6);
+                eCtx.lineTo(effCanvas.width/2, effCanvas.height);
+                eCtx.stroke();
+                effParticles.forEach(p => { p.update('effusion'); p.draw(); });
+
+                requestAnimationFrame(animateDemos);
+            }
+
+            window.addEventListener('load', () => { initDemos(); animateDemos(); });
+        })();
+
+        // Resize canvas on load
+        window.addEventListener('load', resizeCanvas);
+    </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+
+<!-- Chem Whiteboard Scroll Sync Bridge -->
+<script id="__chem_scroll_bridge">
+(function() {
+  if (window.__chemScrollBridgeInstalled) return;
+  window.__chemScrollBridgeInstalled = true;
+
+  function getScrollPos() {
+    var sy = window.scrollY || window.pageYOffset || 0;
+    var sx = window.scrollX || window.pageXOffset || 0;
+    if (document.documentElement) {
+      sy = Math.max(sy, document.documentElement.scrollTop || 0);
+      sx = Math.max(sx, document.documentElement.scrollLeft || 0);
+    }
+    if (document.body) {
+      sy = Math.max(sy, document.body.scrollTop || 0);
+      sx = Math.max(sx, document.body.scrollLeft || 0);
+    }
+    var stream = document.getElementById('presentation-stream') ||
+                 document.getElementById('presentation-area') ||
+                 document.getElementById('slides-container') ||
+                 document.getElementById('app');
+    if (stream) {
+      sy = Math.max(sy, stream.scrollTop || 0);
+      sx = Math.max(sx, stream.scrollLeft || 0);
+    }
+    return { sx: sx, sy: sy };
+  }
+
+  function reportScroll() {
+    if (window.parent && window.parent !== window) {
+      var pos = getScrollPos();
+      window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
+    }
+  }
+
+  // 監聽各種觸發捲動之事件
+  window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  document.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+  window.addEventListener('wheel', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+    setTimeout(reportScroll, 120);
+  }, { capture: true, passive: true });
+  window.addEventListener('touchmove', function() {
+    requestAnimationFrame(reportScroll);
+    setTimeout(reportScroll, 40);
+  }, { capture: true, passive: true });
+  window.addEventListener('keydown', function(e) {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Space', 'Home', 'End'].indexOf(e.code) !== -1) {
+      requestAnimationFrame(reportScroll);
+      setTimeout(reportScroll, 60);
+      setTimeout(reportScroll, 180);
+    }
+  }, { passive: true });
+
+  // 監聽來自母頁面 (index.html) 的命令
+  window.addEventListener('message', function(e) {
+    if (!e.data) return;
+    if (e.data.type === '__chem_scroll_by') {
+      var dy = e.data.deltaY || 0;
+      var dx = e.data.deltaX || 0;
+      window.scrollBy({ top: dy, left: dx, behavior: 'instant' });
+      if (document.documentElement) document.documentElement.scrollTop += dy;
+      if (document.body) document.body.scrollTop += dy;
+      var stream = document.getElementById('presentation-stream') ||
+                   document.getElementById('presentation-area') ||
+                   document.getElementById('slides-container') ||
+                   document.getElementById('app');
+      if (stream) stream.scrollTop += dy;
+      reportScroll();
+    } else if (e.data.type === '__chem_get_scroll') {
+      reportScroll();
+    }
+  });
+
+  // 初始時與載入後回報
+  reportScroll();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reportScroll);
+  }
+  window.addEventListener('load', reportScroll);
+})();
+</script>
+
+</body>
+</html>

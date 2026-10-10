@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>4-1 湯木生質譜儀與同位素 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.98rem, 1.15vw, 1.2rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.84rem, 0.94vw, 0.98rem); line-height: 1.5; }
+        strong { color: var(--accent-cyan); }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-main {
+            display: grid; grid-template-columns: 1fr 1.35fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.55rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .sci-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 20px; padding: 2px 10px; width: fit-content;
+        }
+        .sci-year { font-weight: 800; color: var(--accent-yellow); font-size: 0.85rem; }
+        .sci-name { font-weight: 700; color: var(--accent-purple); font-size: 0.85rem; }
+
+        .formula-box {
+            background: rgba(0, 0, 0, 0.35); border-left: 4px solid var(--accent-purple);
+            padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 1.1rem; color: #fff;
+            text-align: center; margin: 3px 0;
+        }
+        .info-card {
+            background: rgba(30, 41, 59, 0.7); border: 1px solid var(--accent-blue);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px; padding: 0.5rem 0.8rem;
+        }
+
+        .canv-wrap {
+            position: relative; width: 100%; flex: 1; min-height: 250px;
+            background: rgba(6, 12, 26, 0.85); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        @media (max-width: 900px) {
+            .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>4-1 原子結構近代史 &middot; 湯木生質譜儀與同位素的發現 (1913)</h1>
+
+        <div class="grid-main">
+            <!-- 左欄：質譜儀原理與四大步驟 -->
+            <div class="panel">
+                <div class="sci-badge">
+                    <span class="sci-year">1913</span>
+                    <span class="sci-name">質譜儀 (Mass Spectrometer)</span>
+                </div>
+
+                <div>
+                    <h2 style="color:var(--accent-yellow);">一、質譜儀四大運作步驟</h2>
+                    <ol style="margin-left:1.2rem; font-size:0.85rem; color:#cbd5e1; line-height:1.55;">
+                        <li><strong>游離化</strong>：高能電子束撞擊樣品氣體分子，使之失去電子形成<strong>陽離子</strong>（如 $\text{Ne}^+$）。</li>
+                        <li><strong>電場加速</strong>：陽離子受高電壓極板加速，獲得動能：$qV = \dfrac{1}{2}mv^2$。</li>
+                        <li><strong>磁場偏折</strong>：進入均勻磁場 $B$ 受向心力作圓周運動：$qvB = \dfrac{mv^2}{r}$。</li>
+                        <li><strong>感光偵測</strong>：打在感光底片上，<strong>位置決定質量 ($r \propto \sqrt{m/q}$)</strong>，<strong>譜線強度決定同位素豐度</strong>。</li>
+                    </ol>
+                </div>
+
+                <div class="formula-box">
+                    $$r = \dfrac{mv}{qB} = \dfrac{\sqrt{2mV/q}}{B} \quad \implies \quad r \propto \sqrt{\dfrac{m}{q}}$$
+                </div>
+
+                <div class="info-card">
+                    <span style="font-weight:700; color:var(--accent-purple); font-size:0.88rem;">💡 同位素的突破性證實：</span>
+                    <p style="font-size:0.82rem; color:#cbd5e1; margin-top:2px;">
+                        湯木生在氖氣實驗中赫然發現底片上有兩條不同偏折半徑的斑紋，證實氖存在質量數為 20 與 22 的兩種原子，打破道耳頓「同種元素原子質量完全相同」之假設！
+                    </p>
+                </div>
+            </div>
+
+            <!-- 右欄：質譜儀離子偏折軌跡 Canvas 動畫 -->
+            <div class="panel">
+                <h2 style="color:var(--accent-cyan); margin:0;">🌀 質譜儀離子偏折軌跡動態模擬</h2>
+                <div class="canv-wrap">
+                    <canvas id="c-mass"></canvas>
+                </div>
+                <div style="font-size:0.82rem; color:#94a3b8; text-align:center; line-height:1.5;">
+                    🔵 輕離子（$^{20}\text{Ne}$，半徑小）&nbsp;|&nbsp; 🟡 $^{21}\text{Ne}$ &nbsp;|&nbsp; 🔴 重離子（$^{22}\text{Ne}$，半徑大）<br>
+                    位置差 $\implies$ <strong>質量不同</strong> ； 光點多寡 $\implies$ <strong>自然含量 (豐度)</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let massAF = null;
+
+function initMass() {
+    const c = document.getElementById('c-mass');
+    if (!c) return;
+    const r = c.getBoundingClientRect();
+    const w = Math.floor(r.width) || c.clientWidth || 550;
+    const h = Math.floor(r.height) || c.clientHeight || 280;
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+
+    const Y_entry = h * 0.65;
+    const entryX = w * 0.48;
+
+    const pltX = w * 0.60, pltW = w * 0.35;
+    const pltY = h * 0.18, pltH = h * 0.12;
+    const Y_hit = pltY + pltH - 8;
+
+    const lineX20 = pltX + pltW * 0.15;
+    const lineX21 = pltX + pltW * 0.48;
+    const lineX22 = pltX + pltW * 0.81;
+
+    function getExactRadius(tx, ty) {
+        const dx = tx - entryX;
+        const dy = Y_entry - ty;
+        if (dy <= 0) return h * 0.5;
+        return (dx * dx + dy * dy) / (2 * dy);
+    }
+
+    const r20 = getExactRadius(lineX20, Y_hit);
+    const r21 = getExactRadius(lineX21, Y_hit);
+    const r22 = getExactRadius(lineX22, Y_hit);
+
+    let particles = [];
+    let hits = { ne20: 0, ne21: 0, ne22: 0 };
+    let state = 'running';
+    let pauseTimer = 0;
+    let sparks = [];
+
+    const isotopes = [
+        { m: 20, label: '²⁰Ne', color: '#38bdf8', r: r20, hitCountKey: 'ne20', targetX: lineX20 },
+        { m: 21, label: '²¹Ne', color: '#fbbf24', r: r21, hitCountKey: 'ne21', targetX: lineX21 },
+        { m: 22, label: '²²Ne', color: '#f87171', r: r22, hitCountKey: 'ne22', targetX: lineX22 }
+    ];
+
+    function createBaseParticle(iso) {
+        return {
+            x: -(Math.random() * w * 0.35),
+            y: Y_entry + (Math.random() * 8 - 4),
+            vx: 1.2 + Math.random() * 0.4,
+            phase: 'neutral',
+            iso: iso,
+            theta: 0,
+            glowRad: 0
+        };
+    }
+
+    function spawnBatch() {
+        particles = [];
+        sparks = [];
+        hits = { ne20: 0, ne21: 0, ne22: 0 };
+        for (let i = 0; i < 60; i++) particles.push(createBaseParticle(isotopes[0]));
+        for (let i = 0; i < 2; i++)  particles.push(createBaseParticle(isotopes[1]));
+        for (let i = 0; i < 8; i++)  particles.push(createBaseParticle(isotopes[2]));
+    }
+
+    function createSparks(cx, cy, color) {
+        for (let i = 0; i < 6; i++) {
+            sparks.push({
+                x: cx, y: cy,
+                vx: (Math.random() * 2 - 1) * 2,
+                vy: (Math.random() * 2 - 1) * 2,
+                r: 1.2 + Math.random() * 1.5,
+                alpha: 1, color: color
+            });
+        }
+    }
+
+    spawnBatch();
+
+    const filX = w * 0.16;
+    const slit1X = w * 0.28;
+    const slit2X = w * 0.40;
+    const magX1 = w * 0.48, magX2 = w * 0.58;
+
+    function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#060c1a'; ctx.fillRect(0, 0, w, h);
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+        ctx.fillRect(0, Y_entry - h*0.35, w * 0.28, h*0.62);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+        ctx.strokeRect(0, Y_entry - h*0.35, w * 0.28, h*0.62);
+
+        // 氣體噴嘴
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(0, Y_entry - 7, w * 0.06, 14);
+
+        // 白熱絲
+        ctx.save();
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+            ctx.arc(filX + (i-1.5)*3, h * 0.82, 3, 0, Math.PI, true);
+        }
+        ctx.stroke(); ctx.restore();
+
+        // 電子束輝光
+        const ebG = ctx.createLinearGradient(filX - 4, 0, filX + 4, 0);
+        ebG.addColorStop(0, 'rgba(56, 189, 248, 0.01)');
+        ebG.addColorStop(0.5, 'rgba(56, 189, 248, 0.32)');
+        ebG.addColorStop(1, 'rgba(56, 189, 248, 0.01)');
+        ctx.fillStyle = ebG;
+        ctx.fillRect(filX - 6, h * 0.36, 12, h * 0.44);
+
+        // 加速極板
+        ctx.fillStyle = '#64748b';
+        ctx.fillRect(slit1X, Y_entry - h*0.3, 4, h*0.3 - 6);
+        ctx.fillRect(slit1X, Y_entry + 6, 4, h*0.27);
+        ctx.fillRect(slit2X, Y_entry - h*0.3, 4, h*0.3 - 5);
+        ctx.fillRect(slit2X, Y_entry + 5, 4, h*0.27);
+
+        // 磁場區域
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.05)';
+        ctx.fillRect(magX1, Y_entry - h*0.32, magX2 - magX1, h*0.64);
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.2)';
+        ctx.strokeRect(magX1, Y_entry - h*0.32, magX2 - magX1, h*0.64);
+
+        ctx.fillStyle = 'rgba(168,85,247,0.55)'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        for (let xp = magX1 + 12; xp < magX2; xp += 20) {
+            for (let yp = Y_entry - 22; yp < Y_entry + 30; yp += 20) {
+                ctx.fillText('⊙', xp, yp);
+            }
+        }
+
+        // 感光底片
+        ctx.fillStyle = '#0b0f19'; ctx.fillRect(pltX, pltY, pltW, pltH);
+        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5; ctx.strokeRect(pltX, pltY, pltW, pltH);
+        ctx.fillStyle = '#05070a'; ctx.fillRect(pltX + 3, pltY + 3, pltW - 6, pltH - 6);
+
+        ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#38bdf8'; ctx.fillText('²⁰Ne', lineX20, pltY - 5);
+        ctx.fillStyle = '#fbbf24'; ctx.fillText('²¹Ne', lineX21, pltY - 5);
+        ctx.fillStyle = '#f87171'; ctx.fillText('²²Ne', lineX22, pltY - 5);
+
+        function drawDetectorLine(lx, count, color) {
+            if (count > 0) {
+                const intensity = Math.min(1.0, 0.1 + count * 0.08);
+                ctx.strokeStyle = color; ctx.lineWidth = intensity * 3.5;
+                ctx.shadowColor = color; ctx.shadowBlur = 8;
+                ctx.beginPath(); ctx.moveTo(lx, pltY + 4); ctx.lineTo(lx, pltY + pltH - 4); ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        }
+        drawDetectorLine(lineX20, hits.ne20, '#38bdf8');
+        drawDetectorLine(lineX21, hits.ne21, '#fbbf24');
+        drawDetectorLine(lineX22, hits.ne22, '#f87171');
+
+        if (state === 'running') {
+            if (particles.length === 0) {
+                state = 'paused';
+                pauseTimer = 240;
+            }
+        } else if (state === 'paused') {
+            pauseTimer--;
+            if (pauseTimer <= 0) {
+                spawnBatch();
+                state = 'running';
+            }
+        }
+
+        particles.forEach(p => {
+            if (p.phase === 'neutral') {
+                p.x += p.vx;
+                if (p.x >= filX) p.phase = 'ionized';
+            } else if (p.phase === 'ionized') {
+                p.x += p.vx;
+                p.glowRad = Math.min(8, p.glowRad + 0.4);
+                if (p.x >= slit1X) p.phase = 'accelerating';
+            } else if (p.phase === 'accelerating') {
+                p.x += p.vx * 2.8;
+                if (p.x >= entryX) p.phase = 'magnetic';
+            } else if (p.phase === 'magnetic') {
+                p.theta += 0.04;
+                const rad = p.iso.r;
+                p.x = entryX + rad * Math.sin(p.theta);
+                p.y = (Y_entry - rad) + rad * Math.cos(p.theta);
+
+                if (p.y <= Y_hit) {
+                    hits[p.iso.hitCountKey]++;
+                    createSparks(p.iso.targetX, Y_hit, p.iso.color);
+                    p.phase = 'hit';
+                }
+            }
+
+            if (p.phase !== 'hit') {
+                ctx.save();
+                if (p.phase === 'neutral') {
+                    ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI*2); ctx.fill();
+                } else {
+                    ctx.fillStyle = p.iso.color;
+                    ctx.shadowColor = p.iso.color; ctx.shadowBlur = p.glowRad;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#000'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText('+', p.x, p.y);
+                }
+                ctx.restore();
+            }
+        });
+
+        particles = particles.filter(p => p.phase !== 'hit');
+
+        sparks.forEach(s => {
+            s.x += s.vx; s.y += s.vy;
+            s.vy += 0.08; s.alpha -= 0.04;
+            if (s.alpha > 0) {
+                ctx.fillStyle = s.color; ctx.globalAlpha = s.alpha;
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+            }
+        });
+        ctx.globalAlpha = 1.0;
+        sparks = sparks.filter(s => s.alpha > 0);
+
+        function drawPillLabel(text, x, y, color) {
+            ctx.save();
+            ctx.font = 'bold 10px sans-serif';
+            const tw = ctx.measureText(text).width + 12;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; ctx.strokeStyle = color; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(x - tw/2, y - 10, tw, 20, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+            ctx.restore();
+        }
+
+        drawPillLabel('① 氣體導入', w*0.06, Y_entry + 28, '#38bdf8');
+        drawPillLabel('② 電子游離', filX, h * 0.16, '#fbbf24');
+        drawPillLabel('③ 電場加速', (slit1X + slit2X)/2, h * 0.20, '#f87171');
+        drawPillLabel('④ 磁場偏折 (r ∝ √m)', w * 0.53, Y_entry + h*0.26, '#a855f7');
+        drawPillLabel('⑤ 照相底片', pltX + pltW/2, pltY - 25, '#38bdf8');
+
+        massAF = requestAnimationFrame(draw);
+    }
+    draw();
+}
+
+window.addEventListener('load', () => {
+    initMass();
+});
+window.addEventListener('resize', () => {
+    if (massAF) cancelAnimationFrame(massAF);
+    initMass();
+});
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

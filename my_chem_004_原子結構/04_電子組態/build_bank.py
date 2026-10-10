@@ -1,0 +1,199 @@
+import json
+
+questions = [
+    {
+        "id": "q1",
+        "tag": "電子組態穩定性與基態判定",
+        "question": "某中性原子之電子組態為 $1s^2 2s^2 2p^5 3s^1$，則下列敘述何者<strong>錯誤</strong>？",
+        "options": [
+            "(A) 此原子之原子序為 10",
+            "(B) 此種組態並非最安定者，處於激發態",
+            "(C) 此原子應獲得能量，變為 $1s^2 2s^2 2p^6$",
+            "(D) 此原子的 1s 和 2s 軌域，均已填滿電子"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 電子總數 $= 2 + 2 + 5 + 1 = 10$，中性原子之原子序即為 10（氖 Ne）。<br>• 氖的基態應為 $1s^2 2s^2 2p^6$。目前組態 2p 未填滿即有電子填入 3s，為<strong>激發態</strong>，並非最安定狀態。<br>• 激發態原子若回到最穩定的基態（$1s^2 2s^2 2p^6$），應由高能階躍遷至低能階，過程必須<strong>放出能量</strong>而非獲得（吸收）能量，故 (C) 敘述錯誤。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q2",
+        "tag": "過渡元素主殼層電子分佈",
+        "question": "關於過渡元素釩（${}_{23}\\text{V}$）基態原子的電子組態，其 K、L、M、N 各主殼層的電子數依序為何？",
+        "options": [
+            "(A) 2、8、8、5",
+            "(B) 2、8、10、3",
+            "(C) 2、8、11、2",
+            "(D) 2、8、12、1"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 釩（V，原子序 23）依奧夫堡規則填入基態電子組態為：<br>$$1s^2 2s^2 2p^6 3s^2 3p^6 3d^3 4s^2$$<br>• 統計各主量子數殼層（$n=1, 2, 3, 4$）：<br>&nbsp;&nbsp;- K層 ($n=1$): $1s^2 \\to 2$<br>&nbsp;&nbsp;- L層 ($n=2$): $2s^2 2p^6 \\to 8$<br>&nbsp;&nbsp;- M層 ($n=3$): $3s^2 3p^6 3d^3 \\to 2 + 6 + 3 = 11$<br>&nbsp;&nbsp;- N層 ($n=4$): $4s^2 \\to 2$<br>• 故 K、L、M、N 各層電子數為 2、8、11、2。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q3",
+        "tag": "洪德原則符號表示判定",
+        "question": "下列哪一種 2p 軌域的電子分佈方式<strong>違反洪德原則 (Hund's Rule)</strong>？",
+        "options": [
+            "(A) $p_x^1 p_y^1 p_z^1$",
+            "(B) $p_x^2 p_y^1 p_z^1$",
+            "(C) $p_x^2 p_y^1 p_z^0$",
+            "(D) $p_x^1 p_y^0 p_z^1$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 洪德原則指出：電子填入同能階簡併軌域時，應優先以相同自旋平行分別填入不同軌域，半滿後始得成對。<br>• (C) 選項中共有 3 個電子，在 $p_z$ 軌域完全空白的情況下，卻在 $p_x$ 軌域提早成對，違反洪德原則（正確基態應為 $p_x^1 p_y^1 p_z^1$）。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q4",
+        "tag": "基態與激發態能量躍遷",
+        "question": "下列有關原子或離子進行電子重組的轉變過程，何者屬於<strong>吸熱過程</strong>？",
+        "options": [
+            "(A) 氫原子之電子由 4s 移至 3d",
+            "(B) 碳原子由 $1s^2 2s^2 2p_x^2$ 轉變為 $1s^2 2s^2 2p_x^1 2p_y^1$",
+            "(C) 鉻原子由 $[Ar] 3d^4 4s^2$ 轉變為 $[Ar] 3d^5 4s^1$",
+            "(D) 銅原子由 $[Ar] 3d^{10} 4s^1$ 轉變為 $[Ar] 3d^9 4s^2$"
+        ],
+        "ans": 3,
+        "explanation": "<strong>解析：</strong><br>• (A) 單電子氫原子軌域能量僅取決於主量子數 $n$，4s ($n=4$) 能階高於 3d ($n=3$)，高能階至低能階為<strong>放熱</strong>。<br>• (B) 碳由違反洪德原則的激發態回到基態，為<strong>放熱</strong>。<br>• (C) 鉻原子由激發態轉變為半滿穩定的基態，為<strong>放熱</strong>。<br>• (D) 銅原子 $[Ar] 3d^{10} 4s^1$ 為全滿最穩定的基態，躍遷成高能量的激發態 $[Ar] 3d^9 4s^2$ 必須吸收能量，故為<strong>吸熱過程</strong>。<br>故選 <strong>(D)</strong>。"
+    },
+    {
+        "id": "q5",
+        "tag": "陽離子游離軌域與量子數",
+        "question": "下列哪一個過渡元素形成陽離子的過程，其失去的最後一個電子之量子數為 $(3, 2, -2, +\\frac{1}{2})$？（設磁量子數與自旋量子數皆以正號優先填入）",
+        "options": [
+            "(A) ${}_{23}\\text{V} \\to {}_{23}\\text{V}^+$",
+            "(B) ${}_{24}\\text{Cr} \\to {}_{24}\\text{Cr}^{2+}$",
+            "(C) ${}_{25}\\text{Mn} \\to {}_{25}\\text{Mn}^+$",
+            "(D) ${}_{27}\\text{Co} \\to {}_{27}\\text{Co}^{2+}$"
+        ],
+        "ans": 1,
+        "explanation": "<strong>解析：</strong><br>• 量子數 $(3, 2, -2, +\\frac{1}{2})$ 對應 $n=3, l=2$（3d 軌域）。因正號優先填入（$+2, +1, 0, -1, -2$），此電子為 3d 軌域半滿的第 5 個電子。<br>• 過渡元素游離時，最外層的 4s 電子先失去，接著才失去 3d 電子（後填者先失）：<br>&nbsp;&nbsp;(A) V 先失 4s 電子，其量子數為 $(4, 0, 0, \\dots)$。<br>&nbsp;&nbsp;(B) ${}_{24}\\text{Cr} ([Ar] 4s^1 3d^5) \\to \\text{Cr}^{2+}$：失去 1 個 4s 電子後，再失去 1 個 3d 電子，失去的正是最後填入的第 5 個 3d 電子 $(3, 2, -2, +\\frac{1}{2})$！<br>&nbsp;&nbsp;(C) Mn 失去 4s 電子；(D) Co 失去 2 個 4s 電子。<br>故選 <strong>(B)</strong>。"
+    },
+    {
+        "id": "q6",
+        "tag": "等電子物種組態判定",
+        "question": "下列各組原子或離子中，何者具有<strong>完全相同</strong>的基態電子組態？",
+        "options": [
+            "(A) ${}_{12}\\text{Mg}^{2+}$ 與 ${}_{13}\\text{Al}^{3+}$",
+            "(B) ${}_{27}\\text{Co}^{2+}$ 與 ${}_{25}\\text{Mn}$",
+            "(C) ${}_{31}\\text{Ga}^{3+}$ 與 ${}_{28}\\text{Ni}$",
+            "(D) ${}_{24}\\text{Cr}^{2+}$ 與 ${}_{26}\\text{Fe}^{2+}$"
+        ],
+        "ans": 0,
+        "explanation": "<strong>解析：</strong><br>• (A) $\\text{Mg}^{2+}$（10 電子）與 $\\text{Al}^{3+}$（10 電子）基態電子組態皆為 $1s^2 2s^2 2p^6$（與氖 Ne 相同），完全相同，符合題意。<br>• (B) $\\text{Co}^{2+}$（25 電子，$[Ar] 3d^7$）；Mn（25 電子，$[Ar] 4s^2 3d^5$），組態不同。<br>• (C) $\\text{Ga}^{3+}$（28 電子，$[Ar] 3d^{10}$）；Ni（28 電子，$[Ar] 4s^2 3d^8$），組態不同。<br>• (D) $\\text{Cr}^{2+}$（$[Ar] 3d^4$）；$\\text{Fe}^{2+}$（$[Ar] 3d^6$），組態不同。<br>故選 <strong>(A)</strong>。"
+    },
+    {
+        "id": "q7",
+        "tag": "碳原子組態能量比較",
+        "question": "下列關於碳原子（$Z=6$）的電子組態能量之比較，何者<strong>正確</strong>？（軌域順序為 1s、2s、2px、2py、2pz）",
+        "options": [
+            "(A) $1s^2 2s^2 2p_x^2$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量低",
+            "(B) $1s^2 2s^2 2p_x^1 2p_z^1$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量高",
+            "(C) $1s^2 2s^1 2p_x^1 2p_y^1 2p_z^1$ 的能量比 $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量高",
+            "(D) $1s^2 2s^2 2p_x^1 2p_y^1$ 的能量與 $1s^2 2s^2 2p_y^1 2p_z^1$ 的能量不相同"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 碳原子基態電子組態為 $1s^2 2s^2 2p_x^1 2p_y^1$（或任意 2p 軌域半滿兩軌，平行自旋），為能量最低狀態。<br>• (A) $2p_x^2$ 違反洪德原則，提早成對排斥力大，為激發態，能量應較高。<br>• (B) $2p_x, 2p_y, 2p_z$ 為等價簡併軌域，能量完全相同。<br>• (C) $1s^2 2s^1 2p^3$ 是 2s 電子躍遷至較高能階 2p 的激發態，能量必然高於基態，正確。<br>• (D) 簡併軌域任意兩軌平行單填皆為基態，能量相同。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q8",
+        "tag": "自旋方位與基態組態圖示",
+        "question": "若以 $\\uparrow$、$\\downarrow$ 代表電子自旋方向，下列何者能正確表示氮原子（$Z=7$）的<strong>基態</strong>電子組態？",
+        "options": [
+            "(A) 1s(↑↓) 2s(↑) 2px(↑↓) 2py(↓) 2pz(↓)",
+            "(B) 1s(↑↓) 2s(↑↓) 2px(↑↓) 2py(↓) 2pz( )",
+            "(C) 1s(↑↓) 2s(↓↓) 2px(↑) 2py(↑) 2pz(↑)",
+            "(D) 1s(↑↓) 2s(↑↓) 2px(↑) 2py(↑) 2pz(↑)"
+        ],
+        "ans": 3,
+        "explanation": "<strong>解析：</strong><br>• 氮原子（$Z=7$）基態電子組態：$1s^2 2s^2 2p^3$。<br>• 1s、2s 軌域均需自旋相反填滿 2 個電子（$\\uparrow\\downarrow$）；<br>• 2p 軌域的三個電子依洪德原則，必須以相同自旋方位（全部 $\\uparrow$ 或全部 $\\downarrow$）單獨填入 $2p_x, 2p_y, 2p_z$。<br>• (A) 2s 軌域未填滿即填入 2p，為激發態；(B) 違反洪德原則；(C) 2s 自旋同向違反包利原理；(D) 完全符合三大原則，為正確基態。<br>故選 <strong>(D)</strong>。"
+    },
+    {
+        "id": "q9",
+        "tag": "氬後元素電子組態推演",
+        "question": "若某中性元素之原子序比氬（Ar, $Z=18$）多 7，則其基態之電子組態為何？",
+        "options": [
+            "(A) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^6 4s^1$",
+            "(B) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^7 4s^2$",
+            "(C) $1s^2 2s^2 2p^6 3s^2 3p^6 3d^5 4s^2$",
+            "(D) $1s^2 2s^2 2p^6 3s^2 3p^5$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 氬（Ar）原子序為 18，原子序多 7 者之原子序為 $18 + 7 = 25$（錳 Mn）。<br>• 依構築原則：填滿 $[Ar]$ 後，先填入能量較低之 4s 軌域（容納 2 個電子），再填入 3d 軌域（容納 5 個電子）：<br>$$1s^2 2s^2 2p^6 3s^2 3p^6 3d^5 4s^2 \\quad (\\text{或簡記為 } [Ar] 3d^5 4s^2)$$<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q10",
+        "tag": "最高能階電子推求原子序",
+        "question": "某中性原子的基態電子組態中，最高能量的軌域及所含電子數為 $3d^6$，則該原子的原子序為何？",
+        "options": [
+            "(A) 28",
+            "(B) 26",
+            "(C) 24",
+            "(D) 22"
+        ],
+        "ans": 1,
+        "explanation": "<strong>解析：</strong><br>• 依據奧夫堡規則，填入 3d 軌域之前，較低能量之 1s ~ 4s 軌域皆已填滿。<br>• 完整基態組態為：$1s^2 2s^2 2p^6 3s^2 3p^6 4s^2 3d^6$（即 $[Ar] 4s^2 3d^6$）。<br>• 計算總電子數：$18 + 2 + 6 = 26$。中性原子原子序即為 26（鐵 Fe）。<br>故選 <strong>(B)</strong>。"
+    },
+    {
+        "id": "q11",
+        "tag": "軌域圖形違反洪德定則辨析",
+        "question": "下列軌域示意圖所表示之電子組態中，何者<strong>違反洪德法則 (Hund's Rule)</strong>？",
+        "options": [
+            "(A) s[↑↓] p[ ][↑][↑]",
+            "(B) s[↑↓] p[↓][ ][↓]",
+            "(C) s[↑↓] p[↑↓][↓][ ]",
+            "(D) s[↑↓] p[↓][↓][↓]"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 洪德法則要求：等價軌域在未半滿前，電子應盡量分佔不同軌域且自旋平行。<br>• (C) 選項中，p 軌域有 3 個電子，第三個軌域完全空白，卻在第一個軌域提早成對，電子排斥力較大，明顯違反洪德法則！<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q12",
+        "tag": "鉻原子特殊基態軌域圖",
+        "question": "下列哪一個軌域示意圖能正確表示<strong>基態鉻原子 (Cr, $Z=24$)</strong> 最外層軌域之電子組態？",
+        "options": [
+            "(A) 4s[↑↓] 3d[↑][↑][ ][ ][ ]",
+            "(B) 4s[↑↓] 3d[↑↓][↑↓][ ][ ][ ]",
+            "(C) 4s[↑↓] 3d[↑][↓][↑][↓][ ]",
+            "(D) 4s[↑↓] 3d[↑][↑][↑][↑][ ]",
+            "(E) 4s[↑] 3d[↑][↑][↑][↑][↑]"
+        ],
+        "ans": 4,
+        "explanation": "<strong>解析：</strong><br>• 鉻（Cr, $Z=24$）具有特殊的半滿穩定性：3d 軌域填入 5 個電子形成半滿對稱球形電荷分佈，能量最低。<br>• 基態電子組態並非預期的 $[Ar] 4s^2 3d^4$，而是 <strong>$[Ar] 4s^1 3d^5$</strong>。<br>• 因此 4s 軌域有 1 個單電子，3d 的 5 個軌域各填 1 個平行自旋單電子，即選項 (E)。<br>故選 <strong>(E)</strong>。"
+    }
+]
+
+# Write question_bank.json
+with open('question_bank.json', 'w', encoding='utf-8') as f:
+    json.dump(questions, f, ensure_ascii=False, indent=2)
+
+print(f"question_bank.json generated with {len(questions)} questions.")
+
+# Generate Markdown file
+md_content = f"""# 4-4 電子組態 · 通關測驗題庫電子檔
+
+本題庫整合自本單元核心觀念、歷屆經典試題及螢幕截圖識別題目，涵蓋奧夫堡規則、包利不相容原理、洪德原則、過渡金屬組態、例外半滿/全滿穩定性等重要考點。
+
+---
+
+"""
+
+for idx, q in enumerate(questions):
+    opts_str = "\n".join([f"- {opt}" for opt in q["options"]])
+    correct_opt_letter = chr(65 + q["ans"])
+    md_content += f"""### 第 {idx + 1} 題【{q["tag"]}】
+**題目：**
+{q["question"]}
+
+**選項：**
+{opts_str}
+
+**正確答案：** ({correct_opt_letter})
+
+{q["explanation"]}
+
+---
+
+"""
+
+with open('電子組態_通關測驗題庫.md', 'w', encoding='utf-8') as f:
+    f.write(md_content)
+
+print("電子組態_通關測驗題庫.md generated.")

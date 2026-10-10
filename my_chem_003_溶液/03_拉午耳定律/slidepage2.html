@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 蒸氣壓與容器體積、溫度關係 | 互動模擬</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(0.95rem, 1.1vw, 1.15rem); font-weight: 700; margin-bottom: 0.25rem; }
+        p, li { font-size: clamp(0.82rem, 0.94vw, 0.98rem); line-height: 1.5; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-sim {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.85rem; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.5rem;
+            min-height: 0; overflow: hidden;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+
+        .canvas-card {
+            background: rgba(0,0,0,0.4); border-radius: 10px; padding: 6px;
+            flex: 1; min-height: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; position: relative;
+            border: 1px solid rgba(255,255,255,0.08); gap: 4px;
+        }
+        .canvas-label {
+            font-size: 0.76rem; color: rgba(255,255,255,0.55); margin: 0;
+            width: 100%; text-align: left; padding-left: 6px;
+        }
+
+        .info-card {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px; padding: 0.45rem 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 38px; flex-shrink: 0;
+        }
+
+        @media (max-width: 900px) {
+            .grid-sim { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-3 拉午耳定律 &middot; 蒸氣壓與體積、溫度動態模擬</h1>
+
+        <div class="grid-sim">
+            <!-- (一) 定溫下改變體積 -->
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <h2 style="color:var(--accent-blue);">(一) 定溫下：改變體積（推拉活塞）</h2>
+                    <span style="font-size:0.78rem; color:#94a3b8;">左右拖曳下方活塞試驗</span>
+                </div>
+                
+                <div class="canvas-card">
+                    <p class="canvas-label">📈 P - V 圖（定溫等溫線）</p>
+                    <canvas id="canvas-vol-pv" style="width: 100%; height: 48%; display:block;"></canvas>
+                    <p class="canvas-label">🔬 活塞密閉容器（拖曳右側活塞把手）</p>
+                    <canvas id="canvas-vol-piston" style="width: 100%; height: 48%; cursor: ew-resize; display:block;"></canvas>
+                </div>
+
+                <div class="info-card">
+                    <p id="label-vol-status" style="font-size: 0.88rem; margin: 0; color: var(--accent-cyan); text-align: center;">
+                        狀態：液氣共存 ｜ P = P<sub>sat</sub>（定溫定壓）
+                    </p>
+                </div>
+            </div>
+
+            <!-- (二) 定容下改變溫度 -->
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <h2 style="color:var(--accent-yellow);">(二) 定容下：改變溫度（加熱密閉容器）</h2>
+                    <span style="font-size:0.78rem; color:#94a3b8;">滑動下方滑桿調節溫度</span>
+                </div>
+
+                <div class="canvas-card">
+                    <p class="canvas-label">📈 P - T 圖（蒸氣壓曲線）</p>
+                    <canvas id="canvas-temp-pt" style="width: 100%; height: 48%; display:block;"></canvas>
+                    <p class="canvas-label">🔬 密閉容器分子運動與液位</p>
+                    <canvas id="canvas-temp-beaker" style="width: 100%; height: 48%; display:block;"></canvas>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px; padding:0 4px;">
+                        <span style="font-size:0.82rem; color:#94a3b8;">0°C</span>
+                        <input type="range" id="input-temp-sim" min="0" max="150" value="25" style="flex:1; cursor:pointer; accent-color:var(--accent-yellow);">
+                        <span style="font-size:0.82rem; color:#94a3b8;">150°C</span>
+                        <span style="font-size:0.88rem; font-weight:700; color:var(--accent-yellow); min-width:65px; text-align:right;">
+                            <span id="label-temp-val">25</span>°C
+                        </span>
+                    </div>
+
+                    <div class="info-card">
+                        <p id="label-temp-status" style="font-size: 0.88rem; margin: 0; color: var(--accent-yellow); text-align: center;">
+                            狀態：液氣共存 ｜ 蒸氣壓隨溫度指數上升
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.addEventListener('load', () => {
+    // 1. 活塞體積模擬
+    const pvCanvas = document.getElementById('canvas-vol-pv');
+    const pistonCanvas = document.getElementById('canvas-vol-piston');
+    const vLabel = document.getElementById('label-vol-status');
+
+    function setupCanvas(c) {
+        const rect = c.getBoundingClientRect();
+        c.width = rect.width * (window.devicePixelRatio || 1);
+        c.height = rect.height * (window.devicePixelRatio || 1);
+        const ctx = c.getContext('2d');
+        ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+        return { ctx, w: rect.width, h: rect.height };
+    }
+
+    let pv = setupCanvas(pvCanvas);
+    let pc = setupCanvas(pistonCanvas);
+
+    const WALL_X = 0.08, PISTON_MIN_X = 0.20, PISTON_MAX_X = 0.94, TURN_X = 0.52;
+    let pistonFrac = 0.35, isDraggingV = false;
+    const MAX_PARTICLES = 30, PARTICLE_RADIUS = 3, PARTICLE_SPEED = 1.2;
+    let vParticles = [];
+
+    function makeParticle(xMin, xMax, yMin, yMax) {
+        const angle = Math.random() * Math.PI * 2;
+        return {
+            x: xMin + Math.random() * Math.max(1, (xMax - xMin)),
+            y: yMin + Math.random() * Math.max(1, (yMax - yMin)),
+            vx: Math.cos(angle) * PARTICLE_SPEED,
+            vy: Math.sin(angle) * PARTICLE_SPEED
+        };
+    }
+
+    function liquidSurface() {
+        const maxLiqH = 0.35 * pc.h, containerBottom = 0.90 * pc.h;
+        if (pistonFrac >= TURN_X) return containerBottom;
+        const liquidFrac = 1 - (pistonFrac - PISTON_MIN_X) / (TURN_X - PISTON_MIN_X);
+        return containerBottom - liquidFrac * maxLiqH;
+    }
+
+    function syncVParticles() {
+        let targetN = pistonFrac <= TURN_X
+            ? Math.round(MAX_PARTICLES * (pistonFrac - PISTON_MIN_X) / (TURN_X - PISTON_MIN_X))
+            : MAX_PARTICLES;
+        targetN = Math.max(4, targetN);
+        const pistonX = pistonFrac * pc.w, wallX = WALL_X * pc.w, pistonTop = 0.12 * pc.h, gasBottom = liquidSurface();
+        while (vParticles.length < targetN) {
+            vParticles.push(makeParticle(wallX + PARTICLE_RADIUS, pistonX - PARTICLE_RADIUS, pistonTop + PARTICLE_RADIUS, gasBottom - PARTICLE_RADIUS));
+        }
+        while (vParticles.length > targetN) {
+            vParticles.splice(Math.floor(Math.random() * vParticles.length), 1);
+        }
+    }
+
+    function drawVol() {
+        const ctx = pc.ctx, w = pc.w, h = pc.h;
+        ctx.clearRect(0, 0, w, h);
+        const wallX = WALL_X * w, pistonX = pistonFrac * w, containerTop = 0.08 * h, containerBottom = 0.90 * h, liqSurface = liquidSurface();
+
+        // 容器外框
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(wallX, containerTop); ctx.lineTo(wallX, containerBottom); ctx.lineTo(pistonX, containerBottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(wallX, containerTop); ctx.lineTo(pistonX, containerTop); ctx.stroke();
+
+        // 液相層
+        if (pistonFrac < TURN_X) {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.fillRect(wallX + 1, liqSurface, pistonX - wallX - 2, containerBottom - liqSurface);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)'; ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            const waveCount = 6, segW = (pistonX - wallX) / waveCount;
+            ctx.moveTo(wallX, liqSurface);
+            for (let i = 0; i < waveCount; i++) {
+                ctx.quadraticCurveTo(wallX + segW * (i + 0.5), liqSurface - 2 * Math.sin(Date.now() / 350 + i), wallX + segW * (i + 1), liqSurface);
+            }
+            ctx.stroke();
+            ctx.fillStyle = '#38bdf8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('液相 (Liquid)', (wallX + pistonX) / 2, (liqSurface + containerBottom) / 2 + 3);
+        }
+
+        // 活塞本體
+        const pistonWidth = Math.max(14, w * 0.05);
+        const grad = ctx.createLinearGradient(pistonX, 0, pistonX + pistonWidth, 0);
+        grad.addColorStop(0, 'rgba(148,163,184,0.95)'); grad.addColorStop(1, 'rgba(71,85,105,0.95)');
+        ctx.fillStyle = grad; ctx.fillRect(pistonX, containerTop, pistonWidth, containerBottom - containerTop);
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
+        ctx.strokeRect(pistonX, containerTop, pistonWidth, containerBottom - containerTop);
+
+        // 活塞桿
+        ctx.fillStyle = 'rgba(100,116,139,0.8)';
+        ctx.fillRect(pistonX + pistonWidth, (containerTop + containerBottom) / 2 - 4, w - (pistonX + pistonWidth) - 4, 8);
+
+        // 氣體分子
+        vParticles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x - PARTICLE_RADIUS < wallX) { p.x = wallX + PARTICLE_RADIUS; p.vx = Math.abs(p.vx); }
+            if (p.x + PARTICLE_RADIUS > pistonX) { p.x = pistonX - PARTICLE_RADIUS; p.vx = -Math.abs(p.vx); }
+            if (p.y - PARTICLE_RADIUS < containerTop) { p.y = containerTop + PARTICLE_RADIUS; p.vy = Math.abs(p.vy); }
+            if (p.y + PARTICLE_RADIUS > liqSurface) { p.y = liqSurface - PARTICLE_RADIUS; p.vy = -Math.abs(p.vy); }
+            ctx.beginPath(); ctx.arc(p.x, p.y, PARTICLE_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = '#34d399'; ctx.fill();
+        });
+
+        // 繪製 P-V 圖
+        const pvCtx = pv.ctx, pvw = pv.w, pvh = pv.h;
+        pvCtx.clearRect(0, 0, pvw, pvh);
+        const pad = { l: WALL_X * pvw + 15, r: 16, t: 10, b: 24 }, gw = pvw - pad.l - pad.r, gh = pvh - pad.t - pad.b;
+
+        pvCtx.fillStyle = 'rgba(0,0,0,0.3)'; pvCtx.fillRect(pad.l, pad.t, gw, gh);
+        pvCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+        for (let i = 1; i < 4; i++) {
+            const gy = pad.t + gh * i / 4;
+            pvCtx.beginPath(); pvCtx.moveTo(pad.l, gy); pvCtx.lineTo(pad.l + gw, gy); pvCtx.stroke();
+        }
+        pvCtx.strokeStyle = 'rgba(255,255,255,0.7)'; pvCtx.lineWidth = 1.5;
+        pvCtx.beginPath(); pvCtx.moveTo(pad.l, pad.t); pvCtx.lineTo(pad.l, pad.t + gh); pvCtx.lineTo(pad.l + gw, pad.t + gh); pvCtx.stroke();
+
+        pvCtx.fillStyle = 'rgba(255,255,255,0.6)'; pvCtx.font = '10px sans-serif'; pvCtx.textAlign = 'center';
+        pvCtx.fillText('V (體積)', pad.l + gw / 2, pvh - 6);
+        pvCtx.save(); pvCtx.translate(14, pad.t + gh / 2); pvCtx.rotate(-Math.PI / 2);
+        pvCtx.fillText('P (蒸氣壓)', 0, 0); pvCtx.restore();
+
+        const v2x = (vf) => pad.l + (vf - PISTON_MIN_X) / (PISTON_MAX_X - PISTON_MIN_X) * gw;
+        const p2y = (pf) => pad.t + (1 - pf) * gh;
+
+        // 水平定壓段 (P = Psat)
+        pvCtx.beginPath(); pvCtx.strokeStyle = 'rgba(56,189,248,0.95)'; pvCtx.lineWidth = 2.5;
+        pvCtx.moveTo(v2x(PISTON_MIN_X), p2y(0.70)); pvCtx.lineTo(v2x(TURN_X), p2y(0.70)); pvCtx.stroke();
+
+        // 雙曲線反比段 (波以耳定律)
+        pvCtx.beginPath(); pvCtx.strokeStyle = 'rgba(168,85,247,0.95)';
+        pvCtx.moveTo(v2x(TURN_X), p2y(0.70));
+        for (let vf = TURN_X; vf <= PISTON_MAX_X; vf += 0.01) {
+            pvCtx.lineTo(v2x(vf), p2y(0.70 * TURN_X / vf));
+        }
+        pvCtx.stroke();
+
+        // 當前狀態點 (紅點)
+        const dotX = v2x(pistonFrac), dotY = pistonFrac <= TURN_X ? p2y(0.70) : p2y(0.70 * TURN_X / pistonFrac);
+        pvCtx.beginPath(); pvCtx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+        pvCtx.fillStyle = '#f87171'; pvCtx.fill(); pvCtx.strokeStyle = '#fff'; pvCtx.stroke();
+
+        vLabel.innerHTML = pistonFrac <= TURN_X
+            ? "狀態：<strong style='color:#38bdf8'>液氣共存</strong> ｜ 壓力 P = P<sub>sat</sub>（蒸發增加補充氣體，壓力恆定）"
+            : "狀態：<strong style='color:#a855f7'>全部汽化</strong> ｜ 依波以耳定律 $P \\propto 1/V$（無液相，體積增壓力降）";
+
+        requestAnimationFrame(drawVol);
+    }
+
+    const getFrac = (x) => {
+        const r = pistonCanvas.getBoundingClientRect();
+        return Math.max(PISTON_MIN_X, Math.min(PISTON_MAX_X, (x - r.left) / r.width));
+    };
+    pistonCanvas.onmousedown = (e) => { isDraggingV = true; pistonFrac = getFrac(e.clientX); syncVParticles(); };
+    window.addEventListener('mousemove', (e) => { if (isDraggingV) { pistonFrac = getFrac(e.clientX); syncVParticles(); } });
+    window.addEventListener('mouseup', () => isDraggingV = false);
+    pistonCanvas.addEventListener('touchstart', (e) => { isDraggingV = true; pistonFrac = getFrac(e.touches[0].clientX); syncVParticles(); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { if (isDraggingV) { pistonFrac = getFrac(e.touches[0].clientX); syncVParticles(); } }, { passive: false });
+    window.addEventListener('touchend', () => isDraggingV = false);
+
+    syncVParticles();
+    drawVol();
+
+    // 2. 溫度改變模擬
+    const tPtCanvas = document.getElementById('canvas-temp-pt');
+    const tBeakerCanvas = document.getElementById('canvas-temp-beaker');
+    const tInput = document.getElementById('input-temp-sim');
+    const tValLabel = document.getElementById('label-temp-val');
+    const tStatus = document.getElementById('label-temp-status');
+
+    let tPt = setupCanvas(tPtCanvas);
+    let tBc = setupCanvas(tBeakerCanvas);
+    let tParticles = [];
+
+    class TParticle {
+        constructor(x, y, vx, vy, radius, color) {
+            this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.radius = radius; this.color = color;
+        }
+        update(minX, maxX, minY, maxY) {
+            this.x += this.vx; this.y += this.vy;
+            if (this.x - this.radius < minX) { this.x = minX + this.radius; this.vx *= -1; }
+            else if (this.x + this.radius > maxX) { this.x = maxX - this.radius; this.vx *= -1; }
+            if (this.y - this.radius < minY) { this.y = minY + this.radius; this.vy *= -1; }
+            else if (this.y + this.radius > maxY) { this.y = maxY - this.radius; this.vy *= -1; }
+        }
+        draw(ctx) {
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.color; ctx.fill();
+        }
+    }
+
+    function drawTemp() {
+        const temp = parseInt(tInput.value);
+        tValLabel.textContent = temp;
+        const ctx = tBc.ctx, w = tBc.w, h = tBc.h;
+        ctx.clearRect(0, 0, w, h);
+
+        const bw = w * 0.5, bh = h * 0.75, bx = w / 2 - bw / 2, by = 6;
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(bx, by, bw, bh);
+
+        // 火焰效果
+        const flameAlpha = Math.min(1, temp / 100);
+        ctx.fillStyle = `rgba(248,113,113, ${flameAlpha * 0.75})`;
+        ctx.beginPath(); ctx.moveTo(w / 2 - 25, h - 2);
+        ctx.quadraticCurveTo(w / 2, h - 2 - (temp / 150) * 22, w / 2 + 25, h - 2); ctx.fill();
+
+        const T_CRIT = 115;
+        const liqH = temp < T_CRIT ? (bh * 0.3) * (1 - temp / T_CRIT) : 0;
+        if (liqH > 0) {
+            ctx.fillStyle = 'rgba(56,189,248,0.45)';
+            ctx.fillRect(bx + 1, by + bh - liqH - 1, bw - 2, liqH);
+        }
+
+        const targetN = Math.round(5 + (temp / 150) * 35);
+        const speed = 0.5 + (temp / 100) * 1.5;
+        while (tParticles.length < targetN) {
+            const angle = Math.random() * Math.PI * 2;
+            tParticles.push(new TParticle(
+                bx + 6 + Math.random() * (bw - 12),
+                by + 6 + Math.random() * (bh - liqH - 12),
+                Math.cos(angle) * speed,
+                Math.sin(angle) * speed,
+                2.5,
+                '#38bdf8'
+            ));
+        }
+        while (tParticles.length > targetN) tParticles.pop();
+
+        tParticles.forEach(p => {
+            p.vx = (p.vx > 0 ? 1 : -1) * speed;
+            p.vy = (p.vy > 0 ? 1 : -1) * speed;
+            p.update(bx, bx + bw, by, by + bh - liqH);
+            p.draw(ctx);
+        });
+
+        // 繪製 P-T 圖
+        const ptCtx = tPt.ctx, ptw = tPt.w, pth = tPt.h;
+        ptCtx.clearRect(0, 0, ptw, pth);
+        const pad = { l: 36, r: 16, t: 10, b: 24 }, gw = ptw - pad.l - pad.r, gh = pth - pad.t - pad.b;
+
+        ptCtx.fillStyle = 'rgba(0,0,0,0.3)'; ptCtx.fillRect(pad.l, pad.t, gw, gh);
+        ptCtx.strokeStyle = 'rgba(255,255,255,0.08)'; ptCtx.lineWidth = 1;
+        for (let i = 1; i < 4; i++) {
+            const gy = pad.t + gh * i / 4;
+            ptCtx.beginPath(); ptCtx.moveTo(pad.l, gy); ptCtx.lineTo(pad.l + gw, gy); ptCtx.stroke();
+        }
+        for (let i = 1; i < 5; i++) {
+            const gx = pad.l + gw * i / 5;
+            ptCtx.beginPath(); ptCtx.moveTo(gx, pad.t); ptCtx.lineTo(gx, pad.t + gh); ptCtx.stroke();
+        }
+
+        ptCtx.strokeStyle = 'rgba(255,255,255,0.7)'; ptCtx.lineWidth = 1.5;
+        ptCtx.beginPath(); ptCtx.moveTo(pad.l, pad.t); ptCtx.lineTo(pad.l, pad.t + gh); ptCtx.lineTo(pad.l + gw, pad.t + gh); ptCtx.stroke();
+
+        ptCtx.fillStyle = 'rgba(255,255,255,0.6)'; ptCtx.font = '10px sans-serif'; ptCtx.textAlign = 'center';
+        ptCtx.fillText('T (溫度 °C)', pad.l + gw / 2, pth - 6);
+        ptCtx.save(); ptCtx.translate(14, pad.t + gh / 2); ptCtx.rotate(-Math.PI / 2);
+        ptCtx.fillText('P (蒸氣壓)', 0, 0); ptCtx.restore();
+
+        const t2x = (t) => pad.l + (t / 150) * gw;
+        const p2y = (p) => pad.t + gh - p * gh * 0.85;
+
+        ptCtx.beginPath(); ptCtx.strokeStyle = 'var(--accent-cyan)'; ptCtx.lineWidth = 2.5;
+        ptCtx.moveTo(t2x(0), p2y(0.04));
+        for (let t = 0; t <= 150; t += 1) {
+            const pVal = t <= T_CRIT
+                ? 0.04 + 0.70 * (Math.pow(1.026, t) - 1) / (Math.pow(1.026, T_CRIT) - 1)
+                : 0.74 + 0.22 * ((t - T_CRIT) / (150 - T_CRIT));
+            ptCtx.lineTo(t2x(t), p2y(pVal));
+        }
+        ptCtx.stroke();
+
+        const currP = temp <= T_CRIT
+            ? 0.04 + 0.70 * (Math.pow(1.026, temp) - 1) / (Math.pow(1.026, T_CRIT) - 1)
+            : 0.74 + 0.22 * ((temp - T_CRIT) / (150 - T_CRIT));
+
+        ptCtx.fillStyle = 'var(--accent-red)';
+        ptCtx.beginPath(); ptCtx.arc(t2x(temp), p2y(currP), 5, 0, Math.PI * 2);
+        ptCtx.fill(); ptCtx.strokeStyle = '#fff'; ptCtx.stroke();
+
+        tStatus.innerHTML = temp < T_CRIT
+            ? "狀態：<strong>液氣共存</strong> ｜ 溫度升高 $\\to$ 蒸氣壓呈指數曲線劇烈上升"
+            : "狀態：<strong>全部汽化</strong> ｜ 依查理定律 $P \\propto T(\\text{K})$ 呈線性上升";
+
+        requestAnimationFrame(drawTemp);
+    }
+    drawTemp();
+
+    window.addEventListener('resize', () => {
+        pv = setupCanvas(pvCanvas);
+        pc = setupCanvas(pistonCanvas);
+        tPt = setupCanvas(tPtCanvas);
+        tBc = setupCanvas(tBeakerCanvas);
+    });
+});
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

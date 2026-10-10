@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>影響反應速率的因素 | 互動教學</title>
+    <meta name="description" content="選修化學二：影響反應速率的因素——速率定律式、濃度、溫度、催化劑互動教學">
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #start-overlay { display: none !important; }
+        .start-badge {
+            font-size: 0.92rem; color: var(--accent-yellow);
+            background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
+            padding: 0.3rem 1.1rem; border-radius: 40px; margin-bottom: 1rem; letter-spacing: 0.06em;
+        }
+        .start-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem); font-weight: 900; text-align: center; line-height: 1.15;
+            color: var(--accent-blue); text-shadow: 0 0 40px rgba(56,189,248,0.35);
+        }
+        .start-sub { font-size: 1.15rem; color: rgba(248,250,252,0.55); margin: 0.7rem 0 2rem; text-align: center; max-width: 90%; }
+        .btn-start {
+            background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange)); color: #0f172a; border: none;
+            padding: 1.1rem 3rem; border-radius: 60px; font-size: 1.35rem; font-weight: 800;
+            box-shadow: 0 0 35px rgba(251,191,36,0.5); cursor: pointer; touch-action: manipulation;
+            transition: 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .btn-start:hover { transform: scale(1.06); }
+        .start-info { margin-top: 1.6rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .info-chip { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: rgba(248,250,252,0.5); }
+
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container { position: absolute; top: 1vh; left: 2.5vw; right: 4px; bottom: 1vh; }
+        .slide {
+            position: absolute; inset: 0; padding: 0.5rem 0.5rem 0.3rem;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.99);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .slide.active { opacity: 1; pointer-events: auto; z-index: 10; transform: scale(1); }
+
+        h1 {
+            color: var(--accent-yellow); font-size: clamp(1.55rem, 2.6vw, 2.3rem);
+            margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(251,191,36,0.25); padding-bottom: 0.3rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 30px; background: var(--accent-yellow); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.1rem, 1.7vw, 1.45rem); margin: 0.25rem 0 0.4rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(1.0rem, 1.35vw, 1.22rem); line-height: 1.6; margin-bottom: 0.4rem; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+        ul { margin-left: 1.4rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; flex: 1; min-height: 0; overflow: hidden; }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 16px;
+            padding: 1.1rem 1.25rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+        }
+        .scroll-panel { overflow-y: auto; }
+        .scroll-panel::-webkit-scrollbar { width: 4px; }
+        .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-green);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .formula-box-blue {
+            background: rgba(0,0,0,0.38); border-radius: 10px; border-left: 5px solid var(--accent-blue);
+            padding: 0.85rem 1rem; margin: 0.5rem 0; text-align: center;
+            font-size: clamp(1.15rem, 1.8vw, 1.5rem); flex-shrink: 0;
+        }
+        .info-card {
+            background: rgba(56,189,248,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(56,189,248,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(251,191,36,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-green {
+            background: rgba(52,211,153,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(52,211,153,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-red {
+            background: rgba(248,113,113,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(248,113,113,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .info-card-purple {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.28); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .highlight-box {
+            background: rgba(167,139,250,0.08); border-radius: 11px;
+            padding: 0.85rem 1rem; border: 1px solid rgba(167,139,250,0.3); margin: 0.45rem 0; flex-shrink: 0;
+        }
+        .tag { display: inline-block; padding: 0.12rem 0.65rem; border-radius: 18px; font-size: 0.88rem; font-weight: 700; margin-right: 0.3rem; }
+        .tag-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.45); color: var(--accent-blue); }
+        .tag-green { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.4); color: var(--accent-green); }
+        .tag-red { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.4); color: var(--accent-red); }
+        .tag-yellow { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-yellow); }
+        .tag-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: clamp(0.92rem, 1.2vw, 1.1rem); }
+        table.data-table th, table.data-table td { border: 1px solid rgba(255,255,255,0.12); padding: 0.55rem 0.7rem; text-align: center; }
+        table.data-table th { background: rgba(251,191,36,0.12); color: var(--accent-yellow); }
+        .svg-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .svg-wrap svg { max-width: 100%; max-height: 100%; display: block; }
+        .diagram-panel {
+            flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.32); border-radius: 12px; padding: 0.35rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .quiz-item {
+            background: rgba(0,0,0,0.22); border-radius: 12px; padding: 1.1rem 1.25rem;
+            border: 1px solid rgba(255,255,255,0.1); flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;
+        }
+        .quiz-options { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+        .quiz-options li { font-size: clamp(1.0rem, 1.3vw, 1.18rem); padding: 0.55rem 0.75rem; margin-bottom: 0.3rem; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+        .quiz-options li span.opt-label { color: var(--accent-yellow); font-weight: 700; min-width: 2.2em; display: inline-block; }
+        .ans-overlay {
+            display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.97); z-index: 100;
+            flex-direction: column; padding: 1.1rem; border-radius: 16px; border: 2px solid var(--accent-green);
+            animation: fadeIn 0.3s ease; overflow-y: auto;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+        .btn-action {
+            background: var(--accent-yellow); color: #0f172a; border: none; padding: 0.75rem 1.6rem;
+            border-radius: 9px; cursor: pointer; font-weight: 700; font-size: 1.05rem;
+            align-self: flex-start; margin-top: 0.5rem; flex-shrink: 0; position: relative; z-index: 110; touch-action: manipulation;
+        }
+        .btn-action:hover { filter: brightness(1.1); transform: scale(1.03); }
+        /* Game */
+        .game-area { flex: 1; position: relative; background: rgba(0,0,0,0.2); border-radius: 20px; overflow: hidden; margin-top: 0.5rem; min-height: 0; }
+        .game-columns { display: flex; justify-content: space-between; height: 100%; padding: 16px 32px; position: relative; z-index: 10; }
+        #left-column, #right-column { width: 40%; display: flex; flex-direction: column; justify-content: space-around; gap: 8px; }
+        .game-item {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 18px; border-radius: 12px; display: flex; align-items: center;
+            width: 100%; min-height: 52px; height: 10vh; max-height: 82px; position: relative;
+            font-size: clamp(0.95rem, 1.3vw, 1.18rem);
+        }
+        #left-column .game-item { justify-content: flex-start; text-align: left; }
+        #right-column .game-item { justify-content: flex-end; text-align: right; }
+        .dot {
+            width: 16px; height: 16px; background: #fff; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: 0.2s; flex-shrink: 0; z-index: 5; touch-action: none;
+        }
+        .left-dot { margin-left: auto; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); }
+        .right-dot { margin-right: auto; position: absolute; left: -8px; top: 50%; transform: translateY(-50%); }
+        .dot.active { background: var(--accent-green); box-shadow: 0 0 15px var(--accent-green); pointer-events: none; }
+        #game-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        #game-feedback {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            background: rgba(52,211,153,0.95); padding: 1.5rem 3rem; border-radius: 20px;
+            font-size: clamp(1.2rem, 3vw, 2rem); color: #0f172a; font-weight: 900;
+            box-shadow: 0 0 50px rgba(52,211,153,0.5); z-index: 100; text-align: center;
+        }
+        /* Toolbar */
+        #toolbar {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            background: rgba(15,23,42,0.9); padding: 12px 6px; border-radius: 30px;
+            display: flex; flex-direction: column; gap: 9px; align-items: center; z-index: 9000;
+            border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px); width: 50px;
+        }
+        .btn-tool {
+            background: transparent; color: rgba(255,255,255,0.65);
+            border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px;
+            border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.25s; font-size: 1rem;
+        }
+        .btn-tool:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .btn-tool.active-tool { background: var(--accent-yellow); color: #0f172a; border-color: var(--accent-yellow); box-shadow: 0 0 15px rgba(251,191,36,0.5); }
+        .btn-tool:focus { outline: none; }
+        #drag-handle { width: 100%; text-align: center; color: rgba(255,255,255,0.4); cursor: grab; font-size: 1.3rem; line-height: 0.5; }
+        #slide-info {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9000; text-align: right;
+            font-size: 0.92rem; color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5); padding: 5px 14px; border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.15); font-weight: 700;
+        }
+        #drawing-layer { position: fixed; inset: 0; z-index: 5; pointer-events: none; touch-action: none; }
+        #drawing-layer.drawing-active { pointer-events: auto; z-index: 120; }
+        /* Slide intro larger font */
+        .slide-intro h1 { font-size: clamp(2.0rem, 3.5vw, 2.9rem); }
+        .slide-intro h2 { font-size: clamp(1.3rem, 2.1vw, 1.7rem); }
+        .slide-intro p, .slide-intro li { font-size: clamp(1.12rem, 1.65vw, 1.32rem); line-height: 1.6; }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; }
+            .grid-3 { grid-template-columns: 1fr !important; }
+            #slides-container { right: 4px; }
+            .game-columns { padding: 12px 16px; }
+        }
+        /* Interactive simulator */
+        .sim-slider { width: 100%; accent-color: var(--accent-yellow); cursor: pointer; height: 6px; margin: 4px 0 8px; }
+        .sim-value { color: var(--accent-cyan); font-weight: 700; font-size: 1.2rem; }
+        label { font-size: 1.05rem !important; }
+        canvas.rate-canvas { width: 100%; height: 100%; display: block; border-radius: 8px; }
+        /* k factor glow cards */
+        .k-card {
+            background: rgba(0,0,0,0.3); border-radius: 14px; padding: 1rem 1.1rem;
+            border: 1.5px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 0.45rem;
+            transition: all 0.3s; cursor: default;
+        }
+        .k-card:hover { border-color: var(--accent-yellow); box-shadow: 0 0 18px rgba(251,191,36,0.25); }
+        .k-card-title { font-size: 1.35rem; font-weight: 700; color: var(--accent-yellow); }
+        .k-card-text { font-size: 1.15rem; color: rgba(255,255,255,0.8); line-height: 1.65; }
+    </style>
+</head>
+<style>
+/* random draw styles */
+.draw-ball { width:40px;height:40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #cbd5e1); color:#0b1120; font-weight:bold; font-size:1.2rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 6px rgba(0,0,0,0.3), inset -2px -2px 6px rgba(0,0,0,0.2); border:2px solid #94a3b8; transition:all 0.3s ease; }
+.draw-ball.flicker { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-yellow)); border-color:var(--accent-yellow); box-shadow:0 0 15px var(--accent-yellow); transform:scale(1.1); color:#fff; }
+.draw-ball.winner { background:radial-gradient(circle at 30% 30%, #fff, var(--accent-green)); border-color:var(--accent-green); box-shadow:0 0 20px var(--accent-green); transform:scale(1.2); color:#fff; z-index:10; }
+.draw-ball.drawn { background:radial-gradient(circle at 30% 30%, #475569, #1e293b); border-color:#0f172a; color:#94a3b8; box-shadow:none; opacity:0.6; }
+</style>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+<div class="slide active" id="slide-temp">
+                <h1>溫度對速率常數 $k$ 的影響</h1>
+                <div class="grid-2">
+                    <div class="panel scroll-panel">
+                        <h2>Arrhenius 方程式</h2>
+                        <div class="formula-box">
+                            $k = A \cdot e^{-E_a/RT}$
+                        </div>
+                        <div class="info-card">
+                            <p><strong>A</strong>：頻率因子（碰撞頻率）</p>
+                            <p><strong>$E_a$</strong>：活化能（Activation Energy，單位 kJ/mol）</p>
+                            <p><strong>R</strong>：氣體常數（8.314 J/mol·K）</p>
+                            <p><strong>T</strong>：絕對溫度（K）</p>
+                        </div>
+                        <div class="info-card-yellow" style="margin-top:0.4rem;">
+                            <p><strong>溫度↑ 的效果：</strong></p>
+                            <ul style="margin-left:1rem; margin-top:0.3rem;">
+                                <li>$T$↑ → $e^{-E_a/RT}$↑（指數項增大）→ $k$↑</li>
+                                <li>分子平均動能↑ → 超過活化能的分子比例↑</li>
+                                <li>Maxwell–Boltzmann 分布曲線右移</li>
+                            </ul>
+                        </div>
+                        <div class="info-card-green" style="margin-top:0.3rem;">
+                            <p><strong>經驗規律（van't Hoff 規則）：</strong></p>
+                            <p>溫度每升高 <strong>10°C</strong>，反應速率約增大為 <em>2～4 倍</em></p>
+                        </div>
+                        <div class="info-card-purple" style="margin-top:0.3rem;">
+                            <p><strong>活化能愈小，k 值愈大：</strong>$E_a$↓ → $e^{-E_a/RT}$↑ → $k$↑ → 反應愈快</p>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h2>Maxwell–Boltzmann 能量分布圖</h2>
+                        <div style="flex:1; min-height:0;">
+                            <canvas id="mb-canvas" class="rate-canvas"></canvas>
+                        </div>
+                        <div style="flex:0 0 auto; margin-top:0.5rem;">
+                            <label style="font-size:0.85rem; color:rgba(255,255,255,0.7);">溫度：<span class="sim-value" id="temp-val">300</span> K</label>
+                            <input type="range" class="sim-slider" id="temp-slider" min="200" max="700" step="10" value="300">
+                            <p style="font-size:0.8rem; color:rgba(255,255,255,0.5); text-align:center; margin-top:0.3rem;">
+                                黃線 = 活化能門檻 | 陰影區域 = 有效碰撞分子比例
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /slides-container -->
+    </div><!-- /presentation-area -->
+</div><!-- /app -->
+
+<script>
+function toggleAns(id, btn) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const open = el.style.display === "flex";
+    el.style.display = open ? "none" : "flex";
+    if (btn) btn.textContent = open ? "顯示解答" : "關閉";
+}
+window.updateSlides = function() {};
+
+/* ---- Maxwell-Boltzmann Canvas ---- */
+let mbEa = 960; // 活化能門檻初始值
+const mbMaxE = 1600; // 能量坐標上限
+
+function drawMBCanvas() {
+    const cvs = document.getElementById("mb-canvas");
+    if (!cvs) return;
+    const rect = cvs.getBoundingClientRect();
+    if (!rect.width || !rect.height) {
+        setTimeout(drawMBCanvas, 60);
+        return;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    cvs.width = Math.round(rect.width * dpr);
+    cvs.height = Math.round(rect.height * dpr);
+    const g = cvs.getContext("2d");
+    g.scale(dpr, dpr);
+    const w = rect.width, h = rect.height;
+
+    const tempSlider = document.getElementById("temp-slider");
+    const T = tempSlider ? parseInt(tempSlider.value) : 300;
+
+    g.clearRect(0, 0, w, h);
+
+    // 深色科技質感背景
+    const bgGrad = g.createLinearGradient(0, 0, 0, h);
+    bgGrad.addColorStop(0, "rgba(15,23,42,0.6)");
+    bgGrad.addColorStop(1, "rgba(30,41,59,0.85)");
+    g.fillStyle = bgGrad;
+    g.fillRect(0, 0, w, h);
+
+    const pad = { l: 48, r: 24, t: 26, b: 38 };
+    const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+    const kB = 1.0;
+    const Ea = mbEa;
+    const maxE = mbMaxE;
+
+    // Maxwell-Boltzmann 能量分布公式：f(E) ∝ √E * exp(-E/(kB*T)) / (kB*T)^1.5
+    const f = (E) => (Math.sqrt(E) * Math.exp(-E / (kB * T))) / Math.pow(kB * T, 1.5);
+
+    // 以低溫 T=200 的峰值高度做全域高度歸一化
+    const minT = 200;
+    const peakValMinT = (Math.sqrt(minT / 2) * Math.exp(-0.5)) / Math.pow(minT, 1.5);
+    const scaleY = (0.88 * gh) / peakValMinT;
+
+    // 網格線
+    g.strokeStyle = "rgba(255,255,255,0.06)";
+    g.lineWidth = 1;
+    for (let i = 1; i <= 4; i++) {
+        const yg = pad.t + gh - (i / 4) * gh;
+        g.beginPath(); g.moveTo(pad.l, yg); g.lineTo(pad.l + gw, yg); g.stroke();
+    }
+    for (let i = 1; i <= 3; i++) {
+        const xg = pad.l + (i / 3) * gw;
+        g.beginPath(); g.moveTo(xg, pad.t); g.lineTo(xg, pad.t + gh); g.stroke();
+    }
+
+    // 坐標軸
+    g.strokeStyle = "rgba(255,255,255,0.45)";
+    g.lineWidth = 1.8;
+    g.beginPath();
+    g.moveTo(pad.l, pad.t - 10);
+    g.lineTo(pad.l, pad.t + gh);
+    g.lineTo(pad.l + gw + 10, pad.t + gh);
+    g.stroke();
+
+    // 坐標軸箭頭
+    g.fillStyle = "rgba(255,255,255,0.45)";
+    g.beginPath();
+    g.moveTo(pad.l - 4, pad.t - 6); g.lineTo(pad.l, pad.t - 14); g.lineTo(pad.l + 4, pad.t - 6);
+    g.fill();
+    g.beginPath();
+    g.moveTo(pad.l + gw + 6, pad.t + gh - 4); g.lineTo(pad.l + gw + 14, pad.t + gh); g.lineTo(pad.l + gw + 6, pad.t + gh + 4);
+    g.fill();
+
+    // 坐標軸標籤
+    g.fillStyle = "rgba(255,255,255,0.75)";
+    g.font = "bold 12px sans-serif";
+    g.textAlign = "center";
+    g.fillText("分子動能 E (Kinetic Energy)", pad.l + gw / 2, h - 8);
+
+    g.save();
+    g.translate(16, pad.t + gh / 2);
+    g.rotate(-Math.PI / 2);
+    g.textBaseline = "middle";
+    g.fillText("分子數比例 f(E)", 0, 0);
+    g.restore();
+
+    // 1. 繪製活化能右側陰影（有效碰撞分子比例）
+    const xEa = pad.l + (Ea / maxE) * gw;
+    g.save();
+    g.beginPath();
+    g.moveTo(xEa, pad.t + gh);
+    const startXi = Math.max(0, Math.floor((Ea / maxE) * gw));
+    for (let xi = startXi; xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const y = pad.t + gh - f(E) * scaleY;
+        g.lineTo(pad.l + xi, y);
+    }
+    g.lineTo(pad.l + gw, pad.t + gh);
+    g.closePath();
+
+    const shadeGrad = g.createLinearGradient(xEa, 0, pad.l + gw, 0);
+    shadeGrad.addColorStop(0, T > 450 ? "rgba(248,113,113,0.55)" : "rgba(52,211,153,0.5)");
+    shadeGrad.addColorStop(1, T > 450 ? "rgba(248,113,113,0.18)" : "rgba(52,211,153,0.15)");
+    g.fillStyle = shadeGrad;
+    g.fill();
+    g.restore();
+
+    // 2. 繪製 Maxwell-Boltzmann 主曲線
+    const tempFrac = (T - 200) / 500; // 0 ~ 1
+    const cr = Math.round(56 + tempFrac * 200);
+    const cg = Math.round(189 - tempFrac * 60);
+    const cb = Math.round(248 - tempFrac * 170);
+    const curveColor = `rgb(${cr},${cg},${cb})`;
+
+    g.save();
+    g.shadowColor = curveColor;
+    g.shadowBlur = 10;
+    g.strokeStyle = curveColor;
+    g.lineWidth = 3.2;
+    g.lineCap = "round";
+    g.beginPath();
+    for (let xi = 0; xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const y = pad.t + gh - f(E) * scaleY;
+        xi === 0 ? g.moveTo(pad.l + xi, y) : g.lineTo(pad.l + xi, y);
+    }
+    g.stroke();
+    g.restore();
+
+    // 3. 活化能門檻線 Ea (支援拖曳互動)
+    g.save();
+    g.strokeStyle = "#fbbf24";
+    g.lineWidth = 2.2;
+    g.setLineDash([5, 4]);
+    g.beginPath();
+    g.moveTo(xEa, pad.t);
+    g.lineTo(xEa, pad.t + gh);
+    g.stroke();
+    g.setLineDash([]);
+
+    // 拖曳把手與發光外圈
+    g.shadowColor = "#fbbf24";
+    g.shadowBlur = 10;
+    g.fillStyle = "#fbbf24";
+    g.beginPath();
+    g.arc(xEa, pad.t + gh * 0.45, 6, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = "#fff";
+    g.lineWidth = 2;
+    g.stroke();
+
+    g.font = "bold 13px sans-serif";
+    g.textAlign = "center";
+    g.fillText("Eₐ (門檻)", xEa, pad.t + 14);
+    g.restore();
+
+    // 4. 計算並標示有效碰撞分子比例
+    let sumEa = 0, sumTotal = 0;
+    for (let xi = 0; xi <= gw; xi++) {
+        const E = (xi / gw) * maxE;
+        const val = f(E);
+        if (E >= Ea) sumEa += val;
+        sumTotal += val;
+    }
+    const ratio = sumTotal > 0 ? (sumEa / sumTotal * 100).toFixed(1) : "0.0";
+
+    // 狀態文字卡片 (左上方)
+    g.fillStyle = T > 450 ? "#f87171" : "#34d399";
+    g.font = "bold 15px sans-serif";
+    g.textAlign = "left";
+    g.fillText(`溫度 T = ${T} K`, pad.l + 10, pad.t + 16);
+
+    g.fillStyle = "#f8fafc";
+    g.font = "13px sans-serif";
+    g.fillText(`超門檻分子 (E ≥ Ea) 比例 ≈ `, pad.l + 10, pad.t + 36);
+
+    g.fillStyle = "#fbbf24";
+    g.font = "bold 14px sans-serif";
+    g.fillText(`${ratio} %`, pad.l + 195, pad.t + 36);
+}
+
+// 拖曳活化能 Ea 互動控制
+(function initMBInteraction() {
+    const cvs = document.getElementById("mb-canvas");
+    if (!cvs) return;
+    let isDraggingEa = false;
+
+    function getMouseX(evt) {
+        const rect = cvs.getBoundingClientRect();
+        const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+        return clientX - rect.left;
+    }
+
+    function getXEa() {
+        const rect = cvs.getBoundingClientRect();
+        const gw = rect.width - 48 - 24;
+        return 48 + (mbEa / mbMaxE) * gw;
+    }
+
+    function updateCursor(evt) {
+        if (isDraggingEa) return;
+        const x = getMouseX(evt);
+        if (Math.abs(x - getXEa()) < 18) {
+            cvs.style.cursor = "ew-resize";
+        } else {
+            cvs.style.cursor = "default";
+        }
+    }
+
+    function handleMove(evt) {
+        if (!isDraggingEa) return;
+        const rect = cvs.getBoundingClientRect();
+        const gw = rect.width - 48 - 24;
+        const x = getMouseX(evt);
+        let newEa = ((x - 48) / gw) * mbMaxE;
+        if (newEa < 150) newEa = 150;
+        if (newEa > mbMaxE - 60) newEa = mbMaxE - 60;
+        mbEa = newEa;
+        drawMBCanvas();
+    }
+
+    cvs.addEventListener("mousedown", (e) => {
+        if (Math.abs(getMouseX(e) - getXEa()) < 22) isDraggingEa = true;
+    });
+    cvs.addEventListener("mousemove", (e) => {
+        updateCursor(e);
+        handleMove(e);
+    });
+    window.addEventListener("mouseup", () => {
+        if (isDraggingEa) {
+            isDraggingEa = false;
+            cvs.style.cursor = "default";
+        }
+    });
+
+    cvs.addEventListener("touchstart", (e) => {
+        if (Math.abs(getMouseX(e) - getXEa()) < 30) {
+            isDraggingEa = true;
+            e.preventDefault();
+        }
+    }, { passive: false });
+    cvs.addEventListener("touchmove", (e) => {
+        if (isDraggingEa) {
+            handleMove(e);
+            e.preventDefault();
+        }
+    }, { passive: false });
+    cvs.addEventListener("touchend", () => { isDraggingEa = false; });
+})();
+
+const tempSlider = document.getElementById("temp-slider");
+if (tempSlider) {
+    tempSlider.addEventListener("input", function () {
+        const tempValEl = document.getElementById("temp-val");
+        if (tempValEl) tempValEl.textContent = this.value;
+        drawMBCanvas();
+    });
+}
+
+window.addEventListener("DOMContentLoaded", drawMBCanvas);
+window.addEventListener("load", drawMBCanvas);
+window.addEventListener("resize", drawMBCanvas);
+setTimeout(drawMBCanvas, 40);
+setTimeout(drawMBCanvas, 200);
+</script>
+</body>
+</html>

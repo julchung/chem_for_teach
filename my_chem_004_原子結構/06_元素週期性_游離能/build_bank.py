@@ -1,0 +1,181 @@
+import json
+import re
+
+questions = [
+    {
+        "id": "q1",
+        "tag": "陰陽離子與游離能大小綜合比較",
+        "question": "下列各原子或離子微粒移去一個電子所需能量（游離能）之大小比較，何者為<strong>錯誤</strong>？",
+        "options": [
+            "(A) $\\text{O}^+ > \\text{F}^+$",
+            "(B) $\\text{Ne}^{3+} > \\text{F}^{2+}$",
+            "(C) $\\text{Cl}^- > \\text{F}^+$",
+            "(D) $\\text{Na}^+ > \\text{Mg}^+$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• <strong>(C) $\\text{Cl}^- > \\text{F}^+$：錯誤。</strong><br>&nbsp;&nbsp;$\\text{Cl}^-$ 是帶負電荷的 18 電子陰離子，其移去一個電子的能量對應於氯原子的電子親和力（僅約 $349\\text{ kJ/mol}$）；<br>&nbsp;&nbsp;而 $\\text{F}^+$ 是帶正電荷的陽離子，移去一個電子對應於氟原子的第二游離能（高達 $3374\\text{ kJ/mol}$）。因此 $\\text{Cl}^- \\ll \\text{F}^+$，(C) 敘述錯誤，為本題正解！<br>• <strong>(A) $\\text{O}^+ > \\text{F}^+$：正確。</strong>$\\text{O}^+(2p^3)$ 具有半滿穩定組態，$\\text{F}^+(2p^4)$ 具有成對排斥電子，故 $\\text{IE}(\\text{O}^+) > \\text{IE}(\\text{F}^+)$。<br>• <strong>(B) $\\text{Ne}^{3+} > \\text{F}^{2+}$：正確。</strong>兩者皆為 7 電子等電子微粒，氖的質子數較多（$Z=10 > 9$），有效核電荷強，游離能較大。<br>• <strong>(D) $\\text{Na}^+ > \\text{Mg}^+$：正確。</strong>$\\text{Na}^+$ 移去的是 $n=2$ 內層核心電子（$\\text{IE}_2 = 4562\\text{ kJ/mol}$），而 $\\text{Mg}^+$ 移去的是 $3s^1$ 價電子（$\\text{IE}_2 = 1451\\text{ kJ/mol}$）。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q2",
+        "tag": "電子組態規則性與激發態辨析",
+        "question": "下列關於各種電子組態之敘述與游離能判斷，何者<strong>完全正確</strong>？<br>甲：$1s^2 2p^1$　乙：$1s^2 2s^2 2p^1$　丁：$1s^2 2s^2 2d^1$　戊：$1s^2 2s^2 2p_x^1 2p_y^1 2p_z^1$　己：$1s^2 2s^3 2p^5$",
+        "options": [
+            "(A) 甲組態為硼原子（B）之基態電子組態",
+            "(B) 丁組態與己組態皆為自然界不存在之違規定態",
+            "(C) 戊組態違背洪德定則，屬於激發態",
+            "(D) 乙（B原子）的第一游離能大於戊（N原子）的第一游離能"
+        ],
+        "ans": 1,
+        "explanation": "<strong>解析：</strong><br>• <strong>(A) 錯誤：</strong>基態硼（B，$Z=5$）應依 Aufbau 原理填入能量較低的 $2s$ 軌域，即 $1s^2 2s^2 2p^1$。甲跳過 $2s$ 填入 $2p$，屬於<strong>激發態</strong>。<br>• <strong>(B) 正確：</strong><br>&nbsp;&nbsp;1. 丁之 $2d$ 軌域不存在（主量子數 $n=2$ 僅有 $s, p$ 兩種副殼層，無 $d$ 軌域）；<br>&nbsp;&nbsp;2. 己之 $2s^3$ 違背包立不相容原理（每個軌域最多僅能容納 2 個自旋相反之電子）。故兩者皆為自然界不可能存在的無效組態！<br>• <strong>(C) 錯誤：</strong>戊之 $2p$ 軌域三軌各填一電子且自旋平行，完全符合洪德定則，為氮原子的<strong>基態</strong>。<br>• <strong>(D) 錯誤：</strong>戊（N，$2p^3$ 半滿穩定）之第一游離能（1402 kJ/mol）遠大於乙（B，801 kJ/mol）。<br>故選 <strong>(B)</strong>。"
+    },
+    {
+        "id": "q3",
+        "tag": "第三週期金屬連續游離能比較",
+        "question": "有三種元素 X、Y、Z，其中性原子之基態電子組態分別為：<br>X：$[\\text{Ne}] 3s^1$（Na）　Y：$[\\text{Ne}] 3s^2$（Mg）　Z：$[\\text{Ne}] 3s^2 3p^1$（Al）<br>則有關三者之第一游離能（$IE_1$）與第二游離能（$IE_2$）大小比較，下列何者<strong>正確</strong>？",
+        "options": [
+            "(A) $IE_1$ 大小順序為：$X < Z < Y$（即 $\\text{Na} < \\text{Al} < \\text{Mg}$）",
+            "(B) $IE_1$ 大小順序為：$X < Y < Z$（即 $\\text{Na} < \\text{Mg} < \\text{Al}$）",
+            "(C) $IE_2$ 大小順序為：$X < Y < Z$",
+            "(D) 鈉元素第二游離能小於第一游離能：$IE_2(X) < IE_1(X)$"
+        ],
+        "ans": 0,
+        "explanation": "<strong>解析：</strong><br>• <strong>第一游離能 $IE_1$ 比較：</strong><br>&nbsp;&nbsp;• X(Na，1A 族) 半徑最大，游離能最低（496 kJ/mol）。<br>&nbsp;&nbsp;• Y(Mg，2A 族) 最外層為 $3s^2$ <strong>全滿組態</strong>，穿透力強且對稱穩定；<br>&nbsp;&nbsp;• Z(Al，3A 族) 移去的是 $3p^1$ 電子，受 $3s^2$ 屏蔽且能階較高，故發生 <strong>2A > 3A 之鋸齒反常</strong>！<br>&nbsp;&nbsp;• 因此第一游離能為：$\\text{Mg}(738) > \\text{Al}(578) > \\text{Na}(496)$，即 $X < Z < Y$。(A) 完全正確！<br>• <strong>第二游離能 $IE_2$ 比較：</strong><br>&nbsp;&nbsp;Na⁺ 具有氖鈍氣閉殼組態，移去核心電子需要克服巨大的能階跳躍，$\\text{IE}_2(\\text{Na})=4562\\text{ kJ/mol}$ 遙遙領先；故 $IE_2$ 應為 $X > Z > Y$。<br>故選 <strong>(A)</strong>。"
+    },
+    {
+        "id": "q4",
+        "tag": "連續游離能基本定律與同元素遞增性",
+        "question": "$IE_1$、$IE_2$、$IE_3$ 分別代表第一、第二及第三游離能，下列關於金屬元素游離能之比較，何者敘述<strong>完全正確</strong>？",
+        "options": [
+            "(A) 第三週期第一游離能順序為：$\\text{Na} < \\text{Mg} < \\text{Al}$",
+            "(B) 第三週期第二游離能順序為：$\\text{Al} < \\text{Mg} < \\text{Na}$",
+            "(C) 同一元素鈉原子之各級連續游離能恆滿足：$IE_1 < IE_2 < IE_3$",
+            "(D) 第三週期第一游離能順序為：$\\text{Mg} < \\text{Al} < \\text{Na}$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• <strong>(C) 正確：</strong>對於同一元素而言，每依序移去一個電子，核電荷不變但電子數減少，剩餘電子受核之有效吸引力更強且電子排斥力減弱，故任何元素之連續游離能必嚴格滿足：$IE_1 < IE_2 < IE_3 < \\dots$，恆為遞增！<br>• <strong>(A)(D) 錯誤：</strong>因 2A > 3A 全滿反常，故第一游離能應為 $\\text{Na}(496) < \\text{Al}(578) < \\text{Mg}(738)$。<br>• <strong>(B) 錯誤：</strong>第二游離能移去電子後，$\\text{Na}^+$ 屬氖鈍氣核心，$IE_2(\\text{Na}) = 4562$ 最大；$\\text{Al}^+$ 失去一電子後剩 $3s^2$ 全滿，$IE_2(\\text{Al}) = 1817$；$\\text{Mg}^+$ 剩 $3s^1$，$IE_2(\\text{Mg}) = 1451$；故正確順序應為 $\\text{Mg} < \\text{Al} < \\text{Na}$。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q5",
+        "tag": "跨週期與離子游離能反常排序",
+        "question": "下列各項游離能大小順序比較中，何者為<strong>錯誤</strong>？",
+        "options": [
+            "(A) $\\text{F}^- > \\text{F}^+$",
+            "(B) $\\text{He} > \\text{H} > \\text{Be} > \\text{Li}$",
+            "(C) $\\text{Be}^{2+} > \\text{Li}^+ > \\text{He}$",
+            "(D) $\\text{Mg} > \\text{Al} > \\text{Na}$"
+        ],
+        "ans": 0,
+        "explanation": "<strong>解析：</strong><br>• <strong>(A) 錯誤：</strong>同一元素之微粒，陽離子質子數相對電子數占優勢，對電子的庫侖束縛力遠大於陰離子。$\\text{F}^+$（陽離子）移去電子需克服巨大的正電引力（約 3374 kJ/mol），而 $\\text{F}^-$（陰離子）受核引力相對分散且電子互斥強（僅約 349 kJ/mol）。因此必為 $\\text{F}^+ > \\text{F}^-$，(A) 寫反為錯誤！<br>• <strong>(B) 正確：</strong>He(2372) > H(1312) > Be(899) > Li(520 kJ/mol)，完全符合同週期與同族趨勢。<br>• <strong>(C) 正確：</strong>$\\text{Be}^{2+} (Z=4)$、$\\text{Li}^+ (Z=3)$、$\\text{He} (Z=2)$ 均為 2 電子等電子微粒，質子數愈多對外層電子的引力愈強，游離能愈大。<br>• <strong>(D) 正確：</strong>因 2A > 3A 全滿反常，$\\text{Mg}(738) > \\text{Al}(578) > \\text{Na}(496\\text{ kJ/mol})$ 正確。<br>故選 <strong>(A)</strong>。"
+    },
+    {
+        "id": "q6",
+        "tag": "游離能嚴格物理定義與等電子判斷",
+        "question": "下列關於元素游離能概念與性質的敘述，何者<strong>完全正確</strong>？",
+        "options": [
+            "(A) 從任何中性原子移去第一個電子所吸收的能量均稱為第一游離能",
+            "(B) $\\text{K}^+$ 與 $\\text{Ar}$ 之基態電子組態相同，故兩者移去一個電子吸收之能量必定相同",
+            "(C) 週期表中同族元素之第一游離能隨原子序增加而逐漸增加",
+            "(D) $\\text{F}^-$、$\\text{Na}^+$、$\\text{Ne}$ 各移去一個電子所需之能量大小順序為：$\\text{Na}^+ > \\text{Ne} > \\text{F}^-$"
+        ],
+        "ans": 3,
+        "explanation": "<strong>解析：</strong><br>• <strong>(D) 正確：</strong>$\\text{F}^-$（$Z=9$）、$\\text{Ne}$（$Z=10$）、$\\text{Na}^+$（$Z=11$）皆為 10 電子之等電子微粒。當核外組態相同時，移去電子的困難度完全由<strong>原子核正電荷（質子數 $Z$）</strong>決定。質子數 $\\text{Na}^+(11) > \\text{Ne}(10) > \\text{F}^-(9)$，故游離所需能量為 $\\text{Na}^+ > \\text{Ne} > \\text{F}^-$，敘述完全正確！<br>• <strong>(A) 錯誤：</strong>定義中必須嚴格限定為<strong>「氣態（$g$）」</strong>且為<strong>「基態（ground state）」</strong>原子。<br>• <strong>(B) 錯誤：</strong>$\\text{K}^+ (Z=19)$ 質子數多於 $\\text{Ar} (Z=18)$，核引力更強，$\\text{K}^+$ 的游離能大於 $\\text{Ar}$。<br>• <strong>(C) 錯誤：</strong>同族元素隨原子序增加，電子層數增多、半徑顯著增大，游離能應隨原子序增加而<strong>遞減</strong>。<br>故選 <strong>(D)</strong>。"
+    },
+    {
+        "id": "q7",
+        "tag": "游離能與電子親和力之熱化學關係",
+        "question": "已知氣態氯微粒之四個反應熱如下：<br>① $\\text{Cl}^-(g) \\rightarrow \\text{Cl}(g) + e^- \\quad \\Delta H_1$<br>② $\\text{Cl}(g) \\rightarrow \\text{Cl}^+(g) + e^- \\quad \\Delta H_2$<br>③ $\\text{Cl}^+(g) \\rightarrow \\text{Cl}^{2+}(g) + e^- \\quad \\Delta H_3$<br>④ $\\text{Cl}(g) + e^- \\rightarrow \\text{Cl}^-(g) \\quad \\Delta H_4$<br>下列熱化學數值關係式何者<strong>正確</strong>？",
+        "options": [
+            "(A) $\\Delta H_1 + \\Delta H_2 < 0$",
+            "(B) $\\Delta H_2 + \\Delta H_4 > 0$",
+            "(C) $\\Delta H_1 + \\Delta H_4 > 0$",
+            "(D) $\\Delta H_1 > \\Delta H_2$"
+        ],
+        "ans": 1,
+        "explanation": "<strong>解析：</strong><br>• <strong>各反應物理意義分析：</strong><br>&nbsp;&nbsp;• 反應 ① 與 ④ 互為逆反應：故 $\\Delta H_1 = -\\Delta H_4 \\implies \\Delta H_1 + \\Delta H_4 = 0$，(C) 錯誤。<br>&nbsp;&nbsp;• 反應 ② 為氯原子的第一游離能：$\\Delta H_2 = \\text{IE}_1(\\text{Cl}) = +1251\\text{ kJ/mol} > 0$（強烈吸熱）。<br>&nbsp;&nbsp;• 反應 ④ 為氯原子的第一電子親和力：$\\Delta H_4 = -E_{\\text{ea}}(\\text{Cl}) = -349\\text{ kJ/mol} < 0$（放熱反應）。<br>• <strong>檢核 (B)：</strong><br>&nbsp;&nbsp;$\\Delta H_2 + \\Delta H_4 = (+1251) + (-349) = +902\\text{ kJ/mol} > 0$！故 (B) 完全正確！<br>• <strong>檢核 (A)(D)：</strong><br>&nbsp;&nbsp;$\\Delta H_1 = +349\\text{ kJ/mol}$，$\\Delta H_2 = +1251\\text{ kJ/mol}$。兩者相加必定大於 0，且 $\\Delta H_2 > \\Delta H_1$，故 (A)(D) 皆錯誤。<br>故選 <strong>(B)</strong>。"
+    },
+    {
+        "id": "q8",
+        "tag": "連續游離能暴增判定氧化物化學式",
+        "question": "第三週期某主族元素 $\\text{M}$ 之第一至第六游離能如下表所示（單位：kJ/mol）：<br><div style='text-align:center; margin:10px 0;'><table style='display:inline-table; border-collapse:collapse; text-align:center; font-size:0.92rem;'><tr style='background:#1e293b; color:#38bdf8;'><th style='border:1px solid #64748b; padding:4px 8px;'>IE₁</th><th style='border:1px solid #64748b; padding:4px 8px;'>IE₂</th><th style='border:1px solid #64748b; padding:4px 8px;'>IE₃</th><th style='border:1px solid #64748b; padding:4px 8px;'>IE₄</th><th style='border:1px solid #64748b; padding:4px 8px;'>IE₅</th><th style='border:1px solid #64748b; padding:4px 8px;'>IE₆</th></tr><tr style='background:#0f172a; color:#fff;'><td style='border:1px solid #64748b; padding:4px 8px;'>578</td><td style='border:1px solid #64748b; padding:4px 8px;'>1451</td><td style='border:1px solid #64748b; padding:4px 8px;'>2745</td><td style='border:1px solid #64748b; padding:4px 8px; background:rgba(239,68,68,0.25); color:#f87171; font-weight:bold;'>11577</td><td style='border:1px solid #64748b; padding:4px 8px;'>14831</td><td style='border:1px solid #64748b; padding:4px 8px;'>18377</td></tr></table></div>則下列何者最可能為此元素之穩定氧化物化學式？",
+        "options": [
+            "(A) $\\text{M}_2\\text{O}_5$",
+            "(B) $\\text{M}_3\\text{O}_4$",
+            "(C) $\\text{M}_2\\text{O}_3$",
+            "(D) $\\text{MO}$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• <strong>步驟一：尋找連續游離能暴增點：</strong><br>&nbsp;&nbsp;比較相鄰游離能的比值：<br>&nbsp;&nbsp;$\\dfrac{\\text{IE}_2}{\\text{IE}_1} = \\dfrac{1451}{578} \\approx 2.51$<br>&nbsp;&nbsp;$\\dfrac{\\text{IE}_3}{\\text{IE}_2} = \\dfrac{2745}{1451} \\approx 1.89$<br>&nbsp;&nbsp;$\\dfrac{\\text{IE}_4}{\\text{IE}_3} = \\dfrac{11577}{2745} \\approx 4.22$（暴增 4 倍以上！）<br>• <strong>步驟二：確定價電子數與族別：</strong><br>&nbsp;&nbsp;在移去第 4 個電子時產生能階劇烈驟增，代表此元素擁有 <strong>3 個價電子</strong>，屬於 <strong>3A 族（鋁族）</strong>。<br>• <strong>步驟三：氧化物化學式推導：</strong><br>&nbsp;&nbsp;3A 族金屬（第三週期為鋁 Al）最常見穩定氧化態為 +3，與 $\\text{O}^{2-}$ 結合形成之穩定氧化物為 $\\text{M}_2\\text{O}_3$（即 $\\text{Al}_2\\text{O}_3$）。<br>故選 <strong>(C)</strong>。"
+    },
+    {
+        "id": "q9",
+        "tag": "連續游離能數值判斷元素族別",
+        "question": "某元素的連續游離能為：$\\text{IE}_1 = 738,\\ \\text{IE}_2 = 1451,\\ \\text{IE}_3 = 7733\\ (\\text{kJ/mol})$，由游離能急遽跳躍判斷，此元素最可能屬於週期表中哪一族？",
+        "options": [
+            "(A) 1A 族（鹼金屬）",
+            "(B) 2A 族（鹼土金屬）",
+            "(C) 3A 族（硼族）",
+            "(D) 7A 族（鹵素族）"
+        ],
+        "ans": 1,
+        "explanation": "<strong>解析：</strong><br>• 觀察游離能數據：$\\text{IE}_1 = 738$、$\\text{IE}_2 = 1451$、$\\text{IE}_3 = 7733\\text{ kJ/mol}$。<br>• $\\text{IE}_3$ 為 $\\text{IE}_2$ 的 $7733 / 1451 \\approx 5.33$ 倍，出現劇烈能階暴增！<br>• 這表示前 2 個電子屬於最外層價電子，移去較容易；移去第 3 個電子時開始剝離穩定的內層核心電子。<br>• 因此該元素具有 2 個價電子，最可能屬於 <strong>2A 族（鹼土金屬）</strong>（例如鎂 Mg）。<br>故選 <strong>(B)</strong>。"
+    },
+    {
+        "id": "q10",
+        "tag": "第二週期元素第一游離能綜合比較",
+        "question": "下列第二週期元素第一游離能（$\\text{IE}_1$）的大小比較，何者敘述<strong>完全正確</strong>？",
+        "options": [
+            "(A) $\\text{Li} > \\text{Be} > \\text{B}$",
+            "(B) $\\text{N} < \\text{O} < \\text{F}$",
+            "(C) $\\text{Be} > \\text{B}$ 且 $\\text{N} > \\text{O}$",
+            "(D) $\\text{F} > \\text{Ne} > \\text{N}$"
+        ],
+        "ans": 2,
+        "explanation": "<strong>解析：</strong><br>• 第二週期元素第一游離能由小到大的完整順序為：<br>&nbsp;&nbsp;$\\text{Li}(520) < \\text{B}(801) < \\text{Be}(899) < \\text{C}(1086) < \\text{O}(1314) < \\text{N}(1402) < \\text{F}(1681) < \\text{Ne}(2081\\text{ kJ/mol})$<br>• <strong>關鍵鋸齒反常處：</strong><br>&nbsp;&nbsp;1. <strong>$\\text{Be} > \\text{B}$：</strong>因 Be 之 $2s^2$ 軌域全滿穩定，大於 B 之 $2p^1$；<br>&nbsp;&nbsp;2. <strong>$\\text{N} > \\text{O}$：</strong>因 N 之 $2p^3$ 軌域半滿對稱穩定無成對電子排斥，大於 O 之 $2p^4$ 成對排斥電子。<br>• 因此，(C) 敘述「$\\text{Be} > \\text{B}$ 且 $\\text{N} > \\text{O}$」完全符合實驗事實！<br>故選 <strong>(C)</strong>。"
+    }
+]
+
+with open('question_bank.json', 'w', encoding='utf-8') as f:
+    json.dump(questions, f, ensure_ascii=False, indent=2)
+
+print(f"question_bank.json created with {len(questions)} high-quality questions!")
+
+# Now build the Markdown electronic bank file: 元素游離能_通關測驗題庫.md
+md_lines = [
+    "# 🧪 選修化學 4-6 元素週期性：游離能 · 核心通關測驗題庫電子檔",
+    "",
+    "> 本題庫彙整自本章大考核心截圖試題與原創通關檢核題，完整涵蓋第一游離能週期規律、副殼層全滿/半滿反常轉折、連續游離能能階跳躍與單電子類氫能階計算。",
+    "",
+    f"**總題數**：共 {len(questions)} 題精選試題",
+    "---",
+    ""
+]
+
+for idx, q in enumerate(questions):
+    md_lines.append(f"### 第 {idx+1} 題 【{q['tag']}】")
+    md_lines.append("")
+    md_lines.append(f"**題目**：")
+    clean_q = q['question'].replace('<br>', '\n').replace('&nbsp;', ' ')
+    clean_q = re.sub(r'<div[^>]*>.*?</div>', '', clean_q, flags=re.DOTALL)
+    clean_q = re.sub(r'<[^>]+>', '', clean_q)
+    md_lines.append(clean_q)
+    md_lines.append("")
+    md_lines.append("**選項**：")
+    for opt in q['options']:
+        clean_opt = re.sub(r'<[^>]+>', '', opt)
+        md_lines.append(f"- {clean_opt}")
+    md_lines.append("")
+    ans_letter = ['(A)', '(B)', '(C)', '(D)'][q['ans']]
+    md_lines.append(f"**正確答案**：`{ans_letter}`")
+    md_lines.append("")
+    md_lines.append("**詳細解析**：")
+    clean_exp = q['explanation'].replace('<br>', '\n').replace('&nbsp;', ' ')
+    clean_exp = re.sub(r'<[^>]+>', '', clean_exp)
+    md_lines.append(clean_exp)
+    md_lines.append("")
+    md_lines.append("---")
+    md_lines.append("")
+
+with open('元素游離能_通關測驗題庫.md', 'w', encoding='utf-8') as f:
+    f.write('\n'.join(md_lines))
+
+print("元素游離能_通關測驗題庫.md created successfully!")

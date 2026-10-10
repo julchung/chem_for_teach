@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>利用 Q 值判斷沉澱 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --text-main: #f8fafc;
+            --accent-blue: #38bdf8; --accent-green: #34d399; --accent-red: #f87171;
+            --accent-yellow: #fbbf24; --accent-purple: #a78bfa; --accent-cyan: #22d3ee;
+            --accent-orange: #fb923c;
+            --glass: rgba(255,255,255,0.04); --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.3rem, 1.85vw, 1.75rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { color: var(--accent-blue); font-size: clamp(1.12rem, 1.4vw, 1.35rem); margin-bottom: 0.35rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.95rem, 1.12vw, 1.12rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        /* 左右欄比例：左 46%、右 54% */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 46fr 54fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.75rem 1rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow: hidden;
+        }
+
+        /* 左側欄位 - 垂直卡片彈性均勻撐滿 */
+        .left-content-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+        .info-card-cyan {
+            background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.28);
+            border-radius: 10px; padding: 0.55rem 0.95rem;
+        }
+        .info-card-yellow {
+            background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.28);
+            border-radius: 10px; padding: 0.55rem 0.95rem;
+        }
+
+        .q-cards-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 0.45rem;
+        }
+        .k-card {
+            background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px; padding: 0.55rem 0.95rem;
+            display: flex; flex-direction: column; justify-content: center;
+            flex: 1;
+            transition: transform 0.15s ease, background 0.15s ease;
+        }
+        .k-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .k-card-sub   { border-left: 4.5px solid var(--accent-blue); }
+        .k-card-sat   { border-left: 4.5px solid var(--accent-green); }
+        .k-card-prec  { border-left: 4.5px solid var(--accent-red); }
+
+        .k-card-title {
+            font-size: clamp(0.98rem, 1.15vw, 1.15rem);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .k-card-text {
+            font-size: clamp(0.9rem, 1.05vw, 1.05rem);
+            color: rgba(255,255,255,0.85);
+            line-height: 1.5;
+        }
+
+        .tag {
+            display: inline-block; padding: 0.12rem 0.6rem; border-radius: 16px;
+            font-size: 0.92rem; font-weight: 700;
+        }
+        .tag-blue   { background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.5); color: var(--accent-blue); }
+        .tag-green  { background: rgba(52,211,153,0.18); border: 1px solid rgba(52,211,153,0.5); color: var(--accent-green); }
+        .tag-red    { background: rgba(248,113,113,0.18); border: 1px solid rgba(248,113,113,0.5); color: var(--accent-red); }
+
+        /* 右側欄位 - 想一想 AgBr 系統 */
+        .right-content-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+        .think-header-card {
+            background: linear-gradient(135deg, rgba(34,211,238,0.12), rgba(59,130,246,0.12));
+            border: 1px solid rgba(34,211,238,0.35); border-radius: 10px;
+            padding: 0.55rem 0.95rem;
+        }
+        .think-items-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            gap: 0.45rem;
+        }
+        .think-item {
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-left: 4.5px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 0.55rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.25rem;
+            flex: 1;
+            transition: background 0.15s ease;
+        }
+        .think-item:hover {
+            background: rgba(255,255,255,0.055);
+        }
+        .think-title {
+            font-size: clamp(0.95rem, 1.1vw, 1.12rem);
+            font-weight: 700;
+            color: var(--accent-yellow);
+        }
+        .think-body {
+            font-size: clamp(0.9rem, 1.05vw, 1.05rem);
+            color: rgba(255,255,255,0.9);
+            line-height: 1.5;
+        }
+
+        /* 挖空互動元素 */
+        .blank-box {
+            display: inline-block; min-width: 60px; text-align: center;
+            border-bottom: 2px dashed rgba(255,255,255,0.7); cursor: pointer; color: transparent;
+            transition: all 0.25s ease; font-weight: bold; padding: 0.1rem 8px;
+            background: rgba(255,255,255,0.08); border-radius: 4px;
+        }
+        .blank-box * {
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .blank-box.revealed {
+            color: var(--accent-yellow) !important;
+            border-bottom-style: solid !important;
+            border-color: var(--accent-yellow) !important;
+            background: rgba(251,191,36,0.18) !important;
+        }
+        .blank-box.revealed * {
+            opacity: 1 !important;
+            color: var(--accent-yellow) !important;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>7-3 溶解平衡 · 利用 Q 值判斷沉澱</h1>
+                <div class="grid-2">
+                    <!-- 左方欄位：反應商 Qsp 與 Ksp 的比較 -->
+                    <div class="panel">
+                        <h2>📉 反應商 ($Q_{sp}$) 與 $K_{sp}$ 的比較</h2>
+                        <div class="left-content-wrap">
+                            <div class="info-card-cyan">
+                                <p>將溶液中<strong>任意時刻</strong>的實測離子濃度代入 $K_{sp}$ 表達式中，所求得的數值乘積稱為<strong>離子積（反應商 $Q$ 或 $Q_{sp}$）</strong>。</p>
+                            </div>
+                            
+                            <div class="q-cards-group">
+                                <!-- Q < Ksp -->
+                                <div class="k-card k-card-sub">
+                                    <div class="k-card-title">
+                                        <span class="tag tag-blue">$Q < K_{sp}$</span>
+                                        <span>未飽和溶液（Unsaturated）</span>
+                                    </div>
+                                    <div class="k-card-text">
+                                        離子乘積小於飽和溶解平衡限度，反應趨向<strong>向右解離</strong>，<strong>無沉澱產生</strong>，溶液尚可繼續溶解該溶質。
+                                    </div>
+                                </div>
+
+                                <!-- Q = Ksp -->
+                                <div class="k-card k-card-sat">
+                                    <div class="k-card-title">
+                                        <span class="tag tag-green">$Q = K_{sp}$</span>
+                                        <span>恰好飽和溶液（Saturated）</span>
+                                    </div>
+                                    <div class="k-card-text">
+                                        達到動態平衡狀態，溶解速率等於沉澱速率，溶液<strong>恰無沉澱</strong>（為即將析出沉澱的熱力學臨界點）。
+                                    </div>
+                                </div>
+
+                                <!-- Q > Ksp -->
+                                <div class="k-card k-card-prec">
+                                    <div class="k-card-title">
+                                        <span class="tag tag-red">$Q > K_{sp}$</span>
+                                        <span>過飽和狀態（Precipitation）</span>
+                                    </div>
+                                    <div class="k-card-text">
+                                        離子乘積超越飽和容積限制，平衡<strong>向左逆向移動，必然會析出沉澱</strong>，直到殘留離子乘積降回 $Q = K_{sp}$。
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-card-yellow">
+                                <p>📌 <strong>解題核心：</strong>判斷兩溶液混合是否沉澱時，需先以混合後的<strong>總體積計算各離子瞬間濃度</strong>，再代入算 $Q$！</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右方欄位：想一想 · 微溶鹽 AgBr 系統平衡探討 (從左下移至右側) -->
+                    <div class="panel">
+                        <h2>🤔 想一想 · 微溶鹽 AgBr 系統平衡探討</h2>
+                        <div class="right-content-wrap">
+                            <div class="think-header-card">
+                                <p style="font-size: clamp(0.95rem, 1.1vw, 1.12rem);">
+                                    已知微溶鹽 $\mathrm{AgBr}$ 之 $K_{sp} = 3.3 \times 10^{-13}$，探討在各操作條件下的平衡移動與溶解度變化：
+                                </p>
+                            </div>
+
+                            <div class="think-items-group">
+                                <!-- (1) 純水中的溶解度 -->
+                                <div class="think-item">
+                                    <div class="think-title">(1) 純水中的莫耳溶解度：</div>
+                                    <div class="think-body">
+                                        由 $\mathrm{AgBr}(s) \rightleftharpoons \mathrm{Ag}^+ + \mathrm{Br}^-$，公式 $s = \sqrt{K_{sp}} = \sqrt{3.3 \times 10^{-13}} \approx$ <span class="blank-box" onclick="this.classList.add('revealed')">$5.7 \times 10^{-7}\ \mathrm{M}$</span>
+                                    </div>
+                                </div>
+
+                                <!-- (2) 加入水稀釋後 -->
+                                <div class="think-item">
+                                    <div class="think-title">(2) 加入純水稀釋後：</div>
+                                    <div class="think-body">
+                                        離子濃度瞬間驟降促使 $Q < K_{sp}$，溶解平衡向右移動，<span class="blank-box" onclick="this.classList.add('revealed')">固體溶解量增加，達新平衡時濃度維持飽和</span>。
+                                    </div>
+                                </div>
+
+                                <!-- (3) 加入難溶的 AgI -->
+                                <div class="think-item">
+                                    <div class="think-title">(3) 加入極難溶的 $\mathrm{AgI}(s)$（$K_{sp} = 8.5 \times 10^{-17}$）：</div>
+                                    <div class="think-body">
+                                        因 $K_{sp}(\mathrm{AgI}) \ll K_{sp}(\mathrm{AgBr})$，其釋出之 $\mathrm{Ag}^+$ 極微，$\mathrm{AgBr}$ 溶解度 <span class="blank-box" onclick="this.classList.add('revealed')">幾乎不受影響</span>。
+                                    </div>
+                                </div>
+
+                                <!-- (4) 加入較易溶的 AgCl -->
+                                <div class="think-item">
+                                    <div class="think-title">(4) 加入較易溶的 $\mathrm{AgCl}(s)$（$K_{sp} = 1.8 \times 10^{-10}$）：</div>
+                                    <div class="think-body">
+                                        $\mathrm{AgCl}$ 溶解度遠大於 $\mathrm{AgBr}$，提供大量 $\mathrm{Ag}^+$ 共同離子，使 $\mathrm{AgBr}$ 溶解度 <span class="blank-box" onclick="this.classList.add('revealed')">顯著降低（向左沉澱）</span>。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const placeholder = document.getElementById('solution-placeholder');
+    const isHidden = (el.style.display === 'none' || el.style.display === '');
+    el.style.display = isHidden ? 'flex' : 'none';
+    if (placeholder) {
+        placeholder.style.display = isHidden ? 'none' : 'flex';
+    }
+    if (isHidden && window.MathJax) {
+        window.MathJax.typesetPromise([el]);
+    }
+};
+</script>
+</body>
+</html>
