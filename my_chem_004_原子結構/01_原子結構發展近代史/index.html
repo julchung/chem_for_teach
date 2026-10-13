@@ -28,7 +28,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 155px 0 140px;
       z-index: 1000;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     }
@@ -98,21 +98,42 @@
       scroll-behavior: smooth;
     }
 
-    .slide-wrapper {
+                .slide-wrapper {
       width: 100%;
       height: 100%;
+      box-sizing: border-box;
+      padding: 12px 105px 16px 105px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       scroll-snap-align: start;
       scroll-snap-stop: always;
       position: relative;
     }
 
-    .slide-frame {
+                .slide-frame {
       width: 100%;
+      max-width: 1600px;
       height: 100%;
-      border: none;
+      border-radius: 18px;
+      border: 1.5px solid rgba(56, 189, 248, 0.28);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
       display: block;
+      background: #0f172a;
     }
-  </style>
+  
+    @media (max-width: 900px) {
+      #top-nav {
+        padding: 0 125px 0 110px;
+      }
+      .slide-wrapper {
+        padding: 10px 72px 14px 72px;
+      }
+    }
+      .slide-wrapper {
+        padding: 10px 72px 14px 72px;
+      }
+    </style>
 </head>
 <body>
   <!-- Top Navigation Jump Bar -->
@@ -243,6 +264,24 @@
       if (e.data && (e.data.type === 'QUIZ_PASSED' || e.data.type === 'SECTION_COMPLETE')) {
         try { window.parent !== window && window.parent.postMessage(e.data, '*'); } catch (err) {}
       }
+    });
+  
+    // __CHEM_WHEEL_RELAY__: 監聽子 iframe 滾輪事件並穿透轉發至主容器，確保翻頁流暢
+    document.querySelectorAll('.slide-frame').forEach(iframe => {
+      iframe.addEventListener('load', () => {
+        try {
+          const idoc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+          if (idoc && !iframe.__wheelRelayAttached) {
+            iframe.__wheelRelayAttached = true;
+            idoc.addEventListener('wheel', (e) => {
+              if (container) {
+                container.scrollBy({ top: e.deltaY, behavior: 'auto' });
+                if (window.__chemReportScroll) window.__chemReportScroll();
+              }
+            }, { passive: true });
+          }
+        } catch (err) {}
+      });
     });
   </script>
 

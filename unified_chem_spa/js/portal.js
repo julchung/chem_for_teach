@@ -20,6 +20,10 @@ class PortalApp {
     this.currentSectionId = null;
     this.whiteboardActive = false;
     this.wbController = null;
+    // 全螢幕沉浸鎖定狀態管理 (支援 iPad 擬真全螢幕與防誤觸)
+    this.isFullscreen = false;
+    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     // iframe 內部捲動座標（雙重同步：postMessage + 直接 poll）
     this._iframeScrollX = 0;
     this._iframeScrollY = 0;
@@ -35,6 +39,7 @@ class PortalApp {
     this.bindDashboardEvents();
     this.bindContainerEvents();
     this.bindToolbarEvents();
+    this.initFullscreenHandlers();
     this.initRandomPicker();
     // 監聽 iframe 回報的捲動座標
     this.initIframeScrollRelay();
@@ -179,7 +184,7 @@ class PortalApp {
             continueBtn.onclick = () => {
               this.currentUser = verified;
               this.loadUserProgress();
-              this.requestFullscreen();
+              this.enterFullscreen();
               this.showView('dashboard');
               this.showToast(`歡迎回來，${verified.name}！`, 'success');
             };
@@ -639,7 +644,7 @@ class PortalApp {
     this.loadUserProgress();
 
     // 進入全螢幕
-    this.requestFullscreen();
+    this.enterFullscreen();
 
     // 登入後一律進入全螢幕「目錄大廳」
     this.showView('dashboard');
@@ -647,6 +652,7 @@ class PortalApp {
   }
 
   logout() {
+    this.exitFullscreen(false);
     this.currentUser = null;
     localStorage.removeItem('chem_current_user');
     this.showView('login');
@@ -1596,19 +1602,122 @@ class PortalApp {
     if (modal) modal.classList.add('active');
   }
 
+  // ── 全螢幕模式管理（適配 iPad/iOS 沉浸防下滑解除與鎖定機制） ──
+  isIOSDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  initFullscreenHandlers() {
+    // 監聽原生全螢幕變化事件
+    const onFsChange = () => {
+      const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      // 若非 iOS 設備（桌面瀏覽器），且使用者透過 ESC 退出原生全螢幕，同步解除狀態
+      if (!isNativeFs && !this.isIOSDevice() && this.isFullscreen) {
+        this.exitFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+
+    // 防誤觸與防彈回彈機制：在 iPad 沉浸模式下防止頂層意外捲動連動
+    window.addEventListener('touchmove', (e) => {
+      if (this.isFullscreen && this.isIOSDevice()) {
+        const target = e.target;
+        const scrollable = target.closest('#view-dashboard, #drawer-toc-content, .roster-modal-card');
+        if (!scrollable) {
+          if (!target.closest('#chapter-iframe')) {
+            // e.preventDefault();
+          }
+        }
+      }
+    }, { passive: true });
+  }
+
   // 全螢幕切換
   toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      this.requestFullscreen();
+    if (this.isFullscreen) {
+      this.exitFullscreen(true);
     } else {
-      if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      this.enterFullscreen();
     }
   }
 
-  requestFullscreen() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
+  enterFullscreen() {
+    this.isFullscreen = true;
+    const isIOS = this.isIOSDevice();
+
+    // 1. 僅在 iPad / iOS 設備啟用專屬 CSS 沉浸鎖定樣式（防止 Safari 下滑誤跳出全螢幕）
+    if (isIOS) {
+      document.documentElement.classList.add('ios-immersive-fullscreen');
+      document.body.classList.add('ios-immersive-fullscreen');
+    }
+
+    // 2. 同步更新大廳與右側浮動工具列按鈕文字及圖示（工具列按鈕高亮為 ✕）
+    this.updateFullscreenUI(true);
+
+    // 3. 針對非 iOS 設備（桌上型電腦），安全啟用標準 Fullscreen API
+    if (!isIOS) {
+      const el = document.documentElement;
+      try {
+        if (el.requestFullscreen) {
+          el.requestFullscreen().catch(() => {});
+        } else if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+        }
+      } catch (err) {}
+    }
+
+    // 4. 提示使用者目前已鎖定全螢幕（由工具列 ✕ 解除）
+    if (isIOS) {
+      this.showToast('已鎖定 iPad 全螢幕（下滑不跳出，按工具列 ✕ 退出）', 'success');
+    } else {
+      this.showToast('已進入全螢幕教學模式（按工具列 ✕ 或 ESC 退出）', 'info');
+    }
+  }
+
+  // 退出全螢幕（唯有按工具列 "X"、大廳退出鈕或主動觸發才解除）
+  exitFullscreen(userTriggered = true) {
+    this.isFullscreen = false;
+
+    // 1. 移除 CSS 沉浸鎖定樣式
+    document.documentElement.classList.remove('ios-immersive-fullscreen');
+    document.body.classList.remove('ios-immersive-fullscreen');
+
+    // 2. 同步更新按鈕圖示與文字為初始狀態
+    this.updateFullscreenUI(false);
+
+    // 4. 若處於原生全螢幕，呼叫瀏覽器退出全螢幕
+    try {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      }
+    } catch (err) {}
+
+    if (userTriggered) {
+      this.showToast('已退出全螢幕', 'info');
+    }
+  }
+
+  updateFullscreenUI(isFs) {
+    // 目錄大廳頂部全螢幕按鈕
+    const dashBtn = document.getElementById('btn-dash-fullscreen');
+    if (dashBtn) {
+      dashBtn.innerHTML = isFs ? '✕ 退出全螢幕' : '⛶ 全螢幕';
+      dashBtn.title = isFs ? '點擊解除全螢幕 (X)' : '切換全螢幕';
+      dashBtn.classList.toggle('btn-fs-active', isFs);
+    }
+
+    // 容器右側浮動工具列全螢幕按鈕
+    const toolBtn = document.getElementById('tool-fullscreen');
+    if (toolBtn) {
+      toolBtn.innerHTML = isFs ? '✕' : '⛶';
+      toolBtn.setAttribute('data-tooltip', isFs ? '退出全螢幕 (X)' : '全螢幕切換');
+      toolBtn.classList.toggle('active', isFs);
     }
   }
 
