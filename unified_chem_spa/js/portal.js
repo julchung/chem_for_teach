@@ -661,26 +661,42 @@ class PortalApp {
 
   // 讀取進度
   loadUserProgress() {
-    if (!this.currentUser) return;
-    const key = `chem_progress_${this.currentUser.username}`;
-    const saved = localStorage.getItem(key);
+    // 判定是否為指定四個班級之學生 (users01.csv ~ users04.csv，座號 205, 206, 210, 213)
+    const isFourClassesStudent = Boolean(
+      this.currentUser && (
+        ['users01.csv', 'users02.csv', 'users03.csv', 'users04.csv'].includes(this.currentUser.group) ||
+        /^(205|206|210|213)\d{2}$/.test(this.currentUser.username)
+      )
+    );
+
+    const defaultUnlocked = isFourClassesStudent ? ['ch1_s1', 'ch2_s4'] : ['ch1_s1'];
+
     if (saved) {
       try {
         this.progress = JSON.parse(saved);
       } catch (e) {}
     } else {
       this.progress = {
-        unlockedSections: ['ch1_s1'],
+        unlockedSections: [...defaultUnlocked],
         completedSections: [],
         lastActiveSection: 'ch1_s1'
       };
     }
 
     if (!Array.isArray(this.progress.unlockedSections)) {
-      this.progress.unlockedSections = ['ch1_s1'];
+      this.progress.unlockedSections = [...defaultUnlocked];
     }
     if (!Array.isArray(this.progress.completedSections)) {
       this.progress.completedSections = [];
+    }
+
+    // 所有學生一律預設解鎖 1-1
+    if (!this.progress.unlockedSections.includes('ch1_s1')) {
+      this.progress.unlockedSections.push('ch1_s1');
+    }
+    // 僅指定四個班級學生享有無條件預設解鎖 2-4；其餘新使用者必須循序自 1-1 通關推進
+    if (isFourClassesStudent && !this.progress.unlockedSections.includes('ch2_s4')) {
+      this.progress.unlockedSections.push('ch2_s4');
     }
 
     // ── 依設定同步 1-2 與 9-1，以及 1-3 與 9-2 的解鎖與完成進度 ──
@@ -710,6 +726,38 @@ class PortalApp {
       this.progress.completedSections.push('ch1_s3');
     }
 
+    // ── 依設定同步 5-1、3-5、5-5 解鎖與補充小節 ──
+    if (this.progress.completedSections.includes('ch5_s1')) {
+      ['ch5_s2', 'ch5_s6', 'ch5_s7'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+    if (this.progress.completedSections.includes('ch3_s5')) {
+      ['ch3_s6', 'ch4_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+    if (this.progress.completedSections.includes('ch5_s5')) {
+      ['ch6_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+    if (this.progress.completedSections.includes('ch2_s7')) {
+      ['ch2_s8', 'ch2_s9', 'ch3_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+    if (this.progress.completedSections.includes('ch6_s5')) {
+      ['ch6_s6', 'ch7_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+    if (this.progress.completedSections.includes('ch7_s3')) {
+      ['ch7_s4', 'ch8_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) this.progress.unlockedSections.push(uid);
+      });
+    }
+
     // 教師或管理者具備全部解鎖權限
     if (this.currentUser.role === 'teacher' || this.currentUser.unlockAll) {
       this.progress.unlockedSections = this.allSections.map(s => s.id);
@@ -720,7 +768,8 @@ class PortalApp {
     if (window.chemSync && window.chemSync.isInitialized) {
       window.chemSync.loadStudentProgress(this.currentUser.username).then(cloudProgress => {
         if (cloudProgress) {
-          const setUnlocked = new Set([...this.progress.unlockedSections, ...(cloudProgress.unlockedSections || [])]);
+          const extraDefault = isFourClassesStudent ? ['ch1_s1', 'ch2_s4'] : ['ch1_s1'];
+          const setUnlocked = new Set([...this.progress.unlockedSections, ...(cloudProgress.unlockedSections || []), ...extraDefault]);
           const setCompleted = new Set([...this.progress.completedSections, ...(cloudProgress.completedSections || [])]);
           this.progress.unlockedSections = Array.from(setUnlocked);
           this.progress.completedSections = Array.from(setCompleted);
@@ -770,7 +819,7 @@ class PortalApp {
 
     // 計算進度
     const unlockedCount = this.progress.unlockedSections.length;
-    const totalCount = this.allSections.length || 59;
+    const totalCount = this.allSections.length || 62;
     const pct = Math.min(100, Math.round((unlockedCount / totalCount) * 100));
 
     const pctEl = document.getElementById('dash-progress-text');
@@ -782,7 +831,7 @@ class PortalApp {
     const resumeBtn = document.getElementById('btn-dash-resume');
     const lastSec = this.allSections.find(s => s.id === this.progress.lastActiveSection) || this.allSections[0];
     if (resumeBtn && lastSec) {
-      const displayNum = (lastSec.num && lastSec.num.includes('補充')) ? `${lastSec.num}` : `${lastSec.chapterNum}-${lastSec.num}`;
+      const displayNum = (lastSec.num && (lastSec.num.includes('補充') || lastSec.num.includes('-'))) ? `${lastSec.num}` : `${lastSec.chapterNum}-${lastSec.num}`;
       resumeBtn.innerHTML = `🚀 接續學習：${displayNum} ${lastSec.title}`;
       resumeBtn.onclick = () => this.openSection(lastSec.id);
     }
@@ -1033,6 +1082,30 @@ class PortalApp {
         }
       });
       this.showToast('🔓 恭喜完成 2-7！已解鎖第二章補充小節，並同時解鎖 3-1 物質的狀態與三相圖！', 'success');
+    } else if (targetId === 'ch3_s5' || targetId === '05_補充_沉澱表規則') {
+      // 3-5 通關後解鎖下章 (ch4_s1) 同時解鎖此補充小節 (ch3_s6)
+      ['ch3_s6', 'ch4_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) {
+          this.progress.unlockedSections.push(uid);
+        }
+      });
+      this.showToast('🔓 恭喜完成 3-5！已解鎖 4-1 原子結構，並同時解鎖化學沉澱射擊小遊戲補充單元！', 'success');
+    } else if (targetId === 'ch5_s1' || targetId === '01_金屬鍵離子鍵與晶體結構') {
+      // 5-1 通關後解鎖 5-2 同時解鎖此二補充小節 (ch5_s6 晶體堆積, ch5_s7 價帶理論)
+      ['ch5_s2', 'ch5_s6', 'ch5_s7'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) {
+          this.progress.unlockedSections.push(uid);
+        }
+      });
+      this.showToast('🔓 恭喜完成 5-1！已解鎖 5-2 共價鍵，並同時解鎖晶體堆積與能帶理論補充單元！', 'success');
+    } else if (targetId === 'ch5_s5' || targetId === '05_氫鍵') {
+      // 5-5 完成後直接解鎖第 6 章第一節
+      ['ch6_s1'].forEach(uid => {
+        if (!this.progress.unlockedSections.includes(uid)) {
+          this.progress.unlockedSections.push(uid);
+        }
+      });
+      this.showToast('🎉 恭喜完成第五章核心課程！已解鎖 6-1 化學反應速率與定律式！', 'success');
     } else if (targetId === 'ch6_s5') {
       // 通過 6-5 (催化劑) 後，直接解鎖 6-6 (秒錶反應) 與第 7 章第一節 (ch7_s1)
       ['ch6_s6', 'ch7_s1'].forEach(uid => {

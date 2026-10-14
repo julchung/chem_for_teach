@@ -423,7 +423,7 @@ const CHEM_CURRICULUM = [
     "num": 3,
     "title": "溶液",
     "icon": "🧪",
-    "desc": "三相圖、溶解度與濃度表示法、拉午耳定律、依數性質與沉澱表規則",
+    "desc": "三相圖、溶解度與濃度表示法、拉午耳定律、依數性質、沉澱表規則與沉澱小遊戲(補充)",
     "sections": [
       {
         "id": "ch3_s1",
@@ -557,7 +557,7 @@ const CHEM_CURRICULUM = [
           {
             "type": "checkpoint",
             "title": "單元 3-5 學習檢核",
-            "desc": "恭喜完成第 3 章！完成此檢核進入第 4 章原子結構。",
+            "desc": "恭喜完成第 3 章！完成此檢核進入第 4 章原子結構，並解鎖化學沉澱射擊小遊戲補充單元。",
             "questionText": "在含有 Ag+、Ba2+、Na+ 之混合液中加入 NaCl，哪種離子會產生沉澱？",
             "options": [
               "Ag+ 產生白色 AgCl 沉澱",
@@ -567,6 +567,35 @@ const CHEM_CURRICULUM = [
             ],
             "correctIndex": 0,
             "expl": "Ag+ 與 Cl- 結合產生不溶於水的白色 AgCl 沉澱；BaCl2 與 NaCl 皆可溶。"
+          }
+        ]
+      },
+      {
+        "id": "ch3_s6",
+        "num": "(補充)",
+        "title": "化學沉澱射擊小遊戲",
+        "origPath": "../my_chem_012_生活中的化學及補充/07_沉澱表遊戲/index.html",
+        "origTitle": "Chemical Bubble Shooter - 沉澱泡泡射擊",
+        "blocks": [
+          {
+            "type": "slide",
+            "title": "趣味沉澱配對遊戲",
+            "subtitle": "用射擊遊戲複習陰陽離子沉澱配對規則",
+            "content": "<p>點擊上方「🚀 立即啟動模擬探究」即可在彈出視窗體驗化學泡泡射擊遊戲！利用發射帶電荷的離子泡泡命中相應的對抗離子，完成沉澱配對消除消波！</p>"
+          },
+          {
+            "type": "checkpoint",
+            "title": "補充單元學習檢核",
+            "desc": "完成此檢核鞏固沉澱表規則與離子配對觀念。",
+            "questionText": "在水中與氯離子 (Cl-) 碰撞時會生成白色沉澱的陽離子為何？",
+            "options": [
+              "Ag+ 銀離子",
+              "Na+ 鈉離子",
+              "K+ 鉀離子",
+              "NH4+ 銨根離子"
+            ],
+            "correctIndex": 0,
+            "expl": "Ag+ 與 Cl- 結合產生 AgCl 白色沉澱。"
           }
         ]
       }
@@ -818,7 +847,7 @@ const CHEM_CURRICULUM = [
     "num": 5,
     "title": "物質的結構與化學鍵",
     "icon": "🔗",
-    "desc": "離子鍵與金屬鍵、共價鍵與八隅體、混成軌域與分子形狀、極性分子間作用力、氫鍵",
+    "desc": "離子鍵與金屬鍵、共價鍵與八隅體、混成軌域與分子形狀、極性分子間作用力、氫鍵，及晶體堆積與能帶理論(補充)",
     "sections": [
       {
         "id": "ch5_s1",
@@ -962,6 +991,64 @@ const CHEM_CURRICULUM = [
             ],
             "correctIndex": 0,
             "expl": "氫鍵必須是 H 與強電負度之 F, O, N 直接相連。CH4 中 C-H 鍵無法形成氫鍵。"
+          }
+        ]
+      },
+      {
+        "id": "ch5_s6",
+        "num": "(補充)",
+        "title": "固態晶體堆積與配位數",
+        "origPath": "../my_chem_012_生活中的化學及補充/08_晶體堆積與配位數/index.html",
+        "origTitle": "晶體堆積與配位數 | 互動教學",
+        "blocks": [
+          {
+            "type": "slide",
+            "title": "四大金屬晶胞結構比較",
+            "subtitle": "簡單立方、體心立方、面心立方與六方最密堆積",
+            "content": "<div class=\"flex-row\">\n  <div class=\"flex-col\">\n    <h3 class=\"text-yellow\">體心立方 (BCC)</h3>\n    <p>晶胞內原子數 = <strong>2</strong> 個 ($8 \\times \\frac{1}{8} + 1$)。</p>\n    <p>配位數 = <strong>8</strong>；空間填充率 = <strong>68%</strong>。</p>\n    <p>代表金屬：Na, K, Fe(α)。</p>\n  </div>\n  <div class=\"flex-col\">\n    <h3 class=\"text-green\">面心立方 (FCC / 最密堆積)</h3>\n    <p>晶胞內原子數 = <strong>4</strong> 個 ($8 \\times \\frac{1}{8} + 6 \\times \\frac{1}{2}$)。</p>\n    <p>配位數 = <strong>12</strong>；空間最高填充率 = <strong>74%</strong>。</p>\n    <p>代表金屬：Cu, Ag, Au, Al。</p>\n  </div>\n</div>"
+          },
+          {
+            "type": "checkpoint",
+            "title": "補充單元學習檢核",
+            "desc": "完成此檢核鞏固晶體堆積與配位數觀念。",
+            "questionText": "在面心立方最密堆積 (FCC) 金屬晶格中，每一個原子的配位數為何？",
+            "options": [
+              "12 (空間填充率 74%)",
+              "8",
+              "6",
+              "4"
+            ],
+            "correctIndex": 0,
+            "expl": "面心立方堆積為最密堆積結構，配位數達理論最高值 12。"
+          }
+        ]
+      },
+      {
+        "id": "ch5_s7",
+        "num": "(補充)",
+        "title": "能帶理論：價帶與傳導帶",
+        "origPath": "../my_chem_012_生活中的化學及補充/09_價帶理論/index.html",
+        "origTitle": "能帶理論：價帶與傳導帶 - 互動教學",
+        "blocks": [
+          {
+            "type": "slide",
+            "title": "導體、半導體與絕緣體之能隙 (Band Gap)",
+            "subtitle": "價帶 (VB)、傳導帶 (CB) 與禁制能帶 (Eg)",
+            "content": "<ul>\n  <li><strong>導體 (Conductor)</strong>：價帶與傳導帶重疊，能隙 $E_g = 0$，電子可自由跨越導電。</li>\n  <li><strong>半導體 (Semiconductor)</strong>：能隙適中 ($E_g \\approx 1.1\\text{ eV}$ 如矽 Si)，照光或升溫時價帶電子可躍遷至傳導帶導電；升溫電阻<strong>下降</strong>。</li>\n  <li><strong>絕緣體 (Insulator)</strong>：能隙過大 ($E_g > 5\\text{ eV}$)，電子極難越過禁帶。</li>\n</ul>"
+          },
+          {
+            "type": "checkpoint",
+            "title": "補充單元學習檢核",
+            "desc": "完成此檢核鞏固能帶理論觀念。",
+            "questionText": "半導體材料（如單晶矽 Si）隨溫度升高時，其導電度會產生何種變化？",
+            "options": [
+              "導電度提高 (熱激發使躍遷至傳導帶的載子數增加)",
+              "導電度下降",
+              "導電度不變",
+              "變為絕緣體"
+            ],
+            "correctIndex": 0,
+            "expl": "半導體升溫提供熱能，使更多價帶電子跨越能隙躍遷至傳導帶，載子濃度增加，導電度提高。"
           }
         ]
       }
@@ -1780,98 +1867,11 @@ const CHEM_CURRICULUM = [
     "num": 12,
     "title": "生活中的化學及補充",
     "icon": "🌍",
-    "desc": "晶體堆積與配位數、能帶理論(導體半導體)、沉澱射擊小遊戲、新興綠色先進材料",
+    "desc": "光觸媒 TiO2、導電高分子、界面活性劑與新興綠色生活材料",
     "sections": [
       {
         "id": "ch12_s1",
         "num": "12-1",
-        "title": "固態晶體堆積與配位數",
-        "origPath": "../my_chem_012_生活中的化學及補充/08_晶體堆積與配位數/index.html",
-        "origTitle": "晶體堆積與配位數 | 互動教學",
-        "blocks": [
-          {
-            "type": "slide",
-            "title": "四大金屬晶胞結構比較",
-            "subtitle": "簡單立方、體心立方、面心立方與六方最密堆積",
-            "content": "<div class=\"flex-row\">\n  <div class=\"flex-col\">\n    <h3 class=\"text-yellow\">體心立方 (BCC)</h3>\n    <p>晶胞內原子數 = <strong>2</strong> 個 ($8 \\times \\frac{1}{8} + 1$)。</p>\n    <p>配位數 = <strong>8</strong>；空間填充率 = <strong>68%</strong>。</p>\n    <p>代表金屬：Na, K, Fe(α)。</p>\n  </div>\n  <div class=\"flex-col\">\n    <h3 class=\"text-green\">面心立方 (FCC / 最密堆積)</h3>\n    <p>晶胞內原子數 = <strong>4</strong> 個 ($8 \\times \\frac{1}{8} + 6 \\times \\frac{1}{2}$)。</p>\n    <p>配位數 = <strong>12</strong>；空間最高填充率 = <strong>74%</strong>。</p>\n    <p>代表金屬：Cu, Ag, Au, Al。</p>\n  </div>\n</div>"
-          },
-          {
-            "type": "checkpoint",
-            "title": "單元 12-1 學習檢核",
-            "desc": "完成檢核解鎖下一節。",
-            "questionText": "在面心立方最密堆積 (FCC) 金屬晶格中，每一個原子的配位數為何？",
-            "options": [
-              "12 (空間填充率 74%)",
-              "8",
-              "6",
-              "4"
-            ],
-            "correctIndex": 0,
-            "expl": "面心立方堆積為最密堆積結構，配位數達理論最高值 12。"
-          }
-        ]
-      },
-      {
-        "id": "ch12_s2",
-        "num": "12-2",
-        "title": "能帶理論：價帶與傳導帶",
-        "origPath": "../my_chem_012_生活中的化學及補充/09_價帶理論/index.html",
-        "origTitle": "能帶理論：價帶與傳導帶 - 互動教學",
-        "blocks": [
-          {
-            "type": "slide",
-            "title": "導體、半導體與絕緣體之能隙 (Band Gap)",
-            "subtitle": "價帶 (VB)、傳導帶 (CB) 與禁制能帶 (Eg)",
-            "content": "<ul>\n  <li><strong>導體 (Conductor)</strong>：價帶與傳導帶重疊，能隙 $E_g = 0$，電子可自由跨越導電。</li>\n  <li><strong>半導體 (Semiconductor)</strong>：能隙適中 ($E_g \\approx 1.1\\text{ eV}$ 如矽 Si)，照光或升溫時價帶電子可躍遷至傳導帶導電；升溫電阻<strong>下降</strong>。</li>\n  <li><strong>絕緣體 (Insulator)</strong>：能隙過大 ($E_g > 5\\text{ eV}$)，電子極難越過禁帶。</li>\n</ul>"
-          },
-          {
-            "type": "checkpoint",
-            "title": "單元 12-2 學習檢核",
-            "desc": "完成檢核解鎖下一節。",
-            "questionText": "半導體材料（如單晶矽 Si）隨溫度升高時，其導電度會產生何種變化？",
-            "options": [
-              "導電度提高 (熱激發使躍遷至傳導帶的載子數增加)",
-              "導電度下降",
-              "導電度不變",
-              "變為絕緣體"
-            ],
-            "correctIndex": 0,
-            "expl": "半導體升溫提供熱能，使更多價帶電子跨越能隙躍遷至傳導帶，載子濃度增加，導電度提高。"
-          }
-        ]
-      },
-      {
-        "id": "ch12_s3",
-        "num": "12-3",
-        "title": "化學沉澱射擊小遊戲",
-        "origPath": "../my_chem_012_生活中的化學及補充/07_沉澱表遊戲/index.html",
-        "origTitle": "Chemical Bubble Shooter - 沉澱泡泡射擊",
-        "blocks": [
-          {
-            "type": "slide",
-            "title": "趣味沉澱配對遊戲",
-            "subtitle": "用射擊遊戲複習陰陽離子沉澱配對規則",
-            "content": "<p>點擊上方「🚀 立即啟動模擬探究」即可在彈出視窗體驗化學泡泡射擊遊戲！利用發射帶電荷的離子泡泡命中相應的對抗離子，完成沉澱配對消除消波！</p>"
-          },
-          {
-            "type": "checkpoint",
-            "title": "單元 12-3 學習檢核",
-            "desc": "完成檢核解鎖下一節。",
-            "questionText": "在水中與氯離子 (Cl-) 碰撞時會生成白色沉澱的陽離子為何？",
-            "options": [
-              "Ag+ 銀離子",
-              "Na+ 鈉離子",
-              "K+ 鉀離子",
-              "NH4+ 銨根離子"
-            ],
-            "correctIndex": 0,
-            "expl": "Ag+ 與 Cl- 結合產生 AgCl 白色沉澱。"
-          }
-        ]
-      },
-      {
-        "id": "ch12_s4",
-        "num": "12-4",
         "title": "新興綠色生活化學材料",
         "origPath": "",
         "origTitle": "",
@@ -1884,7 +1884,7 @@ const CHEM_CURRICULUM = [
           },
           {
             "type": "checkpoint",
-            "title": "單元 12-4 學習檢核",
+            "title": "單元 12-1 學習檢核",
             "desc": "🎉 恭喜！您已全數完成高中化學學習網全部 12 章課程！",
             "questionText": "肥皂去污的微觀機制中，其長碳氫鏈主要扮演何種角色？",
             "options": [
