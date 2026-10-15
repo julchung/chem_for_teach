@@ -809,14 +809,16 @@
                   
                   <!-- 上傳操作列 -->
                   <div class="upload-action-buttons">
-                    <label class="btn btn-sm btn-outline file-btn" for="cameraInput" title="開啟手機/平板相機拍照手繪草圖">
+                    <button type="button" class="btn btn-sm btn-outline file-btn" id="cameraBtn" title="開啟手機/平板相機拍照手繪草圖">
                       <span>📸 相機拍照草圖</span>
-                      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;">
-                    </label>
-                    <label class="btn btn-sm btn-outline file-btn" for="fileInput" title="從電腦或手機選取圖片檔案">
+                    </button>
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="visually-hidden-file">
+
+                    <button type="button" class="btn btn-sm btn-outline file-btn" id="fileBtn" title="從電腦或平板選取圖片檔案或相簿">
                       <span>📁 選擇圖片檔案</span>
-                      <input type="file" id="fileInput" accept="image/*" style="display:none;">
-                    </label>
+                    </button>
+                    <input type="file" id="fileInput" accept="image/*" class="visually-hidden-file">
+
                     <button type="button" class="btn btn-sm btn-outline" id="removeImgBtn" style="display:none; color: var(--accent-rose);" title="清除目前圖片">
                       <span>🗑️ 移除圖片</span>
                     </button>
@@ -966,6 +968,122 @@
       </div>
     </div>
   </footer>
+
+  <!-- 學習單多元匯出與列印中心彈窗 (Worksheet Export Modal for iPad & All Devices) -->
+  <div class="modal-overlay" id="exportModal" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📑</span>
+          <div>
+            <h3 class="modal-title">探究學習單：列印與多元匯出中心</h3>
+            <p class="modal-subtitle">支援 iPad/平板、手機與電腦，提供 A4 獨立列印頁、AirPrint、離線 HTML 檔與全文複製</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeExportModalBtn" aria-label="關閉視窗">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 學習單基本資訊預覽卡 -->
+        <div class="export-summary-card">
+          <div class="summary-item">
+            <span class="label">研究題目：</span>
+            <strong id="exportSummaryTopic" class="summary-val text-primary">(尚未填寫題目)</strong>
+          </div>
+          <div class="summary-grid">
+            <div><span class="label">學校/班級：</span><span id="exportSummarySchool">-</span></div>
+            <div><span class="label">組員姓名：</span><span id="exportSummaryMembers">-</span></div>
+            <div><span class="label">實作日期：</span><span id="exportSummaryDate">-</span></div>
+            <div><span class="label">實驗設計圖：</span><span id="exportSummaryDiagram">未附加</span></div>
+          </div>
+        </div>
+
+        <!-- iPad 專屬友善提示 -->
+        <div class="ipad-tip-banner">
+          <span class="tip-icon">💡</span>
+          <div class="tip-content">
+            <strong>iPad / 平板學生首選技巧：</strong>
+            點選下方「<strong>開啟獨立 A4 列印版面</strong>」，接著使用 Safari 頂部「<strong>分享 (Share) 圖示 ➔ 選擇『標記』或『儲存到檔案』</strong>」，即可免印表機直接在 iPad 產生無被截斷的高品質 PDF！亦可「<strong>下載 HTML 學習單</strong>」直接上傳至 Google Classroom 繳交。
+          </div>
+        </div>
+
+        <!-- 匯出方式選項格 (Export Options Grid) -->
+        <div class="export-options-grid">
+          <!-- 選項 1：獨立 A4 列印/PDF 頁面 -->
+          <div class="export-card primary-card">
+            <div class="export-card-icon">📄</div>
+            <div class="export-card-info">
+              <h4>開啟獨立 A4 列印版面 (推薦 iPad / 存 PDF)</h4>
+              <p>在新分頁生成符合正式格式的 A4 學習單（含文字自動折行、實驗架構圖與教師評分規準欄），可直接長按儲存 PDF 或 AirPrint 列印。</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="openPrintTabBtn">
+              <span>開啟 A4 版面</span>
+            </button>
+          </div>
+
+          <!-- 選項 2：直接呼叫系統列印 (AirPrint / 桌機) -->
+          <div class="export-card">
+            <div class="export-card-icon">🖨️</div>
+            <div class="export-card-info">
+              <h4>系統直接列印 / AirPrint</h4>
+              <p>直接喚起系統列印視窗。已自動最佳化 A4 排版並補全填寫內容，避免瀏覽器截斷長文字。</p>
+            </div>
+            <button type="button" class="btn btn-outline" id="directPrintBtn">
+              <span>叫出列印視窗</span>
+            </button>
+          </div>
+
+          <!-- 選項 3：下載 HTML 離線學習單檔 -->
+          <div class="export-card">
+            <div class="export-card-icon">📥</div>
+            <div class="export-card-info">
+              <h4>下載 HTML 離線學習單檔</h4>
+              <p>將完整學習單（含手繪照片與格式）打包為單一 HTML 檔案下載至 iPad「檔案」App 或電腦，隨時可離線預覽或繳交。</p>
+            </div>
+            <button type="button" class="btn btn-outline" id="downloadHtmlBtn">
+              <span>下載 HTML 檔</span>
+            </button>
+          </div>
+
+          <!-- 選項 4：一鍵複製全文 (Markdown / 純文字) -->
+          <div class="export-card">
+            <div class="export-card-icon">📋</div>
+            <div class="export-card-info">
+              <h4>複製學習單全文 (純文字 / Markdown)</h4>
+              <p>完整包含 A~G 七大核心架構，一鍵複製後可直接貼到 Google Docs、Pages、Word 或學習歷程檔案多元表現。</p>
+            </div>
+            <button type="button" class="btn btn-outline" id="copyTextBtn">
+              <span id="copyBtnText">複製全文到剪貼簿</span>
+            </button>
+          </div>
+
+          <!-- 選項 5：匯出 JSON 專案檔與備份 -->
+          <div class="export-card">
+            <div class="export-card-icon">💾</div>
+            <div class="export-card-info">
+              <h4>專案備份與還原 (JSON 格式)</h4>
+              <p>下載完整專案設定檔，下次使用不同 iPad 或載具時，點擊「匯入專案」即可瞬間還原所有內容繼續填寫。</p>
+            </div>
+            <div class="export-card-actions">
+              <button type="button" class="btn btn-sm btn-outline" id="downloadJsonBtn">下載 JSON 檔</button>
+              <label class="btn btn-sm btn-outline" for="importJsonInput" style="cursor: pointer; margin: 0;">
+                <span>匯入 JSON 檔</span>
+                <input type="file" id="importJsonInput" accept=".json" class="visually-hidden-file">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="text-light" style="font-size: 0.82rem;">108 課綱探究與實作標準格式 · 支援跨載具離線作業與 PDF 匯出</span>
+        <button type="button" class="btn btn-outline" id="modalDismissBtn">關閉視窗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提示氣泡 (Toast Notification) -->
+  <div class="toast-notification" id="toastNotification" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>

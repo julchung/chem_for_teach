@@ -254,6 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputDiagramCaption = document.getElementById('inputDiagramCaption');
   const cameraInput = document.getElementById('cameraInput');
   const fileInput = document.getElementById('fileInput');
+  const cameraBtn = document.getElementById('cameraBtn');
+  const fileBtn = document.getElementById('fileBtn');
   const removeImgBtn = document.getElementById('removeImgBtn');
   const diagramDropZone = document.getElementById('diagramDropZone');
   const dropPlaceholder = document.getElementById('dropPlaceholder');
@@ -290,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 圖片自動等比壓縮與處理（避免 iPad Safari 記憶體超載或 LocalStorage 超過 5MB 限制）
   function handleImageFile(file) {
     if (!file || !file.type.startsWith('image/')) {
       alert('請選取有效的圖片檔案（JPG, PNG, WebP 等）！');
@@ -297,15 +300,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const reader = new FileReader();
     reader.onload = (e) => {
-      const caption = inputDiagramCaption && inputDiagramCaption.value.trim() 
-        ? inputDiagramCaption.value.trim() 
-        : '學生手繪實驗設計草圖 / 現地配置照片';
-      setDiagramImage(e.target.result, caption);
+      const img = new Image();
+      img.onload = () => {
+        // 設定最大邊界尺寸 1400px，保留足夠印刷細節同時壓縮檔案至 200~400KB
+        const maxDim = 1400;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        
+        try {
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          const caption = inputDiagramCaption && inputDiagramCaption.value.trim() 
+            ? inputDiagramCaption.value.trim() 
+            : '學生手繪實驗設計草圖 / 現地配置照片';
+          setDiagramImage(compressedDataUrl, caption);
+        } catch (err) {
+          console.warn('Canvas export error:', err);
+          setDiagramImage(e.target.result, inputDiagramCaption ? inputDiagramCaption.value.trim() : '');
+        }
+      };
+      img.onerror = () => {
+        setDiagramImage(e.target.result, inputDiagramCaption ? inputDiagramCaption.value.trim() : '');
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  // 拍照上傳與檔案上傳事件監聽
+  // 拍照上傳與檔案上傳按鈕事件監聽（專為 iPad 與觸控螢幕強化）
+  if (cameraBtn && cameraInput) {
+    cameraBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      cameraInput.click();
+    });
+  }
+
+  if (fileBtn && fileInput) {
+    fileBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      fileInput.click();
+    });
+  }
+
   if (cameraInput) {
     cameraInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files[0]) {
@@ -412,9 +463,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 向量示範圖產生器 (SVG Generator)
+  // 向量示範圖產生器 (SVG Generator，遵循 RFC 標準以相容 iPad Safari / WebKit)
   function createSvgDataUri(svgContent) {
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svgContent);
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent.trim());
   }
 
   // 6 大跨領域示範範例資料庫 (Sample Presets Database)
@@ -745,13 +796,700 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 產生學習單列印 / 匯出 PDF
+  /* ==========================================================================
+     學習單多元匯出與列印中心 (Worksheet Export & Print Center for iPad & Multi-device)
+     ========================================================================== */
+  const exportModal = document.getElementById('exportModal');
+  const closeExportModalBtn = document.getElementById('closeExportModalBtn');
+  const modalDismissBtn = document.getElementById('modalDismissBtn');
+  const openPrintTabBtn = document.getElementById('openPrintTabBtn');
+  const directPrintBtn = document.getElementById('directPrintBtn');
+  const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+  const copyTextBtn = document.getElementById('copyTextBtn');
+  const copyBtnText = document.getElementById('copyBtnText');
+  const downloadJsonBtn = document.getElementById('downloadJsonBtn');
+  const importJsonInput = document.getElementById('importJsonInput');
+  const toastNotification = document.getElementById('toastNotification');
+
+  let toastTimer = null;
+  function showToast(message, duration = 3200) {
+    if (!toastNotification) return;
+    toastNotification.textContent = message;
+    toastNotification.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toastNotification.classList.remove('show');
+    }, duration);
+  }
+
+  // 取得完整學習單當前資料物件
+  function getWorksheetData() {
+    const schoolEl = document.getElementById('canvasSchool');
+    const membersEl = document.getElementById('canvasMembers');
+    const dateEl = document.getElementById('canvasDate');
+
+    return {
+      school: schoolEl ? schoolEl.value.trim() : '國立新化高工',
+      members: membersEl ? membersEl.value.trim() : '未填寫組員',
+      date: dateEl && dateEl.value ? dateEl.value : new Date().toISOString().split('T')[0],
+      topic: inputTopic ? inputTopic.value.trim() : '',
+      motivation: inputMotivation ? inputMotivation.value.trim() : '',
+      hypothesis: inputHypothesis ? inputHypothesis.value.trim() : '',
+      iv: inputIV ? inputIV.value.trim() : '',
+      dv: inputDV ? inputDV.value.trim() : '',
+      cv: inputCV ? inputCV.value.trim() : '',
+      methodType: selectMethodType ? selectMethodType.value : '實驗法',
+      methodDetail: inputMethodDetail ? inputMethodDetail.value.trim() : '',
+      limitation: inputLimitation ? inputLimitation.value.trim() : '',
+      principles: inputPrinciples ? inputPrinciples.value.trim() : '',
+      diagramCaption: inputDiagramCaption ? inputDiagramCaption.value.trim() : '',
+      diagramImg: diagramPreviewImg && diagramPreviewImg.src && diagramPreviewImg.src !== window.location.href ? diagramPreviewImg.src : ''
+    };
+  }
+
+  // 在列印前將表單 input/textarea 的動態內容鏡射至 .print-mirror-val（防止 Safari/iPad 截斷捲軸文字）
+  function syncPrintMirrorValues() {
+    const formFields = document.querySelectorAll('#researchForm input, #researchForm textarea, #researchForm select, .canvas-meta-bar input');
+    formFields.forEach(field => {
+      let mirror = field.nextElementSibling;
+      if (!mirror || !mirror.classList.contains('print-mirror-val')) {
+        mirror = document.createElement('div');
+        mirror.className = 'print-mirror-val';
+        field.parentNode.insertBefore(mirror, field.nextSibling);
+      }
+      const val = field.value ? field.value.trim() : '';
+      mirror.textContent = val || '（此欄位尚未填寫）';
+    });
+  }
+
+  window.addEventListener('beforeprint', syncPrintMirrorValues);
+
+  // 產生專用獨立 A4 排版 HTML 網頁字串（含教師評量規準、完整架構與 iPad 友善儲存教學）
+  function generateStandaloneWorksheetHtml(d) {
+    const safeTopic = d.topic || '探究與實作研究企劃學習單';
+    const hasImage = Boolean(d.diagramImg);
+
+    return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(safeTopic)} - 探究學習單</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-base: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --border-color: #334155;
+    }
+    *, *:before, *:after { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body {
+      font-family: var(--font-base);
+      color: var(--text-main);
+      background: #f1f5f9;
+      margin: 0;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .print-toolbar {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+    .toolbar-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .toolbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .tb-btn {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .tb-btn:hover { background: #1d4ed8; }
+    .tb-btn.btn-outline { background: transparent; border: 1px solid #475569; color: #f8fafc; }
+    .tb-btn.btn-outline:hover { background: #1e293b; }
+    .ipad-instruction-box {
+      max-width: 900px;
+      margin: 0 auto 20px auto;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.9rem;
+      color: #92400e;
+      line-height: 1.5;
+    }
+    .a4-page {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 36px 44px;
+      border: 2px solid #000000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .sheet-header {
+      border-bottom: 2px solid #000000;
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .sheet-school { font-size: 1.05rem; font-weight: 700; color: #475569; letter-spacing: 1px; margin-bottom: 4px; }
+    .sheet-title { font-size: 1.6rem; font-weight: 800; margin: 0 0 10px 0; color: #000000; }
+    .sheet-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      font-size: 0.95rem;
+      margin-top: 10px;
+      text-align: left;
+      border-top: 1px dashed #94a3b8;
+      padding-top: 10px;
+    }
+    .meta-item strong { color: #000000; }
+    .worksheet-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .block-card {
+      border: 1.5px solid #000000;
+      padding: 12px 16px;
+      background: #ffffff;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .block-card.full-width { grid-column: span 2; }
+    .block-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 6px;
+    }
+    .badge-num {
+      width: 24px;
+      height: 24px;
+      background: #000000;
+      color: #ffffff;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+    .block-head h3 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #000000; }
+    .block-content {
+      font-size: 0.98rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #0f172a;
+      min-height: 28px;
+    }
+    .block-content.empty { color: #94a3b8; font-style: italic; }
+    .vars-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+    .vars-table th, .vars-table td {
+      border: 1px solid #000000;
+      padding: 8px 12px;
+      font-size: 0.92rem;
+      text-align: left;
+    }
+    .vars-table th { background: #f1f5f9; font-weight: 800; width: 28%; }
+    .diagram-zone {
+      text-align: center;
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px dashed #64748b;
+      background: #fafafa;
+    }
+    .diagram-zone img {
+      max-width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      display: inline-block;
+    }
+    .caption-label {
+      margin-top: 8px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    /* 評分規準欄 */
+    .rubric-card {
+      margin-top: 16px;
+      border: 1.5px solid #000000;
+      padding: 14px 18px;
+      page-break-inside: avoid;
+    }
+    .rubric-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.88rem;
+    }
+    .rubric-table th, .rubric-table td {
+      border: 1px solid #000000;
+      padding: 6px 10px;
+      text-align: center;
+    }
+    .rubric-table th { background: #f8fafc; font-weight: 800; }
+    .teacher-sig-row {
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    @media print {
+      body { background: #ffffff !important; padding: 0 !important; }
+      .print-toolbar, .ipad-instruction-box { display: none !important; }
+      .a4-page {
+        max-width: 100% !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      @page { size: A4 portrait; margin: 1.2cm 1.4cm; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部操作列（列印時自動隱藏） -->
+  <div class="print-toolbar">
+    <div class="toolbar-title">
+      <span>📑 探究與實作：A4 專案學習單預覽</span>
+    </div>
+    <div class="toolbar-actions">
+      <button type="button" class="tb-btn" onclick="window.print()">
+        <span>🖨️ 列印 / 另存為 PDF</span>
+      </button>
+      <button type="button" class="tb-btn btn-outline" onclick="downloadThisHtml()">
+        <span>📥 下載此網頁檔</span>
+      </button>
+      <button type="button" class="tb-btn btn-outline" onclick="window.close()">
+        <span>✕ 關閉視窗</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- iPad 學生操作引導提示（列印時自動隱藏） -->
+  <div class="ipad-instruction-box">
+    <strong>📱 iPad 學生儲存 PDF 秘訣：</strong>
+    若無連接實體 AirPrint 印表機，請點選上方「<strong>🖨️ 列印 / 另存為 PDF</strong>」，並在跳出的列印預覽頁面上使用<strong>「兩指往外撥開放大 (Pinch Out)」</strong>，或直接點選 iPad Safari 頂部「<strong>分享 (Share) 圖示 ➔ 選擇『儲存到檔案』</strong>」，即可無損存成正式 PDF 學習單檔案！
+  </div>
+
+  <!-- A4 學習單主頁面 -->
+  <div class="a4-page">
+    <div class="sheet-header">
+      <div class="sheet-school">${escapeHtml(d.school)}</div>
+      <h1 class="sheet-title">普通型高中探究與實作：專案研究企劃學習單</h1>
+      <div class="sheet-meta-grid">
+        <div class="meta-item"><strong>組員姓名：</strong>${escapeHtml(d.members)}</div>
+        <div class="meta-item"><strong>實作日期：</strong>${escapeHtml(d.date)}</div>
+        <div class="meta-item"><strong>研究方法：</strong>${escapeHtml(d.methodType)}</div>
+      </div>
+    </div>
+
+    <div class="worksheet-grid">
+      <!-- 區塊 A：研究題目 -->
+      <div class="block-card full-width">
+        <div class="block-head">
+          <span class="badge-num">A</span>
+          <h3>研究題目 (Research Title)</h3>
+        </div>
+        <div class="block-content" style="font-size: 1.15rem; font-weight: 700;">${escapeHtml(d.topic) || '<span class="empty">（未填寫題目）</span>'}</div>
+      </div>
+
+      <!-- 區塊 B：研究動機 -->
+      <div class="block-card">
+        <div class="block-head">
+          <span class="badge-num">B</span>
+          <h3>研究動機與問題意識 (Motivation)</h3>
+        </div>
+        <div class="block-content">${escapeHtml(d.motivation) || '<span class="empty">（未填寫動機）</span>'}</div>
+      </div>
+
+      <!-- 區塊 C：核心假說 -->
+      <div class="block-card">
+        <div class="block-head">
+          <span class="badge-num">C</span>
+          <h3>核心假說 (Hypothesis)</h3>
+        </div>
+        <div class="block-content">${escapeHtml(d.hypothesis) || '<span class="empty">（未填寫假說）</span>'}</div>
+      </div>
+
+      <!-- 區塊 D：變因設定表格 -->
+      <div class="block-card full-width">
+        <div class="block-head">
+          <span class="badge-num">D</span>
+          <h3>研究變因嚴格定義 (Variables Setup)</h3>
+        </div>
+        <table class="vars-table">
+          <tr>
+            <th>操縱變因 (IV - 唯一改變)</th>
+            <td>${escapeHtml(d.iv) || '—'}</td>
+          </tr>
+          <tr>
+            <th>應變變因 (DV - 客觀指標)</th>
+            <td>${escapeHtml(d.dv) || '—'}</td>
+          </tr>
+          <tr>
+            <th>控制變因 (CV - 嚴格固定)</th>
+            <td>${escapeHtml(d.cv) || '—'}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 區塊 E：研究方法與步驟 -->
+      <div class="block-card">
+        <div class="block-head">
+          <span class="badge-num">E</span>
+          <h3>研究方法與步驟簡述 (Methodology)</h3>
+        </div>
+        <div class="block-content"><strong>【類型】</strong> ${escapeHtml(d.methodType)}\n\n${escapeHtml(d.methodDetail) || '<span class="empty">（未填寫步驟）</span>'}</div>
+      </div>
+
+      <!-- 區塊 F：預期成果與限制 -->
+      <div class="block-card">
+        <div class="block-head">
+          <span class="badge-num">F</span>
+          <h3>預期成果與潛在限制 (Limitations)</h3>
+        </div>
+        <div class="block-content">${escapeHtml(d.limitation) || '<span class="empty">（未填寫成果與限制）</span>'}</div>
+      </div>
+
+      <!-- 區塊 G：科學原理與實驗設計圖 -->
+      <div class="block-card full-width">
+        <div class="block-head">
+          <span class="badge-num">G</span>
+          <h3>科學原理簡述及實驗設計圖 (Principles & Diagram)</h3>
+        </div>
+        <div class="block-content"><strong>【科學原理 / 理論模型】</strong>\n${escapeHtml(d.principles) || '<span class="empty">（未填寫原理）</span>'}</div>
+        ${hasImage ? `
+        <div class="diagram-zone">
+          <img src="${d.diagramImg}" alt="實驗設計圖">
+          <div class="caption-label">${escapeHtml(d.diagramCaption || '圖 1：實驗架構配置與研究設計圖')}</div>
+        </div>
+        ` : `
+        <div class="diagram-zone" style="padding: 24px 0; color: #64748b;">
+          <span>（本專案未附加手繪草圖或現地配置照片）</span>
+        </div>
+        `}
+      </div>
+    </div>
+
+    <!-- 教師評量規準與簽章回饋欄 -->
+    <div class="rubric-card">
+      <div style="font-weight: 800; font-size: 0.98rem; margin-bottom: 6px;">📋 108 課綱探究與實作：教師多元評量規準與回饋欄</div>
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>評量向度</th>
+            <th>題目具體度 (15%)</th>
+            <th>假說可驗證性 (15%)</th>
+            <th>變因控制嚴謹度 (20%)</th>
+            <th>步驟可行性 (20%)</th>
+            <th>設計圖清晰度 (20%)</th>
+            <th>學術倫理與省思 (10%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>評等 / 得分</strong></td>
+            <td>□優 □良 □待加強</td>
+            <td>□優 □良 □待加強</td>
+            <td>□優 □良 □待加強</td>
+            <td>□優 □良 □待加強</td>
+            <td>□優 □良 □待加強</td>
+            <td>□符合規範</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="teacher-sig-row">
+        <div>教師質性評語與具體修正建議：____________________________________________________</div>
+        <div>指導教師簽名：____________ 日期：____年____月____日</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function downloadThisHtml() {
+      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '${escapeHtml(safeTopic).replace(/[\\/:*?"<>|]/g, '_')}_探究學習單.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>`;
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // 開啟匯出中心彈窗
+  function openExportModal() {
+    const data = getWorksheetData();
+    const summaryTopic = document.getElementById('exportSummaryTopic');
+    const summarySchool = document.getElementById('exportSummarySchool');
+    const summaryMembers = document.getElementById('exportSummaryMembers');
+    const summaryDate = document.getElementById('exportSummaryDate');
+    const summaryDiagram = document.getElementById('exportSummaryDiagram');
+
+    if (summaryTopic) summaryTopic.textContent = data.topic || '（尚未擬定研究題目）';
+    if (summarySchool) summarySchool.textContent = data.school || '國立新化高工';
+    if (summaryMembers) summaryMembers.textContent = data.members || '（未填寫組員）';
+    if (summaryDate) summaryDate.textContent = data.date || new Date().toISOString().split('T')[0];
+    if (summaryDiagram) {
+      summaryDiagram.textContent = data.diagramImg ? `✅ 已附加 (${data.diagramCaption || '圖說未填'})` : '未附加';
+    }
+
+    if (exportModal) {
+      exportModal.style.display = 'flex';
+      exportModal.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeExportModal() {
+    if (exportModal) {
+      exportModal.style.display = 'none';
+      exportModal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  // 匯出功能主要入口呼叫
   function triggerExport() {
-    window.print();
+    openExportModal();
   }
 
   if (generatePdfBtn) generatePdfBtn.addEventListener('click', triggerExport);
   if (exportWorksheetBtn) exportWorksheetBtn.addEventListener('click', triggerExport);
+  if (closeExportModalBtn) closeExportModalBtn.addEventListener('click', closeExportModal);
+  if (modalDismissBtn) modalDismissBtn.addEventListener('click', closeExportModal);
+
+  // 點擊遮罩外圍關閉
+  if (exportModal) {
+    exportModal.addEventListener('click', (e) => {
+      if (e.target === exportModal) {
+        closeExportModal();
+      }
+    });
+  }
+
+  // 選項 1：在新分頁開啟獨立 A4 列印頁面（專為 iPad Safari 最佳化）
+  if (openPrintTabBtn) {
+    openPrintTabBtn.addEventListener('click', () => {
+      const data = getWorksheetData();
+      const htmlContent = generateStandaloneWorksheetHtml(data);
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const newWin = window.open(blobUrl, '_blank');
+      if (!newWin) {
+        // 若被 iPad 瀏覽器阻擋快顯，降級改用直接列印
+        syncPrintMirrorValues();
+        window.print();
+      }
+    });
+  }
+
+  // 選項 2：直接喚起系統列印視窗 (AirPrint)
+  if (directPrintBtn) {
+    directPrintBtn.addEventListener('click', () => {
+      closeExportModal();
+      syncPrintMirrorValues();
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    });
+  }
+
+  // 選項 3：下載獨立 HTML 離線檔案
+  if (downloadHtmlBtn) {
+    downloadHtmlBtn.addEventListener('click', () => {
+      const data = getWorksheetData();
+      const htmlContent = generateStandaloneWorksheetHtml(data);
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const filename = (data.topic || '探究學習單').replace(/[\\/:*?"<>|]/g, '_') + '_' + data.date + '.html';
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      showToast('📥 學習單 HTML 離線檔已成功下載！可離線檢視或直接繳交至 Google Classroom。');
+    });
+  }
+
+  // 選項 4：一鍵複製全文 (純文字 / Markdown 格式)
+  if (copyTextBtn) {
+    copyTextBtn.addEventListener('click', () => {
+      const d = getWorksheetData();
+      const markdown = `【高中探究與實作：專案研究企劃學習單】
+學校/班級：${d.school}
+組員名單：${d.members}
+實作日期：${d.date}
+
+■ 區塊 A：研究題目 (Research Title)
+${d.topic || '(未填寫)'}
+
+■ 區塊 B：研究動機與問題意識 (Motivation)
+${d.motivation || '(未填寫)'}
+
+■ 區塊 C：核心假說 (Hypothesis)
+${d.hypothesis || '(未填寫)'}
+
+■ 區塊 D：研究變因嚴格定義 (Variables)
+- 操縱變因 (IV)：${d.iv || '無'}
+- 應變變因 (DV)：${d.dv || '無'}
+- 控制變因 (CV)：${d.cv || '無'}
+
+■ 區塊 E：研究方法與步驟簡述 (Methodology)
+方法類型：${d.methodType}
+具體步驟：${d.methodDetail || '(未填寫)'}
+
+■ 區塊 F：預期成果與潛在限制 (Limitations)
+${d.limitation || '(未填寫)'}
+
+■ 區塊 G：科學原理簡述及實驗設計圖 (Principles & Diagram)
+原理機制：${d.principles || '(未填寫)'}
+設計圖說：${d.diagramCaption || '無'}
+實驗圖檔：${d.diagramImg ? '已附加圖像' : '未附加'}
+`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(markdown).then(() => {
+          if (copyBtnText) copyBtnText.textContent = '✅ 已複製全文！';
+          showToast('📋 學習單全文已複製到剪貼簿！可直接貼至 Google Docs、Word 或學習歷程。');
+          setTimeout(() => {
+            if (copyBtnText) copyBtnText.textContent = '複製全文到剪貼簿';
+          }, 3000);
+        }).catch(() => {
+          fallbackCopyText(markdown);
+        });
+      } else {
+        fallbackCopyText(markdown);
+      }
+    });
+  }
+
+  function fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (copyBtnText) copyBtnText.textContent = '✅ 已複製全文！';
+      showToast('📋 學習單全文已複製到剪貼簿！');
+      setTimeout(() => {
+        if (copyBtnText) copyBtnText.textContent = '複製全文到剪貼簿';
+      }, 3000);
+    } catch (e) {
+      alert('無法存取剪貼簿，請手動複製！');
+    }
+    document.body.removeChild(ta);
+  }
+
+  // 選項 5：下載 JSON 專案檔
+  if (downloadJsonBtn) {
+    downloadJsonBtn.addEventListener('click', () => {
+      const data = getWorksheetData();
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const filename = (data.topic || '探究專案備份').replace(/[\\/:*?"<>|]/g, '_') + '_' + data.date + '.json';
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      showToast('💾 專案 JSON 備份檔已下載！下次可在任何設備上「匯入 JSON 檔」還原。');
+    });
+  }
+
+  // 選項 5：匯入 JSON 專案檔
+  if (importJsonInput) {
+    importJsonInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const d = JSON.parse(evt.target.result);
+          if (document.getElementById('canvasSchool')) document.getElementById('canvasSchool').value = d.school || '';
+          if (document.getElementById('canvasMembers')) document.getElementById('canvasMembers').value = d.members || '';
+          if (document.getElementById('canvasDate')) document.getElementById('canvasDate').value = d.date || '';
+          if (inputTopic) inputTopic.value = d.topic || '';
+          if (inputMotivation) inputMotivation.value = d.motivation || '';
+          if (inputHypothesis) inputHypothesis.value = d.hypothesis || '';
+          if (inputIV) inputIV.value = d.iv || '';
+          if (inputDV) inputDV.value = d.dv || '';
+          if (inputCV) inputCV.value = d.cv || '';
+          if (selectMethodType) selectMethodType.value = d.methodType || '實驗法';
+          if (inputMethodDetail) inputMethodDetail.value = d.methodDetail || '';
+          if (inputLimitation) inputLimitation.value = d.limitation || '';
+          if (inputPrinciples) inputPrinciples.value = d.principles || '';
+          if (inputDiagramCaption) inputDiagramCaption.value = d.diagramCaption || '';
+          if (d.diagramImg) setDiagramImage(d.diagramImg, d.diagramCaption || '');
+
+          closeExportModal();
+          showToast('🎉 專案資料已成功還原至畫布中！');
+          if (diagnoseBtn) diagnoseBtn.click();
+        } catch (err) {
+          alert('匯入失敗：無效的 JSON 專案備份檔！');
+        }
+      };
+      reader.readAsText(file);
+      importJsonInput.value = '';
+    });
+  }
 
   /* ==========================================================================
      8. 教師簡報模式 (Full-Screen Presentation Deck Mode)
