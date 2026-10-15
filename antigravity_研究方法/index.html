@@ -45,10 +45,10 @@
           <span id="navTimerDisplay">90:00</span>
         </button>
 
-        <!-- 列印/匯出學習單按鈕 -->
-        <button id="exportWorksheetBtn" class="btn btn-primary" title="匯出本課學習單">
-          <span class="btn-icon">📄</span>
-          <span>產生學習單</span>
+        <!-- 存成 PDF 按鈕 -->
+        <button id="exportWorksheetBtn" class="btn btn-primary" title="存成 PDF 學習單">
+          <span class="btn-icon">📥</span>
+          <span>存成 PDF</span>
         </button>
       </div>
     </div>
@@ -667,7 +667,7 @@
         <div class="section-header">
           <span class="section-tag">Part 4 (70-85 min)</span>
           <h2 class="section-title">課堂實戰：打造你自己的「研究架構畫布」(Research Canvas)</h2>
-          <p class="section-desc">請分組或個人即時填寫研究構想，系統會即時檢核變因邏輯，並能直接下載/列印成專屬探究實作學習單！</p>
+          <p class="section-desc">請分組或個人即時填寫研究構想，系統會即時檢核變因邏輯，並能直接存成專屬探究實作學習單 (PDF)！</p>
         </div>
 
         <div class="canvas-wrapper">
@@ -846,8 +846,15 @@
             <button type="button" class="btn btn-outline" id="clearCanvasBtn">清空內容</button>
             <div class="btn-group">
               <button type="button" class="btn btn-secondary" id="saveDraftBtn">儲存暫存檔</button>
+              <button type="button" class="btn btn-outline" id="downloadJsonBtn" title="下載專案 JSON 備份檔">備份 JSON</button>
+              <label class="btn btn-outline" for="importJsonInput" style="cursor: pointer; margin: 0;" title="匯入已備份的 JSON 檔">
+                <span>匯入 JSON</span>
+                <input type="file" id="importJsonInput" accept=".json" class="visually-hidden-file">
+              </label>
+              <button type="button" class="btn btn-outline" id="copyMarkdownBtn" title="複製學習單全文">複製全文</button>
               <button type="button" class="btn btn-primary btn-lg" id="generatePdfBtn">
-                <span>🖨️ 列印 / 匯出專屬探究學習單</span>
+                <span class="btn-icon">📥</span>
+                <span>存成 PDF</span>
               </button>
             </div>
           </div>
@@ -968,174 +975,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- 學習單多元匯出與列印中心彈窗 (Worksheet Export Modal for iPad & All Devices) -->
-  <div class="modal-overlay" id="exportModal" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <span class="modal-icon">📑</span>
-          <div>
-            <h3 class="modal-title">探究學習單：列印與多元匯出中心</h3>
-            <p class="modal-subtitle">支援 iPad/平板、手機與電腦，提供 A4 獨立列印頁、AirPrint、離線 HTML 檔與全文複製</p>
-          </div>
-        </div>
-        <button type="button" class="modal-close-btn" id="closeExportModalBtn" aria-label="關閉視窗">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- 學習單基本資訊預覽卡 -->
-        <div class="export-summary-card">
-          <div class="summary-item">
-            <span class="label">研究題目：</span>
-            <strong id="exportSummaryTopic" class="summary-val text-primary">(尚未填寫題目)</strong>
-          </div>
-          <div class="summary-grid">
-            <div><span class="label">學校/班級：</span><span id="exportSummarySchool">-</span></div>
-            <div><span class="label">組員姓名：</span><span id="exportSummaryMembers">-</span></div>
-            <div><span class="label">實作日期：</span><span id="exportSummaryDate">-</span></div>
-            <div><span class="label">實驗設計圖：</span><span id="exportSummaryDiagram">未附加</span></div>
-          </div>
-        </div>
-
-        <!-- iPad 專屬友善提示 -->
-        <div class="ipad-tip-banner">
-          <span class="tip-icon">💡</span>
-          <div class="tip-content">
-            <strong>📱 iPad 學生輸出 PDF 指南：</strong>
-            <ul style="margin: 4px 0 0 16px; padding: 0;">
-              <li><strong>一鍵存成 PDF：</strong>直接點擊下方「<strong>📥 立即下載 PDF 檔</strong>」，Safari 會直接跳出下載視窗，點選「<strong>下載</strong>」後即可在 iPad 的<strong>「檔案」App ➔「下載項目」</strong>中找到正式 A4 PDF 學習單，能直接上傳至 Google Classroom！</li>
-              <li><strong>免印表機/另存：</strong>亦可點選「<strong>👁️ 線上預覽 A4 版面</strong>」免跳頁檢視，或使用「<strong>🖨️ AirPrint 列印</strong>」在預覽畫面上用兩指往外撥開放大，分享存成 PDF。</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- 匯出方式選項格 (Export Options Grid) -->
-        <div class="export-options-grid">
-          <!-- 選項 1：立即產出並下載正式 PDF 檔案 (iPad 首選推薦) -->
-          <div class="export-card primary-card">
-            <div class="export-card-icon">📥</div>
-            <div class="export-card-info">
-              <div class="badge-tag" style="display: inline-block; background: #2563eb; color: #ffffff; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px;">iPad / 電腦學生首選</div>
-              <h4>產出並下載 PDF 學習單 (.pdf)</h4>
-              <p>自動將研究題目、動機假說、變因表格、實驗設計圖與教師評分規準完整轉為標準 A4 PDF 檔案！直接存入 iPad「檔案」App 或繳交至 Google Classroom。</p>
-            </div>
-            <button type="button" class="btn btn-primary btn-lg" id="downloadPdfBtn">
-              <span>📥 立即下載 PDF 檔</span>
-            </button>
-          </div>
-
-          <!-- 選項 2：在線預覽 A4 學習單 (iPad 友善免跳頁) -->
-          <div class="export-card">
-            <div class="export-card-icon">👁️</div>
-            <div class="export-card-info">
-              <h4>線上預覽 / 檢視 A4 版面</h4>
-              <p>在頁面內即時檢視正式 A4 排版，防止 iPad Safari 阻擋彈出視窗，並可於預覽視窗內一鍵列印或下載 PDF。</p>
-            </div>
-            <button type="button" class="btn btn-outline" id="openPreviewModalBtn">
-              <span>開啟 A4 預覽</span>
-            </button>
-          </div>
-
-          <!-- 選項 3：直接呼叫系統列印 (AirPrint / 印表機) -->
-          <div class="export-card">
-            <div class="export-card-icon">🖨️</div>
-            <div class="export-card-info">
-              <h4>AirPrint / 系統直接列印</h4>
-              <p>直接喚起 iPad AirPrint 或印表機列印。已精緻化 A4 格式與評量規準，不印出網站多餘選單。</p>
-            </div>
-            <button type="button" class="btn btn-outline" id="directPrintBtn">
-              <span>叫出列印視窗</span>
-            </button>
-          </div>
-
-          <!-- 選項 4：在新分頁開啟獨立 A4 網頁 -->
-          <div class="export-card">
-            <div class="export-card-icon">🌐</div>
-            <div class="export-card-info">
-              <h4>在新分頁開啟獨立 A4 網頁</h4>
-              <p>在新分頁生成獨立純 HTML 學習單頁面，支援瀏覽器長按儲存或列印（已修復 iPad Safari 阻擋問題）。</p>
-            </div>
-            <button type="button" class="btn btn-outline" id="openPrintTabBtn">
-              <span>新分頁開啟</span>
-            </button>
-          </div>
-
-          <!-- 選項 5：下載 HTML 離線學習單檔 -->
-          <div class="export-card">
-            <div class="export-card-icon">📄</div>
-            <div class="export-card-info">
-              <h4>下載 HTML 離線學習單檔</h4>
-              <p>將完整學習單（含手繪照片與格式）打包為單一 HTML 檔案下載至本機，隨時可離線預覽或繳交。</p>
-            </div>
-            <button type="button" class="btn btn-outline" id="downloadHtmlBtn">
-              <span>下載 HTML 檔</span>
-            </button>
-          </div>
-
-          <!-- 選項 6：一鍵複製全文 (Markdown / 純文字) -->
-          <div class="export-card">
-            <div class="export-card-icon">📋</div>
-            <div class="export-card-info">
-              <h4>複製學習單全文 (純文字 / Markdown)</h4>
-              <p>完整包含 A~G 七大核心架構，一鍵複製後可直接貼到 Google Docs、Pages、Word 或學習歷程檔案多元表現。</p>
-            </div>
-            <button type="button" class="btn btn-outline" id="copyTextBtn">
-              <span id="copyBtnText">複製全文到剪貼簿</span>
-            </button>
-          </div>
-
-          <!-- 選項 7：匯出 JSON 專案檔與備份 -->
-          <div class="export-card">
-            <div class="export-card-icon">💾</div>
-            <div class="export-card-info">
-              <h4>專案備份與還原 (JSON 格式)</h4>
-              <p>下載完整專案設定檔，下次使用不同 iPad 或載具時，點擊「匯入專案」即可瞬間還原所有內容繼續填寫。</p>
-            </div>
-            <div class="export-card-actions">
-              <button type="button" class="btn btn-sm btn-outline" id="downloadJsonBtn">下載 JSON 檔</button>
-              <label class="btn btn-sm btn-outline" for="importJsonInput" style="cursor: pointer; margin: 0;">
-                <span>匯入 JSON 檔</span>
-                <input type="file" id="importJsonInput" accept=".json" class="visually-hidden-file">
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <span class="text-light" style="font-size: 0.82rem;">108 課綱探究與實作標準格式 · 支援跨載具離線作業與 PDF 匯出</span>
-        <button type="button" class="btn btn-outline" id="modalDismissBtn">關閉視窗</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 全螢幕 A4 學習單即時預覽彈窗 (iPad 友善免跳頁) -->
-  <div class="modal-overlay" id="worksheetPreviewModal" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog modal-dialog-lg" style="max-width: 900px; height: 92vh;">
-      <div class="modal-header">
-        <div class="modal-title-group">
-          <span class="modal-icon">📄</span>
-          <div>
-            <h3 class="modal-title">探究學習單：A4 版面即時預覽</h3>
-            <p class="modal-subtitle">已整合完整架構、變因定義、實驗設計圖與教師評分規準</p>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-primary btn-sm" id="previewDownloadPdfBtn">
-            <span>📥 下載 PDF 檔</span>
-          </button>
-          <button type="button" class="btn btn-outline btn-sm" id="previewPrintBtn">
-            <span>🖨️ AirPrint 列印</span>
-          </button>
-          <button type="button" class="modal-close-btn" id="closeWorksheetPreviewBtn" aria-label="關閉預覽">&times;</button>
-        </div>
-      </div>
-      <div class="modal-body" style="background: #f1f5f9; padding: 20px; overflow-y: auto;">
-        <div id="worksheetPreviewContainer"></div>
-      </div>
-    </div>
-  </div>
 
   <!-- 提示氣泡 (Toast Notification) -->
   <div class="toast-notification" id="toastNotification" aria-live="polite"></div>
