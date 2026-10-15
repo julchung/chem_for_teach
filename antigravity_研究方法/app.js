@@ -270,9 +270,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveDraftBtn = document.getElementById('saveDraftBtn');
   const generatePdfBtn = document.getElementById('generatePdfBtn');
   const exportWorksheetBtn = document.getElementById('exportWorksheetBtn');
-  const downloadJsonBtn = document.getElementById('downloadJsonBtn');
-  const importJsonInput = document.getElementById('importJsonInput');
-  const copyMarkdownBtn = document.getElementById('copyMarkdownBtn');
 
   // 實驗設計圖顯示與預覽輔助函式
   function setDiagramImage(src, captionText) {
@@ -857,433 +854,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('beforeprint', syncPrintMirrorValues);
 
-  // 取得學習單標準排版樣式字串 (A4 排版專用，嚴格防範裁切與跨頁截斷)
-  function getWorksheetInlineCss() {
-    return `
-    *, *:before, *:after {
-      box-sizing: border-box;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    
-    .worksheet-document {
-      width: 720px;
-      max-width: 100%;
-      margin: 0 auto;
-      background: #ffffff;
-    }
-
-    .a4-sheet-page {
-      width: 720px;
-      max-width: 100%;
-      background: #ffffff;
-      padding: 16px 20px;
-      border: 1.5px solid #000000;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      color: #0f172a;
-      line-height: 1.42;
-      position: relative;
-    }
-
-    .sheet-header {
-      border-bottom: 2px solid #000000;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .sheet-school {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #334155;
-      letter-spacing: 0.5px;
-      margin-bottom: 2px;
-    }
-    .sheet-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin: 0 0 6px 0;
-      color: #000000;
-    }
-    .sheet-meta-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 0.88rem;
-      margin-top: 6px;
-      text-align: left;
-      border-top: 1px dashed #94a3b8;
-      padding-top: 6px;
-    }
-    .sheet-meta-row .meta-item {
-      flex: 1;
-    }
-    .meta-item strong { color: #000000; }
-
-    .sheet-header-p2 {
-      border-bottom: 1.5px solid #000000;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-    .sheet-header-p2 h2 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #000000;
-    }
-    .sheet-header-p2 .p2-meta {
-      font-size: 0.85rem;
-      color: #475569;
-      font-weight: 600;
-    }
-
-    .worksheet-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .worksheet-row {
-      display: flex;
-      gap: 6px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .block-card {
-      border: 1.5px solid #000000;
-      padding: 6px 10px;
-      background: #ffffff;
-      box-sizing: border-box;
-    }
-    .block-card.col-full {
-      width: 100%;
-      flex: 1 1 100%;
-    }
-    .block-card.col-half {
-      width: calc(50% - 3px);
-      flex: 0 0 calc(50% - 3px);
-    }
-
-    .block-head {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-      border-bottom: 1px solid #cbd5e1;
-      padding-bottom: 3px;
-    }
-    .badge-num {
-      width: 18px;
-      height: 18px;
-      background: #000000;
-      color: #ffffff;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-    .block-head h3 {
-      margin: 0;
-      font-size: 0.9rem;
-      font-weight: 800;
-      color: #000000;
-    }
-    .block-content {
-      font-size: 0.85rem;
-      line-height: 1.45;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #0f172a;
-      min-height: 18px;
-    }
-    .block-content.empty {
-      color: #94a3b8;
-      font-style: italic;
-    }
-
-    .vars-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 2px;
-    }
-    .vars-table th, .vars-table td {
-      border: 1px solid #000000;
-      padding: 4px 6px;
-      font-size: 0.84rem;
-      text-align: left;
-    }
-    .vars-table th {
-      background: #f1f5f9;
-      font-weight: 800;
-      width: 28%;
-    }
-
-    .diagram-zone {
-      text-align: center;
-      margin-top: 4px;
-      padding: 4px;
-      border: 1px dashed #64748b;
-      background: #fafafa;
-    }
-    .diagram-zone img {
-      max-width: 100%;
-      max-height: 200px;
-      height: auto;
-      width: auto;
-      object-fit: contain;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      display: block;
-      margin: 0 auto;
-    }
-    .caption-label {
-      margin-top: 4px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .rubric-card {
-      border: 1.5px solid #000000;
-      padding: 8px 10px;
-      background: #ffffff;
-      box-sizing: border-box;
-      width: 100%;
-      flex: 1 1 100%;
-    }
-    .rubric-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 4px;
-      font-size: 0.78rem;
-    }
-    .rubric-table th, .rubric-table td {
-      border: 1px solid #000000;
-      padding: 4px 4px;
-      text-align: center;
-    }
-    .rubric-table th {
-      background: #f8fafc;
-      font-weight: 800;
-    }
-    .teacher-sig-row {
-      margin-top: 6px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      font-weight: 700;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    .page-footer {
-      margin-top: 8px;
-      padding-top: 4px;
-      border-top: 1px dotted #94a3b8;
-      font-size: 0.75rem;
-      color: #64748b;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .html2pdf__page-break {
-      height: 0;
-      page-break-before: always;
-      break-before: page;
-      margin: 0;
-      padding: 0;
-      border: none;
-    }
-    `;
-  }
-
-  // 產生純 A4 雙頁標準學習單核心 HTML DOM (供 PDF 轉譯)
-  function generateWorksheetBodyHtml(d) {
-    const safeTopic = d.topic || '探究與實作研究企劃學習單';
-    const hasImage = Boolean(d.diagramImg);
-
-    return `
-    <div class="worksheet-document">
-      <!-- 第 1 頁：研究規劃與變因定義 -->
-      <div class="a4-sheet-page sheet-page-1">
-        <div class="sheet-header">
-          <div class="sheet-school">${escapeHtml(d.school)}</div>
-          <h1 class="sheet-title">普通型高中探究與實作：專案研究企劃學習單</h1>
-          <div class="sheet-meta-row">
-            <div class="meta-item"><strong>組員姓名：</strong>${escapeHtml(d.members)}</div>
-            <div class="meta-item"><strong>實作日期：</strong>${escapeHtml(d.date)}</div>
-            <div class="meta-item"><strong>研究方法：</strong>${escapeHtml(d.methodType)}</div>
-          </div>
-        </div>
-
-        <div class="worksheet-rows">
-          <!-- Row 1: 區塊 A：研究題目 (Full Width) -->
-          <div class="worksheet-row">
-            <div class="block-card col-full">
-              <div class="block-head">
-                <span class="badge-num">A</span>
-                <h3>研究題目 (Research Title)</h3>
-              </div>
-              <div class="block-content" style="font-size: 1.05rem; font-weight: 700;">${escapeHtml(d.topic) || '<span class="empty">（未填寫題目）</span>'}</div>
-            </div>
-          </div>
-
-          <!-- Row 2: 區塊 B 動機 + 區塊 C 假說 (Two Columns) -->
-          <div class="worksheet-row">
-            <div class="block-card col-half">
-              <div class="block-head">
-                <span class="badge-num">B</span>
-                <h3>研究動機與問題意識 (Motivation)</h3>
-              </div>
-              <div class="block-content">${escapeHtml(d.motivation) || '<span class="empty">（未填寫動機）</span>'}</div>
-            </div>
-            <div class="block-card col-half">
-              <div class="block-head">
-                <span class="badge-num">C</span>
-                <h3>核心假說 (Hypothesis)</h3>
-              </div>
-              <div class="block-content">${escapeHtml(d.hypothesis) || '<span class="empty">（未填寫假說）</span>'}</div>
-            </div>
-          </div>
-
-          <!-- Row 3: 區塊 D：變因設定表格 (Full Width) -->
-          <div class="worksheet-row">
-            <div class="block-card col-full">
-              <div class="block-head">
-                <span class="badge-num">D</span>
-                <h3>研究變因嚴格定義 (Variables Setup)</h3>
-              </div>
-              <table class="vars-table">
-                <tr>
-                  <th>操縱變因 (IV - 唯一改變)</th>
-                  <td>${escapeHtml(d.iv) || '—'}</td>
-                </tr>
-                <tr>
-                  <th>應變變因 (DV - 客觀指標)</th>
-                  <td>${escapeHtml(d.dv) || '—'}</td>
-                </tr>
-                <tr>
-                  <th>控制變因 (CV - 嚴格固定)</th>
-                  <td>${escapeHtml(d.cv) || '—'}</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-
-          <!-- Row 4: 區塊 E 方法步驟 + 區塊 F 預期成果 (Two Columns) -->
-          <div class="worksheet-row">
-            <div class="block-card col-half">
-              <div class="block-head">
-                <span class="badge-num">E</span>
-                <h3>研究方法與步驟簡述 (Methodology)</h3>
-              </div>
-              <div class="block-content"><strong>【類型】</strong> ${escapeHtml(d.methodType)}<br>${escapeHtml(d.methodDetail) || '<span class="empty">（未填寫步驟）</span>'}</div>
-            </div>
-            <div class="block-card col-half">
-              <div class="block-head">
-                <span class="badge-num">F</span>
-                <h3>預期成果與潛在限制 (Limitations)</h3>
-              </div>
-              <div class="block-content">${escapeHtml(d.limitation) || '<span class="empty">（未填寫成果與限制）</span>'}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="page-footer">
-          <span>108 課綱探究與實作學習單 · Part 1 專案研究架構規劃</span>
-          <span>第 1 頁，共 2 頁</span>
-        </div>
-      </div>
-
-      <!-- 精準分頁標籤 -->
-      <div class="html2pdf__page-break"></div>
-
-      <!-- 第 2 頁：實驗設計圖與教師評量規準 -->
-      <div class="a4-sheet-page sheet-page-2">
-        <div class="sheet-header-p2">
-          <div>
-            <h2>Part 2 實驗架構配置圖與多元評量規準</h2>
-            <div class="p2-meta">${escapeHtml(d.school)} · ${escapeHtml(d.members)}</div>
-          </div>
-          <div class="p2-meta" style="font-weight: 700; color: #000;">第 2 頁，共 2 頁</div>
-        </div>
-
-        <div class="worksheet-rows">
-          <!-- 區塊 G：科學原理與實驗設計圖 (Full Width) -->
-          <div class="worksheet-row">
-            <div class="block-card col-full">
-              <div class="block-head">
-                <span class="badge-num">G</span>
-                <h3>科學原理簡述及實驗設計配置圖 (Principles & Diagram)</h3>
-              </div>
-              <div class="block-content" style="margin-bottom: 6px;"><strong>【科學原理 / 理論模型機制】</strong><br>${escapeHtml(d.principles) || '<span class="empty">（未填寫原理）</span>'}</div>
-              ${hasImage ? `
-              <div class="diagram-zone">
-                <img src="${d.diagramImg}" alt="實驗設計圖">
-                <div class="caption-label">${escapeHtml(d.diagramCaption || '圖 1：實驗架構配置與研究設計圖')}</div>
-              </div>
-              ` : `
-              <div class="diagram-zone" style="padding: 16px 0; color: #64748b;">
-                <span>（本專案未附加手繪草圖或現地配置照片）</span>
-              </div>
-              `}
-            </div>
-          </div>
-
-          <!-- 教師評量規準與簽章回饋欄 (Full Width) -->
-          <div class="worksheet-row">
-            <div class="rubric-card col-full">
-              <div style="font-weight: 800; font-size: 0.92rem; margin-bottom: 4px;">📋 108 課綱探究與實作：教師多元評量規準與回饋欄</div>
-              <table class="rubric-table">
-                <thead>
-                  <tr>
-                    <th>評量向度</th>
-                    <th>題目具體度 (15%)</th>
-                    <th>假說可驗證性 (15%)</th>
-                    <th>變因控制嚴謹度 (20%)</th>
-                    <th>步驟可行性 (20%)</th>
-                    <th>設計圖清晰度 (20%)</th>
-                    <th>學術倫理與省思 (10%)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>評等 / 得分</strong></td>
-                    <td>□優 □良 □待加強</td>
-                    <td>□優 □良 □待加強</td>
-                    <td>□優 □良 □待加強</td>
-                    <td>□優 □良 □待加強</td>
-                    <td>□優 □良 □待加強</td>
-                    <td>□符合規範</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="teacher-sig-row">
-                <div>教師質性評語與建議：____________________________________________</div>
-                <div>指導教師簽名：____________ 日期：____年____月____日</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="page-footer">
-          <span>專案主題：${escapeHtml(d.topic || '探究與實作專案')}</span>
-          <span>第 2 頁，共 2 頁</span>
-        </div>
-      </div>
-    </div>
-    `;
-  }
-
+  // ==========================================================================
+  // 學習單 HTML 模板生成器 (A4 專用，表格化排版，防截斷與裁切)
+  // ==========================================================================
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -1294,8 +867,201 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/'/g, '&#039;');
   }
 
+  // 產生第 1 頁 HTML (研究題目、動機、假說、變因設定、方法步驟、預期成果)
+  function generateSheet1Html(d) {
+    return `
+    <div class="a4-sheet-page" style="width: 700px; box-sizing: border-box; background: #ffffff; padding: 14px 18px; border: 1.5px solid #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', 'PingFang TC', sans-serif; color: #0f172a; line-height: 1.38;">
+      <!-- 頂部校名與標題 -->
+      <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 6px; margin-bottom: 8px;">
+        <div style="font-size: 13px; font-weight: 700; color: #334155; letter-spacing: 0.5px;">${escapeHtml(d.school)}</div>
+        <div style="font-size: 18px; font-weight: 900; margin: 3px 0 6px 0; color: #000000;">普通型高中探究與實作：專案研究企劃學習單</div>
+        <table width="100%" style="border-top: 1px dashed #94a3b8; padding-top: 5px; font-size: 12px; text-align: left; border-collapse: collapse;">
+          <tr>
+            <td width="38%"><strong>組員姓名：</strong>${escapeHtml(d.members)}</td>
+            <td width="32%"><strong>實作日期：</strong>${escapeHtml(d.date)}</td>
+            <td width="30%"><strong>研究方法：</strong>${escapeHtml(d.methodType)}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 區塊 A：研究題目 (全寬) -->
+      <div style="border: 1.5px solid #000000; padding: 6px 10px; margin-bottom: 6px; background: #ffffff; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">A</span>
+          <strong style="font-size: 12.5px; color: #000000;">研究題目 (Research Title)</strong>
+        </div>
+        <div style="font-size: 14px; font-weight: 700; color: #0f172a; min-height: 20px; word-break: break-word;">${escapeHtml(d.topic) || '<span style="color:#94a3b8; font-style:italic;">（未填寫題目）</span>'}</div>
+      </div>
+
+      <!-- 區塊 B 動機 + 區塊 C 假說 (雙欄並排表格) -->
+      <table width="100%" style="border-collapse: collapse; margin-bottom: 6px; table-layout: fixed;">
+        <tr>
+          <td width="50%" valign="top" style="padding-right: 3px;">
+            <div style="border: 1.5px solid #000000; padding: 6px 10px; min-height: 125px; box-sizing: border-box; background: #ffffff;">
+              <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">B</span>
+                <strong style="font-size: 12px; color: #000000;">研究動機與問題意識 (Motivation)</strong>
+              </div>
+              <div style="font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">${escapeHtml(d.motivation) || '<span style="color:#94a3b8; font-style:italic;">（未填寫動機）</span>'}</div>
+            </div>
+          </td>
+          <td width="50%" valign="top" style="padding-left: 3px;">
+            <div style="border: 1.5px solid #000000; padding: 6px 10px; min-height: 125px; box-sizing: border-box; background: #ffffff;">
+              <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">C</span>
+                <strong style="font-size: 12px; color: #000000;">核心假說 (Hypothesis)</strong>
+              </div>
+              <div style="font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">${escapeHtml(d.hypothesis) || '<span style="color:#94a3b8; font-style:italic;">（未填寫假說）</span>'}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- 區塊 D：研究變因設定 (表格) -->
+      <div style="border: 1.5px solid #000000; padding: 6px 10px; margin-bottom: 6px; background: #ffffff; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">D</span>
+          <strong style="font-size: 12px; color: #000000;">研究變因嚴格定義 (Variables Setup)</strong>
+        </div>
+        <table width="100%" style="border-collapse: collapse; font-size: 11.5px; margin-top: 2px;">
+          <tr>
+            <th width="28%" style="border: 1px solid #000000; padding: 3px 6px; background: #f1f5f9; text-align: left; font-weight: 800;">操縱變因 (IV - 唯一改變)</th>
+            <td style="border: 1px solid #000000; padding: 3px 6px; word-break: break-word;">${escapeHtml(d.iv) || '—'}</td>
+          </tr>
+          <tr>
+            <th width="28%" style="border: 1px solid #000000; padding: 3px 6px; background: #f1f5f9; text-align: left; font-weight: 800;">應變變因 (DV - 客觀指標)</th>
+            <td style="border: 1px solid #000000; padding: 3px 6px; word-break: break-word;">${escapeHtml(d.dv) || '—'}</td>
+          </tr>
+          <tr>
+            <th width="28%" style="border: 1px solid #000000; padding: 3px 6px; background: #f1f5f9; text-align: left; font-weight: 800;">控制變因 (CV - 嚴格固定)</th>
+            <td style="border: 1px solid #000000; padding: 3px 6px; word-break: break-word;">${escapeHtml(d.cv) || '—'}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 區塊 E 方法步驟 + 區塊 F 預期成果 (雙欄並排表格) -->
+      <table width="100%" style="border-collapse: collapse; margin-bottom: 6px; table-layout: fixed;">
+        <tr>
+          <td width="50%" valign="top" style="padding-right: 3px;">
+            <div style="border: 1.5px solid #000000; padding: 6px 10px; min-height: 115px; box-sizing: border-box; background: #ffffff;">
+              <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">E</span>
+                <strong style="font-size: 12px; color: #000000;">研究方法與步驟簡述 (Methodology)</strong>
+              </div>
+              <div style="font-size: 11.5px; line-height: 1.42; white-space: pre-wrap; word-break: break-word;">
+                <strong>【類型】</strong> ${escapeHtml(d.methodType)}<br>${escapeHtml(d.methodDetail) || '<span style="color:#94a3b8; font-style:italic;">（未填寫步驟）</span>'}
+              </div>
+            </div>
+          </td>
+          <td width="50%" valign="top" style="padding-left: 3px;">
+            <div style="border: 1.5px solid #000000; padding: 6px 10px; min-height: 115px; box-sizing: border-box; background: #ffffff;">
+              <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+                <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">F</span>
+                <strong style="font-size: 12px; color: #000000;">預期成果與潛在限制 (Limitations)</strong>
+              </div>
+              <div style="font-size: 11.5px; line-height: 1.42; white-space: pre-wrap; word-break: break-word;">${escapeHtml(d.limitation) || '<span style="color:#94a3b8; font-style:italic;">（未填寫成果與限制）</span>'}</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- 第 1 頁頁尾 -->
+      <div style="border-top: 1px dotted #94a3b8; padding-top: 4px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between;">
+        <span>108 課綱探究與實作學習單 · Part 1 專案研究架構規劃</span>
+        <span>第 1 頁，共 2 頁</span>
+      </div>
+    </div>
+    `;
+  }
+
+  // 產生第 2 頁 HTML (科學原理、實驗設計圖、教師多元評量規準)
+  function generateSheet2Html(d) {
+    const hasImage = Boolean(d.diagramImg);
+
+    return `
+    <div class="a4-sheet-page" style="width: 700px; box-sizing: border-box; background: #ffffff; padding: 14px 18px; border: 1.5px solid #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', 'PingFang TC', sans-serif; color: #0f172a; line-height: 1.38;">
+      <!-- 頂部頁籤標題 -->
+      <div style="border-bottom: 1.5px solid #000000; padding-bottom: 5px; margin-bottom: 8px;">
+        <table width="100%" style="border-collapse: collapse;">
+          <tr>
+            <td align="left">
+              <div style="font-size: 15px; font-weight: 800; color: #000000;">Part 2 實驗架構配置圖與多元評量規準</div>
+              <div style="font-size: 11.5px; color: #475569; font-weight: 600;">${escapeHtml(d.school)} · ${escapeHtml(d.members)}</div>
+            </td>
+            <td align="right" valign="top" style="font-size: 11.5px; font-weight: 700; color: #000000;">第 2 頁，共 2 頁</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 區塊 G：科學原理簡述及實驗設計配置圖 -->
+      <div style="border: 1.5px solid #000000; padding: 6px 10px; margin-bottom: 6px; background: #ffffff; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 4px;">
+          <span style="display: inline-block; width: 17px; height: 17px; background: #000000; color: #ffffff; border-radius: 50%; text-align: center; line-height: 17px; font-size: 11px; font-weight: 800; margin-right: 6px;">G</span>
+          <strong style="font-size: 12px; color: #000000;">科學原理簡述及實驗設計配置圖 (Principles & Diagram)</strong>
+        </div>
+        <div style="font-size: 11.5px; line-height: 1.4; margin-bottom: 6px; white-space: pre-wrap; word-break: break-word;">
+          <strong>【科學原理 / 理論模型機制】</strong><br>${escapeHtml(d.principles) || '<span style="color:#94a3b8; font-style:italic;">（未填寫原理）</span>'}
+        </div>
+        ${hasImage ? `
+        <div style="text-align: center; padding: 4px; border: 1px dashed #64748b; background: #fafafa; margin-top: 4px;">
+          <img src="${d.diagramImg}" alt="實驗設計圖" style="max-width: 100%; max-height: 180px; height: auto; width: auto; object-fit: contain; border: 1px solid #cbd5e1; background: #ffffff; display: block; margin: 0 auto;">
+          <div style="margin-top: 4px; font-size: 11px; font-weight: 700; color: #0f172a;">${escapeHtml(d.diagramCaption || '圖 1：實驗架構配置與研究設計圖')}</div>
+        </div>
+        ` : `
+        <div style="text-align: center; padding: 14px 0; border: 1px dashed #cbd5e1; background: #fafafa; color: #64748b; font-size: 11.5px;">
+          <span>（本專案未附加手繪草圖或現地配置照片）</span>
+        </div>
+        `}
+      </div>
+
+      <!-- 教師多元評量規準與回饋欄 (7項指標嚴格對齊) -->
+      <div style="border: 1.5px solid #000000; padding: 6px 10px; margin-bottom: 6px; background: #ffffff; box-sizing: border-box;">
+        <div style="font-weight: 800; font-size: 12px; margin-bottom: 4px;">📋 108 課綱探究與實作：教師多元評量規準與回饋欄</div>
+        <table width="100%" style="border-collapse: collapse; font-size: 10.5px; text-align: center;">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">評量向度</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">題目具體度 (15%)</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">假說可驗證性 (15%)</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">變因控制嚴謹度 (20%)</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">步驟可行性 (20%)</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">設計圖清晰度 (20%)</th>
+              <th style="border: 1px solid #000000; padding: 3px 2px; font-weight: 800;">學術倫理與省思 (10%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #000000; padding: 4px 2px; font-weight: 700;">評等 / 得分</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□優 □良<br>□待加強</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□優 □良<br>□待加強</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□優 □良<br>□待加強</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□優 □良<br>□待加強</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□優 □良<br>□待加強</td>
+              <td style="border: 1px solid #000000; padding: 4px 2px;">□符合規範</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 6px; font-size: 11px; font-weight: 700;">
+          <table width="100%" style="border-collapse: collapse;">
+            <tr>
+              <td width="65%">教師質性評語與建議：____________________________________</td>
+              <td width="35%" align="right">指導教師簽名：____________ 日期：____年____月____日</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 第 2 頁頁尾 -->
+      <div style="border-top: 1px dotted #94a3b8; padding-top: 4px; font-size: 11px; color: #64748b; display: flex; justify-content: space-between;">
+        <span>專案主題：${escapeHtml(d.topic || '探究與實作專案')}</span>
+        <span>第 2 頁，共 2 頁</span>
+      </div>
+    </div>
+    `;
+  }
+
   /* ==========================================================================
-     直接產出並下載真實雙頁 A4 PDF 檔案 (html2pdf Engine)
+     直接產出並下載真實雙頁 A4 PDF 檔案 (html2pdf 雙階段無裁切渲染)
      ========================================================================== */
   function generatePdfFromWorksheet(data) {
     if (!data) data = getWorksheetData();
@@ -1315,28 +1081,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showToast('⏳ 正在生成 A4 PDF 學習單，請稍候約 1~2 秒...');
 
-    // 使用絕對定位於畫面起點但以低透明度隱藏
-    const container = document.createElement('div');
-    container.id = 'pdfRenderElement';
-    container.style.position = 'absolute';
-    container.style.left = '0';
-    container.style.top = '0';
-    container.style.width = '720px';
-    container.style.zIndex = '-9999';
-    container.style.opacity = '0.01';
-    container.style.pointerEvents = 'none';
-    container.style.background = '#ffffff';
+    // 使用 fixed 定位於視窗頂部（隱蔽渲染），杜絕任何頁面滾動所造成的坐標計算偏差
+    const stagingArea = document.createElement('div');
+    stagingArea.id = 'pdfStagingArea';
+    stagingArea.style.position = 'fixed';
+    stagingArea.style.left = '0';
+    stagingArea.style.top = '0';
+    stagingArea.style.width = '700px';
+    stagingArea.style.zIndex = '-9999';
+    stagingArea.style.opacity = '0.01';
+    stagingArea.style.pointerEvents = 'none';
+    stagingArea.style.background = '#ffffff';
 
-    const styleTag = document.createElement('style');
-    styleTag.textContent = getWorksheetInlineCss();
-    container.appendChild(styleTag);
+    const page1 = document.createElement('div');
+    page1.className = 'pdf-page-container sheet-page-1';
+    page1.innerHTML = generateSheet1Html(data);
+    stagingArea.appendChild(page1);
 
-    const pageWrapper = document.createElement('div');
-    pageWrapper.innerHTML = generateWorksheetBodyHtml(data);
-    container.appendChild(pageWrapper);
-    document.body.appendChild(container);
+    const page2 = document.createElement('div');
+    page2.className = 'pdf-page-container sheet-page-2';
+    page2.innerHTML = generateSheet2Html(data);
+    stagingArea.appendChild(page2);
 
-    const images = Array.from(container.querySelectorAll('img'));
+    document.body.appendChild(stagingArea);
+
+    const images = Array.from(stagingArea.querySelectorAll('img'));
     const imgPromises = images.map(img => {
       if (img.complete) return Promise.resolve();
       return new Promise(resolve => {
@@ -1350,51 +1119,58 @@ document.addEventListener('DOMContentLoaded', () => {
         b.disabled = false;
         if (b.dataset.prevHtml) b.innerHTML = b.dataset.prevHtml;
       });
-      if (document.body.contains(container)) document.body.removeChild(container);
+      if (document.body.contains(stagingArea)) {
+        document.body.removeChild(stagingArea);
+      }
     };
 
     Promise.all(imgPromises).then(() => {
+      if (typeof html2pdf === 'undefined') {
+        resetBtns();
+        alert('尚未載入 PDF 轉譯套件，請確認網路連線或重新整理頁面！');
+        return;
+      }
+
       const opt = {
-        margin: [10, 10, 10, 10], // 10mm 均衡外距
+        margin: [8, 8, 8, 8], // 8mm 外距
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 2, // 雙倍採樣率，確保文字與圖表極致清晰
+          scale: 2, // 2x 高解析度繪製
           useCORS: true,
           logging: false,
           scrollY: 0,
           scrollX: 0,
-          windowWidth: 760
+          windowWidth: 700
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: {
-          mode: ['css', 'legacy'],
-          before: '.html2pdf__page-break'
-        }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      const targetEl = container.querySelector('.worksheet-document') || container;
-
-      if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(targetEl).save().then(() => {
+      // 雙階段獨立渲染：Page 1 與 Page 2 分別轉譯，杜絕跨頁腰斬與空白裁切
+      html2pdf().set(opt).from(page1).toPdf().get('pdf').then(function(pdf) {
+        return html2pdf().set(opt).from(page2).toCanvas().get('canvas').then(function(canvas2) {
+          pdf.addPage();
+          const imgWidth = 194; // A4 寬 210mm - 兩側邊界 16mm = 194mm
+          const imgHeight = (canvas2.height * imgWidth) / canvas2.width;
+          const imgData = canvas2.toDataURL('image/jpeg', 0.98);
+          pdf.addImage(imgData, 'JPEG', 8, 8, imgWidth, Math.min(imgHeight, 281));
+          pdf.save(filename);
           resetBtns();
           showToast('🎉 PDF 學習單已成功產出並下載！');
-        }).catch(err => {
-          console.error('PDF generation error:', err);
-          resetBtns();
-          alert('產出 PDF 發生錯誤，請重新嘗試！');
         });
-      } else {
+      }).catch(err => {
+        console.error('PDF generation error:', err);
         resetBtns();
-        alert('尚未載入 PDF 轉譯套件，請確認網路連線或重新整理頁面！');
-      }
+        alert('產出 PDF 發生錯誤，請重新嘗試！');
+      });
     }).catch(err => {
+      console.error('Preload error:', err);
       resetBtns();
-      console.error('Error preloading images:', err);
+      alert('圖片載入失敗，請重試！');
     });
   }
 
-  // 綁定「存成 PDF」按鈕事件（直接儲存，免多餘說明視窗）
+  // 綁定「存成 PDF」按鈕事件
   if (generatePdfBtn) {
     generatePdfBtn.addEventListener('click', () => {
       generatePdfFromWorksheet();
@@ -1405,124 +1181,6 @@ document.addEventListener('DOMContentLoaded', () => {
     exportWorksheetBtn.addEventListener('click', () => {
       generatePdfFromWorksheet();
     });
-  }
-
-  // 專案備份：下載 JSON
-  if (downloadJsonBtn) {
-    downloadJsonBtn.addEventListener('click', () => {
-      const data = getWorksheetData();
-      const jsonStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const filename = (data.topic || '探究專案備份').replace(/[\\/:*?"<>|]/g, '_') + '_' + (data.date || 'draft') + '.json';
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-      showToast('💾 專案 JSON 備份檔已下載！');
-    });
-  }
-
-  // 專案還原：匯入 JSON
-  if (importJsonInput) {
-    importJsonInput.addEventListener('change', (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const d = JSON.parse(evt.target.result);
-          if (document.getElementById('canvasSchool')) document.getElementById('canvasSchool').value = d.school || '';
-          if (document.getElementById('canvasMembers')) document.getElementById('canvasMembers').value = d.members || '';
-          if (document.getElementById('canvasDate')) document.getElementById('canvasDate').value = d.date || '';
-          if (inputTopic) inputTopic.value = d.topic || '';
-          if (inputMotivation) inputMotivation.value = d.motivation || '';
-          if (inputHypothesis) inputHypothesis.value = d.hypothesis || '';
-          if (inputIV) inputIV.value = d.iv || '';
-          if (inputDV) inputDV.value = d.dv || '';
-          if (inputCV) inputCV.value = d.cv || '';
-          if (selectMethodType) selectMethodType.value = d.methodType || '實驗法';
-          if (inputMethodDetail) inputMethodDetail.value = d.methodDetail || '';
-          if (inputLimitation) inputLimitation.value = d.limitation || '';
-          if (inputPrinciples) inputPrinciples.value = d.principles || '';
-          if (inputDiagramCaption) inputDiagramCaption.value = d.diagramCaption || '';
-          if (d.diagramImg) setDiagramImage(d.diagramImg, d.diagramCaption || '');
-
-          showToast('🎉 專案資料已成功還原至畫布中！');
-          if (diagnoseBtn) diagnoseBtn.click();
-        } catch (err) {
-          alert('匯入失敗：無效的 JSON 專案備份檔！');
-        }
-      };
-      reader.readAsText(file);
-      importJsonInput.value = '';
-    });
-  }
-
-  // 複製學習單全文 (純文字 / Markdown 格式)
-  if (copyMarkdownBtn) {
-    copyMarkdownBtn.addEventListener('click', () => {
-      const d = getWorksheetData();
-      const markdown = `【高中探究與實作：專案研究企劃學習單】
-學校/班級：${d.school}
-組員名單：${d.members}
-實作日期：${d.date}
-
-■ 區塊 A：研究題目 (Research Title)
-${d.topic || '(未填寫)'}
-
-■ 區塊 B：研究動機與問題意識 (Motivation)
-${d.motivation || '(未填寫)'}
-
-■ 區塊 C：核心假說 (Hypothesis)
-${d.hypothesis || '(未填寫)'}
-
-■ 區塊 D：研究變因嚴格定義 (Variables)
-- 操縱變因 (IV)：${d.iv || '無'}
-- 應變變因 (DV)：${d.dv || '無'}
-- 控制變因 (CV)：${d.cv || '無'}
-
-■ 區塊 E：研究方法與步驟簡述 (Methodology)
-方法類型：${d.methodType}
-具體步驟：${d.methodDetail || '(未填寫)'}
-
-■ 區塊 F：預期成果與潛在限制 (Limitations)
-${d.limitation || '(未填寫)'}
-
-■ 區塊 G：科學原理簡述及實驗設計圖 (Principles & Diagram)
-原理機制：${d.principles || '(未填寫)'}
-設計圖說：${d.diagramCaption || '無'}
-實驗圖檔：${d.diagramImg ? '已附加圖像' : '未附加'}
-`;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(markdown).then(() => {
-          showToast('📋 學習單全文已複製到剪貼簿！');
-        }).catch(() => {
-          fallbackCopyText(markdown);
-        });
-      } else {
-        fallbackCopyText(markdown);
-      }
-    });
-  }
-
-  function fallbackCopyText(text) {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand('copy');
-      showToast('📋 學習單全文已複製到剪貼簿！');
-    } catch (e) {
-      alert('無法存取剪貼簿，請手動複製！');
-    }
-    document.body.removeChild(ta);
   }
 
   /* ==========================================================================
