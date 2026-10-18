@@ -44,7 +44,7 @@ class PortalApp {
     // 監聽 iframe 回報的捲動座標
     this.initIframeScrollRelay();
 
-    // 監聽 hashchange 事件，確保任何時機由子單元或題庫點選 #dashboard 皆直達大廳
+    // 監聽 hashchange 事件，確保由子單元或題庫點選 #dashboard 時嚴格檢查身分
     window.addEventListener('hashchange', () => {
       if (window.location.hash === '#dashboard') {
         if (!this.currentUser) {
@@ -52,15 +52,30 @@ class PortalApp {
           if (saved) {
             try {
               const u = JSON.parse(saved);
-              this.currentUser = USER_DATABASE.find(x => x.username.toLowerCase() === u.username.toLowerCase()) || { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+              const db = window.USER_DATABASE || USER_DATABASE || [];
+              if (u && u.username && u.username !== 'guest') {
+                this.currentUser = db.find(x => x.username.toLowerCase() === u.username.toLowerCase()) || null;
+              }
             } catch (e) {
-              this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+              this.currentUser = null;
             }
-          } else {
-            this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
           }
-          this.loadUserProgress();
+          if (this.currentUser) {
+            this.loadUserProgress();
+          }
         }
+
+        // 若無合法身分（未登入），絕不建立訪客，強制導回登入頁
+        if (!this.currentUser || this.currentUser.username === 'guest') {
+          this.currentUser = null;
+          try {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          } catch (e) {}
+          this.showView('login');
+          this.showToast('🔒 目錄大廳僅限已登入學員存取，請先登入！', 'warning');
+          return;
+        }
+
         this.showView('dashboard');
       }
     });
@@ -188,51 +203,57 @@ class PortalApp {
     const isDirectDashboard = window.location.hash === '#dashboard' || 
                               new URLSearchParams(window.location.search).get('view') === 'dashboard';
 
+    let verified = null;
     if (saved) {
       try {
         const u = JSON.parse(saved);
-        const verified = USER_DATABASE.find(x => x.username.toLowerCase() === u.username.toLowerCase());
-        if (verified) {
-          // 若由子單元點選「返回目錄大廳」或要求直接進大廳，且已有登入紀錄，直接進入大廳
-          if (isDirectDashboard) {
-            this.currentUser = verified;
-            this.loadUserProgress();
-            this.showView('dashboard');
-            return;
-          }
-
-          this.showView('login');
-          const resumeBox = document.getElementById('saved-login-box');
-          const nameEl = document.getElementById('saved-user-name');
-          const roleEl = document.getElementById('saved-user-role');
-          const continueBtn = document.getElementById('btn-continue-saved');
-
-          if (resumeBox && nameEl && continueBtn) {
-            resumeBox.style.display = 'block';
-            nameEl.textContent = verified.name;
-            if (roleEl) roleEl.textContent = verified.role === 'teacher' ? '教師' : '學生';
-
-            continueBtn.onclick = () => {
-              this.currentUser = verified;
-              this.loadUserProgress();
-              this.enterFullscreen();
-              this.showView('dashboard');
-              this.showToast(`歡迎回來，${verified.name}！`, 'success');
-            };
-          }
-          return;
+        const db = window.USER_DATABASE || USER_DATABASE || [];
+        if (u && u.username && u.username !== 'guest') {
+          verified = db.find(x => x.username.toLowerCase() === u.username.toLowerCase()) || null;
         }
       } catch (e) {
         console.error('Failed to parse user', e);
       }
     }
 
-    // 若要求進入目錄大廳 (#dashboard) 且無登入紀錄，自動以訪客身分進入大廳，絕不跳到登入頁
-    if (isDirectDashboard) {
-      this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+    if (verified) {
+      this.currentUser = verified;
       this.loadUserProgress();
-      this.showView('dashboard');
+
+      // 若由子單元點選「返回目錄大廳」或要求直接進大廳，且已有登入紀錄，直接進入大廳
+      if (isDirectDashboard) {
+        this.showView('dashboard');
+        return;
+      }
+
+      this.showView('login');
+      const resumeBox = document.getElementById('saved-login-box');
+      const nameEl = document.getElementById('saved-user-name');
+      const roleEl = document.getElementById('saved-user-role');
+      const continueBtn = document.getElementById('btn-continue-saved');
+
+      if (resumeBox && nameEl && continueBtn) {
+        resumeBox.style.display = 'block';
+        nameEl.textContent = verified.name;
+        if (roleEl) roleEl.textContent = verified.role === 'teacher' ? '教師' : '學生';
+
+        continueBtn.onclick = () => {
+          this.enterFullscreen();
+          this.showView('dashboard');
+          this.showToast(`歡迎回來，${verified.name}！`, 'success');
+        };
+      }
       return;
+    }
+
+    // ── 未通過身份認證者（無登入紀錄或非有效帳號）──
+    // 嚴禁進入目錄大廳，徹底廢除「訪客 (guest)」身分
+    this.currentUser = null;
+    if (isDirectDashboard) {
+      try {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (e) {}
+      this.showToast('🔒 目錄大廳僅限已登入學員存取，請先登入！', 'warning');
     }
 
     this.showView('login');
@@ -240,6 +261,38 @@ class PortalApp {
 
   // 視圖切換：login | dashboard | container
   showView(viewName) {
+    // 🔒 安全閘門：進入目錄大廳 (dashboard) 必須具備有效登入身分
+    if (viewName === 'dashboard') {
+      if (!this.currentUser || this.currentUser.username === 'guest') {
+        const saved = localStorage.getItem('chem_current_user');
+        let verified = null;
+        if (saved) {
+          try {
+            const u = JSON.parse(saved);
+            const db = window.USER_DATABASE || USER_DATABASE || [];
+            if (u && u.username && u.username !== 'guest') {
+              verified = db.find(x => x.username.toLowerCase() === u.username.toLowerCase()) || null;
+            }
+          } catch (e) {}
+        }
+
+        if (verified) {
+          this.currentUser = verified;
+          this.loadUserProgress();
+        } else {
+          console.warn('[Security] 未經身分認證，禁止存取目錄大廳！強制重定向至登入頁。');
+          this.currentUser = null;
+          viewName = 'login';
+          try {
+            if (window.location.hash === '#dashboard') {
+              history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+          } catch (e) {}
+          this.showToast('🔒 目錄大廳僅限已登入學員存取，請先登入！', 'warning');
+        }
+      }
+    }
+
     this.currentView = viewName;
     document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(`view-${viewName}`);
@@ -706,23 +759,47 @@ class PortalApp {
     this.exitFullscreen(false);
     this.currentUser = null;
     localStorage.removeItem('chem_current_user');
+    const resumeBox = document.getElementById('saved-login-box');
+    if (resumeBox) resumeBox.style.display = 'none';
+    try {
+      if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    } catch (e) {}
     this.showView('login');
     this.showToast('已安全登出', 'info');
   }
 
   // 讀取進度
   loadUserProgress() {
-    // 判定是否為指定四個班級之學生 (users01.csv ~ users04.csv，座號 205, 206, 210, 213)
-    const isFourClassesStudent = Boolean(
+    if (!this.currentUser) return;
+
+    // 判定班級身分 (users01.csv 學生為 205 班；users02~04.csv 學生為 206, 210, 213 班)
+    const isUser01 = Boolean(
       this.currentUser && (
-        ['users01.csv', 'users02.csv', 'users03.csv', 'users04.csv'].includes(this.currentUser.group) ||
-        /^(205|206|210|213)\d{2}$/.test(this.currentUser.username)
+        this.currentUser.group === 'users01.csv' ||
+        /^205\d{2}$/.test(this.currentUser.username)
+      )
+    );
+    const isUser02To04 = Boolean(
+      this.currentUser && (
+        ['users02.csv', 'users03.csv', 'users04.csv'].includes(this.currentUser.group) ||
+        /^(206|210|213)\d{2}$/.test(this.currentUser.username)
       )
     );
 
-    const defaultUnlocked = isFourClassesStudent ? ['ch1_s1', 'ch2_s4'] : ['ch1_s1'];
+    // 教學指定直接解鎖清單（僅解鎖供提前學習，不加入 completedSections 通關）：
+    // 1. 所有學生一律解鎖 1-1
+    // 2. users01.csv (205班)：加解鎖 2-4、3-1、3-5
+    // 3. users02~04.csv (206, 210, 213班)：加解鎖 2-4、3-5
+    let defaultUnlocked = ['ch1_s1'];
+    if (isUser01) {
+      defaultUnlocked = ['ch1_s1', 'ch2_s4', 'ch3_s1', 'ch3_s5'];
+    } else if (isUser02To04) {
+      defaultUnlocked = ['ch1_s1', 'ch2_s4', 'ch3_s5'];
+    }
 
-    const progressKey = this.currentUser ? `chem_progress_${this.currentUser.username}` : 'chem_progress_guest';
+    const progressKey = `chem_progress_${this.currentUser.username}`;
     const saved = localStorage.getItem(progressKey);
 
     if (saved) {
@@ -744,14 +821,12 @@ class PortalApp {
       this.progress.completedSections = [];
     }
 
-    // 所有學生一律預設解鎖 1-1
-    if (!this.progress.unlockedSections.includes('ch1_s1')) {
-      this.progress.unlockedSections.push('ch1_s1');
-    }
-    // 僅指定四個班級學生享有無條件預設解鎖 2-4；其餘新使用者必須循序自 1-1 通關推進
-    if (isFourClassesStudent && !this.progress.unlockedSections.includes('ch2_s4')) {
-      this.progress.unlockedSections.push('ch2_s4');
-    }
+    // 強制套用各班指定預設解鎖（即使已有舊存檔，也能即時收到最新教學解鎖）
+    defaultUnlocked.forEach(secId => {
+      if (!this.progress.unlockedSections.includes(secId)) {
+        this.progress.unlockedSections.push(secId);
+      }
+    });
 
     // ── 依設定同步 1-2 與 9-1，以及 1-3 與 9-2 的解鎖與完成進度 ──
     if (this.progress.unlockedSections.includes('ch1_s2') && !this.progress.unlockedSections.includes('ch9_s1')) {
@@ -822,8 +897,7 @@ class PortalApp {
     if (window.chemSync && window.chemSync.isInitialized) {
       window.chemSync.loadStudentProgress(this.currentUser.username).then(cloudProgress => {
         if (cloudProgress) {
-          const extraDefault = isFourClassesStudent ? ['ch1_s1', 'ch2_s4'] : ['ch1_s1'];
-          const setUnlocked = new Set([...this.progress.unlockedSections, ...(cloudProgress.unlockedSections || []), ...extraDefault]);
+          const setUnlocked = new Set([...this.progress.unlockedSections, ...(cloudProgress.unlockedSections || []), ...defaultUnlocked]);
           const setCompleted = new Set([...this.progress.completedSections, ...(cloudProgress.completedSections || [])]);
           this.progress.unlockedSections = Array.from(setUnlocked);
           this.progress.completedSections = Array.from(setCompleted);
