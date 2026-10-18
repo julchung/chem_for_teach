@@ -44,6 +44,27 @@ class PortalApp {
     // 監聽 iframe 回報的捲動座標
     this.initIframeScrollRelay();
 
+    // 監聽 hashchange 事件，確保任何時機由子單元或題庫點選 #dashboard 皆直達大廳
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#dashboard') {
+        if (!this.currentUser) {
+          const saved = localStorage.getItem('chem_current_user');
+          if (saved) {
+            try {
+              const u = JSON.parse(saved);
+              this.currentUser = USER_DATABASE.find(x => x.username.toLowerCase() === u.username.toLowerCase()) || { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+            } catch (e) {
+              this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+            }
+          } else {
+            this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+          }
+          this.loadUserProgress();
+        }
+        this.showView('dashboard');
+      }
+    });
+
     // 檢查先前的登入狀態
     this.checkSavedLogin();
   }
@@ -161,16 +182,26 @@ class PortalApp {
     }
   }
 
-  // 檢查已存登入狀態（絕不自動跳轉，一律停留於登入畫面）
+  // 檢查已存登入狀態
   checkSavedLogin() {
-    this.showView('login');
-
     const saved = localStorage.getItem('chem_current_user');
+    const isDirectDashboard = window.location.hash === '#dashboard' || 
+                              new URLSearchParams(window.location.search).get('view') === 'dashboard';
+
     if (saved) {
       try {
         const u = JSON.parse(saved);
         const verified = USER_DATABASE.find(x => x.username.toLowerCase() === u.username.toLowerCase());
         if (verified) {
+          // 若由子單元點選「返回目錄大廳」或要求直接進大廳，且已有登入紀錄，直接進入大廳
+          if (isDirectDashboard) {
+            this.currentUser = verified;
+            this.loadUserProgress();
+            this.showView('dashboard');
+            return;
+          }
+
+          this.showView('login');
           const resumeBox = document.getElementById('saved-login-box');
           const nameEl = document.getElementById('saved-user-name');
           const roleEl = document.getElementById('saved-user-role');
@@ -189,15 +220,27 @@ class PortalApp {
               this.showToast(`歡迎回來，${verified.name}！`, 'success');
             };
           }
+          return;
         }
       } catch (e) {
         console.error('Failed to parse user', e);
       }
     }
+
+    // 若要求進入目錄大廳 (#dashboard) 且無登入紀錄，自動以訪客身分進入大廳，絕不跳到登入頁
+    if (isDirectDashboard) {
+      this.currentUser = { username: 'guest', name: '訪客學員', role: 'student', unlockAll: true };
+      this.loadUserProgress();
+      this.showView('dashboard');
+      return;
+    }
+
+    this.showView('login');
   }
 
   // 視圖切換：login | dashboard | container
   showView(viewName) {
+    this.currentView = viewName;
     document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById(`view-${viewName}`);
     if (target) {
@@ -639,16 +682,24 @@ class PortalApp {
       return;
     }
 
-    this.currentUser = matched;
-    localStorage.setItem('chem_current_user', JSON.stringify(matched));
-    this.loadUserProgress();
+    try {
+      this.currentUser = matched;
+      localStorage.setItem('chem_current_user', JSON.stringify(matched));
+      this.loadUserProgress();
 
-    // 進入全螢幕
-    this.enterFullscreen();
+      // 進入全螢幕
+      this.enterFullscreen();
 
-    // 登入後一律進入全螢幕「目錄大廳」
-    this.showView('dashboard');
-    this.showToast(`歡迎回來，${matched.name}！`, 'success');
+      // 登入後一律進入全螢幕「目錄大廳」
+      this.showView('dashboard');
+      this.showToast(`歡迎回來，${matched.name}！`, 'success');
+    } catch (err) {
+      console.error('Login process error:', err);
+      if (errBox) {
+        errBox.textContent = '⚠️ 登入處理發生錯誤：' + err.message;
+        errBox.style.display = 'block';
+      }
+    }
   }
 
   logout() {
@@ -670,6 +721,9 @@ class PortalApp {
     );
 
     const defaultUnlocked = isFourClassesStudent ? ['ch1_s1', 'ch2_s4'] : ['ch1_s1'];
+
+    const progressKey = this.currentUser ? `chem_progress_${this.currentUser.username}` : 'chem_progress_guest';
+    const saved = localStorage.getItem(progressKey);
 
     if (saved) {
       try {

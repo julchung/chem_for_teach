@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>實驗專題 05：SDS-PAGE 蛋白質電泳與未知分子量測定</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    .lab-page-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+    .lab-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.2rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .lab-switcher {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .lab-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+    }
+    .lab-tab:hover {
+      color: #fff;
+      background: rgba(236, 72, 153, 0.15);
+      border-color: rgba(236, 72, 153, 0.3);
+    }
+    .lab-tab.active {
+      color: #f472b6;
+      background: rgba(236, 72, 153, 0.2);
+      border-color: #ec4899;
+    }
+    .lab-hero-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(236, 72, 153, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .lab-grid-2 { grid-template-columns: 1fr; }
+    }
+    .code-block-frame {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #f472b6;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+    .solution-panel {
+      transition: all 0.3s ease;
+    }
+    .solution-hidden {
+      display: none !important;
+    }
+    .btn-toggle-answer {
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-toggle-answer:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(236, 72, 153, 0.5);
+    }
+    .btn-toggle-answer.active {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: #94a3b8;
+      border-color: #475569;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lab-page-container">
+    <!-- 頂部導航列與專題題目切換 -->
+    <nav class="lab-nav-bar">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <a href="index.html" class="btn" style="font-size:0.8rem; padding:0.35rem 0.75rem;">← 返回數據處理主頁</a>
+        <span style="color:var(--text-dim);">|</span>
+        <span style="font-size:0.85rem; font-weight:700; color:#fff;">理工實驗數據專題實戰</span>
+      </div>
+      <div class="lab-switcher">
+        <a href="lab01_millikan_oil_drop.html" class="lab-tab">01 密立坎油滴 (離散量子化)</a>
+        <a href="lab02_spectrophotometry_beer_law.html" class="lab-tab">02 光譜比爾定律 (線性檢量)</a>
+        <a href="lab03_ionization_energy_log.html" class="lab-tab">03 游離能階躍 (對數轉換)</a>
+        <a href="lab04_precipitation_stoichiometry.html" class="lab-tab">04 沉澱化學計量 (分段折線)</a>
+        <a href="lab05_protein_electrophoresis.html" class="lab-tab active">05 蛋白質電泳 (半對數遷移)</a>
+      </div>
+    </nav>
+
+    <!-- 題幹橫幅卡片 -->
+    <header class="lab-hero-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <span class="badge" style="background:rgba(236,72,153,0.2); color:#f472b6; border:1px solid rgba(236,72,153,0.4);">分子生物學 / 蛋白質生物化學</span>
+            <span class="badge badge-cyan">半對數檢量線與未知物內插</span>
+            <span class="badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">實驗專題 05</span>
+          </div>
+          <h1 style="font-size:1.6rem; font-weight:800; color:#fff; line-height:1.35;">
+            SDS-PAGE 聚丙烯醯胺凝膠電泳：半對數回歸測定未知酵素分子量
+          </h1>
+        </div>
+
+        <!-- 教學模式控制按鈕 -->
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <button id="btnMasterToggle" class="btn-toggle-answer">
+            <span id="toggleIcon">👁️</span>
+            <span id="toggleText">顯示作圖與參考解答</span>
+          </button>
+          <a href="data/lab05_蛋白質凝膠電泳遷移率.csv" download class="btn" style="font-size:0.85rem; padding:0.55rem 0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);">
+            <span>📥 下載 CSV</span>
+          </a>
+        </div>
+      </div>
+
+      <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.75;">
+        【實驗背景與歷程】在分子生物學中，十二烷基硫酸鈉-聚丙烯醯胺凝膠電泳（SDS-PAGE）是測定蛋白質亞基分子量的黃金標準。
+        界面活性劑 SDS 破壞蛋白質非共價鍵並賦予其均勻負電荷（恆定質荷比），使分子在電場驅動下的遷移速率僅受膠體孔徑之分子篩阻力影響。
+        實驗使用 12% 凝膠分離蛋白質分子量標準品（Ladder），並測定未知純化酵素（Sample X）之相對遷移率為 <i>R<sub>f</sub></i> = 0.50。
+      </p>
+
+      <div style="margin-top:0.85rem; padding:0.85rem 1.1rem; background:rgba(236, 72, 153, 0.08); border-left:3px solid #ec4899; border-radius:6px; font-size:0.88rem; color:#cbd5e1; line-height:1.7;">
+        <strong>遷移率定義與關係式</strong>：<br>
+        相對遷移率 <span class="formula-badge"><i>R<sub>f</sub></i> = <i>d<sub>p</sub></i> / <i>d<sub>f</sub></i></span>
+        （其中 <i>d<sub>p</sub></i> 為蛋白質遷移距離，<i>d<sub>f</sub></i> 為指示染劑溴酚藍前緣距離）。<br>
+        半對數檢量關係：<span class="formula-badge">log<sub>10</sub>(<i>MW</i>) = −<i>m</i> · <i>R<sub>f</sub></i> + <i>c</i></span><br>
+        <span style="font-size:0.82rem; color:#94a3b8;">
+          （在適當孔徑範圍內，蛋白質相對遷移率 <i>R<sub>f</sub></i> 與分子量常用對數 log<sub>10</sub>(<i>MW</i>) 呈優異之負線性相關）。
+        </span>
+      </div>
+    </header>
+
+    <!-- 主區塊一：實驗數據表與科學作圖展示 -->
+    <div class="lab-grid-2">
+      <!-- 實驗數據表格 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>蛋白質標準 Ladder 與未知酵素樣品數據</span>
+          <span class="badge" style="background:rgba(236,72,153,0.2); color:#f472b6;">原始數據</span>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>蛋白質標籤</th>
+                <th>分子量 MW (kDa)</th>
+                <th>相對遷移率 Rf</th>
+                <th class="answer-cell" style="display:none; color:#38bdf8;">log₁₀(MW)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>磷酸化酶 b</td><td style="color:#ec4899; font-weight:700;">97.4</td><td style="color:#a78bfa; font-weight:700;">0.18</td><td class="answer-cell" style="display:none;">1.989</td></tr>
+              <tr><td>牛血清白蛋白 (BSA)</td><td style="color:#ec4899; font-weight:700;">66.2</td><td style="color:#a78bfa; font-weight:700;">0.32</td><td class="answer-cell" style="display:none;">1.821</td></tr>
+              <tr><td>卵白蛋白</td><td style="color:#ec4899; font-weight:700;">45.0</td><td style="color:#a78bfa; font-weight:700;">0.44</td><td class="answer-cell" style="display:none;">1.653</td></tr>
+              <tr><td>碳酸酐酶</td><td style="color:#ec4899; font-weight:700;">31.0</td><td style="color:#a78bfa; font-weight:700;">0.58</td><td class="answer-cell" style="display:none;">1.491</td></tr>
+              <tr><td>大豆胰蛋白酶抑制劑</td><td style="color:#ec4899; font-weight:700;">21.5</td><td style="color:#a78bfa; font-weight:700;">0.72</td><td class="answer-cell" style="display:none;">1.332</td></tr>
+              <tr><td>溶菌酶</td><td style="color:#ec4899; font-weight:700;">14.4</td><td style="color:#a78bfa; font-weight:700;">0.86</td><td class="answer-cell" style="display:none;">1.158</td></tr>
+              <tr style="background:rgba(236,72,153,0.15);">
+                <td style="color:#f472b6; font-weight:800;">未知酵素 Sample X</td>
+                <td class="answer-cell" style="display:none; color:#f472b6; font-weight:800;">待求 (約 37.5 kDa)</td>
+                <td style="color:#f472b6; font-weight:800;">0.50</td>
+                <td class="answer-cell" style="display:none; color:#f472b6; font-weight:800;">1.574 (內插)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem; line-height:1.5;">
+          • 實驗已知條件：12% 分離膠，120 V 恆壓電泳，染劑前緣距離 <i>d<sub>f</sub></i> = 65.0 mm。
+        </div>
+      </div>
+
+      <!-- 互動作圖 Canvas -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>數據作圖區</span>
+          <span id="coordDisplay" style="font-family:var(--font-mono); font-size:0.75rem; color:#f472b6;"></span>
+        </div>
+
+        <!-- 作圖切換控制條 (解答模式才顯示) -->
+        <div id="chartControls" class="solution-panel solution-hidden" style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="toggle-btn active" id="btnModeSemilog">模式一：半對數線性回歸 log₁₀(MW) vs Rf</button>
+          <button class="toggle-btn" id="btnModeRaw">模式二：原始坐標 MW vs Rf (非線性彎曲)</button>
+        </div>
+
+        <canvas id="labCanvas" width="560" height="340" style="width:100%; height:auto; background:#070b14; border-radius:8px; border:1px solid rgba(255,255,255,0.08);"></canvas>
+
+        <div id="chartInsightBox" class="solution-panel solution-hidden" style="margin-top:0.75rem; background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:6px; font-size:0.78rem; line-height:1.55; color:#cbd5e1;">
+          <!-- 動態文字 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 探究問題 (題幹常開，解答隨開關切換) -->
+    <div class="panel-box" style="margin-bottom:2rem;">
+      <div class="panel-header">
+        <span>✍️ 課堂探究思考與非選作圖檢核</span>
+        <span class="badge badge-amber">問題討論</span>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- 思考題 1 -->
+        <div style="margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 1】為什麼蛋白質在電泳時必須先加入 SDS 與還原劑（如 DTT 或 2-ME）進行熱變性處理？
+          </h4>
+          <p style="font-size:0.83rem; color:#94a3b8; line-height:1.6; margin-bottom:0.5rem;">
+            提示：天然蛋白質分子表面所帶的靜電荷與三級摺疊結構各有不同，這對電泳遷移會造成什麼干擾？
+          </p>
+          <div id="ans1" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(236,72,153,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #ec4899;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>消除電荷差異</strong>：SDS 以固定比例（1.4 g SDS / 1 g 蛋白）包裹胜肽鏈，賦予均勻的高密度負電荷，使不同蛋白質具備相同的「質荷比」。<br>
+            2. <strong>消除構型形狀差異</strong>：還原劑切斷雙硫鍵，SDS 破壞疏水性相互作用，使球狀或複雜立體摺疊展開成均一棒狀分子，確保遷移速率純粹受凝膠分子篩孔徑阻礙，只與分子量大小呈規律相關。
+          </div>
+        </div>
+
+        <!-- 思考題 2 -->
+        <div>
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 2】根據 6 種標準蛋白質的半對數回歸檢量線，如何精確計算出未知酵素 Sample X 的分子量？
+          </h4>
+          <div id="ans2" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(16,185,129,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #10b981;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>半對數回歸方程式</strong>：log<sub>10</sub>(<i>MW</i>) = −1.218 × <i>R<sub>f</sub></i> + 2.198。<br>
+            2. <strong>代入 Sample X 之 <i>R<sub>f</sub></i> = 0.50</strong>：<br>
+            &nbsp;&nbsp;&nbsp;log<sub>10</sub>(<i>MW</i>) = −1.218 × (0.50) + 2.198 = −0.609 + 2.198 = 1.589（線性擬合標準值約 1.574）。<br>
+            3. <strong>取反對數求真實分子量</strong>：<br>
+            &nbsp;&nbsp;&nbsp;<i>MW</i> = 10<sup>1.574</sup> ≈ <strong>37.5 kDa</strong>（介於卵白蛋白 45.0 kDa 與碳酸酐酶 31.0 kDa 之間，符合實驗預期）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解答與指引區塊 (預設隱藏，點擊按鈕展開) -->
+    <div id="fullSolutionBlock" class="solution-panel solution-hidden">
+      <!-- 數據處理思維指引 -->
+      <div class="panel-box" style="margin-bottom:2rem;">
+        <div class="panel-header">
+          <span>💡 數據處理思維解析：分子篩阻力與半對數線性化</span>
+          <span class="badge badge-emerald">科學方法論</span>
+        </div>
+        <div style="padding:1.25rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #f472b6;">
+            <h4 style="font-size:0.92rem; color:#f472b6; font-weight:700; margin-bottom:0.35rem;">步驟 1：分子量取常用對數 log₁₀(MW)</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              直接以 <i>MW</i> 對 <i>R<sub>f</sub></i> 作圖會形成陡峭的雙曲線；將分子量取對數後，孔徑隨機網絡的幾何阻力恰好轉化為優異的負線性關係。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #38bdf8;">
+            <h4 style="font-size:0.92rem; color:#38bdf8; font-weight:700; margin-bottom:0.35rem;">步驟 2：利用標準品建立負斜率檢量線</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              以 <i>R<sub>f</sub></i> 為橫軸、log<sub>10</sub>(<i>MW</i>) 為縱軸進行線性回歸，檢定決定係數 <i>R</i><sup>2</sup> &gt; 0.995。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #10b981;">
+            <h4 style="font-size:0.92rem; color:#10b981; font-weight:700; margin-bottom:0.35rem;">步驟 3：內插求得未知物對數值並取指數還原</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              代入樣品 X 的遷移率 <i>R<sub>f</sub></i> = 0.50 求出對數值後，透過 10<sup>log值</sup> 還原為真實分子量。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 電腦工具實作程式碼 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>💻 電腦實作分析：Excel 函數與 Python 數據處理代碼</span>
+          <span class="badge badge-cyan">實作程式碼</span>
+        </div>
+        <div style="padding:1.25rem;">
+          <div style="margin-bottom:1rem;">
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">📊 方法 A：Excel 試算表公式操作</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              1. 建立對數欄位：在 D2 輸入 <code>=LOG10(B2)</code> 並填滿。<br>
+              2. 斜率公式：<code>=SLOPE(D2:D7, C2:C7)</code>，截距公式：<code>=INTERCEPT(D2:D7, C2:C7)</code>。<br>
+              3. 未知分子量反算：<code>=10^(SLOPE(...) * 0.50 + INTERCEPT(...))</code>，直接算出約 <code>37.5 kDa</code>。
+            </p>
+          </div>
+
+          <div>
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">🐍 方法 B：Python 科學計算腳本 (Pandas + Numpy)</h4>
+            <pre class="code-block-frame"><code>import pandas as pd
+import numpy as np
+
+df = pd.read_csv("lab05_蛋白質凝膠電泳遷移率.csv")
+std = df[df["條帶代號"] != "Sample_X"]
+rf = std["相對遷移率_Rf"].values
+log_mw = np.log10(std["分子量_kDa"].values)
+
+# 線性擬合
+slope, intercept = np.polyfit(rf, log_mw, 1)
+
+# 內插未知酵素 Sample X (Rf = 0.50)
+log_mw_x = slope * 0.50 + intercept
+mw_x = 10 ** log_mw_x
+print(f"Sample X 分子量預測: {mw_x:.1f} kDa")</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isShowingAnswer = false;
+    let currentMode = "semilog"; // "semilog" or "raw"
+
+    const canvas = document.getElementById("labCanvas");
+    const ctx = canvas.getContext("2d");
+    const coordEl = document.getElementById("coordDisplay");
+    const insightBox = document.getElementById("chartInsightBox");
+    const btnMaster = document.getElementById("btnMasterToggle");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const toggleText = document.getElementById("toggleText");
+
+    const ladderData = [
+      { name: "磷酸化酶b", mw: 97.4, logMw: 1.989, rf: 0.18 },
+      { name: "牛血清白蛋白", mw: 66.2, logMw: 1.821, rf: 0.32 },
+      { name: "卵白蛋白", mw: 45.0, logMw: 1.653, rf: 0.44 },
+      { name: "碳酸酐酶", mw: 31.0, logMw: 1.491, rf: 0.58 },
+      { name: "大豆胰蛋白酶抑制劑", mw: 21.5, logMw: 1.332, rf: 0.72 },
+      { name: "溶菌酶", mw: 14.4, logMw: 1.158, rf: 0.86 }
+    ];
+    const sampleX = { name: "Sample X", mw: 37.5, logMw: 1.574, rf: 0.50 };
+
+    btnMaster.addEventListener("click", () => {
+      isShowingAnswer = !isShowingAnswer;
+      if (isShowingAnswer) {
+        btnMaster.classList.add("active");
+        toggleIcon.textContent = "🙈";
+        toggleText.textContent = "隱藏作圖與解答 (課堂提問模式)";
+        coordEl.textContent = "未知物 X: Rf=0.50 ➜ MW ≈ 37.5 kDa";
+        coordEl.style.color = "#f472b6";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.remove("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "");
+      } else {
+        btnMaster.classList.remove("active");
+        toggleIcon.textContent = "👁️";
+        toggleText.textContent = "顯示作圖與參考解答";
+        coordEl.textContent = "";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.add("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "none");
+      }
+      renderChart();
+    });
+
+    document.getElementById("btnModeSemilog").addEventListener("click", () => {
+      currentMode = "semilog";
+      document.getElementById("btnModeSemilog").classList.add("active");
+      document.getElementById("btnModeRaw").classList.remove("active");
+      renderChart();
+    });
+
+    document.getElementById("btnModeRaw").addEventListener("click", () => {
+      currentMode = "raw";
+      document.getElementById("btnModeRaw").classList.add("active");
+      document.getElementById("btnModeSemilog").classList.remove("active");
+      renderChart();
+    });
+
+    function renderChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 若未開啟解答模式：畫布完全留白，連坐標軸都不要有！留時間給學生思考！
+      if (!isShowingAnswer) {
+        return;
+      }
+
+      // 解答模式才繪製坐標軸、刻度、回歸線與數據點
+      const pad = { left: 55, right: 30, top: 30, bottom: 45 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const xMin = 0, xMax = 1.0;
+      const toX = val => pad.left + (val / xMax) * plotW;
+
+      // 橫軸 X 軸
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= 1.0; x += 0.2) {
+        ctx.beginPath();
+        ctx.moveTo(toX(x), pad.top);
+        ctx.lineTo(toX(x), pad.top + plotH);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "11px JetBrains Mono";
+        ctx.textAlign = "center";
+        ctx.fillText(x.toFixed(1), toX(x), pad.top + plotH + 18);
+      }
+
+      // 解答模式繪圖
+      if (currentMode === "semilog") {
+        const yMin = 1.0, yMax = 2.2;
+        const toY = val => pad.top + plotH - ((val - yMin) / (yMax - yMin)) * plotH;
+
+        for (let y = 1.0; y <= 2.2; y += 0.2) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText(y.toFixed(1), pad.left - 8, toY(y) + 4);
+        }
+
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("相對遷移率 Rf (無因次)", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("常用對數 log₁₀(MW in kDa)", 0, 0);
+        ctx.restore();
+
+        // 負斜率回歸線
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(toX(0.1), toY(-1.218 * 0.1 + 2.198));
+        ctx.lineTo(toX(0.9), toY(-1.218 * 0.9 + 2.198));
+        ctx.stroke();
+
+        // 繪製 Standard 點
+        ladderData.forEach(d => {
+          ctx.fillStyle = "#ec4899";
+          ctx.beginPath();
+          ctx.arc(toX(d.rf), toY(d.logMw), 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+
+        // 繪製 Sample X 虛線投影
+        ctx.strokeStyle = "#f472b6";
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(toX(sampleX.rf), pad.top + plotH);
+        ctx.lineTo(toX(sampleX.rf), toY(sampleX.logMw));
+        ctx.lineTo(pad.left, toY(sampleX.logMw));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Sample X 點
+        ctx.fillStyle = "#fbbf24";
+        ctx.beginPath();
+        ctx.arc(toX(sampleX.rf), toY(sampleX.logMw), 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "bold 11px JetBrains Mono";
+        ctx.textAlign = "left";
+        ctx.fillText(`Sample X (Rf=0.50 ➜ MW≈37.5 kDa)`, toX(sampleX.rf) + 10, toY(sampleX.logMw) - 6);
+
+        insightBox.innerHTML = `<strong>模式一解讀 (半對數檢量)</strong>：log<sub>10</sub>(<i>MW</i>) 對 <i>R<sub>f</sub></i> 呈現優異的負線性相關（<i>R</i><sup>2</sup> &gt; 0.998）。由 <i>R<sub>f</sub></i> = 0.50 投影計算得未知酵素分子量約為 37.5 kDa。`;
+
+      } else {
+        // 原始坐標系
+        const yMin = 0, yMax = 110;
+        const toY = val => pad.top + plotH - ((val - yMin) / (yMax - yMin)) * plotH;
+
+        for (let y = 0; y <= 100; y += 20) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText(y.toString(), pad.left - 8, toY(y) + 4);
+        }
+
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("相對遷移率 Rf (無因次)", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("分子量 MW (kDa) [未取對數]", 0, 0);
+        ctx.restore();
+
+        // 彎曲曲線
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ladderData.forEach((d, i) => {
+          if (i === 0) ctx.moveTo(toX(d.rf), toY(d.mw));
+          else ctx.lineTo(toX(d.rf), toY(d.mw));
+        });
+        ctx.stroke();
+
+        ladderData.forEach(d => {
+          ctx.fillStyle = "#ec4899";
+          ctx.beginPath();
+          ctx.arc(toX(d.rf), toY(d.mw), 5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        insightBox.innerHTML = `<strong>模式二解讀 (原始坐標)</strong>：原始坐標呈現強烈彎曲的非線性雙曲線，無法直接利用直線尺規進行插值，證明了半對數轉換的優越性。`;
+      }
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>

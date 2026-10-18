@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>實驗專題 02：分光光度法與比爾定律 · 吸光度檢量線與高濃度偏離</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    .lab-page-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+    .lab-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.2rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .lab-switcher {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .lab-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+    }
+    .lab-tab:hover {
+      color: #fff;
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+    .lab-tab.active {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+    }
+    .lab-hero-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .lab-grid-2 { grid-template-columns: 1fr; }
+    }
+    .code-block-frame {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #34d399;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+    .solution-panel {
+      transition: all 0.3s ease;
+    }
+    .solution-hidden {
+      display: none !important;
+    }
+    .btn-toggle-answer {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-toggle-answer:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+    }
+    .btn-toggle-answer.active {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: #94a3b8;
+      border-color: #475569;
+      box-shadow: none;
+    }
+    .formula-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lab-page-container">
+    <!-- 頂部導航列與專題題目切換 -->
+    <nav class="lab-nav-bar">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <a href="index.html" class="btn" style="font-size:0.8rem; padding:0.35rem 0.75rem;">← 返回數據處理主頁</a>
+        <span style="color:var(--text-dim);">|</span>
+        <span style="font-size:0.85rem; font-weight:700; color:#fff;">理工實驗數據專題實戰</span>
+      </div>
+      <div class="lab-switcher">
+        <a href="lab01_millikan_oil_drop.html" class="lab-tab">01 密立坎油滴 (離散量子化)</a>
+        <a href="lab02_spectrophotometry_beer_law.html" class="lab-tab active">02 光譜比爾定律 (線性檢量)</a>
+        <a href="lab03_ionization_energy_log.html" class="lab-tab">03 游離能階躍 (對數轉換)</a>
+        <a href="lab04_precipitation_stoichiometry.html" class="lab-tab">04 沉澱化學計量 (分段折線)</a>
+        <a href="lab05_protein_electrophoresis.html" class="lab-tab">05 蛋白質電泳 (半對數遷移)</a>
+      </div>
+    </nav>
+
+    <!-- 題幹橫幅卡片 -->
+    <header class="lab-hero-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <span class="badge badge-emerald">化學 / 儀器分析化學</span>
+            <span class="badge badge-cyan">連續線性檢量線與區間評估</span>
+            <span class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3);">實驗專題 02</span>
+          </div>
+          <h1 style="font-size:1.6rem; font-weight:800; color:#fff; line-height:1.35;">
+            紫外-可見分光光度法：比爾-朗伯吸光度定律與高濃度非線性偏離
+          </h1>
+        </div>
+
+        <!-- 教學模式控制按鈕 -->
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <button id="btnMasterToggle" class="btn-toggle-answer">
+            <span id="toggleIcon">👁️</span>
+            <span id="toggleText">顯示作圖與參考解答</span>
+          </button>
+          <a href="data/lab02_分光光度法吸光度檢量線.csv" download class="btn" style="font-size:0.85rem; padding:0.55rem 0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);">
+            <span>📥 下載 CSV</span>
+          </a>
+        </div>
+      </div>
+
+      <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.75;">
+        【實驗背景與歷程】在環境水質監測中，測定工業廢水中重金屬銅離子（Cu<sup>2+</sup>）含量常採用分光光度法。
+        研究者配製一系列已知精確濃度的硫酸銅（CuSO<sub>4</sub>）標準溶液，以光徑 <i>b</i> = 1.00 cm 的石英比色槽，在最大吸收波長 <i>λ</i> = 810 nm 下測量各溶液之透光率 <i>T</i> 與吸光度 <i>A</i>。
+        同時對未知含銅工業廢水樣品（Sample X）進行相同條件的光度測量，測得吸光度 <i>A<sub>X</sub></i> = 0.812。
+      </p>
+      
+      <div style="margin-top:0.85rem; padding:0.85rem 1.1rem; background:rgba(16, 185, 129, 0.08); border-left:3px solid #10b981; border-radius:6px; font-size:0.88rem; color:#cbd5e1; line-height:1.7;">
+        <strong>相關公式</strong>：<br>
+        比爾-朗伯定律（Beer-Lambert Law）：
+        <span class="formula-badge"><i>A</i> = −log<sub>10</sub>(<i>T</i>) = <i>ε</i> · <i>b</i> · <i>c</i></span><br>
+        <span style="font-size:0.82rem; color:#94a3b8;">
+          （其中 <i>A</i> 為吸光度，<i>T</i> 為透光率，<i>ε</i> 為莫耳吸光係數，<i>b</i> 為光徑長度 1.00 cm，<i>c</i> 為溶液體積莫耳濃度 M）。
+        </span>
+      </div>
+    </header>
+
+    <!-- 主區塊一：實驗數據表與科學作圖展示 -->
+    <div class="lab-grid-2">
+      <!-- 實驗數據表格 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>硫酸銅標準檢量溶液與廢水樣品數據</span>
+          <span class="badge badge-emerald">原始數據</span>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>樣品編號</th>
+                <th>CuSO₄ 濃度 C (M)</th>
+                <th>透光度 T (%)</th>
+                <th>實測吸光度 A</th>
+                <th class="answer-cell" style="display:none; color:#fbbf24;">線性檢驗狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>空白 (Blank)</td><td>0.0000</td><td>100.0%</td><td style="color:#34d399; font-weight:700;">0.000</td><td class="answer-cell" style="display:none; color:#10b981;">線性起點 (0,0)</td></tr>
+              <tr><td>標準品 Std 1</td><td>0.0200</td><td>57.5%</td><td style="color:#34d399; font-weight:700;">0.240</td><td class="answer-cell" style="display:none; color:#10b981;">線性動態範圍</td></tr>
+              <tr><td>標準品 Std 2</td><td>0.0400</td><td>33.1%</td><td style="color:#34d399; font-weight:700;">0.480</td><td class="answer-cell" style="display:none; color:#10b981;">線性動態範圍</td></tr>
+              <tr><td>標準品 Std 3</td><td>0.0600</td><td>19.1%</td><td style="color:#34d399; font-weight:700;">0.720</td><td class="answer-cell" style="display:none; color:#10b981;">線性動態範圍</td></tr>
+              <tr><td>標準品 Std 4</td><td>0.0800</td><td>11.0%</td><td style="color:#34d399; font-weight:700;">0.958</td><td class="answer-cell" style="display:none; color:#10b981;">線性動態範圍</td></tr>
+              <tr><td>標準品 Std 5</td><td>0.1000</td><td>6.3%</td><td style="color:#34d399; font-weight:700;">1.201</td><td class="answer-cell" style="display:none; color:#10b981;">線性上限區間</td></tr>
+              <tr><td>高濃度 Std 6</td><td>0.1500</td><td>2.9%</td><td style="color:#f43f5e; font-weight:700;">1.538</td><td class="answer-cell" style="display:none; color:#f43f5e; font-weight:700;">高濃度折射率偏離</td></tr>
+              <tr style="background:rgba(245,158,11,0.12);">
+                <td style="font-weight:700; color:#f59e0b;">廢水樣品 X</td>
+                <td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">待求 (約 0.0677 M)</td>
+                <td style="color:#f59e0b;">15.4%</td>
+                <td style="color:#f59e0b; font-weight:800;">0.812</td>
+                <td class="answer-cell" style="display:none; color:#f59e0b;">位於線性區內插</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem; line-height:1.5;">
+          • 實驗儀器：島津 UV-1800 雙光束分光光度計，比色槽光徑 <i>b</i> = 1.00 cm。
+        </div>
+      </div>
+
+      <!-- 互動作圖 Canvas -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>數據作圖區</span>
+          <span id="coordDisplay" style="font-family:var(--font-mono); font-size:0.75rem; color:#34d399;"></span>
+        </div>
+
+        <!-- 作圖切換控制條 (解答模式才顯示) -->
+        <div id="chartControls" class="solution-panel solution-hidden" style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="toggle-btn active" id="btnFitValid">模式一：剔除偏離點之正確回歸線 (求 CX)</button>
+          <button class="toggle-btn" id="btnFitAll">模式二：盲目全點線性回歸 (錯誤示範)</button>
+        </div>
+
+        <!-- 畫布：未顯示解答前完全留白，連坐標軸都沒有 -->
+        <canvas id="labCanvas" width="560" height="340" style="width:100%; height:auto; background:#070b14; border-radius:8px; border:1px solid rgba(255,255,255,0.08);"></canvas>
+
+        <div id="chartInsightBox" class="solution-panel solution-hidden" style="margin-top:0.75rem; background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:6px; font-size:0.78rem; line-height:1.55; color:#cbd5e1;">
+          <!-- 動態文字 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 探究問題 (題幹常開，解答隨開關切換) -->
+    <div class="panel-box" style="margin-bottom:2rem;">
+      <div class="panel-header">
+        <span>✍️ 課堂探究思考與非選作圖檢核</span>
+        <span class="badge badge-amber">問題討論</span>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- 思考題 1 -->
+        <div style="margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 1】為什麼濃度 0.1500 M 的點明顯偏離了線性回歸線向下方彎曲？在建立檢量線時應如何處置？
+          </h4>
+          <p style="font-size:0.83rem; color:#94a3b8; line-height:1.6; margin-bottom:0.5rem;">
+            提示：比爾定律的推導是建立在「稀薄溶液」的假設上，當溶質濃度過高時，分子間距與溶液折射率會發生什麼改變？
+          </p>
+          <div id="ans1" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(16,185,129,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #10b981;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>比爾定律的物理極限</strong>：比爾定律是描述稀薄溶液（通常 <i>c</i> &lt; 0.01～0.05 M）吸光行為的極限定律。當吸光物種濃度過高時，鄰近吸光分子與離子之間的靜電交互作用與電荷分布重疊，導致分子的莫耳吸光係數 <i>ε</i> 發生改變；且高濃度下溶液折射率不再是常數，造成實測吸光度呈現「負偏離」（低於理論線性值）。<br>
+            2. <strong>儀器雜散光限制</strong>：高吸光度（<i>A</i> &gt; 1.5）時透光率 <i>T</i> &lt; 3%，儀器內部雜散光的影響顯著上升，造成光電感測失真。<br>
+            3. <strong>數據處理處置</strong>：建立分析檢量線時，必須明確界定「線性動態範圍（Linear Dynamic Range）」，剔除超出線性範圍的高濃度偏離點，僅以 0.00～0.10 M 區間進行線性擬合。
+          </div>
+        </div>
+
+        <!-- 思考題 2 -->
+        <div>
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 2】根據正確的線性回歸直線方程式，計算出未知工業廢水樣品 X 的精確銅離子莫耳濃度？
+          </h4>
+          <div id="ans2" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(6,182,212,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #38bdf8;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>檢量線回歸方程式</strong>：使用前 6 組點（0.00 ～ 0.10 M）擬合得到：
+            <div style="margin: 0.4rem 0; font-family: 'JetBrains Mono', monospace; color: #34d399;">
+              <i>A</i> = 12.00 · <i>C</i> + 0.001 &nbsp; (<i>R</i><sup>2</sup> = 0.9999)
+            </div>
+            莫耳吸光係數 <i>ε</i> = 12.00 M<sup>−1</sup>cm<sup>−1</sup>。<br>
+            2. <strong>代入未知樣品吸光度</strong>：<i>A<sub>X</sub></i> = 0.812，
+            <div style="margin: 0.4rem 0; font-family: 'JetBrains Mono', monospace; color: #fbbf24;">
+              <i>C<sub>X</sub></i> = (0.812 − 0.001) / 12.00 ≈ 0.0676 M ≈ 0.0677 M
+            </div>
+            3. <strong>有效性驗證</strong>：0.0677 M 落在 0.00～0.10 M 之線性動態區間內，內插計算極具信度。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解答與指引區塊 (預設隱藏，點擊按鈕展開) -->
+    <div id="fullSolutionBlock" class="solution-panel solution-hidden">
+      <!-- 數據處理思維指引 -->
+      <div class="panel-box" style="margin-bottom:2rem;">
+        <div class="panel-header">
+          <span>💡 數據處理思維解析：如何評估檢量線的線性動態範圍？</span>
+          <span class="badge badge-emerald">科學方法論</span>
+        </div>
+        <div style="padding:1.25rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #34d399;">
+            <h4 style="font-size:0.92rem; color:#34d399; font-weight:700; margin-bottom:0.35rem;">步驟 1：作散佈圖並肉眼檢查高濃度偏離</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              直接觀察散佈圖，前 6 組點（0 ～ 0.10 M）幾乎共線，而最後一點（0.15 M, 1.538）明顯下垂偏離預期值（理論預期應約 1.80）。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #f59e0b;">
+            <h4 style="font-size:0.92rem; color:#f59e0b; font-weight:700; margin-bottom:0.35rem;">步驟 2：截取有效線性區間回歸</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              剔除 0.15 M 點，對 0 ～ 0.10 M 進行回歸，斜率為 12.00，<i>R</i><sup>2</sup> = 0.9999。若盲目將全部點做回歸，斜率會被拉低至 10.66（<i>R</i><sup>2</sup> = 0.985），造成嚴重系統偏誤。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #38bdf8;">
+            <h4 style="font-size:0.92rem; color:#38bdf8; font-weight:700; margin-bottom:0.35rem;">步驟 3：內插求值與動態範圍檢查</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              樣品 X 吸光度為 0.812，落於 0.720 ～ 0.958 之間，屬於極度安全的內插區域，求得 <i>C<sub>X</sub></i> = 0.0677 M。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 電腦工具實作程式碼 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>💻 電腦實作分析：Excel 函數與 Python 數據處理代碼</span>
+          <span class="badge badge-cyan">實作程式碼</span>
+        </div>
+        <div style="padding:1.25rem;">
+          <div style="margin-bottom:1rem;">
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">📊 方法 A：Excel 試算表公式操作</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              1. 篩選 <i>C</i> ≤ 0.10 M 的數據範圍進行擬合。<br>
+              2. 斜率公式：<code>=SLOPE(D2:D7, B2:B7)</code> 得 <code>12.00</code>。<br>
+              3. 內插廢水樣品 X：<code>=(0.812 - INTERCEPT(D2:D7, B2:B7)) / SLOPE(D2:D7, B2:B7)</code> 得 <code>0.0677 M</code>。
+            </p>
+          </div>
+
+          <div>
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">🐍 方法 B：Python 科學計算腳本 (Pandas + Numpy)</h4>
+            <pre class="code-block-frame"><code>import pandas as pd
+import numpy as np
+
+df = pd.read_csv("lab02_分光光度法吸光度檢量線.csv")
+# 篩選標準品且濃度 <= 0.10 M 的線性區間
+linear_df = df[(df["樣品類型"] == "標準品") & (df["濃度_M"] <= 0.10)]
+c = linear_df["濃度_M"].values
+a = linear_df["實測吸光度_A"].values
+
+slope, intercept = np.polyfit(c, a, 1)
+# 內插未知廢水 X (A = 0.812)
+c_x = (0.812 - intercept) / slope
+print(f"檢量線方程: A = {slope:.2f} * C + {intercept:.4f}")
+print(f"廢水樣品 X 濃度: {c_x:.4f} M")</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isShowingAnswer = false;
+    let currentMode = "valid"; // "valid" or "all"
+
+    const canvas = document.getElementById("labCanvas");
+    const ctx = canvas.getContext("2d");
+    const coordEl = document.getElementById("coordDisplay");
+    const insightBox = document.getElementById("chartInsightBox");
+    const btnMaster = document.getElementById("btnMasterToggle");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const toggleText = document.getElementById("toggleText");
+
+    const stdPts = [
+      { c: 0.0000, a: 0.000, valid: true },
+      { c: 0.0200, a: 0.240, valid: true },
+      { c: 0.0400, a: 0.480, valid: true },
+      { c: 0.0600, a: 0.720, valid: true },
+      { c: 0.0800, a: 0.958, valid: true },
+      { c: 0.1000, a: 1.201, valid: true },
+      { c: 0.1500, a: 1.538, valid: false }
+    ];
+    const sampleX = { c: 0.0677, a: 0.812 };
+
+    btnMaster.addEventListener("click", () => {
+      isShowingAnswer = !isShowingAnswer;
+      if (isShowingAnswer) {
+        btnMaster.classList.add("active");
+        toggleIcon.textContent = "🙈";
+        toggleText.textContent = "隱藏作圖與解答 (課堂提問模式)";
+        coordEl.textContent = "樣品 X: A=0.812 ➜ C ≈ 0.0677 M";
+        coordEl.style.color = "#34d399";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.remove("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "");
+      } else {
+        btnMaster.classList.remove("active");
+        toggleIcon.textContent = "👁️";
+        toggleText.textContent = "顯示作圖與參考解答";
+        coordEl.textContent = "";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.add("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "none");
+      }
+      renderChart();
+    });
+
+    document.getElementById("btnFitValid").addEventListener("click", () => {
+      currentMode = "valid";
+      document.getElementById("btnFitValid").classList.add("active");
+      document.getElementById("btnFitAll").classList.remove("active");
+      renderChart();
+    });
+
+    document.getElementById("btnFitAll").addEventListener("click", () => {
+      currentMode = "all";
+      document.getElementById("btnFitAll").classList.add("active");
+      document.getElementById("btnFitValid").classList.remove("active");
+      renderChart();
+    });
+
+    function renderChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 若未開啟解答模式：完全留白，連坐標軸都不要有！
+      if (!isShowingAnswer) {
+        return;
+      }
+
+      // 解答模式才繪製坐標軸、刻度、回歸線與數據點
+      const pad = { left: 55, right: 30, top: 30, bottom: 45 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      const xMin = 0, xMax = 0.18;
+      const yMin = 0, yMax = 1.8;
+      const toX = val => pad.left + (val / xMax) * plotW;
+      const toY = val => pad.top + plotH - (val / yMax) * plotH;
+
+      // 網格與坐標軸
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 1;
+      for (let y = 0; y <= 1.8; y += 0.3) {
+        ctx.beginPath();
+        ctx.moveTo(pad.left, toY(y));
+        ctx.lineTo(pad.left + plotW, toY(y));
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "11px JetBrains Mono";
+        ctx.textAlign = "right";
+        ctx.fillText(y.toFixed(1), pad.left - 8, toY(y) + 4);
+      }
+      for (let x = 0; x <= 0.18; x += 0.03) {
+        ctx.beginPath();
+        ctx.moveTo(toX(x), pad.top);
+        ctx.lineTo(toX(x), pad.top + plotH);
+        ctx.stroke();
+        ctx.fillStyle = "#64748b";
+        ctx.font = "11px JetBrains Mono";
+        ctx.textAlign = "center";
+        ctx.fillText(x.toFixed(2), toX(x), pad.top + plotH + 18);
+      }
+
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, pad.top + plotH);
+      ctx.lineTo(pad.left + plotW, pad.top + plotH);
+      ctx.stroke();
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "12px Noto Sans TC";
+      ctx.textAlign = "center";
+      ctx.fillText("CuSO₄ 溶液體積莫耳濃度 C (M)", pad.left + plotW / 2, pad.top + plotH + 36);
+      ctx.save();
+      ctx.translate(pad.left - 38, pad.top + plotH / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("吸光度 A (無因次)", 0, 0);
+      ctx.restore();
+
+      if (currentMode === "valid") {
+        // 正確線性回歸線：A = 12.00 * C
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(toX(0), toY(0));
+        ctx.lineTo(toX(0.12), toY(12.00 * 0.12));
+        ctx.stroke();
+
+        // 虛線延伸
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.35)";
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(toX(0.12), toY(12.00 * 0.12));
+        ctx.lineTo(toX(0.16), toY(12.00 * 0.16));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 樣品 X 投影虛線
+        ctx.strokeStyle = "#f59e0b";
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, toY(sampleX.a));
+        ctx.lineTo(toX(sampleX.c), toY(sampleX.a));
+        ctx.lineTo(toX(sampleX.c), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 標記樣品 X
+        ctx.fillStyle = "#f59e0b";
+        ctx.beginPath();
+        ctx.arc(toX(sampleX.c), toY(sampleX.a), 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = "#fbbf24";
+        ctx.font = "bold 11px JetBrains Mono";
+        ctx.textAlign = "left";
+        ctx.fillText("Sample X (CX ≈ 0.0677 M)", toX(sampleX.c) + 10, toY(sampleX.a) - 6);
+
+        insightBox.innerHTML = `<strong>模式一解讀 (正確)</strong>：剔除高濃度偏離點後，回歸方程為 <i>A</i> = 12.00 · <i>C</i>（<i>R</i><sup>2</sup> = 0.9999）。代入廢水 <i>A</i> = 0.812，精確內插出銅離子濃度 <i>C<sub>X</sub></i> = 0.0677 M。`;
+
+      } else {
+        // 全點盲目回歸線 (錯誤示範)
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath();
+        ctx.moveTo(toX(0), toY(0.04));
+        ctx.lineTo(toX(0.16), toY(0.04 + 10.66 * 0.16));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        insightBox.innerHTML = `<strong>模式二解讀 (錯誤示範)</strong>：若未剔除 0.15 M 偏離點，全域回歸斜率降為 10.66（<i>R</i><sup>2</sup> = 0.985），導致未知物濃度計算偏差高達 +11.8%！`;
+      }
+
+      // 繪製標準散佈點
+      stdPts.forEach(pt => {
+        const cx = toX(pt.c);
+        const cy = toY(pt.a);
+        ctx.fillStyle = pt.valid ? "#34d399" : "#f43f5e";
+        ctx.beginPath();
+        ctx.arc(cx, cy, pt.valid ? 5 : 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        if (!pt.valid) {
+          ctx.fillStyle = "#f43f5e";
+          ctx.font = "bold 11px Noto Sans TC";
+          ctx.textAlign = "left";
+          ctx.fillText("高濃度偏離點", cx + 8, cy - 6);
+        }
+      });
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>

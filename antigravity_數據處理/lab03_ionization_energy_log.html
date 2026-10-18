@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>實驗專題 03：原子結構與游離能 · 對數轉換與殼層突破</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    .lab-page-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+    .lab-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.2rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .lab-switcher {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .lab-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+    }
+    .lab-tab:hover {
+      color: #fff;
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+    .lab-tab.active {
+      color: #c084fc;
+      background: rgba(168, 85, 247, 0.2);
+      border-color: #a855f7;
+    }
+    .lab-hero-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .lab-grid-2 { grid-template-columns: 1fr; }
+    }
+    .code-block-frame {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #c084fc;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+    .solution-panel {
+      transition: all 0.3s ease;
+    }
+    .solution-hidden {
+      display: none !important;
+    }
+    .btn-toggle-answer {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-toggle-answer:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(168, 85, 247, 0.5);
+    }
+    .btn-toggle-answer.active {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: #94a3b8;
+      border-color: #475569;
+      box-shadow: none;
+    }
+    .formula-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lab-page-container">
+    <!-- 頂部導航列與專題題目切換 -->
+    <nav class="lab-nav-bar">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <a href="index.html" class="btn" style="font-size:0.8rem; padding:0.35rem 0.75rem;">← 返回數據處理主頁</a>
+        <span style="color:var(--text-dim);">|</span>
+        <span style="font-size:0.85rem; font-weight:700; color:#fff;">理工實驗數據專題實戰</span>
+      </div>
+      <div class="lab-switcher">
+        <a href="lab01_millikan_oil_drop.html" class="lab-tab">01 密立坎油滴 (離散量子化)</a>
+        <a href="lab02_spectrophotometry_beer_law.html" class="lab-tab">02 光譜比爾定律 (線性檢量)</a>
+        <a href="lab03_ionization_energy_log.html" class="lab-tab active">03 游離能階躍 (對數轉換)</a>
+        <a href="lab04_precipitation_stoichiometry.html" class="lab-tab">04 沉澱化學計量 (分段折線)</a>
+        <a href="lab05_protein_electrophoresis.html" class="lab-tab">05 蛋白質電泳 (半對數遷移)</a>
+      </div>
+    </nav>
+
+    <!-- 題幹橫幅卡片 -->
+    <header class="lab-hero-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <span class="badge" style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4);">化學 / 物理化學與原子結構</span>
+            <span class="badge badge-cyan">大動態範圍對數作圖轉換</span>
+            <span class="badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">實驗專題 03</span>
+          </div>
+          <h1 style="font-size:1.6rem; font-weight:800; color:#fff; line-height:1.35;">
+            光電子能譜法：鋁原子逐級游離能 (IE₁~IE₈) 階躍與對數作圖分析
+          </h1>
+        </div>
+
+        <!-- 教學模式控制按鈕 -->
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <button id="btnMasterToggle" class="btn-toggle-answer">
+            <span id="toggleIcon">👁️</span>
+            <span id="toggleText">顯示作圖與參考解答</span>
+          </button>
+          <a href="data/lab03_逐級游離能量度階躍.csv" download class="btn" style="font-size:0.85rem; padding:0.55rem 0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);">
+            <span>📥 下載 CSV</span>
+          </a>
+        </div>
+      </div>
+
+      <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.75;">
+        【實驗背景與歷程】在原子結構研究中，逐級游離能（Successive Ionization Energies）是直接揭示電子殼層排布的最強實驗證據。
+        實驗透過高能 X 射線光電子能譜儀（XPS），逐步逐顆游離氣態鋁原子（Al<sub>(g)</sub>）核外的各個電子，依序測定將第 1 顆至第 8 顆電子移至無窮遠處所需之游離能（<i>IE</i><sub>1</sub> 至 <i>IE</i><sub>8</sub>）。
+      </p>
+
+      <div style="margin-top:0.85rem; padding:0.85rem 1.1rem; background:rgba(168, 85, 247, 0.08); border-left:3px solid #a855f7; border-radius:6px; font-size:0.88rem; color:#cbd5e1; line-height:1.7;">
+        <strong>相關定義</strong>：<br>
+        第 <i>n</i> 級游離能反應式：
+        <span class="formula-badge">Al<sup>(<i>n</i>−1)+</sup><sub>(g)</sub> → Al<sup><i>n</i>+</sup><sub>(g)</sub> + e<sup>−</sup></span>
+        &nbsp; (Δ<i>H</i> = <i>IE<sub>n</sub></i> &gt; 0)。<br>
+        <span style="font-size:0.82rem; color:#94a3b8;">
+          當自外層價電子進入更接近原子核之內層核心殼層時，有效核電荷劇增且遮蔽效應大幅降低，游離能將產生數倍的巨大階躍。
+        </span>
+      </div>
+    </header>
+
+    <!-- 主區塊一：實驗數據表與科學作圖展示 -->
+    <div class="lab-grid-2">
+      <!-- 實驗數據表格 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>鋁 (Al, Z=13) 逐級游離能量測數據 (IE₁ ~ IE₈)</span>
+          <span class="badge" style="background:rgba(168,85,247,0.2); color:#c084fc;">原始數據</span>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>游離級數</th>
+                <th>游離能 IE (kJ/mol)</th>
+                <th class="answer-cell" style="display:none; color:#c084fc;">log₁₀(IE)</th>
+                <th class="answer-cell" style="display:none; color:#fbbf24;">倍率 IEₙ / IEₙ₋₁</th>
+                <th class="answer-cell" style="display:none; color:#38bdf8;">對應電子殼層</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>IE₁</td><td style="color:#c084fc; font-weight:700;">578</td><td class="answer-cell" style="display:none;">2.762</td><td class="answer-cell" style="display:none;">-</td><td class="answer-cell" style="display:none; color:#34d399;">3p 價電子</td></tr>
+              <tr><td>IE₂</td><td style="color:#c084fc; font-weight:700;">1,817</td><td class="answer-cell" style="display:none;">3.259</td><td class="answer-cell" style="display:none;">3.14×</td><td class="answer-cell" style="display:none; color:#34d399;">3s 價電子</td></tr>
+              <tr><td>IE₃</td><td style="color:#c084fc; font-weight:700;">2,745</td><td class="answer-cell" style="display:none;">3.439</td><td class="answer-cell" style="display:none;">1.51×</td><td class="answer-cell" style="display:none; color:#34d399;">3s 價電子</td></tr>
+              <tr style="background:rgba(239,68,68,0.12);">
+                <td style="color:#f43f5e; font-weight:800;">IE₄</td>
+                <td style="color:#f43f5e; font-weight:800;">11,577</td>
+                <td class="answer-cell" style="display:none; color:#f43f5e; font-weight:800;">4.064</td>
+                <td class="answer-cell" style="display:none; color:#f43f5e; font-weight:800;">4.22× (巨大階躍)</td>
+                <td class="answer-cell" style="display:none; color:#f43f5e; font-weight:800;">2p 核心內層</td>
+              </tr>
+              <tr><td>IE₅</td><td style="color:#c084fc; font-weight:700;">14,842</td><td class="answer-cell" style="display:none;">4.171</td><td class="answer-cell" style="display:none;">1.28×</td><td class="answer-cell" style="display:none; color:#60a5fa;">2p 內層電子</td></tr>
+              <tr><td>IE₆</td><td style="color:#c084fc; font-weight:700;">18,379</td><td class="answer-cell" style="display:none;">4.264</td><td class="answer-cell" style="display:none;">1.24×</td><td class="answer-cell" style="display:none; color:#60a5fa;">2p 內層電子</td></tr>
+              <tr><td>IE₇</td><td style="color:#c084fc; font-weight:700;">23,326</td><td class="answer-cell" style="display:none;">4.368</td><td class="answer-cell" style="display:none;">1.27×</td><td class="answer-cell" style="display:none; color:#60a5fa;">2p 內層電子</td></tr>
+              <tr><td>IE₈</td><td style="color:#c084fc; font-weight:700;">27,465</td><td class="answer-cell" style="display:none;">4.439</td><td class="answer-cell" style="display:none;">1.18×</td><td class="answer-cell" style="display:none; color:#60a5fa;">2p 內層電子</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem; line-height:1.5;">
+          • 數據特徵：數值跨度從 578 飆升至 27,465 kJ/mol（相差近 50 倍）。
+        </div>
+      </div>
+
+      <!-- 互動作圖 Canvas -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>數據作圖區</span>
+          <span id="coordDisplay" style="font-family:var(--font-mono); font-size:0.75rem; color:#c084fc;"></span>
+        </div>
+
+        <!-- 作圖切換控制條 (解答模式才顯示) -->
+        <div id="chartControls" class="solution-panel solution-hidden" style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="toggle-btn active" id="btnModeLog">模式一：常用對數坐標 log₁₀(IE) (最佳呈現)</button>
+          <button class="toggle-btn" id="btnModeRaw">模式二：原始線性坐標 IE (失真對比)</button>
+        </div>
+
+        <!-- 畫布：未顯示解答前完全留白，連坐標軸都沒有 -->
+        <canvas id="labCanvas" width="560" height="340" style="width:100%; height:auto; background:#070b14; border-radius:8px; border:1px solid rgba(255,255,255,0.08);"></canvas>
+
+        <div id="chartInsightBox" class="solution-panel solution-hidden" style="margin-top:0.75rem; background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:6px; font-size:0.78rem; line-height:1.55; color:#cbd5e1;">
+          <!-- 動態文字 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 探究問題 (題幹常開，解答隨開關切換) -->
+    <div class="panel-box" style="margin-bottom:2rem;">
+      <div class="panel-header">
+        <span>✍️ 課堂探究思考與非選作圖檢核</span>
+        <span class="badge badge-amber">問題討論</span>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- 思考題 1 -->
+        <div style="margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 1】為什麼在原始線性坐標系下，IE₁、IE₂、IE₃ 的數值差異幾乎被完全壓縮而無法辨識？為何對數轉換能解決此問題？
+          </h4>
+          <p style="font-size:0.83rem; color:#94a3b8; line-height:1.6; margin-bottom:0.5rem;">
+            提示：當縱軸必須容納 30,000 kJ/mol 時，578 與 1,817 在同一比例尺下的高度佔比是多少？
+          </p>
+          <div id="ans1" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(168,85,247,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #a855f7;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>原始坐標壓縮失真</strong>：當最大值達 27,465 kJ/mol 時，若以線性比例尺作圖，<i>IE</i><sub>1</sub> = 578 kJ/mol 僅佔縱軸總長度的 1.9%，在前三級的細微差異（3p 與 3s 軌域能階差）完全被視覺掩蓋壓縮為一條貼近底部的直線。<br>
+            2. <strong>對數轉換的威力</strong>：取常用對數 log<sub>10</sub>(<i>IE</i>) 後，數值區間平緩壓縮至 2.76 ～ 4.44。對數坐標的本質是「反映數量級變化」，使得前三級價電子間的遞增與 <i>IE</i><sub>4</sub> 突破階躍同時清晰可見。
+          </div>
+        </div>
+
+        <!-- 思考題 2 -->
+        <div>
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 2】由 IE₁ ～ IE₈ 的數值倍率突變，如何嚴密推論鋁原子的最外層價電子數及主族分類？
+          </h4>
+          <div id="ans2" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(6,182,212,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #38bdf8;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>倍率突變檢驗</strong>：<br>
+            • <i>IE</i><sub>2</sub> / <i>IE</i><sub>1</sub> = 1817 / 578 = 3.14×<br>
+            • <i>IE</i><sub>3</sub> / <i>IE</i><sub>2</sub> = 2745 / 1817 = 1.51×<br>
+            • <strong><i>IE</i><sub>4</sub> / <i>IE</i><sub>3</sub> = 11577 / 2745 = 4.22×</strong>（發生最大量級暴增）<br>
+            • <i>IE</i><sub>5</sub> / <i>IE</i><sub>4</sub> = 14842 / 11577 = 1.28×<br>
+            2. <strong>物理化學推論</strong>：前 3 顆電子移除所需能量相對較小，表示其位於最外層主量子數 <i>n</i> = 3 的 M 殼層；至第 4 顆電子時，必須打破填滿的 <i>n</i> = 2（L 殼層，電子組態 2s<sup>2</sup> 2p<sup>6</sup>），有效核電荷極大且主半徑急遽縮小，因而需要額外巨大的能量。<br>
+            3. <strong>結論</strong>：最外層價電子數為 3，屬於元素週期表第 13 族（IIIA 族）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解答與指引區塊 (預設隱藏，點擊按鈕展開) -->
+    <div id="fullSolutionBlock" class="solution-panel solution-hidden">
+      <!-- 數據處理思維指引 -->
+      <div class="panel-box" style="margin-bottom:2rem;">
+        <div class="panel-header">
+          <span>💡 數據處理思維解析：大跨度數據之對數作圖技巧</span>
+          <span class="badge badge-emerald">科學方法論</span>
+        </div>
+        <div style="padding:1.25rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #c084fc;">
+            <h4 style="font-size:0.92rem; color:#c084fc; font-weight:700; margin-bottom:0.35rem;">步驟 1：建立常用對數欄位 log₁₀(Y)</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              當縱軸數據跨越 2～3 個數量級以上時，直接做線性圖必失真。先將各數值取常用對數 log<sub>10</sub>，將數百至數萬的跨度均勻化。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #f43f5e;">
+            <h4 style="font-size:0.92rem; color:#f43f5e; font-weight:700; margin-bottom:0.35rem;">步驟 2：計算相鄰比值定位階躍轉折</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              計算相鄰兩項之比值 <i>R<sub>n</sub></i> = <i>IE<sub>n</sub> / IE</i><sub><i>n</i>−1</sub>，搜尋大於 3.5～4 倍的異常突躍點，該階躍點前之項數即代表最外層價電子數。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #38bdf8;">
+            <h4 style="font-size:0.92rem; color:#38bdf8; font-weight:700; margin-bottom:0.35rem;">步驟 3：結合柱狀/階梯圖呈現層次感</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              在半對數坐標下繪製柱狀圖或階梯折線圖，並以色彩標記不同主殼層，視覺清晰度遠勝傳統線性折線。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 電腦工具實作程式碼 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>💻 電腦實作分析：Excel 函數與 Python 數據處理代碼</span>
+          <span class="badge badge-cyan">實作程式碼</span>
+        </div>
+        <div style="padding:1.25rem;">
+          <div style="margin-bottom:1rem;">
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">📊 方法 A：Excel 試算表公式操作</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              1. 建立對數欄位：在 C2 輸入 <code>=LOG10(B2)</code> 並向下填滿。<br>
+              2. 建立比值欄位：在 D3 輸入 <code>=B3/B2</code> 並向下填滿。<br>
+              3. 插入圖表時，選取縱坐標軸 ➜ 按右鍵「坐標軸格式」➜ 勾選「對數刻度（基底 10）」。
+            </p>
+          </div>
+
+          <div>
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">🐍 方法 B：Python 科學計算腳本 (Matplotlib 半對數圖)</h4>
+            <pre class="code-block-frame"><code>import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("lab03_逐級游離能量度階躍.csv")
+n = df["游離級數_n"].values
+ie = df["游離能_kJ_mol"].values
+
+# 計算相鄰倍率
+ratio = np.zeros(len(ie))
+ratio[1:] = ie[1:] / ie[:-1]
+print("倍率清單:", [f"{r:.2f}x" for r in ratio[1:]])
+
+# 繪製半對數圖表
+plt.figure(figsize=(7, 4))
+plt.semilogy(n, ie, marker='o', color='#c084fc', linewidth=2.5)
+plt.axvline(x=3.5, color='#f43f5e', linestyle='--', label='殼層突破 (IE4/IE3 = 4.22x)')
+plt.xlabel("Ionization Stage n")
+plt.ylabel("IE (kJ/mol) [Log Scale]")
+plt.title("Al Successive Ionization Energies")
+plt.grid(True, which="both", alpha=0.3)
+plt.legend()
+plt.show()</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isShowingAnswer = false;
+    let currentMode = "log"; // "log" or "raw"
+
+    const canvas = document.getElementById("labCanvas");
+    const ctx = canvas.getContext("2d");
+    const coordEl = document.getElementById("coordDisplay");
+    const insightBox = document.getElementById("chartInsightBox");
+    const btnMaster = document.getElementById("btnMasterToggle");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const toggleText = document.getElementById("toggleText");
+
+    const ieData = [
+      { n: 1, ie: 578,   logIe: 2.762, shell: "3p" },
+      { n: 2, ie: 1817,  logIe: 3.259, shell: "3s" },
+      { n: 3, ie: 2745,  logIe: 3.439, shell: "3s" },
+      { n: 4, ie: 11577, logIe: 4.064, shell: "2p" },
+      { n: 5, ie: 14842, logIe: 4.171, shell: "2p" },
+      { n: 6, ie: 18379, logIe: 4.264, shell: "2p" },
+      { n: 7, ie: 23326, logIe: 4.368, shell: "2p" },
+      { n: 8, ie: 27465, logIe: 4.439, shell: "2p" }
+    ];
+
+    btnMaster.addEventListener("click", () => {
+      isShowingAnswer = !isShowingAnswer;
+      if (isShowingAnswer) {
+        btnMaster.classList.add("active");
+        toggleIcon.textContent = "🙈";
+        toggleText.textContent = "隱藏作圖與解答 (課堂提問模式)";
+        coordEl.textContent = "IE₄/IE₃ 突破暴增 4.22 倍 (價電子=3)";
+        coordEl.style.color = "#c084fc";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.remove("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "");
+      } else {
+        btnMaster.classList.remove("active");
+        toggleIcon.textContent = "👁️";
+        toggleText.textContent = "顯示作圖與參考解答";
+        coordEl.textContent = "";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.add("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "none");
+      }
+      renderChart();
+    });
+
+    document.getElementById("btnModeLog").addEventListener("click", () => {
+      currentMode = "log";
+      document.getElementById("btnModeLog").classList.add("active");
+      document.getElementById("btnModeRaw").classList.remove("active");
+      renderChart();
+    });
+
+    document.getElementById("btnModeRaw").addEventListener("click", () => {
+      currentMode = "raw";
+      document.getElementById("btnModeRaw").classList.add("active");
+      document.getElementById("btnModeLog").classList.remove("active");
+      renderChart();
+    });
+
+    function renderChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 若未開啟解答模式：畫布完全留白，連坐標軸都不要有！
+      if (!isShowingAnswer) {
+        return;
+      }
+
+      // 解答模式繪圖
+      const pad = { left: 55, right: 30, top: 30, bottom: 45 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+      const xMin = 0.5, xMax = 8.5;
+      const toX = val => pad.left + ((val - xMin) / (xMax - xMin)) * plotW;
+
+      if (currentMode === "log") {
+        const yMin = 2.5, yMax = 4.8;
+        const toY = val => pad.top + plotH - ((val - yMin) / (yMax - yMin)) * plotH;
+
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
+        for (let y = 2.5; y <= 4.8; y += 0.5) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText(y.toFixed(1), pad.left - 8, toY(y) + 4);
+        }
+        for (let x = 1; x <= 8; x++) {
+          ctx.beginPath();
+          ctx.moveTo(toX(x), pad.top);
+          ctx.lineTo(toX(x), pad.top + plotH);
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(`IE${x}`, toX(x), pad.top + plotH + 18);
+        }
+
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("游離級數 n", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("常用對數 log₁₀(IE in kJ/mol)", 0, 0);
+        ctx.restore();
+
+        // 殼層分界線 (x = 3.5)
+        ctx.strokeStyle = "#f43f5e";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(toX(3.5), pad.top);
+        ctx.lineTo(toX(3.5), pad.top + plotH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = "#f43f5e";
+        ctx.font = "bold 11px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("主殼層突破階躍 (4.22x)", toX(3.5), pad.top + 16);
+
+        // 連線
+        ctx.strokeStyle = "#c084fc";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ieData.forEach((d, i) => {
+          if (i === 0) ctx.moveTo(toX(d.n), toY(d.logIe));
+          else ctx.lineTo(toX(d.n), toY(d.logIe));
+        });
+        ctx.stroke();
+
+        // 繪製點
+        ieData.forEach(d => {
+          const cx = toX(d.n);
+          const cy = toY(d.logIe);
+          ctx.fillStyle = d.n <= 3 ? "#34d399" : "#f43f5e";
+          ctx.beginPath();
+          ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = "#e2e8f0";
+          ctx.font = "10px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(d.logIe.toFixed(2), cx, cy - 8);
+        });
+
+        insightBox.innerHTML = `<strong>模式一解讀 (對數坐標)</strong>：經 log<sub>10</sub> 轉換後，前 3 顆價電子的階梯上升清清楚楚，而在 <i>IE</i><sub>4</sub> 處出現高聳的垂直陡升（暴增 4.22 倍），直觀揭示電子殼層擊穿！`;
+
+      } else {
+        // 模式二：原始坐標
+        const yMin = 0, yMax = 30000;
+        const toY = val => pad.top + plotH - (val / yMax) * plotH;
+
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
+        for (let y = 0; y <= 30000; y += 6000) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText((y / 1000) + "k", pad.left - 8, toY(y) + 4);
+        }
+        for (let x = 1; x <= 8; x++) {
+          ctx.beginPath();
+          ctx.moveTo(toX(x), pad.top);
+          ctx.lineTo(toX(x), pad.top + plotH);
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(`IE${x}`, toX(x), pad.top + plotH + 18);
+        }
+
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("游離級數 n", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("游離能 IE (kJ/mol) [原始坐標]", 0, 0);
+        ctx.restore();
+
+        // 折線
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ieData.forEach((d, i) => {
+          if (i === 0) ctx.moveTo(toX(d.n), toY(d.ie));
+          else ctx.lineTo(toX(d.n), toY(d.ie));
+        });
+        ctx.stroke();
+
+        ieData.forEach(d => {
+          const cx = toX(d.n);
+          const cy = toY(d.ie);
+          ctx.fillStyle = "#c084fc";
+          ctx.beginPath();
+          ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        insightBox.innerHTML = `<strong>模式二解讀 (原始坐標)</strong>：前三級游離能（578, 1817, 2745）完全被壓縮在坐標軸底部，肉眼極難分辨其細微變化與級距，印證了對數坐標轉換的必要性。`;
+      }
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>

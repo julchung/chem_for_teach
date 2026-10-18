@@ -1,0 +1,1751 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+generate_07_worksheet.py
+生成單元 2-7 氣體擴散與逸散 · 課堂講義學習單（標準 11 頁公版配置）
+"""
+
+import os
+
+output_path = os.path.join(
+    os.path.dirname(__file__),
+    "../my_chem_002_氣體/07_擴散與逸散/07_擴散與逸散_講義學習單.html"
+)
+
+html_content = '''<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>單元 2-7 氣體擴散與逸散 · 課堂講義學習單</title>
+    <script>
+        window.MathJax = {
+            tex: { 
+                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], 
+                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']], 
+                processEscapes: true 
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        document.body.classList.add('mathjax-typeset-done');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 10mm 12mm;
+        }
+
+        :root {
+            --blue: #0284c7;
+            --blue-dark: #0369a1;
+            --blue-bg: #f0f9ff;
+            --blue-border: #bae6fd;
+            --cyan: #0284c7;
+            --yellow: #b45309;
+            --yellow-bg: #fef3c7;
+            --yellow-border: #fde68a;
+            --green: #15803d;
+            --green-bg: #f0fdf4;
+            --green-border: #bbf7d0;
+            --red: #b91c1c;
+            --red-bg: #fef2f2;
+            --red-border: #fecaca;
+            --purple: #7e22ce;
+            --purple-bg: #faf5ff;
+            --purple-border: #e9d5ff;
+            --text-main: #0f172a;
+            --text-sub: #334155;
+            --border-light: #cbd5e1;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-size: 10.8pt;
+            line-height: 1.48;
+            overflow: visible;
+        }
+
+        .concept-page {
+            page-break-after: always;
+            break-after: page;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 8px;
+            background: #ffffff;
+            padding: 0;
+        }
+        .concept-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        /* 螢幕預覽模式：呈現精美擬真 A4 紙張閱讀體驗 */
+        @media screen {
+            body {
+                background-color: #f1f5f9;
+                padding: 24px 0;
+            }
+            .concept-page {
+                width: 210mm;
+                min-height: 275mm;
+                margin: 0 auto 28px auto;
+                padding: 10mm 12mm;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                border-radius: 4px;
+            }
+        }
+
+        /* 列印模式：嚴格消除任何多餘空白頁，確保 1:1 精確分頁 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm 10mm 12mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .concept-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .concept-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+        }
+
+        /* 頂部單行標頭 */
+        .handout-header {
+            border-bottom: 2.2px solid var(--blue);
+            padding-bottom: 3px;
+            margin-bottom: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+        .doc-title {
+            font-size: 13pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        .student-fields {
+            font-size: 10.2pt;
+            color: var(--text-sub);
+            font-weight: 600;
+            display: flex;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        .under-line {
+            display: inline-block;
+            border-bottom: 1.4px solid #334155;
+            height: 15px;
+        }
+
+        /* 章節主標題 */
+        .section-title {
+            font-size: 11.8pt;
+            font-weight: 800;
+            color: var(--blue-dark);
+            margin: 0;
+            padding: 4px 9px;
+            background: var(--blue-bg);
+            border-left: 4.5px solid var(--blue);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .section-title .tag {
+            font-size: 9.8pt;
+            font-weight: 700;
+            color: var(--blue);
+            background: #e0f2fe;
+            padding: 2px 7px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* 知識卡片 */
+        .concept-card {
+            background: #ffffff;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 7px 11px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            font-size: 10.6pt;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-weight: 800;
+            font-size: 11.2pt;
+            color: #0f172a;
+            margin-bottom: 1px;
+            border-bottom: 1.2px dashed #e2e8f0;
+            padding-bottom: 2px;
+            white-space: nowrap;
+        }
+        .card-tag {
+            background: var(--blue);
+            color: #ffffff;
+            font-size: 9.5pt;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .card-tag.amber { background: var(--yellow); }
+        .card-tag.emerald { background: var(--green); }
+        .card-tag.purple { background: var(--purple); }
+
+        .formula-box {
+            background: #f8fafc;
+            border: 1.4px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 4px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 11.2pt;
+            white-space: nowrap !important;
+        }
+
+        /* 雙欄與圖解排版 */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .diagram-card-wide {
+            border: 1.2px solid var(--border-light);
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 5px 9px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .diagram-card-wide .caption {
+            font-size: 9.6pt;
+            font-weight: 700;
+            color: #334155;
+            text-align: center;
+        }
+        .diagram-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .diagram-card {
+            border: 1.2px solid var(--border-light);
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 5px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .diagram-card .caption {
+            font-size: 9.2pt;
+            font-weight: 700;
+            color: #334155;
+            text-align: center;
+        }
+        .diagram-card .sub-caption {
+            font-size: 8.5pt;
+            color: #64748b;
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        /* 隨堂觀念自我檢核 */
+        .check-card {
+            background: #f8fafc;
+            border: 1.2px solid #cbd5e1;
+            border-left: 4.5px solid #0284c7;
+            border-radius: 6px;
+            padding: 6px 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .check-title {
+            font-size: 10.8pt;
+            font-weight: 800;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .check-item {
+            font-size: 10.2pt;
+            line-height: 1.45;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .check-num {
+            font-weight: 800;
+            color: #0284c7;
+            flex-shrink: 0;
+            width: 20px;
+        }
+        .fill-blank {
+            display: inline-block;
+            border-bottom: 1.2px solid #64748b;
+            min-width: 65px;
+            text-align: center;
+            color: #0284c7;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
+        /* 經典範例專屬樣式 (每頁上下固定二題) */
+        .example-section {
+            background: #ffffff;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 7px 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+        .example-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.4px solid #e2e8f0;
+            padding-bottom: 3px;
+        }
+        .example-tag {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 9.6pt;
+            font-weight: 800;
+            padding: 1px 7px;
+            border-radius: 3px;
+            margin-right: 6px;
+        }
+        .example-title {
+            font-size: 11.2pt;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .example-source {
+            font-size: 9pt;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .example-body-row {
+            display: flex;
+            gap: 9px;
+            align-items: flex-start;
+        }
+        .example-stem-col {
+            flex: 1.15;
+            font-size: 10.5pt;
+            line-height: 1.46;
+        }
+        .example-diagram-col {
+            flex: 0.85;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 4px 6px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .example-diagram-col .caption {
+            font-size: 8.8pt;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 2px;
+        }
+
+        /* 手寫筆記與演練專區 */
+        .example-notes-area {
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 4px;
+            margin-top: 2px;
+        }
+        .notes-header {
+            font-size: 9pt;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .note-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 3px 0;
+        }
+        .note-line {
+            border-bottom: 1px dashed #cbd5e1;
+            height: 1px;
+        }
+        .example-ans-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 9.8pt;
+        }
+        .example-ans-table th, .example-ans-table td {
+            border: 1px solid #cbd5e1;
+            padding: 3px 7px;
+            text-align: center;
+        }
+        .example-ans-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            color: #334155;
+            width: 18%;
+        }
+
+        /* 題號懸掛縮排規範 */
+        .q-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 3px;
+        }
+        .q-item-indent {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            font-size: 10.4pt;
+            line-height: 1.45;
+        }
+        .q-item-indent .q-num {
+            flex-shrink: 0;
+            font-weight: 800;
+            width: 24px;
+            color: #0369a1;
+        }
+        .q-item-indent .q-content {
+            flex: 1;
+        }
+        .opts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 10px;
+            margin-top: 2px;
+            font-size: 10.2pt;
+        }
+        .opts-grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 2px 6px;
+            margin-top: 2px;
+            font-size: 10.2pt;
+        }
+
+        /* 練習題卡片 */
+        .quiz-card {
+            background: #ffffff;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .quiz-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.2px solid #f1f5f9;
+            padding-bottom: 2px;
+        }
+        .quiz-q-tag {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 9.4pt;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+        .quiz-core-tag {
+            font-size: 8.8pt;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* 答案速查表專用 */
+        .ans-matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin: 4px 0;
+        }
+        .ans-matrix-table th, .ans-matrix-table td {
+            border: 1.2px solid #cbd5e1;
+            padding: 4px 8px;
+            text-align: center;
+        }
+        .ans-matrix-table th {
+            background: #f1f5f9;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        .ans-matrix-table .ans-key-val {
+            font-weight: 900;
+            color: #0284c7;
+            font-size: 11pt;
+            background: #f0f9ff;
+        }
+
+        /* 公式同行 */
+        .math-nowrap, .formula-box {
+            white-space: nowrap !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ======================= PAGE 1 (觀念一) ======================= -->
+    <div class="concept-page" id="page-1" style="gap: 5px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>一、擴散 (Diffusion) 與逸散 (Effusion) 之微觀物理機制與對比</span>
+            <span class="tag">微觀布朗運動 · 平均自由徑 · 長管相遇實驗</span>
+        </div>
+
+        <div class="grid-2col" style="gap: 6px;">
+            <div class="concept-card" style="padding: 6px 9px;">
+                <div class="card-header">
+                    <span class="card-tag">微觀本質</span>
+                    <span>擴散 vs 逸散機制與平均自由徑條件</span>
+                </div>
+                <div style="font-size: 10.4pt; line-height: 1.5;">
+                    • <b>擴散 (Diffusion)</b>：氣體由高濃度往低濃度空間<b>自發均勻混合</b>。分子經歷<b>頻繁碰撞</b>，遵循曲折布朗運動，速率受限於平均自由徑 $\\lambda$。<br>
+                    • <b>逸散 (Effusion)</b>：氣體經器壁極小微孔逃逸至真空。微孔直徑 $d \\ll \\lambda$，分子穿孔時<b>彼此不碰撞</b>，以瞬時熱運動速度直接穿出。
+                </div>
+            </div>
+
+            <div class="concept-card" style="padding: 6px 9px;">
+                <div class="card-header">
+                    <span class="card-tag amber">經典實驗</span>
+                    <span>濃氨水與濃鹽酸相遇生成氯化銨白煙</span>
+                </div>
+                <div style="font-size: 10.4pt; line-height: 1.5;">
+                    • <b>實驗設置</b>：兩端開放玻璃管，兩端分別塞入沾有濃氨水 $\\text{NH}_3(aq)$（$M=17$）與濃鹽酸 $\\text{HCl}(aq)$（$M=36.5$）的棉花。<br>
+                    • <b>化學反應</b>：$\\text{NH}_3(g) + \\text{HCl}(g) \\rightarrow \\text{NH}_4\\text{Cl}(s)$（白色固體煙霧環）。<br>
+                    • <b>結論</b>：白煙<b>偏向濃鹽酸棉花端</b>，證實分子量小者（$\\text{NH}_3$）運動速率顯著較快。
+                </div>
+            </div>
+        </div>
+
+        <!-- 向量圖解 1 & 2 -->
+        <div class="diagram-row" style="gap: 6px;">
+            <div class="diagram-card" style="padding: 4px 6px;">
+                <div class="caption">圖 2-38A 擴散 (Diffusion) vs 逸散 (Effusion) 物理模型</div>
+                <svg viewBox="0 0 350 72" style="width: 100%; height: auto; max-height: 66px;">
+                    <!-- 擴散子圖 -->
+                    <rect x="4" y="3" width="165" height="66" rx="4" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.1" />
+                    <text x="86" y="14" font-size="7.8" fill="#0369a1" text-anchor="middle" font-weight="700">【擴散】多分子頻繁碰撞 · 布朗運動</text>
+                    <circle cx="20" cy="40" r="2" fill="#0284c7" />
+                    <polyline points="20,40 38,28 58,48 82,30 110,44 140,32" fill="none" stroke="#dc2626" stroke-width="1.1" stroke-dasharray="2 1" />
+                    <circle cx="38" cy="28" r="1.3" fill="#64748b" /><circle cx="58" cy="48" r="1.3" fill="#64748b" />
+                    <circle cx="82" cy="30" r="1.3" fill="#64748b" /><circle cx="110" cy="44" r="1.3" fill="#64748b" />
+                    <circle cx="140" cy="32" r="2" fill="#0284c7" />
+                    <text x="86" y="63" font-size="7" fill="#334155" text-anchor="middle">受平均自由徑 $\\lambda$ 限制 · 濃度梯度驅動</text>
+
+                    <!-- 逸散子圖 -->
+                    <rect x="178" y="3" width="168" height="66" rx="4" fill="#fffbeb" stroke="#d97706" stroke-width="1.1" />
+                    <text x="262" y="14" font-size="7.8" fill="#b45309" text-anchor="middle" font-weight="700">【逸散】器壁微孔逃逸 · 孔徑 $d \\ll \\lambda$</text>
+                    <rect x="184" y="20" width="46" height="34" fill="#fef3c7" stroke="#b45309" stroke-width="1" />
+                    <line x1="230" y1="20" x2="230" y2="33" stroke="#78350f" stroke-width="2.2" />
+                    <line x1="230" y1="41" x2="230" y2="54" stroke="#78350f" stroke-width="2.2" />
+                    <circle cx="205" cy="37" r="2" fill="#d97706" />
+                    <line x1="207" y1="37" x2="305" y2="37" stroke="#dc2626" stroke-width="1.2" />
+                    <polygon points="310,37 303,34 303,40" fill="#dc2626" />
+                    <text x="207" y="29" font-size="6.5" fill="#b45309" text-anchor="middle">高壓容器</text>
+                    <text x="275" y="29" font-size="6.5" fill="#64748b" text-anchor="middle">真空環境</text>
+                    <text x="233" y="33" font-size="6.5" fill="#dc2626" font-weight="700">微孔 d</text>
+                    <text x="262" y="63" font-size="7" fill="#334155" text-anchor="middle">分子無碰撞穿透 · 速率正比於熱運動速率</text>
+                </svg>
+                <div class="sub-caption">微觀判據：微孔直徑遠小於平均自由徑 ($d \\ll \\lambda$) 時，即屬格銳目逸散體系。</div>
+            </div>
+
+            <div class="diagram-card" style="padding: 4px 6px;">
+                <div class="caption">圖 2-38B 濃氨水與濃鹽酸長管擴散相遇白煙生成示意圖</div>
+                <svg viewBox="0 0 350 72" style="width: 100%; height: auto; max-height: 66px;">
+                    <rect x="25" y="22" width="300" height="24" rx="3" fill="#f8fafc" stroke="#334155" stroke-width="1.2" />
+                    <rect x="26" y="23" width="22" height="22" rx="2" fill="#bae6fd" stroke="#0284c7" stroke-width="1" />
+                    <text x="37" y="37" font-size="7.5" fill="#0369a1" text-anchor="middle" font-weight="800">NH₃</text>
+                    <text x="37" y="16" font-size="7" fill="#0369a1" text-anchor="middle">濃氨水(M=17)</text>
+
+                    <rect x="302" y="23" width="22" height="22" rx="2" fill="#fecaca" stroke="#dc2626" stroke-width="1" />
+                    <text x="313" y="37" font-size="7.5" fill="#b91c1c" text-anchor="middle" font-weight="800">HCl</text>
+                    <text x="313" y="16" font-size="7" fill="#b91c1c" text-anchor="middle">濃鹽酸(M=36.5)</text>
+
+                    <rect x="198" y="23" width="7" height="22" fill="#94a3b8" fill-opacity="0.85" stroke="#475569" stroke-width="0.8" />
+                    <text x="201" y="58" font-size="7.5" fill="#dc2626" text-anchor="middle" font-weight="800">白煙環 NH₄Cl(s)</text>
+
+                    <line x1="50" y1="34" x2="190" y2="34" stroke="#0284c7" stroke-width="1.3" />
+                    <polygon points="194,34 187,31 187,37" fill="#0284c7" />
+                    <text x="115" y="30" font-size="7" fill="#0369a1" font-weight="700">d₁ (速率快，移動遠)</text>
+
+                    <line x1="300" y1="34" x2="212" y2="34" stroke="#dc2626" stroke-width="1.3" />
+                    <polygon points="208,34 215,31 215,37" fill="#dc2626" />
+                    <text x="255" y="30" font-size="7" fill="#dc2626" font-weight="700">d₂ (移動近)</text>
+                    
+                    <text x="175" y="69" font-size="7" fill="#334155" text-anchor="middle">擴散距離比：$\\dfrac{d_{\\text{NH}_3}}{d_{\\text{HCl}}} = \\sqrt{\\dfrac{36.5}{17}} \\approx 1.465$ ➔ 白煙靠近濃鹽酸端</text>
+                </svg>
+                <div class="sub-caption">白煙生成位置：分子量越小擴散速率越快，相同時間內移動距離越大。</div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card" style="padding: 5px 9px;">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(1)</span>
+                <span>氣體自高濃度往低濃度自發均勻混合之現象稱為<span class="fill-blank">擴散</span>；若藉由微小孔隙向真空逃逸則稱為<span class="fill-blank">逸散</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(2)</span>
+                <span>氣體發生微孔逸散的微觀必備幾何條件為：器壁微孔的直徑 $d$ 必須遠小於分子的<span class="fill-blank">平均自由徑 (λ)</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(3)</span>
+                <span>在長玻璃管逆向擴散實驗中，濃氨水揮發之 $\\text{NH}_3$ 與濃鹽酸揮發之 $\\text{HCl}$ 相遇生成的白色煙霧化學成分為<span class="fill-blank">$\\text{NH}_4\\text{Cl}$</span>，位置靠近<span class="fill-blank">濃鹽酸</span>端。</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 2 (觀念二) ======================= -->
+    <div class="concept-page" id="page-2">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>二、格銳目擴散與逸散定律 (Graham's Law) 定量關係與多種形式</span>
+            <span class="tag">速率反比律 · 逸散時間計時 · 變溫變壓推廣</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">核心定律</span>
+                <span>格銳目定律 (Graham\'s Law) 同溫同壓定量關係式</span>
+            </div>
+            <div style="font-size: 10.6pt; line-height: 1.5;">
+                在<b>同溫同壓</b>下，任何氣體之擴散或逸散速率 $r$，與其氣體密度 $d$ 之平方根成反比，亦與其分子量 $M$ 之平方根成反比：
+            </div>
+            <div class="formula-box">
+                $\\dfrac{r_1}{r_2} = \\sqrt{\\dfrac{d_2}{d_1}} = \\sqrt{\\dfrac{M_2}{M_1}} = \\dfrac{t_2}{t_1} = \\dfrac{L_1}{L_2} = \\dfrac{\\Delta n_1}{\\Delta n_2} = \\dfrac{\\Delta V_1}{\\Delta V_2}$
+            </div>
+            <div style="font-size: 10.2pt; color: #334155; margin-top: 2px;">
+                • <b>逸散時間比 ($t_1/t_2$)</b>：同體積（或同莫耳數）氣體逸散所需時間，與分子量平方根成<b>正比</b>：$\\dfrac{t_1}{t_2} = \\sqrt{\\dfrac{M_1}{M_2}}$（分子量越大，動作越慢，耗時越長！）。<br>
+                • <b>擴散距離比 ($L_1/L_2$)</b>：相同時間內氣體擴散的直線前進距離，與分子量平方根成<b>反比</b>：$\\dfrac{L_1}{L_2} = \\sqrt{\\dfrac{M_2}{M_1}}$。
+            </div>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag amber">非同溫非同壓</span>
+                <span>變溫與變壓條件之格銳目定律修正推廣</span>
+            </div>
+            <div style="font-size: 10.4pt; line-height: 1.5;">
+                氣體分子碰撞微孔的碰撞頻率正比於氣體分壓 $P$（或濃度 $n/V$），而分子平均穿孔速度正比於 $\\sqrt{T/M}$。因此：
+            </div>
+            <div class="formula-box" style="background: #fffbeb; border-color: #fde68a; color: #b45309;">
+                逸散速率綜合理論式：$r \\propto \\dfrac{P}{\\sqrt{M \\cdot T}}$ 或 $r \\propto P \\cdot \\sqrt{\\dfrac{T}{M}}$ ➔ $\\mathbf{\\dfrac{r_1}{r_2} = \\dfrac{P_1}{P_2} \\cdot \\sqrt{\\dfrac{M_2 \\cdot T_1}{M_1 \\cdot T_2}}}$
+            </div>
+            <div style="font-size: 10.2pt; color: #334155;">
+                • <b>定容容器初逸散莫耳比</b>：在同溫下若容器內充入混合氣體，則最初瞬間兩氣體逸散之莫耳數比值為：$\\dfrac{n_1\'}{n_2\'} = \\dfrac{P_1}{P_2} \\cdot \\sqrt{\\dfrac{M_2}{M_1}} = \\dfrac{n_1}{n_2} \\cdot \\sqrt{\\dfrac{M_2}{M_1}}$（同位素氣體離心分離核心原理）。
+            </div>
+        </div>
+
+        <!-- 函數圖形解析 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 2-39 格銳目定律速率反比幾何函數曲線與線性轉換模型</div>
+            <svg viewBox="0 0 520 86" style="width: 100%; height: auto; max-height: 86px;">
+                <!-- 左圖: r vs M 雙曲線 -->
+                <line x1="30" y1="68" x2="230" y2="68" stroke="#334155" stroke-width="1.2" />
+                <line x1="30" y1="68" x2="30" y2="10" stroke="#334155" stroke-width="1.2" />
+                <text x="230" y="78" font-size="8.5" fill="#334155" text-anchor="end">分子量 M</text>
+                <text x="25" y="14" font-size="8.5" fill="#334155" text-anchor="end">速率 r</text>
+                <path d="M 38 18 Q 55 46 215 62" fill="none" stroke="#0284c7" stroke-width="1.8" />
+                <circle cx="44" cy="23" r="2.2" fill="#dc2626" /><text x="50" y="21" font-size="7.8" fill="#dc2626">H₂(2)</text>
+                <circle cx="76" cy="46" r="2.2" fill="#d97706" /><text x="82" y="44" font-size="7.8" fill="#d97706">CH₄(16)</text>
+                <circle cx="118" cy="56" r="2.2" fill="#16a34a" /><text x="124" y="54" font-size="7.8" fill="#16a34a">O₂(32)</text>
+                <circle cx="180" cy="61" r="2.2" fill="#7e22ce" /><text x="184" y="59" font-size="7.8" fill="#7e22ce">SO₂(64)</text>
+                <text x="130" y="28" font-size="8.5" fill="#0369a1" font-weight="700">r ∝ 1 / √M (非線性遞減漸近線)</text>
+
+                <!-- 分隔線 -->
+                <line x1="260" y1="8" x2="260" y2="78" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3" />
+
+                <!-- 右圖: r vs 1/√M 正比線性關係 -->
+                <line x1="290" y1="68" x2="490" y2="68" stroke="#334155" stroke-width="1.2" />
+                <line x1="290" y1="68" x2="290" y2="10" stroke="#334155" stroke-width="1.2" />
+                <text x="490" y="78" font-size="8.5" fill="#334155" text-anchor="end">1 / √M</text>
+                <text x="285" y="14" font-size="8.5" fill="#334155" text-anchor="end">速率 r</text>
+                <line x1="290" y1="68" x2="475" y2="16" stroke="#16a34a" stroke-width="1.8" />
+                <circle cx="290" cy="68" r="2.2" fill="#dc2626" />
+                <text x="290" y="79" font-size="7.8" fill="#dc2626" text-anchor="middle">(0,0)</text>
+                <text x="380" y="34" font-size="9" fill="#15803d" font-weight="800">直線斜率 k = √(3RT)</text>
+                <text x="390" y="48" font-size="8" fill="#475569">作 r 對 1/√M 圖可得過原點之完美正比直線</text>
+            </svg>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(1)</span>
+                <span>在同溫同壓同微孔條件下，$\\text{CH}_4$（$M=16$）與 $\\text{SO}_2$（$M=64$）之逸散速率比值 $r_{\\text{CH}_4} : r_{\\text{SO}_2}$ 為<span class="fill-blank">2 : 1</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(2)</span>
+                <span>若同體積之某未知氣體擴散需時 $100\\text{ s}$，同狀況下等體積之 $\\text{O}_2$ 需時 $50\\text{ s}$，則該未知氣體的分子量為<span class="fill-blank">128</span> $\\text{g/mol}$。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(3)</span>
+                <span>若將氣體之擴散速率 $r$ 對 $\\dfrac{1}{\\sqrt{M}}$ 作圖，其圖形為通過原點之<span class="fill-blank">正比直線</span>，直線之斜率隨溫度升高而<span class="fill-blank">增大</span>。</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 3 (觀念三) ======================= -->
+    <div class="concept-page" id="page-3">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>三、氣體動力論 (KMT) 核心假說與微觀壓力動能推導</span>
+            <span class="tag">五大微觀假設 · 完全彈性碰撞 · 動量變化與壓力推導</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">微觀模型</span>
+                <span>理想氣體動力論 (Kinetic Molecular Theory, KMT) 五大核心假設</span>
+            </div>
+            <div class="q-list" style="font-size: 10.4pt; line-height: 1.46;">
+                <div class="q-item-indent">
+                    <span class="q-num">1.</span>
+                    <span class="q-content"><b>分子質點假說</b>：氣體由大量微小質點（分子）組成，氣體分子自身佔有之體積與容器總體積相較微乎其微，可視為<b>體積為零之幾何質點</b>。</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">2.</span>
+                    <span class="q-content"><b>分子間無作用力</b>：分子間不存在引力與斥力（凡得瓦引力為零），氣體分子各自獨立自由運動。</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">3.</span>
+                    <span class="q-content"><b>完全彈性碰撞</b>：分子彼此碰撞或分子與容器壁碰撞均為<b>完全彈性碰撞</b>，碰撞過程無機械能損失，系統總動能守恆。</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">4.</span>
+                    <span class="q-content"><b>隨機直線熱運動</b>：氣體分子在連續碰撞之間皆沿直線做等速度運動，向空間各方向運動之機率完全均等。</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">5.</span>
+                    <span class="q-content"><b>絕對溫度的微觀本質</b>：氣體分子的平均平移動能 $\\overline{E_k}$ <b>僅與絕對溫度 $T$ 成正比</b>，與分子質量、種類及壓力完全無關：$\\mathbf{\\overline{E_k} = \\dfrac{1}{2}m\\overline{v^2} = \\dfrac{3}{2}kT = \\dfrac{3RT}{2N_A}}$。</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 微觀壓力推導 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag emerald">理論推導</span>
+                <span>由分子微觀連續碰撞動量變化率推導巨觀器壁壓力</span>
+            </div>
+            <div style="font-size: 10.4pt; line-height: 1.5;">
+                考慮邊長為 $L$（體積 $V = L^3$）之立方體容器，內有質量為 $m$ 的單一分子沿 $x$ 軸以速率 $v_x$ 運動：
+            </div>
+            <div class="formula-box">
+                單次碰撞動量變化：$\\Delta p_x = mv_x - (-mv_x) = 2mv_x \\quad \\vert \\quad$ 連續碰撞往返時間：$\\Delta t = \\dfrac{2L}{v_x}$
+            </div>
+            <div class="formula-box" style="margin-top: 2px;">
+                單一分子對器壁平均衝力：$F_x = \\dfrac{\\Delta p_x}{\\Delta t} = \\dfrac{2mv_x}{2L / v_x} = \\dfrac{m v_x^2}{L}$
+            </div>
+            <div style="font-size: 10.2pt; color: #334155;">
+                容器內共有 $N$ 個分子，空間均向性 $\\overline{v_x^2} = \\overline{v_y^2} = \\overline{v_z^2} = \\dfrac{1}{3}\\overline{v^2}$，總壓力為：
+                $P = \\dfrac{F_{\\text{總}}}{L^2} = \\dfrac{N m \\overline{v_x^2}}{L^3} = \\mathbf{\\dfrac{1}{3}\\dfrac{N m \\overline{v^2}}{V}} \\implies PV = \\dfrac{2}{3} N \\left(\\dfrac{1}{2}m\\overline{v^2}\\right) = \\dfrac{2}{3} N \\left(\\dfrac{3}{2}kT\\right) = \\mathbf{nRT}$（完美推導！）。
+            </div>
+        </div>
+
+        <!-- 圖解卡片 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 2-40 立方體容器內微觀分子器壁連續碰撞與動量分析模型</div>
+            <svg viewBox="0 0 500 76" style="width: 100%; height: auto; max-height: 76px;">
+                <!-- 立方體線框 -->
+                <rect x="50" y="10" width="60" height="55" fill="#f8fafc" stroke="#334155" stroke-width="1.2" />
+                <polygon points="50,10 75,2 135,2 110,10" fill="#f1f5f9" stroke="#334155" stroke-width="1" />
+                <polygon points="110,10 135,2 135,57 110,65" fill="#e2e8f0" stroke="#334155" stroke-width="1" />
+                
+                <!-- 碰撞分子路徑 -->
+                <circle cx="85" cy="38" r="2.5" fill="#dc2626" />
+                <line x1="85" y1="38" x2="110" y2="38" stroke="#dc2626" stroke-width="1.3" />
+                <polygon points="110,38 103,35 103,41" fill="#dc2626" />
+                <line x1="110" y1="38" x2="60" y2="52" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="2 1" />
+                
+                <text x="80" y="73" font-size="8" fill="#334155" text-anchor="middle">邊長 L (體積 V=L³)</text>
+                <text x="142" y="38" font-size="8" fill="#0284c7" font-weight="700">器壁面積 A = L²</text>
+
+                <!-- 右側推導文字框 -->
+                <rect x="200" y="8" width="285" height="60" rx="4" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1" />
+                <text x="210" y="24" font-size="8.5" fill="#0369a1" font-weight="700">【微觀壓力公式歸納】</text>
+                <text x="210" y="38" font-size="8.2" fill="#334155">• 單次動量變化：Δp = 2mvₓ ➔ 碰撞時間：Δt = 2L / vₓ</text>
+                <text x="210" y="50" font-size="8.2" fill="#334155">• 巨觀壓力：P = (1/3) · (N·m·v² / V) ➔ 與分子運動動能直接掛鉤</text>
+                <text x="210" y="62" font-size="8.2" fill="#dc2626" font-weight="700">• 只要絕對溫度 T 相同，任何氣體的分子平均動能必完全相等！</text>
+            </svg>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(1)</span>
+                <span>氣體動力論中假設氣體分子碰撞器壁與彼此碰撞皆為<span class="fill-blank">完全彈性</span>碰撞，因此碰撞前後系統之總動能<span class="fill-blank">守恆 (不變)</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(2)</span>
+                <span>在同溫下，分子量較大之氣體分子與分子量較小之氣體分子，兩者的平均動能大小關係為<span class="fill-blank">相等</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(3)</span>
+                <span>巨觀氣體壓力的微觀本質，是源自於大量分子單位時間內與容器壁碰撞時所施加的連續<span class="fill-blank">動量變化率 (Δp/Δt)</span>。</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 4 (觀念四) ======================= -->
+    <div class="concept-page" id="page-4">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>四、麥克斯威－波茲曼速率分佈曲線與三種分子速率特性</span>
+            <span class="tag">麥克斯威分佈 · 最概然速率 · 平均速率 · 均方根速率</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">分佈特性</span>
+                <span>麥克斯威－波茲曼 (Maxwell-Boltzmann) 分子速率分佈曲線之幾何意義</span>
+            </div>
+            <div style="font-size: 10.4pt; line-height: 1.5;">
+                即使在相同溫度下，同種氣體中各分子的瞬時速率並非均一固定，而是呈現統計性的非對稱鐘形分佈：
+            </div>
+            <div class="q-list" style="font-size: 10.2pt;">
+                <div class="q-item-indent">
+                    <span class="q-num">•</span>
+                    <span class="q-content"><b>座標軸意義</b>：橫軸為分子瞬時速率 $v$，縱軸代表單位速率區間內的分子數分數 $\\dfrac{1}{N}\\dfrac{dN}{dv}$。</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">•</span>
+                    <span class="q-content"><b>曲線下總面積守恆</b>：曲線與橫軸所包圍的總幾何面積代表整個系統的分子總比例，數值<b>恆等於 1.0 (100%)</b>，不隨溫度改變！</span>
+                </div>
+                <div class="q-item-indent">
+                    <span class="q-num">•</span>
+                    <span class="q-content"><b>溫度升高的影響</b>：升高溫度時，分子動能普遍增大，曲線<b>最高峰向右平移且高度降低，整體曲線變扁展寬</b>；極高能量分子所佔比例大幅增加。</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag purple">速率指標</span>
+                <span>氣體動力論三種代表性分子速率數學式與大小比較</span>
+            </div>
+            <div style="font-size: 10.2pt; line-height: 1.5;">
+                由麥克斯威速率分佈曲線可嚴格導出三種代表性速率（均正比於 $\\sqrt{T/M}$）：
+            </div>
+            <div class="formula-box">
+                最概然速率：$v_p = \\sqrt{\\dfrac{2RT}{M}} \\quad \\vert \\quad$ 平均速率：$\\overline{v} = \\sqrt{\\dfrac{8RT}{\\pi M}} \\quad \\vert \\quad$ 均方根速率：$v_{rms} = \\sqrt{\\dfrac{3RT}{M}}$
+            </div>
+            <div style="font-size: 10.2pt; color: #334155; margin-top: 2px;">
+                • <b>三者比值</b>：$v_p : \\overline{v} : v_{rms} = \\sqrt{2} : \\sqrt{\\dfrac{8}{\\pi}} : \\sqrt{3} \\approx 1.414 : 1.596 : 1.732 = \\mathbf{1.000 : 1.128 : 1.225}$。<br>
+                • <b>大小順序</b>：$\\mathbf{v_p < \\overline{v} < v_{rms}}$（均方根速率數值最大；最概然速率對應曲線最高頂點峰值）。
+            </div>
+        </div>
+
+        <!-- 向量繪圖 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 2-41 麥克斯威－波茲曼分子速率分佈曲線 (不同溫度展寬比較與三種速率位置)</div>
+            <svg viewBox="0 0 520 86" style="width: 100%; height: auto; max-height: 86px;">
+                <!-- 座標軸 -->
+                <line x1="30" y1="72" x2="490" y2="72" stroke="#334155" stroke-width="1.2" />
+                <line x1="30" y1="72" x2="30" y2="10" stroke="#334155" stroke-width="1.2" />
+                <text x="490" y="82" font-size="8.5" fill="#334155" text-anchor="end">分子速率 v (m/s)</text>
+                <text x="25" y="14" font-size="8.5" fill="#334155" text-anchor="end">分率 (1/N dN/dv)</text>
+
+                <!-- 低溫曲線 T1 (藍色，高且窄) -->
+                <path d="M 30 72 Q 70 72 95 20 Q 115 15 140 45 Q 170 65 240 72" fill="none" stroke="#0284c7" stroke-width="1.8" />
+                <text x="105" y="16" font-size="8.5" fill="#0369a1" font-weight="700">T₁ (低溫 300K: 窄而高)</text>
+
+                <!-- 高溫曲線 T2 (紅色，扁且展寬) -->
+                <path d="M 30 72 Q 80 72 135 38 Q 165 35 210 52 Q 270 66 380 72" fill="none" stroke="#dc2626" stroke-width="1.8" />
+                <text x="210" y="32" font-size="8.5" fill="#dc2626" font-weight="700">T₂ (高溫 900K: 展寬向右平移)</text>
+
+                <!-- 三種速率虛線標示 (以 T1 為例) -->
+                <!-- vp = 100, v_bar = 113, vrms = 122 -->
+                <line x1="100" y1="20" x2="100" y2="72" stroke="#d97706" stroke-width="1.2" stroke-dasharray="2 2" />
+                <circle cx="100" cy="20" r="2" fill="#d97706" />
+                <text x="100" y="80" font-size="7.5" fill="#b45309" text-anchor="middle" font-weight="800">vₚ</text>
+
+                <line x1="113" y1="26" x2="113" y2="72" stroke="#16a34a" stroke-width="1.2" stroke-dasharray="2 2" />
+                <text x="113" y="80" font-size="7.5" fill="#15803d" text-anchor="middle" font-weight="800">v̄</text>
+
+                <line x1="124" y1="34" x2="124" y2="72" stroke="#7e22ce" stroke-width="1.2" stroke-dasharray="2 2" />
+                <text x="127" y="80" font-size="7.5" fill="#7e22ce" text-anchor="middle" font-weight="800">vᵣₘₛ</text>
+
+                <!-- 說明註記 -->
+                <rect x="290" y="10" width="195" height="52" rx="4" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1" />
+                <text x="300" y="24" font-size="8" fill="#7e22ce" font-weight="700">【速率指標比較規則】</text>
+                <text x="300" y="36" font-size="7.8" fill="#334155">• vₚ (最概然) &lt; v̄ (平均) &lt; vᵣₘₛ (均方根)</text>
+                <text x="300" y="47" font-size="7.8" fill="#334155">• 比例比值為 √2 : √(8/π) : √3 ≈ 1 : 1.13 : 1.22</text>
+                <text x="300" y="58" font-size="7.8" fill="#dc2626" font-weight="700">• 兩曲線包覆面積均恆等於 1.0 (面積守恆)</text>
+            </svg>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(1)</span>
+                <span>麥克斯威－波茲曼速率分佈曲線的最高頂點所對應的物理速率為<span class="fill-blank">最概然速率 (vp)</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(2)</span>
+                <span>當定量的氣體溫度升高時，其速率分佈曲線下方與橫軸所圍成的總面積大小將<span class="fill-blank">保持不變</span>。</span>
+            </div>
+            <div class="check-item">
+                <span class="check-num">(3)</span>
+                <span>最概然速率 $v_p$、平均速率 $\\overline{v}$ 與均方根速率 $v_{rms}$ 三者之大小關係為<span class="fill-blank">$v_p < \\overline{v} < v_{rms}$</span>。</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 5 (範例頁一：上下兩題) ======================= -->
+    <div class="concept-page" id="page-5">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <!-- 經典範例 1 (上半部) -->
+        <div class="example-section" style="margin-bottom: 2px;">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 1</span>
+                    <span class="example-title">格銳目定律逸散速率比之計算</span>
+                </div>
+                <span class="example-source">基礎觀念核心題</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        在<b>同溫同壓</b>之條件下，試利用格銳目定律比較下列各組氣體自同容器微孔逸散之速率比 $r_1 : r_2$：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">氫氣 $\\text{H}_2$（$M=2$）與氧氣 $\\text{O}_2$（$M=32$）之逸散速率比為何？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">甲烷 $\\text{CH}_4$（$M=16$）與二氧化硫 $\\text{SO}_2$（$M=64$）之逸散速率比為何？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">氮氣 $\\text{N}_2$（$M=28$）與二氧化碳 $\\text{CO}_2$（$M=44$）之逸散速率比為何？</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-42A 逸散速率反比比值示意</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <rect x="15" y="15" width="210" height="46" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" />
+                        <text x="120" y="32" font-size="9" fill="#0369a1" text-anchor="middle" font-weight="700">r₁ / r₂ = √(M₂ / M₁)</text>
+                        <text x="120" y="48" font-size="8.5" fill="#b45309" text-anchor="middle">H₂ vs O₂ ➔ √(32/2) = 4 : 1</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) _________ (2) _________ (3) _________</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 經典範例 2 (下半部) -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 2</span>
+                    <span class="example-title">定容微孔逸散時間求未知氣體分子量</span>
+                </div>
+                <span class="example-source">實驗定量分析題</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        同狀況下，同體積之某未知氣體自一微孔擴散逸出需時 $\\mathbf{2\\text{ 分鐘}}$，而在相同條件下同體積之純氧氣（$\\text{O}_2$，$M=32$）需時 $\\mathbf{8\\text{ 分鐘}}$：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">依逸散時間公式 $\\dfrac{t_1}{t_2} = \\sqrt{\\dfrac{M_1}{M_2}}$，求該未知氣體之分子量為何？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">該未知氣體在標準狀況（STP：$0^\\circ\\text{C}, 1\\text{ atm}$）下之密度約為多少 $\\text{g/L}$？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">推測該未知氣體最可能為何種氣體？</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-42B 定容計時逸散時間軸</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <line x1="20" y1="38" x2="220" y2="38" stroke="#334155" stroke-width="1.3" />
+                        <circle cx="20" cy="38" r="3" fill="#334155" /><text x="20" y="52" font-size="8" fill="#334155" text-anchor="middle">0m</text>
+                        <circle cx="70" cy="38" r="3" fill="#0284c7" /><text x="70" y="52" font-size="8" fill="#0284c7" text-anchor="middle" font-weight="700">2m (未知)</text>
+                        <circle cx="220" cy="38" r="3" fill="#dc2626" /><text x="220" y="52" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="700">8m (O₂)</text>
+                        <text x="120" y="24" font-size="8" fill="#0369a1" text-anchor="middle">時間比 2:8 = 1:4 ➔ M比 1:16</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) _________ (2) _________ (3) _________</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 6 (範例頁二：上下兩題) ======================= -->
+    <div class="concept-page" id="page-6">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <!-- 經典範例 3 (上半部) -->
+        <div class="example-section" style="margin-bottom: 2px;">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 3</span>
+                    <span class="example-title">氣體分子速率與動力論觀念多重辨析</span>
+                </div>
+                <span class="example-source">動力論觀念辨正</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        若氣體 A 之絕對溫度較氣體 B 為高（$T_A > T_B$），則不論 A、B 兩氣體之分子量及壓力為何，請判斷下列各敘述之正誤（正確填 $\\text{O}$，錯誤填 $\\text{X}$ 並簡要說明理由）：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">A 氣體分子之平均運動速率必大於 B 氣體分子之平均運動速率。</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">A 氣體分子之平均動能必大於 B 氣體分子之平均動能。</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">A 氣體分子之平均動量量值必大於 B 氣體分子之平均動量量值。</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-43A 動能 vs 速率核心辨正</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <rect x="15" y="10" width="210" height="56" rx="4" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1.2" />
+                        <text x="120" y="28" font-size="8.8" fill="#7e22ce" text-anchor="middle" font-weight="700">動能僅看 T，速率需看 T 與 M</text>
+                        <text x="120" y="44" font-size="8" fill="#334155" text-anchor="middle">Ek = (3/2)kT (與M無關)</text>
+                        <text x="120" y="58" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="700">v_rms = √(3RT/M) (受M影響)</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) [ ] (2) [ ] (3) [ ]</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 經典範例 4 (下半部) -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 4</span>
+                    <span class="example-title">長管擴散相遇白煙生成位置幾何計算</span>
+                </div>
+                <span class="example-source">擴散實驗定量計算</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        在兩端開放、全長為 $\\mathbf{100\\text{ cm}}$ 的長玻璃管兩端，同時塞入分別沾有濃氨水（$\\text{NH}_3$，$M=17$）與濃鹽酸（$\\text{HCl}$，$M=36.5$）的脫脂棉花：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">求兩氣體在玻璃管內擴散前進之速率比 $r_{\\text{NH}_3} : r_{\\text{HCl}}$（求至小數點後兩位）。</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">白色煙霧（$\\text{NH}_4\\text{Cl}$）最先生成之位置距濃氨水端約為多少 $\\text{cm}$？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">若將整支玻璃管均勻加熱至 $50^\\circ\\text{C}$ 重複實驗，白煙生成位置會大幅偏移嗎？請說明原因。</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-43B 100cm 長管幾何分點圖</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <rect x="15" y="24" width="210" height="20" rx="2" fill="#f8fafc" stroke="#334155" stroke-width="1.2" />
+                        <rect x="16" y="25" width="18" height="18" fill="#bae6fd" /><text x="25" y="37" font-size="7.5" fill="#0369a1" text-anchor="middle">NH₃</text>
+                        <rect x="206" y="25" width="18" height="18" fill="#fecaca" /><text x="215" y="37" font-size="7.5" fill="#b91c1c" text-anchor="middle">HCl</text>
+                        <line x1="140" y1="24" x2="140" y2="44" stroke="#dc2626" stroke-width="2" />
+                        <text x="140" y="58" font-size="8" fill="#dc2626" text-anchor="middle" font-weight="700">白煙 59.5cm</text>
+                        <text x="80" y="18" font-size="7.5" fill="#0284c7">d₁ = 100 × (1.465 / 2.465)</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) _________ (2) _________ (3) _________</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 7 (範例頁三：上下兩題) ======================= -->
+    <div class="concept-page" id="page-7">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <!-- 經典範例 5 (上半部) -->
+        <div class="example-section" style="margin-bottom: 2px;">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 5</span>
+                    <span class="example-title">溫度與分子量對分子運動速率之雙重影響</span>
+                </div>
+                <span class="example-source">雙變數換算核心題</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        已知氣體分子均方根速率公式為 $v_{rms} = \\sqrt{\\dfrac{3RT}{M}}$：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">在 $27^\\circ\\text{C}$ 時之氦氣（$\\text{He}$，$M=4$）與在 $327^\\circ\\text{C}$ 時之氧氣（$\\text{O}_2$，$M=32$），兩者均方根速率之比值 $v_{\\text{He}} : v_{\\text{O}_2}$ 為何？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">欲使 $27^\\circ\\text{C}$ 之氧氣分子的平均運動速率提高為原來的 $2$ 倍，應將溫度加熱至多少 $^\\circ\\text{C}$？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">在何種攝氏溫度下，$\\text{SO}_2$ 分子之均方根速率會恰好等於 $27^\\circ\\text{C}$ 時 $\\text{CH}_4$ 之均方根速率？</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-44A 絕對溫標換算提醒</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <rect x="15" y="10" width="210" height="56" rx="4" fill="#fef3c7" stroke="#fde68a" stroke-width="1.2" />
+                        <text x="120" y="28" font-size="8.8" fill="#b45309" text-anchor="middle" font-weight="700">★ 務必轉換為絕對溫度 K！</text>
+                        <text x="120" y="44" font-size="8.2" fill="#334155" text-anchor="middle">T(K) = t(°C) + 273</text>
+                        <text x="120" y="58" font-size="8.2" fill="#dc2626" text-anchor="middle" font-weight="700">27°C = 300K, 327°C = 600K</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) _________ (2) _________ (3) _________</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 經典範例 6 (下半部) -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 6</span>
+                    <span class="example-title">混合氣體微孔逸散分離與初逸散莫耳比</span>
+                </div>
+                <span class="example-source">大考高頻同位素分離題</span>
+            </div>
+
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <div class="q-stem-text">
+                        在同溫定容之密閉容器中，充入<b>等質量</b>的甲烷 $\\text{CH}_4$（$M=16$）與二氧化硫 $\\text{SO}_2$（$M=64$）：
+                    </div>
+                    <div class="q-list">
+                        <div class="q-item-indent">
+                            <span class="q-num">(1)</span>
+                            <span class="q-content">求兩氣體在容器內之莫耳數比 $n_{\\text{CH}_4} : n_{\\text{SO}_2}$ 及分壓比 $P_{\\text{CH}_4} : P_{\\text{SO}_2}$。</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(2)</span>
+                            <span class="q-content">若容器壁上有一微孔，在最初瞬間自微孔逸散出的氣體中，莫耳數比值 $n\'_{\\text{CH}_4} : n\'_{\\text{SO}_2}$ 為何？</span>
+                        </div>
+                        <div class="q-item-indent">
+                            <span class="q-num">(3)</span>
+                            <span class="q-content">說明核工業如何利用此原理以多級微孔逸散分離鈾同位素 $^{235}\\text{UF}_6$ 與 $^{238}\\text{UF}_6$。</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-diagram-col">
+                    <div class="caption">圖 2-44B 混合逸散莫耳比模型</div>
+                    <svg viewBox="0 0 240 76" style="width: 100%; height: auto;">
+                        <rect x="15" y="10" width="210" height="56" rx="4" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.2" />
+                        <text x="120" y="28" font-size="8.8" fill="#15803d" text-anchor="middle" font-weight="700">初逸散比 = (P₁/P₂) × √(M₂/M₁)</text>
+                        <text x="120" y="44" font-size="8.2" fill="#334155" text-anchor="middle">莫耳比 4:1 × 速率比 2:1</text>
+                        <text x="120" y="58" font-size="8.5" fill="#dc2626" text-anchor="middle" font-weight="700">初逸散莫耳比 = 8 : 1</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>【課堂手寫演算與思考歷程】</span>
+                    <span>答案填寫處：(1) _________ (2) _________ (3) _________</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 8 (練習題 1~4) ======================= -->
+    <div class="concept-page" id="page-8">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>五、單元檢核練習：題庫精選練習 1~4</span>
+            <span class="tag">基礎觀念 · 格銳目定律 · 彈性碰撞</span>
+        </div>
+
+        <!-- 練習 1 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 1</span>
+                <span class="quiz-core-tag">格銳目定律 · STP 密度與分子量計算</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q1.</span>
+                <span class="q-content">同狀況下，同體積某未知氣體擴散所需時間為 2 分鐘，而 $\\text{O}_2$ 需 8 分鐘，則該未知氣體在標準狀況（STP，0°C, 1 atm）時之密度約為何？</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) 0.0893 g/L</div>
+                <div>(B) 0.179 g/L</div>
+                <div>(C) 0.268 g/L</div>
+                <div>(D) 0.357 g/L</div>
+            </div>
+        </div>
+
+        <!-- 練習 2 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 2</span>
+                <span class="quiz-core-tag">氣體動力論 · 溫度微觀物理意義辨析</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q2.</span>
+                <span class="q-content">若 A 氣體之絕對溫度較 B 氣體為高，則不論兩種氣體分子量與壓力大小為何，下列敘述何者<u>錯誤</u>？（請選出所有錯誤項之組合）<br>
+                (甲) A 分子之平均運動速率必較快 &nbsp; (乙) A 分子間之平均距離必較大<br>
+                (丙) A 分子之平均動量必較大 &nbsp; (丁) A 分子之平均動能必較大 &nbsp; (戊) A 分子之質量必較大</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) (甲)(乙)(丙)(戊)</div>
+                <div>(B) (甲)(丙)(戊)</div>
+                <div>(C) (乙)(丙)(丁)</div>
+                <div>(D) 僅 (丁)</div>
+            </div>
+        </div>
+
+        <!-- 練習 3 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 3</span>
+                <span class="quiz-core-tag">分壓與逸散 · 最初瞬間逸散莫耳比</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q3.</span>
+                <span class="q-content">在同溫定容之密閉容器中，充入等質量的甲烷 $\\text{CH}_4$（$M=16$）與二氧化硫 $\\text{SO}_2$（$M=64$）。若容器壁上有一微孔，在最初瞬間自微孔逸散出的氣體中，莫耳數比 $n_{\\text{CH}_4} : n_{\\text{SO}_2}$ 為何？</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) 8 : 1</div>
+                <div>(B) 4 : 1</div>
+                <div>(C) 2 : 1</div>
+                <div>(D) 1 : 1</div>
+            </div>
+        </div>
+
+        <!-- 練習 4 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 4</span>
+                <span class="quiz-core-tag">動力論假設 · 完全彈性碰撞與速率分佈</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q4.</span>
+                <span class="q-content">根據理想氣體動力論之基本假設與推論，下列敘述何者完全正確？</span>
+            </div>
+            <div class="opts-grid">
+                <div>(A) 分子碰撞為完全彈性碰撞，前後總動能守恆</div>
+                <div>(B) 氣體分子的平均速率僅取決於溫度，與分子量無關</div>
+                <div>(C) 在極高壓極低溫下真實氣體最接近理想氣體</div>
+                <div>(D) 容器中同種氣體在同溫下具完全相同之瞬時速率</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 9 (練習題 5~8) ======================= -->
+    <div class="concept-page" id="page-9">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>五、單元檢核練習（續）：題庫精選練習 5~8</span>
+            <span class="tag">雙氣體逸散 · 白煙生成位置 · 均方根速率</span>
+        </div>
+
+        <!-- 練習 5 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 5</span>
+                <span class="quiz-core-tag">微孔逸散 · 雙氣體逸散殘量定量推算</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q5.</span>
+                <span class="q-content">使 1.0 莫耳氬（原子量：39.95）與 1.0 莫耳氦（原子量：4.00）之氣體在容器中混合均勻後，自器壁小孔向真空逸散。當氦氣逸散後剩餘 0.1 莫耳時，容器中氬氣剩餘的量約為多少莫耳？</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) 0.715 莫耳</div>
+                <div>(B) 0.500 莫耳</div>
+                <div>(C) 0.285 莫耳</div>
+                <div>(D) 0.100 莫耳</div>
+            </div>
+        </div>
+
+        <!-- 練習 6 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 6</span>
+                <span class="quiz-core-tag">分子特性 · 動能動量與運動速率全面比較</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q6.</span>
+                <span class="q-content">A、B 兩氣體分子量已知 $M_A > M_B$。在同溫下，下列關於 A、B 兩氣體之各項物理量敘述，何者<u>錯誤</u>？</span>
+            </div>
+            <div class="opts-grid">
+                <div>(A) A 與 B 氣體分子的平均運動速率相等 ($v_A = v_B$)</div>
+                <div>(B) A 與 B 氣體分子的平均動能相等 ($\\overline{E_{k,A}} = \\overline{E_{k,B}}$)</div>
+                <div>(C) 氣體分子的平均動量大小 $M_A v_A > M_B v_B$</div>
+                <div>(D) 同溫同壓同體積下，A 氣體之密度大於 B 氣體</div>
+            </div>
+        </div>
+
+        <!-- 練習 7 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 7</span>
+                <span class="quiz-core-tag">玻璃管逆向擴散 · 白色煙霧生成位置計算</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q7.</span>
+                <span class="q-content">在兩端開放、全長 100 cm 的玻璃管兩端，同時分別塞入沾有濃氨水（$\\text{NH}_3$，$M=17$）與濃鹽酸（$\\text{HCl}$，$M=36.5$）的棉花球。兩氣體在管內擴散相遇時生成白色煙霧（$\\text{NH}_4\\text{Cl}$），則白煙最先生成之位置距濃氨水端約為多少 cm？</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) 59.5 cm</div>
+                <div>(B) 50.0 cm</div>
+                <div>(C) 40.5 cm</div>
+                <div>(D) 31.8 cm</div>
+            </div>
+        </div>
+
+        <!-- 練習 8 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 8</span>
+                <span class="quiz-core-tag">均方根速率 · 絕對溫度平方根比例關係</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q8.</span>
+                <span class="q-content">某固定容器內充入理想氣體，若欲使氣體分子的均方根速率（$v_{rms}$）增為原來的 2 倍，則容器內氣體的絕對溫度（$K$）應調整為原來的幾倍？</span>
+            </div>
+            <div class="opts-grid-4">
+                <div>(A) 4 倍</div>
+                <div>(B) 2 倍</div>
+                <div>(C) $\\sqrt{2}$ 倍</div>
+                <div>(D) 8 倍</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 10 (練習題 9~10 ＋ 手寫筆記專區) ======================= -->
+    <div class="concept-page" id="page-10">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>五、單元檢核練習（續）：題庫精選練習 9~10 ＆ 課堂運算手寫專區</span>
+            <span class="tag">麥克斯威曲線 · 微觀壓力推導 · 手寫筆記</span>
+        </div>
+
+        <!-- 練習 9 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 9</span>
+                <span class="quiz-core-tag">麥克斯威曲線 · 升高溫度曲線展寬與面積守恆</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q9.</span>
+                <span class="q-content">對於一定量的氣體，當溫度由 25°C 升高至 1000°C 時，其馬克士威-波茲曼分子速率分佈曲線之變化，下列敘述何者完全正確？</span>
+            </div>
+            <div class="opts-grid">
+                <div>(A) 最高峰向高速右移，峰值降低且曲線展寬</div>
+                <div>(B) 曲線與橫軸所圍成總面積隨溫度顯著增加</div>
+                <div>(C) 分子的最概然速率保持不變</div>
+                <div>(D) 處於極低速率的氣體分子比例大幅增加</div>
+            </div>
+        </div>
+
+        <!-- 練習 10 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">練習 10</span>
+                <span class="quiz-core-tag">微觀器壁碰撞 · 動能與動量變化率推導</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">Q10.</span>
+                <span class="q-content">氣體動力論在微觀推導器壁壓力時，推導出容器所受壓力 $P = \\dfrac{1}{3} \\dfrac{N_0 m v^2}{V}$。根據此一微觀物理模型推論，下列敘述何者<u>錯誤</u>？</span>
+            </div>
+            <div class="opts-grid">
+                <div>(A) 分子平均動能 $\\overline{E_k}$ 只與氣體分子量有關而與溫度無關</div>
+                <div>(B) 容器壓力源自分子碰撞時施加於器壁之連續動量變化率</div>
+                <div>(C) 器壁單位面積之碰撞頻率正比於濃度及 $\\sqrt{T/M}$</div>
+                <div>(D) 狀態方程式 $PV = nRT$ 可由分子動能公式嚴格導出</div>
+            </div>
+        </div>
+
+        <!-- 課堂運算手寫與訂正筆記大專區 -->
+        <div class="example-section" style="flex: 1; margin-top: 2px;">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag" style="background: #15803d;">課堂筆記專區</span>
+                    <span class="example-title">格銳目定律推導演算 · 錯題檢討 · 核心心智圖整理</span>
+                </div>
+                <span class="example-source">自主筆記欄</span>
+            </div>
+            <div class="example-notes-area" style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding: 6px 0;">
+                <div class="note-lines" style="gap: 22px;">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 11 (答案速查表頁，最後一頁，不需詳解) ======================= -->
+    <div class="concept-page" id="page-11">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 2-7 氣體擴散與逸散 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 35px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+            </div>
+        </header>
+
+        <div class="section-title">
+            <span>六、單元檢核練習題 · 參考答案速查表（不需詳解）</span>
+            <span class="tag">答案速查 · 核心對照 · 學習評量</span>
+        </div>
+
+        <!-- 10 道選擇題標準答案矩陣 (雙欄 5 列，精簡開闊) -->
+        <div class="concept-card" style="border-left: 4.5px solid var(--green); padding: 7px 11px; gap: 4px;">
+            <div class="card-header" style="margin-bottom: 0;">
+                <span class="card-tag emerald">答案速查</span>
+                <span>題庫精選 10 題 · 標準解答矩陣與命題核心主題</span>
+            </div>
+            <table class="ans-matrix-table">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">題號</th>
+                        <th style="width: 10%;">解答</th>
+                        <th style="width: 30%;">命題核心考點</th>
+                        <th style="width: 10%;">題號</th>
+                        <th style="width: 10%;">解答</th>
+                        <th style="width: 30%;">命題核心考點</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>練習 1</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>格銳目定律求分子量與 STP 密度 ($d = M/22.4$)</td>
+                        <td><b>練習 6</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>同溫下分子動能相等但平均速率與 $\\sqrt{M}$ 反比</td>
+                    </tr>
+                    <tr>
+                        <td><b>練習 2</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>氣體動力論中絕對溫度僅決定分子平均動能</td>
+                        <td><b>練習 7</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>長管逆向擴散 $\\text{NH}_4\\text{Cl}$ 白煙生成位置幾何分點</td>
+                    </tr>
+                    <tr>
+                        <td><b>練習 3</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>等質量初逸散莫耳比 $n_1/n_2 \\propto (P_1/P_2)\\sqrt{M_2/M_1}$</td>
+                        <td><b>練習 8</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>均方根速率 $v_{rms} \\propto \\sqrt{T}$ 絕對溫標平方關係</td>
+                    </tr>
+                    <tr>
+                        <td><b>練習 4</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>動力論假設：分子完全彈性碰撞系統總動能守恆</td>
+                        <td><b>練習 9</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>麥克斯威分佈曲線升高溫度向右平移且面積守恆</td>
+                    </tr>
+                    <tr>
+                        <td><b>練習 5</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>雙氣體微孔逸散殘量與逸散消耗量比例推導</td>
+                        <td><b>練習 10</b></td>
+                        <td class="ans-key-val">A</td>
+                        <td>微觀壓力源於碰撞動量變化率，動能僅與 $T$ 相關</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 核心公式提點欄 -->
+        <div class="concept-card" style="border-left: 4.5px solid var(--blue); padding: 7px 11px;">
+            <div class="card-header" style="margin-bottom: 2px;">
+                <span class="card-tag">重點提點</span>
+                <span>單元 2-7 氣體擴散與逸散 · 核心解題金鑰</span>
+            </div>
+            <div style="font-size: 10.2pt; line-height: 1.5; color: #334155;">
+                • <b>格銳目定律公式群</b>：同溫同壓同孔下：$\\dfrac{r_1}{r_2} = \\sqrt{\\dfrac{M_2}{M_1}} = \\dfrac{t_2}{t_1} = \\dfrac{L_1}{L_2} = \\dfrac{\\Delta n_1}{\\Delta n_2}$。<br>
+                • <b>三種速率大小口訣</b>：$\\mathbf{v_p < \\overline{v} < v_{rms}}$（比例為 $\\sqrt{2} : \\sqrt{8/\\pi} : \\sqrt{3} \\approx 1 : 1.13 : 1.22$）。<br>
+                • <b>絕對溫度核心本質</b>：分子的平均動能 $\\overline{E_k} = \\dfrac{3}{2}kT$ <b>只看絕對溫度 $T$</b>；運動速率 $v_{rms} = \\sqrt{\\dfrac{3RT}{M}}$ 則受 $T$ 與 $M$ 雙重影響。
+            </div>
+        </div>
+
+        <!-- 學習評量反思檢核欄 -->
+        <div class="concept-card" style="border-left: 4.5px solid var(--purple); padding: 7px 11px;">
+            <div class="card-header" style="margin-bottom: 2px;">
+                <span class="card-tag purple">學習診斷</span>
+                <span>學生自主學習評量與素養反思</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 10pt; line-height: 1.45;">
+                <div style="border: 1px dashed #cbd5e1; padding: 5px 8px; border-radius: 4px; background: #fafafa;">
+                    <b>【觀念掌握度檢核】</b><br>
+                    <label><input type="checkbox"> 1. 能清楚區分擴散與逸散的微觀物理條件</label><br>
+                    <label><input type="checkbox"> 2. 熟練運用格銳目定律計算分子量與時間比</label><br>
+                    <label><input type="checkbox"> 3. 掌握氣體動力論假說與麥克斯威曲線意義</label>
+                </div>
+                <div style="border: 1px dashed #cbd5e1; padding: 5px 8px; border-radius: 4px; background: #fafafa;">
+                    <b>【學習成效自評】</b><br>
+                    • 10 題精選練習得分：<span class="under-line" style="width: 50px;"></span> / 10 題<br>
+                    • 錯題題號登記：<span class="under-line" style="width: 100px;"></span><br>
+                    • 教師/同儕簽核：<span class="under-line" style="width: 80px;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+'''
+
+with open(output_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"✅ 成功生成 11 頁標準講義學習單: {output_path}")

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>實驗專題 01：密立坎油滴實驗 · 基本電荷量子化分析</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    .lab-page-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 4rem;
+    }
+    .lab-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.2rem;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .lab-switcher {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .lab-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+    }
+    .lab-tab:hover {
+      color: #fff;
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.3);
+    }
+    .lab-tab.active {
+      color: #38bdf8;
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #06b6d4;
+    }
+    .lab-hero-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .lab-grid-2 { grid-template-columns: 1fr; }
+    }
+    .code-block-frame {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #38bdf8;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+    .solution-panel {
+      transition: all 0.3s ease;
+    }
+    .solution-hidden {
+      display: none !important;
+    }
+    .btn-toggle-answer {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      font-weight: 700;
+      padding: 0.55rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-toggle-answer:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.5);
+    }
+    .btn-toggle-answer.active {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: #94a3b8;
+      border-color: #475569;
+      box-shadow: none;
+    }
+    .formula-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(6, 182, 212, 0.12);
+      color: #38bdf8;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="lab-page-container">
+    <!-- 頂部導航列與專題題目切換 -->
+    <nav class="lab-nav-bar">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <a href="index.html" class="btn" style="font-size:0.8rem; padding:0.35rem 0.75rem;">← 返回數據處理主頁</a>
+        <span style="color:var(--text-dim);">|</span>
+        <span style="font-size:0.85rem; font-weight:700; color:#fff;">理工實驗數據專題實戰</span>
+      </div>
+      <div class="lab-switcher">
+        <a href="lab01_millikan_oil_drop.html" class="lab-tab active">01 密立坎油滴 (離散量子化)</a>
+        <a href="lab02_spectrophotometry_beer_law.html" class="lab-tab">02 光譜比爾定律 (線性檢量)</a>
+        <a href="lab03_ionization_energy_log.html" class="lab-tab">03 游離能階躍 (對數轉換)</a>
+        <a href="lab04_precipitation_stoichiometry.html" class="lab-tab">04 沉澱化學計量 (分段折線)</a>
+        <a href="lab05_protein_electrophoresis.html" class="lab-tab">05 蛋白質電泳 (半對數遷移)</a>
+      </div>
+    </nav>
+
+    <!-- 題幹橫幅卡片 -->
+    <header class="lab-hero-card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; margin-bottom:1rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+            <span class="badge badge-cyan">物理 / 近代物理與原子論</span>
+            <span class="badge badge-emerald">離散量子化數據處理</span>
+            <span class="badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);">實驗專題 01</span>
+          </div>
+          <h1 style="font-size:1.6rem; font-weight:800; color:#fff; line-height:1.35;">
+            密立坎油滴實驗：微觀基本電荷之量子化分析與統計求公因數
+          </h1>
+        </div>
+        
+        <!-- 教學模式控制按鈕 -->
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <button id="btnMasterToggle" class="btn-toggle-answer">
+            <span id="toggleIcon">👁️</span>
+            <span id="toggleText">顯示作圖與參考解答</span>
+          </button>
+          <a href="data/lab01_密立坎油滴帶電量數據.csv" download class="btn" style="font-size:0.85rem; padding:0.55rem 0.9rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15);">
+            <span>📥 下載 CSV</span>
+          </a>
+        </div>
+      </div>
+
+      <p style="color:#cbd5e1; font-size:0.92rem; line-height:1.75;">
+        【實驗背景與歷程】1909 年羅伯特·密立坎（Robert Millikan）設計精密的平行帶電板電場與噴霧油滴裝置。
+        利用顯微鏡測量油滴在重力與空氣阻力平衡下的無電場終端下降速度 <i>v</i><sub>1</sub>，計算出油滴的半徑 <i>r</i> 與質量 <i>m</i>；接著施加反向電場電壓 <i>V</i>，調節使油滴靜止懸浮或反向勻速上升（速度 <i>v</i><sub>2</sub>），從而精確計算出各顆油滴所攜帶的總淨電荷量 <i>q</i>。
+      </p>
+
+      <div style="margin-top:0.85rem; padding:0.85rem 1.1rem; background:rgba(6, 182, 212, 0.08); border-left:3px solid #38bdf8; border-radius:6px; font-size:0.88rem; color:#cbd5e1; line-height:1.7;">
+        <strong>相關公式</strong>：<br>
+        油滴受重力 <span class="formula-badge"><i>F<sub>g</sub></i> = <i>m</i> · <i>g</i> = (4/3)<i>π r</i><sup>3</sup> <i>ρ g</i></span>，
+        靜電力 <span class="formula-badge"><i>F<sub>e</sub></i> = <i>q</i> · <i>E</i> = <i>q</i> · (<i>V / d</i>)</span>。<br>
+        懸浮平衡時：<span class="formula-badge"><i>q</i> = (<i>m</i> · <i>g</i> · <i>d</i>) / <i>V</i></span>
+        <span style="font-size:0.82rem; color:#94a3b8;">（其中 <i>d</i> 為極板間距，<i>ρ</i> 為油滴密度，<i>g</i> 為重力加速度）。</span>
+      </div>
+    </header>
+
+    <!-- 主區塊一：實驗數據表與科學作圖展示 -->
+    <div class="lab-grid-2">
+      <!-- 實驗數據表格 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>實驗真實測量數據矩陣 (10 顆油滴)</span>
+          <span class="badge badge-cyan">原始數據</span>
+        </div>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>油滴編號</th>
+                <th>油滴半徑 (μm)</th>
+                <th>平衡電壓 (V)</th>
+                <th>實測帶電量 q (×10⁻¹⁹ C)</th>
+                <th class="answer-cell" style="display:none; color:#f59e0b;">推定整數階數 n</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>1.24</td><td>385</td><td style="color:#38bdf8; font-weight:700;">3.22</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 2</td></tr>
+              <tr><td>2</td><td>1.52</td><td>370</td><td style="color:#38bdf8; font-weight:700;">4.81</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 3</td></tr>
+              <tr><td>3</td><td>1.38</td><td>310</td><td style="color:#38bdf8; font-weight:700;">6.45</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 4</td></tr>
+              <tr><td>4</td><td>1.65</td><td>355</td><td style="color:#38bdf8; font-weight:700;">8.02</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 5</td></tr>
+              <tr><td>5</td><td>1.45</td><td>225</td><td style="color:#38bdf8; font-weight:700;">9.66</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 6</td></tr>
+              <tr><td>6</td><td>1.72</td><td>270</td><td style="color:#38bdf8; font-weight:700;">11.18</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 7</td></tr>
+              <tr><td>7</td><td>1.80</td><td>285</td><td style="color:#38bdf8; font-weight:700;">12.84</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 8</td></tr>
+              <tr><td>8</td><td>1.35</td><td>185</td><td style="color:#38bdf8; font-weight:700;">14.42</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 9</td></tr>
+              <tr><td>9</td><td>1.58</td><td>190</td><td style="color:#38bdf8; font-weight:700;">16.05</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 10</td></tr>
+              <tr><td>10</td><td>1.91</td><td>228</td><td style="color:#38bdf8; font-weight:700;">17.61</td><td class="answer-cell" style="display:none; color:#f59e0b; font-weight:700;">n = 11</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.6rem; line-height:1.5;">
+          • 實驗已知條件：極板間距 <i>d</i> = 1.60 cm，油滴密度 <i>ρ</i> = 885 kg/m<sup>3</sup>。
+        </div>
+      </div>
+
+      <!-- 互動作圖 Canvas -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>數據作圖區</span>
+          <span id="coordDisplay" style="font-family:var(--font-mono); font-size:0.75rem; color:#38bdf8;"></span>
+        </div>
+        
+        <!-- 作圖切換控制條 (解答模式才顯示) -->
+        <div id="chartControls" class="solution-panel solution-hidden" style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button class="toggle-btn active" id="btnModeScatter">模式一：電荷量子階梯散布圖</button>
+          <button class="toggle-btn" id="btnModeLinear">模式二：電量對整數階數回歸 (求 e)</button>
+        </div>
+
+        <!-- 畫布：未顯示解答前完全留白，連坐標軸都沒有 -->
+        <canvas id="labCanvas" width="560" height="340" style="width:100%; height:auto; background:#070b14; border-radius:8px; border:1px solid rgba(255,255,255,0.08);"></canvas>
+
+        <div id="chartInsightBox" class="solution-panel solution-hidden" style="margin-top:0.75rem; background:rgba(0,0,0,0.3); padding:0.65rem 0.85rem; border-radius:6px; font-size:0.78rem; line-height:1.55; color:#cbd5e1;">
+          <!-- 動態文字 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 探究問題 (題幹常開，解答隨開關切換) -->
+    <div class="panel-box" style="margin-bottom:2rem;">
+      <div class="panel-header">
+        <span>✍️ 課堂探究思考與非選作圖檢核</span>
+        <span class="badge badge-amber">問題討論</span>
+      </div>
+      <div style="padding:1.25rem;">
+        <!-- 思考題 1 -->
+        <div style="margin-bottom:1.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1rem;">
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 1】為什麼密立坎油滴實驗不能直接對「油滴編號（1~10）」作線性回歸，而必須先找出階數 n？
+          </h4>
+          <p style="font-size:0.83rem; color:#94a3b8; line-height:1.6; margin-bottom:0.5rem;">
+            提示：油滴編號只是隨機噴入的先後次序，它是否具備連續自變數的物理意義？
+          </p>
+          <div id="ans1" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(6,182,212,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #38bdf8;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>自變數的物理意義</strong>：油滴編號（1, 2, 3...）只是實驗觀察記錄的先後順序，屬於隨機離散標籤，與油滴帶電量之間不存在直接因果或連續函數關係。<br>
+            2. <strong>量子化本質</strong>：物理規律是 <i>q</i> = <i>n</i> · <i>e</i>（電荷為基本電荷 <i>e</i> 的整數倍）。唯有先求得公因數並分配整數階數 <i>n</i>，以 <i>n</i> 作為橫軸自變數時，斜率才具有「基本電荷 <i>e</i>」的真實物理意義。若對隨機編號回歸，斜率毫無科學價值。
+          </div>
+        </div>
+
+        <!-- 思考題 2 -->
+        <div>
+          <h4 style="font-size:0.92rem; color:#fff; font-weight:700; margin-bottom:0.4rem;">
+            【問題 2】若某次實驗中，有一顆油滴測得帶電量為 7.25 × 10<sup>−19</sup> C，該數值既不是 6.4 也不是 8.0，身為研究者應如何科學地判讀與處理此異常數據？
+          </h4>
+          <div id="ans2" class="solution-panel solution-hidden" style="margin-top:0.6rem; background:rgba(16,185,129,0.08); padding:0.85rem; border-radius:6px; font-size:0.82rem; line-height:1.65; color:#cbd5e1; border-left:3px solid #10b981;">
+            <strong>【參考解答與評分原則】：</strong><br>
+            1. <strong>不能任意竄改或刪除</strong>：在科學研究中，絕對嚴禁主觀偽造或私自抹除不合預期的數據點。<br>
+            2. <strong>系統誤差與實驗條件排查</strong>：檢查該油滴是否在顯微鏡測量時發生質量揮發（使半徑 <i>r</i> 估算失真）、是否受到布朗運動劇烈干擾導致下降速度量測誤差、或極板電壓微幅波動。<br>
+            3. <strong>重複取樣與統計檢驗</strong>：增加測量次數以大樣本統計抵消隨機誤差；若經由統計檢驗確認為顯著離群值（Outlier），方可在報告中註明原因後剔除。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 解答與指引區塊 (預設隱藏，點擊按鈕展開) -->
+    <div id="fullSolutionBlock" class="solution-panel solution-hidden">
+      <!-- 數據處理思維指引 -->
+      <div class="panel-box" style="margin-bottom:2rem;">
+        <div class="panel-header">
+          <span>💡 數據處理思維解析：如何從離散實驗值找出量子化規律？</span>
+          <span class="badge badge-emerald">科學方法論</span>
+        </div>
+        <div style="padding:1.25rem; display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;">
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #38bdf8;">
+            <h4 style="font-size:0.92rem; color:#38bdf8; font-weight:700; margin-bottom:0.35rem;">步驟 1：由小到大排序並計算相鄰差值</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              將實測各油滴電荷 <i>q</i> 依數值遞增排序。連續兩組間的差值分別為：1.59, 1.64, 1.57, 1.64, 1.52, 1.66, 1.58, 1.63, 1.56 × 10<sup>−19</sup> C。所有差值皆緊密聚集在約 1.60 × 10<sup>−19</sup> C 附近。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #10b981;">
+            <h4 style="font-size:0.92rem; color:#10b981; font-weight:700; margin-bottom:0.35rem;">步驟 2：整數階數分配與建立線性關係</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              以差值均值為基底，推算各油滴所帶的基本電荷個數 <i>n</i> = round(<i>q</i> / 1.60 × 10<sup>−19</sup>)，分別對應 <i>n</i> = 2, 3, 4, 5, 6, 7, 8, 9, 10, 11。
+            </p>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px; border-left:3px solid #f59e0b;">
+            <h4 style="font-size:0.92rem; color:#f59e0b; font-weight:700; margin-bottom:0.35rem;">步驟 3：回歸直線統計求取基本電荷 e</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              以整數階數 <i>n</i> 為橫軸，實測電量 <i>q</i> 為縱軸，進行線性回歸（<i>q</i> = <i>e</i> · <i>n</i>）。斜率即為基本電荷 <i>e</i> = 1.603 × 10<sup>−19</sup> C（決定係數 <i>R</i><sup>2</sup> = 0.9998）。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 電腦工具實作程式碼 -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <span>💻 電腦實作分析：Excel 函數與 Python 數據處理代碼</span>
+          <span class="badge badge-cyan">實作程式碼</span>
+        </div>
+        <div style="padding:1.25rem;">
+          <div style="margin-bottom:1rem;">
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">📊 方法 A：Excel 試算表公式操作</h4>
+            <p style="font-size:0.82rem; color:#cbd5e1; line-height:1.6;">
+              1. 基本電荷斜率（強制截距為 0）：<code>=LINEST(D2:D11, E2:E11, FALSE, TRUE)</code><br>
+              2. 斜率公式：<code>=SLOPE(D2:D11, E2:E11)</code>，得斜率約為 <code>1.603</code>（×10⁻¹⁹ C）。<br>
+              3. 判定係數：<code>=RSQ(D2:D11, E2:E11)</code>，得 <code>0.9998</code>。
+            </p>
+          </div>
+
+          <div>
+            <h4 style="font-size:0.88rem; color:#fff; font-weight:700; margin-bottom:0.35rem;">🐍 方法 B：Python 科學計算腳本 (Pandas + Scipy)</h4>
+            <pre class="code-block-frame"><code>import pandas as pd
+from scipy import stats
+
+df = pd.read_csv("lab01_密立坎油滴帶電量數據.csv")
+q = df["計算電荷量_10_neg19_C"].values
+n = df["電荷量子化階數_n"].values
+
+slope, intercept, r_val, p_val, std_err = stats.linregress(n, q)
+print(f"基本電荷 e: {slope:.4f} x 10^-19 C, R² = {r_val**2:.5f}")</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isShowingAnswer = false;
+    let currentMode = "scatter"; // "scatter" or "linear"
+
+    const canvas = document.getElementById("labCanvas");
+    const ctx = canvas.getContext("2d");
+    const coordEl = document.getElementById("coordDisplay");
+    const insightBox = document.getElementById("chartInsightBox");
+    const btnMaster = document.getElementById("btnMasterToggle");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const toggleText = document.getElementById("toggleText");
+
+    const dataPts = [
+      { id: 1,  r: 1.24, V: 385, q: 3.22,  n: 2 },
+      { id: 2,  r: 1.52, V: 370, q: 4.81,  n: 3 },
+      { id: 3,  r: 1.38, V: 310, q: 6.45,  n: 4 },
+      { id: 4,  r: 1.65, V: 355, q: 8.02,  n: 5 },
+      { id: 5,  r: 1.45, V: 225, q: 9.66,  n: 6 },
+      { id: 6,  r: 1.72, V: 270, q: 11.18, n: 7 },
+      { id: 7,  r: 1.80, V: 285, q: 12.84, n: 8 },
+      { id: 8,  r: 1.35, V: 185, q: 14.42, n: 9 },
+      { id: 9,  r: 1.58, V: 190, q: 16.05, n: 10 },
+      { id: 10, r: 1.91, V: 228, q: 17.61, n: 11 }
+    ];
+
+    btnMaster.addEventListener("click", () => {
+      isShowingAnswer = !isShowingAnswer;
+      if (isShowingAnswer) {
+        btnMaster.classList.add("active");
+        toggleIcon.textContent = "🙈";
+        toggleText.textContent = "隱藏作圖與解答 (課堂提問模式)";
+        coordEl.textContent = "模式：電荷階梯分析 (可切換回歸)";
+        coordEl.style.color = "#38bdf8";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.remove("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "");
+      } else {
+        btnMaster.classList.remove("active");
+        toggleIcon.textContent = "👁️";
+        toggleText.textContent = "顯示作圖與參考解答";
+        coordEl.textContent = "";
+        document.querySelectorAll(".solution-panel").forEach(el => el.classList.add("solution-hidden"));
+        document.querySelectorAll(".answer-cell").forEach(el => el.style.display = "none");
+      }
+      renderChart();
+    });
+
+    document.getElementById("btnModeScatter").addEventListener("click", () => {
+      currentMode = "scatter";
+      document.getElementById("btnModeScatter").classList.add("active");
+      document.getElementById("btnModeLinear").classList.remove("active");
+      renderChart();
+    });
+
+    document.getElementById("btnModeLinear").addEventListener("click", () => {
+      currentMode = "linear";
+      document.getElementById("btnModeLinear").classList.add("active");
+      document.getElementById("btnModeScatter").classList.remove("active");
+      renderChart();
+    });
+
+    function renderChart() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // 若未開啟答案模式：畫布完全留白，連坐標軸都不要有！
+      if (!isShowingAnswer) {
+        return;
+      }
+
+      // 解答模式繪圖
+      const pad = { left: 55, right: 30, top: 30, bottom: 45 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      if (currentMode === "scatter") {
+        const xMin = 0, xMax = 11;
+        const yMin = 0, yMax = 20;
+        const toX = val => pad.left + (val / xMax) * plotW;
+        const toY = val => pad.top + plotH - (val / yMax) * plotH;
+
+        // 網格與刻度
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
+        for (let y = 0; y <= 20; y += 4) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText(y.toString(), pad.left - 8, toY(y) + 4);
+        }
+        for (let x = 1; x <= 10; x++) {
+          ctx.beginPath();
+          ctx.moveTo(toX(x), pad.top);
+          ctx.lineTo(toX(x), pad.top + plotH);
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(`#${x}`, toX(x), pad.top + plotH + 18);
+        }
+
+        // 軸線
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("按電量遞增排序之油滴序號", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("實測電荷 q (×10⁻¹⁹ C)", 0, 0);
+        ctx.restore();
+
+        // 繪製階梯虛線
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.4)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        for (let k = 2; k <= 11; k++) {
+          const stepQ = k * 1.602;
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(stepQ));
+          ctx.lineTo(pad.left + plotW, toY(stepQ));
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // 繪製散佈點
+        dataPts.forEach((pt, idx) => {
+          const cx = toX(idx + 1);
+          const cy = toY(pt.q);
+          ctx.fillStyle = "#06b6d4";
+          ctx.beginPath();
+          ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = "#38bdf8";
+          ctx.font = "10px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(`${pt.q}`, cx, cy - 8);
+        });
+
+        insightBox.innerHTML = `<strong>模式一解讀</strong>：十組油滴電荷呈現清晰的等距階梯分布（相鄰差值約 1.60 × 10<sup>−19</sup> C），直接驗證電荷存在最小基本單元。`;
+
+      } else {
+        // 模式二：線性回歸
+        const xMin = 0, xMax = 12;
+        const yMin = 0, yMax = 20;
+        const toX = val => pad.left + (val / xMax) * plotW;
+        const toY = val => pad.top + plotH - (val / yMax) * plotH;
+
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1;
+        for (let y = 0; y <= 20; y += 4) {
+          ctx.beginPath();
+          ctx.moveTo(pad.left, toY(y));
+          ctx.lineTo(pad.left + plotW, toY(y));
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "right";
+          ctx.fillText(y.toString(), pad.left - 8, toY(y) + 4);
+        }
+        for (let x = 0; x <= 12; x += 2) {
+          ctx.beginPath();
+          ctx.moveTo(toX(x), pad.top);
+          ctx.lineTo(toX(x), pad.top + plotH);
+          ctx.stroke();
+          ctx.fillStyle = "#64748b";
+          ctx.font = "11px JetBrains Mono";
+          ctx.textAlign = "center";
+          ctx.fillText(x.toString(), toX(x), pad.top + plotH + 18);
+        }
+
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.lineTo(pad.left + plotW, pad.top + plotH);
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px Noto Sans TC";
+        ctx.textAlign = "center";
+        ctx.fillText("推定整數階數 n (無因次)", pad.left + plotW / 2, pad.top + plotH + 36);
+        ctx.save();
+        ctx.translate(pad.left - 38, pad.top + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("實測電荷 q (×10⁻¹⁹ C)", 0, 0);
+        ctx.restore();
+
+        // 回歸線 q = 1.603 * n
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(toX(0), toY(0));
+        ctx.lineTo(toX(11.5), toY(1.603 * 11.5));
+        ctx.stroke();
+
+        // 散佈點
+        dataPts.forEach(pt => {
+          const cx = toX(pt.n);
+          const cy = toY(pt.q);
+          ctx.fillStyle = "#f59e0b";
+          ctx.beginPath();
+          ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#fff";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+
+        insightBox.innerHTML = `<strong>模式二解讀</strong>：線性回歸方程為 <i>q</i> = 1.603 × 10<sup>−19</sup> · <i>n</i>（<i>R</i><sup>2</sup> = 0.9998），回歸線斜率即為基本電荷 <i>e</i> = 1.603 × 10<sup>−19</sup> C。`;
+      }
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>

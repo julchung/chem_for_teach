@@ -138,8 +138,21 @@ async function main() {
   await sendSession("Runtime.enable");
   await sendSession("Page.navigate", { url: fileUrl });
 
-  // Wait for render / fonts
-  await new Promise(r => setTimeout(r, 3000));
+  // Wait for MathJax typesetting and web fonts
+  for (let i = 0; i < 50; i++) {
+    await new Promise(r => setTimeout(r, 200));
+    try {
+      const evalRes = await sendSession("Runtime.evaluate", {
+        expression: "document.body.classList.contains('mathjax-typeset-done')",
+        returnByValue: true
+      });
+      if (evalRes && evalRes.result && evalRes.result.value) {
+        break;
+      }
+    } catch (e) {}
+  }
+  // Extra buffer for layout and fonts stabilization
+  await new Promise(r => setTimeout(r, 1200));
 
   const pdfResult = await sendSession("Page.printToPDF", {
     preferCSSPageSize: true,

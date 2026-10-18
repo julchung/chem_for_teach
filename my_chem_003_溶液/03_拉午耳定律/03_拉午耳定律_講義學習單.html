@@ -24,7 +24,30 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 11mm 13mm 11mm 13mm;
+            margin: 10mm 12mm 10mm 12mm;
+        }
+
+        :root {
+            --blue: #0284c7;
+            --blue-dark: #0369a1;
+            --blue-bg: #f0f9ff;
+            --blue-border: #bae6fd;
+            --cyan: #0284c7;
+            --yellow: #b45309;
+            --yellow-bg: #fef3c7;
+            --yellow-border: #fde68a;
+            --green: #15803d;
+            --green-bg: #f0fdf4;
+            --green-border: #bbf7d0;
+            --red: #b91c1c;
+            --red-bg: #fef2f2;
+            --red-border: #fecaca;
+            --purple: #7e22ce;
+            --purple-bg: #faf5ff;
+            --purple-border: #e9d5ff;
+            --text-main: #0f172a;
+            --text-sub: #334155;
+            --border-light: #cbd5e1;
         }
 
         *, *::before, *::after {
@@ -37,338 +60,576 @@
             margin: 0;
             padding: 0;
             background-color: #ffffff;
-            color: #1e293b;
+            color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
-            font-size: 8.8pt;
-            line-height: 1.45;
+            font-size: 10.5pt;
+            line-height: 1.46;
             overflow: visible;
         }
 
         .concept-page {
             page-break-after: always;
             break-after: page;
-            height: 275mm;
-            max-height: 275mm;
-            overflow: hidden;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            gap: 6px;
+            gap: 7px;
             background: #ffffff;
+            padding: 0;
         }
         .concept-page:last-child {
             page-break-after: auto;
             break-after: auto;
         }
 
-        /* 標頭設計（單行緊湊排版） */
+        /* 螢幕預覽模式 */
+        @media screen {
+            body {
+                background-color: #f1f5f9;
+                padding: 20px 0;
+            }
+            .concept-page {
+                width: 210mm;
+                min-height: 275mm;
+                margin: 0 auto 24px auto;
+                padding: 10mm 12mm;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                border-radius: 4px;
+            }
+        }
+
+        /* 列印模式：完全消除空白夾頁 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm 10mm 12mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .concept-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .concept-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+        }
+
+        /* 頂部單行標頭 */
         .handout-header {
+            border-bottom: 2.2px solid var(--blue);
+            padding-bottom: 3px;
+            margin-bottom: 1px;
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
-            border-bottom: 2px solid #0284c7;
-            padding-bottom: 3px;
-            margin-bottom: 4px;
+            align-items: flex-end;
+            flex-shrink: 0;
         }
         .doc-title {
-            font-size: 11.6pt;
+            font-size: 12.5pt;
             font-weight: 800;
             color: #0f172a;
             margin: 0;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
         }
         .student-fields {
+            font-size: 9.8pt;
+            color: var(--text-sub);
+            font-weight: 600;
             display: flex;
-            gap: 14px;
-            font-size: 8.8pt;
-            color: #334155;
-            font-weight: 500;
+            gap: 12px;
+            white-space: nowrap;
         }
         .under-line {
             display: inline-block;
-            border-bottom: 1px solid #475569;
-            height: 12px;
-            vertical-align: bottom;
+            border-bottom: 1.4px solid #334155;
+            height: 14px;
         }
 
-        /* 單元主題大標 */
+        /* 章節主標題 */
         .section-title {
-            font-size: 10.2pt;
+            font-size: 11.2pt;
             font-weight: 800;
-            color: #0369a1;
+            color: var(--blue-dark);
             margin: 0;
             padding: 3px 8px;
-            background: #f0f9ff;
-            border-left: 4px solid #0284c7;
-            border-radius: 3px;
+            background: var(--blue-bg);
+            border-left: 4.5px solid var(--blue);
+            border-radius: 4px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
         .section-title .tag {
-            font-size: 7.6pt;
-            font-weight: 600;
-            color: #0284c7;
+            font-size: 9.2pt;
+            font-weight: 700;
+            color: var(--blue);
+            background: #e0f2fe;
+            padding: 1px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
         }
 
-        /* 核心觀念橫排卡片 */
-        .concept-row {
-            display: flex;
-            gap: 8px;
-        }
-        .concept-row .concept-card {
-            flex: 1;
-        }
+        /* 知識卡片 (注意：內部文字一律由 div 包裹以防 flexbox 逐詞折行) */
         .concept-card {
-            border: 1px solid #e2e8f0;
             background: #ffffff;
-            border-radius: 5px;
-            padding: 6px 8px;
-            flex-shrink: 0;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            font-size: 10.2pt;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
         .card-header {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 8.5pt;
-            font-weight: 700;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 10.8pt;
             color: #0f172a;
-            margin-bottom: 3px;
+            margin-bottom: 1px;
+            border-bottom: 1.2px dashed #e2e8f0;
+            padding-bottom: 2px;
+            white-space: nowrap;
         }
         .card-tag {
-            font-size: 7pt;
+            background: var(--blue);
+            color: #ffffff;
+            font-size: 9.2pt;
             font-weight: 700;
-            padding: 1px 5px;
+            padding: 1px 6px;
             border-radius: 3px;
+            white-space: nowrap;
         }
-        .card-tag.blue { background: #e0f2fe; color: #0369a1; }
-        .card-tag.amber { background: #fef3c7; color: #b45309; }
-        .card-tag.green { background: #dcfce7; color: #15803d; }
-        .card-tag.purple { background: #f3e8ff; color: #7e22ce; }
+        .card-tag.amber { background: var(--yellow); }
+        .card-tag.emerald { background: var(--green); }
+        .card-tag.purple { background: var(--purple); }
 
-        .concept-list {
-            margin: 0;
-            padding-left: 14px;
-            font-size: 8.1pt;
-            color: #334155;
-            line-height: 1.42;
-        }
-        .concept-list li {
-            margin-bottom: 2px;
+        .formula-box {
+            background: #f8fafc;
+            border: 1.4px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 4px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 10.8pt;
+            white-space: nowrap !important;
         }
 
-        /* 向量作圖卡片 */
-        .diagram-row {
+        /* 雙欄與圖解排版 */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+        }
+        .diagram-card-wide {
+            border: 1.2px solid var(--border-light);
+            background: #ffffff;
+            border-radius: 6px;
+            padding: 4px 8px;
             display: flex;
-            gap: 8px;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
-        .diagram-row .diagram-card {
-            flex: 1;
+        .diagram-card-wide .caption {
+            font-size: 9.4pt;
+            font-weight: 700;
+            color: #334155;
+            text-align: center;
+        }
+        .diagram-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
         }
         .diagram-card {
-            border: 1px solid #cbd5e1;
+            border: 1.2px solid var(--border-light);
             background: #ffffff;
-            border-radius: 5px;
-            padding: 5px 7px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-            flex-shrink: 0;
+            border-radius: 6px;
+            padding: 4px 7px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
         }
         .diagram-card .caption {
-            font-size: 8pt;
+            font-size: 9pt;
             font-weight: 700;
-            color: #0369a1;
-            margin-bottom: 2px;
+            color: #334155;
             text-align: center;
         }
         .diagram-card .sub-caption {
-            font-size: 6.8pt;
+            font-size: 8.3pt;
             color: #64748b;
             text-align: center;
-            margin-top: 2px;
-            line-height: 1.25;
-        }
-        .print-svg {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-        .svg-label {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            user-select: none;
+            margin-top: 1px;
         }
 
-        /* 經典範例與觀念檢核框 */
-        .example-box {
-            border: 1px solid #cbd5e1;
-            background: #ffffff;
+        /* 隨堂觀念自我檢核 */
+        .check-card {
+            background: #f8fafc;
+            border: 1.2px solid #cbd5e1;
+            border-left: 4.5px solid #0284c7;
             border-radius: 6px;
-            padding: 6px 9px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            padding: 5px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .check-title {
+            font-size: 10.5pt;
+            font-weight: 800;
+            color: #0369a1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .check-item {
+            font-size: 9.8pt;
+            line-height: 1.44;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .check-num {
+            font-weight: 800;
+            color: #0284c7;
+            flex-shrink: 0;
+            width: 18px;
+        }
+        .fill-blank {
+            display: inline-block;
+            border-bottom: 1.2px solid #64748b;
+            min-width: 60px;
+            text-align: center;
+            color: #0284c7;
+            font-weight: 700;
+            padding: 0 4px;
+        }
+
+        /* 經典範例專屬樣式 (每頁固定上下二題，無多餘大標題) */
+        .example-section {
+            background: #ffffff;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
         }
         .example-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1.5px solid #e2e8f0;
+            border-bottom: 1.4px solid #e2e8f0;
             padding-bottom: 2px;
-            margin-bottom: 3px;
         }
         .example-tag {
-            font-size: 7.5pt;
-            font-weight: 800;
             background: #0284c7;
             color: #ffffff;
-            padding: 1px 6px;
+            font-size: 9.4pt;
+            font-weight: 800;
+            padding: 1px 7px;
             border-radius: 3px;
-            margin-right: 5px;
+            margin-right: 6px;
         }
         .example-title {
-            font-size: 8.8pt;
-            font-weight: 700;
+            font-size: 10.8pt;
+            font-weight: 800;
             color: #0f172a;
         }
         .example-source {
-            font-size: 7.4pt;
+            font-size: 8.8pt;
             color: #64748b;
+            font-weight: 600;
         }
-        .example-stem {
-            font-size: 8.1pt;
-            line-height: 1.38;
-            color: #1e293b;
+        .example-body-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .example-stem-col {
+            flex: 1.15;
+            font-size: 10pt;
+            line-height: 1.44;
+        }
+        .example-diagram-col {
+            flex: 0.85;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 3px 5px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .example-diagram-col .caption {
+            font-size: 8.6pt;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 2px;
         }
 
-        /* 課堂筆記與引導手寫區 (16px 標準五線譜) */
-        .handwriting-title {
-            font-size: 7.8pt;
-            font-weight: 700;
-            color: #b45309;
+        /* 手寫筆記與演練專區 */
+        .example-notes-area {
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 4px;
             margin-top: 3px;
-            margin-bottom: 1px;
             display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: space-between;
+        }
+        .notes-header {
+            font-size: 8.8pt;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 4px;
         }
         .note-lines {
             display: flex;
             flex-direction: column;
-            gap: 0px;
-            margin: 2px 0 4px 0;
+            gap: 15px;
+            padding: 4px 0;
+            flex: 1;
+            justify-content: space-around;
         }
         .note-line {
-            height: 16px;
             border-bottom: 1px dashed #cbd5e1;
+            height: 1px;
             width: 100%;
+        }
+        .example-ans-corner {
+            text-align: right;
+            font-size: 8.4pt;
+            font-weight: 700;
+            color: #64748b;
+            padding-top: 2px;
         }
 
-        /* 答案欄表格（純白留空，無提示） */
-        .answer-table {
+        /* 題號懸掛縮排規範 */
+        .q-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .q-item-indent {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            font-size: 10pt;
+            line-height: 1.44;
+        }
+        .q-item-indent .q-num {
+            flex-shrink: 0;
+            font-weight: 800;
+            width: 24px;
+            color: #0369a1;
+        }
+        .q-item-indent .q-content {
+            flex: 1;
+        }
+        .opts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 8px;
+            margin-top: 2px;
+            font-size: 9.8pt;
+        }
+        .opts-grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 2px 6px;
+            margin-top: 2px;
+            font-size: 9.8pt;
+        }
+
+        /* 練習題卡片 */
+        .quiz-card {
+            background: #ffffff;
+            border: 1.2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 5px 9px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .quiz-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.2px solid #f1f5f9;
+            padding-bottom: 2px;
+        }
+        .quiz-q-tag {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 9.2pt;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+        .quiz-core-tag {
+            font-size: 8.6pt;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* 答案速查表專用 */
+        .ans-matrix-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 3px;
-            font-size: 7.8pt;
+            font-size: 9.8pt;
+            margin: 3px 0;
         }
-        .answer-table th, .answer-table td {
-            border: 1px solid #cbd5e1;
+        .ans-matrix-table th, .ans-matrix-table td {
+            border: 1.2px solid #cbd5e1;
             padding: 4px 6px;
             text-align: center;
         }
-        .answer-table th {
-            background-color: #f1f5f9;
-            color: #0f172a;
-            font-weight: 700;
-            width: 25%;
+        .ans-matrix-table th {
+            background: #f1f5f9;
+            font-weight: 800;
+            color: #1e293b;
         }
-        .answer-table td {
-            background-color: #ffffff;
-            height: 28px;
-            color: #ffffff;
+        .ans-matrix-table .ans-key-val {
+            font-weight: 900;
+            color: #dc2626;
+            font-size: 11.5pt;
+            background: #fef2f2;
         }
 
-        /* 重點總覽表格 */
-        .summary-table {
+        /* 比較表格 */
+        .compare-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 7.6pt;
-            margin: 2px 0;
+            font-size: 9.4pt;
+            margin-top: 2px;
         }
-        .summary-table th, .summary-table td {
+        .compare-table th, .compare-table td {
             border: 1px solid #cbd5e1;
-            padding: 3px 5px;
+            padding: 3px 6px;
             text-align: center;
         }
-        .summary-table th {
-            background-color: #f8fafc;
-            color: #0f172a;
+        .compare-table th {
+            background: #f8fafc;
+            color: #334155;
             font-weight: 700;
         }
-        .summary-table td.left {
-            text-align: left;
+
+        /* 觀念列表懸掛縮排與文字對齊 */
+        .concept-intro-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .concept-intro-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            line-height: 1.44;
+        }
+        .bullet-dot {
+            flex-shrink: 0;
+            width: 16px;
+            font-weight: 800;
+            color: #0284c7;
+        }
+        .bullet-text {
+            flex: 1;
         }
 
-        /* 破題心法框 */
-        .method-card {
-            background: #fffbeb;
-            border-left: 3.5px solid #f59e0b;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 7.8pt;
-            line-height: 1.35;
-            color: #78350f;
-            margin: 1px 0;
+        /* 同行防斷裂 */
+        .nowrap {
+            white-space: nowrap !important;
+        }
+
+        /* 公式同行 */
+        .math-nowrap, .formula-box {
+            white-space: nowrap !important;
         }
     </style>
 </head>
 <body>
 
-    <!-- ==========================================
-         PAGE 1: 飽和蒸氣壓微觀動態平衡、托里切利測量法與活塞體積效應
-         ========================================== -->
-    <div class="concept-page" id="page-1">
+    <!-- ======================= PAGE 1 (觀念一) ======================= -->
+    <div class="concept-page" id="page-1" style="gap: 5px;">
         <header class="handout-header">
             <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
             <div class="student-fields">
-                <span>班級：<span class="under-line" style="width: 70px;"></span></span>
-                <span>座號：<span class="under-line" style="width: 50px;"></span></span>
-                <span>姓名：<span class="under-line" style="width: 90px;"></span></span>
+                <span>班級：<span class="under-line" style="width: 50px;"></span></span>
+                <span>座號：<span class="under-line" style="width: 40px;"></span></span>
+                <span>姓名：<span class="under-line" style="width: 75px;"></span></span>
+                <span style="color: var(--blue); font-weight: 800;">第 1 頁 / 共 11 頁</span>
             </div>
         </header>
 
-        <div class="section-title">
-            <span>一、飽和蒸氣壓微觀動態平衡、托里切利測量法與活塞體積效應</span>
-            <span class="tag">動態平衡 · 蒸氣壓獨立性 · 托里切利氣壓計 · 沸騰條件</span>
+        <h2 class="section-title">
+            <span>一、飽和蒸氣壓微觀動態平衡、托里切利測量法與體積效應</span>
+            <span class="tag">動態平衡 · 蒸氣壓獨立性 · 托里切利管</span>
+        </h2>
+
+        <!-- 知識卡片 1：飽和蒸氣壓的微觀本質與動態平衡 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">微觀平衡</span>
+                <span>氣液動態平衡 · 飽和蒸氣壓 <span class="nowrap">(SVP)</span> 的熱力學強度本質</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>飽和蒸氣壓 <span class="nowrap">(Saturated Vapor Pressure, SVP)</span></b>：在密閉容器中，液體表面分子持續蒸發逸出，氣態分子亦不斷撞擊液面凝結返回。當<b>「蒸發速率等於凝結速率」</b>時達相平衡，此時蒸氣產生的平衡分壓稱為該溫度下的飽和蒸氣壓。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>強度性質<span class="nowrap">（重要判定）</span></b>：只要<b>氣液兩相共存</b>，飽和蒸氣壓<b>僅取決於溫度與物質本性</b>，與<b>液體體積、容器容積、氣液接觸表面積完全無關</b>！</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">③</span>
+                        <div class="bullet-text"><b>溫度對蒸氣壓的影響</b>：溫度升高，分子平均動能增加，蒸發速率顯著提升，飽和蒸氣壓呈<b>非線性指數上升</b><span class="nowrap">（遵循克勞修斯-克拉佩龍方程式）</span>。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">④</span>
+                        <div class="bullet-text"><b>沸騰之熱力學充要條件</b>：當液體的<b>飽和蒸氣壓恰等於外界大氣壓力</b><span class="nowrap">（$P_{\text{vap}} = P_{\text{ext}}$）</span>時，液體內部與表面同時汽化產生沸騰。</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="concept-row">
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag blue">動態平衡</span>
-                    <span>飽和蒸氣壓 (SVP) 本質與核心特性</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>動態平衡條件</b>：密閉容器中，<b>蒸發速率＝凝聚速率 ($R_{\text{蒸}} = R_{\text{凝}}$)</b> 時之蒸氣分壓。</li>
-                    <li><b>溫度唯一決定性</b>：定溫下純液體蒸氣壓為定值；<b>與容器體積、液體殘量、表面積無關</b>。</li>
-                    <li><b>分子間引力反比</b>：分子間引力越弱 $\implies$ 越易揮發 $\implies$ 同溫下蒸氣壓越大。</li>
-                    <li><b>沸騰條件</b>：當液體之<b>飽和蒸氣壓等於外在環境大氣壓力</b>時，液體內部開始劇烈汽化沸騰。</li>
-                </ul>
-            </div>
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag amber">測量與體積</span>
-                    <span>托里切利水銀計法與活塞體積推拉效應</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>托里切利測量法</b>：將少量液體注入水銀柱頂端，水銀柱下降的高度差 $\Delta h$ 即為該液體蒸氣壓。</li>
-                    <li><b>注意條件</b>：管頂<b>必須留有少量液態純液體</b>共存，方能確保達氣液飽和平衡。</li>
-                    <li><b>推拉活塞效應</b>：定溫下，若液體未完全蒸乾，改變容器體積，<b>蒸氣壓恆保持不變</b>。</li>
-                    <li><b>完全汽化後</b>：液體完全乾涸後，蒸氣遵循波以耳定律 ($P \times V = \text{const}$，壓力與體積成反比)。</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="diagram-row">
-            <div class="diagram-card">
-                <div class="caption">圖 3-21 托里切利水銀氣壓計飽和蒸氣壓測定幾何模型</div>
-                <svg class="print-svg" viewBox="0 0 520 155" xmlns="http://www.w3.org/2000/svg">
+        <!-- 向量圖 3-03-1：托里切利氣壓計與水銀柱高度差 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 3-03-1 托里切利氣壓計微量注入法測定液體飽和蒸氣壓之力學平衡模型</div>
+            <svg class="print-svg" viewBox="0 0 520 155" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="155" fill="#f8fafc" rx="4"/>
                     <!-- 水銀槽底盤 -->
                     <rect x="25" y="125" width="470" height="20" fill="#94a3b8" rx="3"/>
@@ -416,193 +677,96 @@
                         <text x="26" y="122" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0369a1" class="svg-label">(3) 注入乙醚</text>
                     </g>
                 </svg>
-                <div class="sub-caption">托里切利法原理：液體注入管頂達飽和平衡，液體蒸氣壓＝大氣壓－水銀柱高＝下降差 Δh（乙醚引力弱，蒸氣壓最大）。</div>
+        </div>
+
+        <!-- 知識卡片 2：托里切利管測量原理與定溫壓縮特性 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag amber">實驗測量</span>
+                <span>托里切利水銀管測定法與密閉活塞定溫壓縮熱力學行為</span>
             </div>
-
-            <div class="diagram-card">
-                <div class="caption">圖 3-22 活塞體積推拉與飽和蒸氣壓獨立性幾何曲線</div>
-                <svg class="print-svg" viewBox="0 0 520 155" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="0" y="0" width="520" height="155" fill="#f8fafc" rx="4"/>
-                    <!-- 左區：P-V 關係曲線 -->
-                    <g transform="translate(30, 20)">
-                        <line x1="20" y1="95" x2="190" y2="95" stroke="#475569" stroke-width="1.2"/>
-                        <line x1="20" y1="95" x2="20" y2="10" stroke="#475569" stroke-width="1.2"/>
-                        <text x="190" y="105" text-anchor="end" font-size="7" fill="#64748b" class="svg-label">容器體積 V →</text>
-                        <text x="15" y="10" text-anchor="end" font-size="7" fill="#64748b" class="svg-label">壓力 P ↑</text>
-
-                        <!-- 水平飽和線 (只要有液態存在，P=Psat 恆定) -->
-                        <line x1="20" y1="35" x2="100" y2="35" stroke="#0284c7" stroke-width="2"/>
-                        <circle cx="100" cy="35" r="3" fill="#ef4444"/>
-                        <text x="60" y="28" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">氣液共存 P = Psat</text>
-                        <text x="100" y="48" font-size="6.8" fill="#ef4444" class="svg-label">液滴恰乾涸點</text>
-
-                        <!-- 雙曲線 (波以耳定律 P ∝ 1/V) -->
-                        <path d="M 100 35 Q 130 65 180 85" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="3,2"/>
-                        <text x="145" y="65" font-size="7" font-weight="bold" fill="#7c3aed" class="svg-label">完全汽化 P ∝ 1/V</text>
-                    </g>
-
-                    <!-- 右區：活塞推拉微觀圖解 -->
-                    <g transform="translate(260, 20)">
-                        <!-- 容器 1: 體積 V (液體多) -->
-                        <rect x="10" y="15" width="50" height="75" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
-                        <rect x="11" y="70" width="48" height="19" fill="#bae6fd" opacity="0.8"/>
-                        <rect x="11" y="25" width="48" height="6" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
-                        <text x="35" y="50" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">P = Psat</text>
-                        <text x="35" y="102" text-anchor="middle" font-size="7" fill="#334155" class="svg-label">體積 V (液滴多)</text>
-
-                        <!-- 拉開活塞箭頭 -->
-                        <path d="M 70 50 L 95 50" stroke="#0284c7" stroke-width="1.8"/>
-                        <text x="82" y="44" text-anchor="middle" font-size="7" font-weight="bold" fill="#0284c7" class="svg-label">拉開</text>
-
-                        <!-- 容器 2: 體積 2V (液滴減少，蒸氣壓仍為 Psat) -->
-                        <rect x="105" y="15" width="50" height="75" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
-                        <rect x="106" y="80" width="48" height="9" fill="#bae6fd" opacity="0.8"/>
-                        <rect x="106" y="17" width="48" height="6" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
-                        <text x="130" y="50" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">P = Psat</text>
-                        <text x="130" y="102" text-anchor="middle" font-size="7" fill="#334155" class="svg-label">體積 2V (液滴少)</text>
-
-                        <!-- 結論方框 -->
-                        <rect x="170" y="25" width="75" height="55" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
-                        <text x="207" y="40" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#b45309" class="svg-label">核心規律</text>
-                        <text x="207" y="53" text-anchor="middle" font-size="6.8" fill="#78350f" class="svg-label">只要尚有液體殘留</text>
-                        <text x="207" y="64" text-anchor="middle" font-size="7" font-weight="bold" fill="#dc2626" class="svg-label">蒸氣壓絕對恆定！</text>
-                    </g>
-                </svg>
-                <div class="sub-caption">體積無關性：拉大活塞瞬間，氣相分子濃度暫降促使液體加速蒸發補充，平衡後壓力不變；直到液體全乾才遵守波以耳定律。</div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>托里切利管測量原理</b>：倒插於水銀槽的氣壓計頂部原為真空<span class="nowrap">（汞柱高 $760\text{ mmHg}$）</span>。由底部微量注入待測揮發性液體，液滴浮至水銀頂部迅速汽化，蒸氣向下壓迫汞柱使液面下降 $\Delta h$。<br>
+                        • <b>平衡蒸氣壓公式</b>：$P_{\text{vap}} = 760 - h_{\text{Hg}} = \Delta h\text{ (mmHg)}$<span class="nowrap">（前提是頂部有殘留微量液態純質）</span>。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>定溫壓縮活塞實驗<span class="nowrap">（雙重情境）</span></b>：<br>
+                        • <b>情境一<span class="nowrap">（容器內仍有液體殘留）</span></b>：壓縮體積使凝結速率暫時大於蒸發速率，蒸氣凝結為液體，平衡蒸氣壓<b>恆定不變</b>，蒸氣莫耳數隨體積等比例減少。<br>
+                        • <b>情境二<span class="nowrap">（液體已全數汽化）</span></b>：體系無相平衡，純為氣態，遵循波以耳定律<span class="nowrap">（$P \propto \dfrac{1}{V}$）</span>。</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <table class="summary-table">
-            <thead>
-                <tr>
-                    <th style="width: 18%;">純物質名稱</th>
-                    <th style="width: 20%;">分子結構與分子量</th>
-                    <th style="width: 22%;">主要分子間作用力</th>
-                    <th style="width: 20%;">25°C 飽和蒸氣壓</th>
-                    <th style="width: 20%;">正常沸點 (1 atm)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="font-weight: 700; color: #dc2626;">乙醚 (C2H5OC2H5)</td>
-                    <td>74.1 g/mol（微極性）</td>
-                    <td>凡得瓦力（極弱偶極）</td>
-                    <td><span style="font-weight: 700; color: #dc2626;">445 mmHg</span>（極易揮發）</td>
-                    <td>34.6 °C</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: 700; color: #b45309;">乙醇 (C2H5OH)</td>
-                    <td>46.1 g/mol（極性分子）</td>
-                    <td>分子間單一氫鍵</td>
-                    <td><span style="font-weight: 700; color: #b45309;">59 mmHg</span></td>
-                    <td>78.3 °C</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: 700; color: #0284c7;">水 (H2O)</td>
-                    <td>18.0 g/mol（強極性）</td>
-                    <td>強烈三維立體四重氫鍵</td>
-                    <td><span style="font-weight: 700; color: #0284c7;">23.8 mmHg</span>（引力強難揮發）</td>
-                    <td>100.0 °C</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">觀念檢核</span>
-                    <span class="example-title">飽和蒸氣壓特性、托里切利氣壓計與體積效應判定</span>
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+                <span style="font-size: 8.8pt; color: #64748b; font-weight: normal;">（依蒸氣壓熱力學填入精準結論）</span>
+            </div>
+            <div class="q-list">
+                <div class="check-item">
+                    <span class="check-num">1.</span>
+                    <span>密閉容器中只要氣液共存，飽和蒸氣壓為強度性質，其數值大小與容器體積及液體多寡<span class="fill-blank"></span>。</span>
                 </div>
-                <span class="example-source">大考熱門核心題</span>
+                <div class="check-item">
+                    <span class="check-num">2.</span>
+                    <span>外壓 $1\text{ atm}$ 下將乙醚注入托里切利管，汞柱降至 $320\text{ mm}$，則乙醚蒸氣壓為<span class="fill-blank"></span>。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">3.</span>
+                    <span>液體發生沸騰的微觀熱力學充要條件為：液體的飽和蒸氣壓恰等於<span class="fill-blank"></span>。</span>
+                </div>
             </div>
-            <div class="example-stem">
-                請根據飽和蒸氣壓之微觀動態平衡理論與托里切利測量法，回答下列核心問題：<br>
-                (1) 在一活塞密閉容器中盛有水與水蒸氣平衡共存，定溫下緩慢將活塞向外拉大使容器體積倍增，若液態水仍未蒸乾，則容器內的水蒸氣壓將__________（填：變大、變小或不變）。<br>
-                (2) 當液體在開放容器中受熱，其內部產生氣泡並劇烈翻滾沸騰的物理條件是：該液體的飽和蒸氣壓等於__________。<br>
-                (3) 利用托里切利水銀氣壓計測定液體蒸氣壓時，注入液體後管內水銀柱高度下降，欲確保所測得的高度差即為該溫下的「飽和蒸氣壓」，管頂必須符合的關鍵條件為__________。<br>
-                (4) 在 $25^\circ\text{C}$ 時，乙醚之蒸氣壓（$445\text{ mmHg}$）遠大於水（$23.8\text{ mmHg}$），從分子微觀角度解釋，主因是水分子間具有強大的__________，使水分子難以脫離液面逸出。
-            </div>
-
-            <div class="handwriting-title">✍ 課堂筆記與引導手寫區：</div>
-            <div class="note-lines">
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-            </div>
-
-            <table class="answer-table">
-                <thead>
-                    <tr>
-                        <th>(1) 活塞拉大後蒸氣壓變化</th>
-                        <th>(2) 液體沸騰之大氣條件</th>
-                        <th>(3) 托里切利法必備管頂狀態</th>
-                        <th>(4) 乙醚與水蒸氣壓差異主因</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <!-- ==========================================
-         PAGE 2: 非揮發性溶質之拉午耳定律、蒸氣壓下降量與經典範例 1
-         ========================================== -->
-    <div class="concept-page" id="page-2">
+    <!-- ======================= PAGE 2 (觀念二) ======================= -->
+    <div class="concept-page" id="page-2" style="gap: 5px;">
         <header class="handout-header">
             <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
-            <div class="student-fields">
-                <span>班級：<span class="under-line" style="width: 70px;"></span></span>
-                <span>座號：<span class="under-line" style="width: 50px;"></span></span>
-                <span>姓名：<span class="under-line" style="width: 90px;"></span></span>
-            </div>
         </header>
 
-        <div class="section-title">
-            <span>二、非揮發性溶質之拉午耳定律、蒸氣壓下降量與經典範例 1</span>
-            <span class="tag">拉午耳定律 · 表面分子覆蓋模型 · 蒸氣壓下降量 ΔP · 葡萄糖溶液</span>
+        <h2 class="section-title">
+            <span>二、非揮發性溶質之拉午耳定律、微觀機制與蒸氣壓下降量</span>
+            <span class="tag">表面覆蓋假說 · 蒸氣壓下降量 · 依數性質</span>
+        </h2>
+
+        <!-- 知識卡片 1：拉午耳定律與微觀表面覆蓋假說 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">定律核心</span>
+                <span>非揮發性、非電解質溶質之溶液蒸氣壓定律與微觀動力論</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>拉午耳定律 <span class="nowrap">(Raoult's Law)</span></b>：在定溫下，含有非揮發性、非電解質溶質的稀薄溶液中，<b>溶液之蒸氣壓 <span class="nowrap">($P$)</span> 等於純溶劑飽和蒸氣壓 <span class="nowrap">($P_A^\circ$)</span> 與溶劑莫耳分率 <span class="nowrap">($X_A$)</span> 之乘積</b>：
+                            <div class="formula-box" style="margin-top: 3px;">
+                                $P_{\text{溶液}} = X_{\text{溶劑}} \cdot P_A^\circ = (1 - X_{\text{溶質}}) \cdot P_A^\circ$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>微觀分子動力學解釋<span class="nowrap">（表面覆蓋假說）</span></b>：<br>
+                        • 蒸發反應主要發生於氣液交界面。純溶劑表面 $100\%$ 為溶劑分子，蒸發速率達最大值 $R_{\text{蒸發}}^\circ$。<br>
+                        • 加入非揮發性溶質後，部分表面積被溶質分子佔據，使得<b>單位時間自液面逸出的溶劑分子數等比例減少</b><span class="nowrap">（$R_{\text{蒸發}} = X_A \cdot R_{\text{蒸發}}^\circ$）</span>。<br>
+                        • 系統需使凝結速率降低以重新達平衡，故<b>氣相中的溶劑蒸氣分壓必然下降</b>！</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="concept-row">
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag blue">定律定義</span>
-                    <span>非揮發性、非電解質溶質之拉午耳定律公式</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>拉午耳定律 (Raoult's Law)</b>：在定溫下，含有難揮發性非電解質溶質之稀薄溶液，其<b>溶液蒸氣壓 ($P_{\text{溶液}}$) 等於純溶劑蒸氣壓 ($P^\circ$) 與溶劑莫耳分率 ($X_{\text{溶劑}}$) 的乘積</b>：
-                        <div style="text-align: center; font-weight: bold; color: #0284c7; margin: 2px 0;">$P_{\text{溶液}} = P^\circ_{\text{溶劑}} \times X_{\text{溶劑}}$</div>
-                    </li>
-                    <li><b>蒸氣壓下降量 ($\Delta P$)</b>：溶液蒸氣壓低於純溶劑之差額，完全由<b>溶質莫耳分率</b>決定：
-                        <div style="text-align: center; font-weight: bold; color: #dc2626; margin: 2px 0;">$\Delta P = P^\circ_{\text{溶劑}} - P_{\text{溶液}} = P^\circ_{\text{溶劑}} \times X_{\text{溶質}}$</div>
-                    </li>
-                </ul>
-            </div>
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag amber">微觀機制</span>
-                    <span>表面活性分子覆蓋與動態平衡改變</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>表面分子佔據</b>：非揮發性溶質粒子分佈於溶液表面，<b>佔據了部分表面積</b>，使單位面積內具揮發能力的溶劑分子數比例下降至 $X_{\text{溶劑}}$。</li>
-                    <li><b>蒸發速率下降</b>：因表面溶劑分子變少，$R_{\text{蒸發}}$ 正比降為原本的 $X_{\text{溶劑}}$ 倍；達新平衡時氣相濃度必須減少，使 $R_{\text{凝聚}}$ 等量下降相平衡。</li>
-                    <li><b>依數性質本質</b>：蒸氣壓下降量 $\Delta P$ 僅取決於<b>溶質粒子莫耳數</b>，與溶質種類、大小、形狀完全無關！</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="diagram-row">
-            <div class="diagram-card">
-                <div class="caption">圖 3-23 拉午耳定律微觀表面溶質覆蓋阻礙揮發模型</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 向量圖 3-03-2：非揮發性溶質表面覆蓋模型 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 3-03-2 純溶劑 vs 溶液表面微觀分子分佈、蒸發逃逸機率與蒸氣壓下降模型</div>
+            <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <!-- 左區：純溶劑 (全表面均可揮發) -->
                     <rect x="25" y="15" width="220" height="120" rx="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.2"/>
@@ -642,120 +806,110 @@
                         <text x="100" y="62" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#dc2626" class="svg-label">蒸氣壓下降 P = P°·X溶劑</text>
                     </g>
                 </svg>
-                <div class="sub-caption">微觀圖像：非揮發性溶質粒子（紅色 S）佔據液面空間，使溶劑分子揮發機率正比減少，導致蒸氣壓必定下降。</div>
-            </div>
-
-            <div class="diagram-card">
-                <div class="caption">圖 3-24 溶液蒸氣壓 P 與蒸氣壓下降量 ΔP 線性圖解</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
-                    <g transform="translate(70, 20)">
-                        <!-- 坐標軸 -->
-                        <line x1="20" y1="100" x2="360" y2="100" stroke="#475569" stroke-width="1.2"/>
-                        <line x1="20" y1="100" x2="20" y2="15" stroke="#475569" stroke-width="1.2"/>
-                        <line x1="360" y1="100" x2="360" y2="15" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>
-                        <text x="190" y="115" text-anchor="middle" font-size="7.5" fill="#334155" class="svg-label">溶劑莫耳分率 X溶劑 (0 → 1) ； (溶質莫耳分率 X溶質 1 ← 0)</text>
-                        <text x="15" y="15" text-anchor="end" font-size="7.5" fill="#64748b" class="svg-label">蒸氣壓 P</text>
-                        <text x="20" y="112" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">0</text>
-                        <text x="360" y="112" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">1.0</text>
-
-                        <!-- P° 最高點 -->
-                        <line x1="20" y1="25" x2="360" y2="25" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,2"/>
-                        <circle cx="360" cy="25" r="3.5" fill="#0284c7"/>
-                        <text x="365" y="22" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">純溶劑 P°</text>
-
-                        <!-- 拉午耳定律斜直線 -->
-                        <line x1="20" y1="100" x2="360" y2="25" stroke="#0284c7" stroke-width="2"/>
-                        <text x="210" y="55" font-size="8" font-weight="bold" fill="#0369a1" class="svg-label">P溶液 = P° × X溶劑</text>
-
-                        <!-- 任意點 XA 下降量標示 -->
-                        <line x1="260" y1="100" x2="260" y2="25" stroke="#ef4444" stroke-width="1" stroke-dasharray="2,2"/>
-                        <circle cx="260" cy="47" r="3" fill="#dc2626"/>
-                        <!-- ΔP 垂直箭頭 -->
-                        <line x1="270" y1="25" x2="270" y2="47" stroke="#dc2626" stroke-width="1.2"/>
-                        <text x="275" y="38" font-size="7.5" font-weight="bold" fill="#dc2626" class="svg-label">ΔP = P° · X溶質</text>
-                    </g>
-                </svg>
-                <div class="sub-caption">幾何規律：溶液蒸氣壓 P 與溶劑莫耳分率呈嚴格正比直線；垂直下降量 ΔP 則直接正比於溶質之莫耳分率。</div>
-            </div>
         </div>
 
-        <div class="method-card">
-            <b>💡 核心破題關鍵：非揮發性溶液計算標準 SOP</b><br>
-            ① <b>求莫耳數</b>：將葡萄糖與水之質量分別除以其分子量，求出 $n_{\text{溶質}}$ 與 $n_{\text{水}}$。<br>
-            ② <b>求莫耳分率</b>：$X_{\text{水}} = \frac{n_{\text{水}}}{n_{\text{水}} + n_{\text{溶質}}}$；$X_{\text{溶質}} = \frac{n_{\text{溶質}}}{n_{\text{水}} + n_{\text{溶質}}}$。<br>
-            ③ <b>算蒸氣壓與下降量</b>：$P_{\text{溶液}} = P^\circ \times X_{\text{水}}$；下降量 $\Delta P = P^\circ \times X_{\text{溶質}}$ 或 $\Delta P = P^\circ - P_{\text{溶液}}$。
-        </div>
-
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">經典範例 1</span>
-                    <span class="example-title">非揮發性溶液蒸氣壓與下降量計算</span>
+        <!-- 知識卡片 2：蒸氣壓下降量與依數性質關聯 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag emerald">下降量解析</span>
+                <span>蒸氣壓下降量 <span class="nowrap">($\Delta P$)</span> 公式推導與重量莫耳濃度之正比關係</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>蒸氣壓下降量 <span class="nowrap">($\Delta P$)</span></b>：純溶劑蒸氣壓與溶液蒸氣壓之差額：
+                            <div class="formula-box" style="margin-top: 3px;">
+                                $\Delta P = P_A^\circ - P_{\text{溶液}} = P_A^\circ - (1 - X_{\text{質}}) P_A^\circ = X_{\text{溶質}} \cdot P_A^\circ$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>依數性質特徵</b>：蒸氣壓下降量 $\Delta P$ <b>僅取決於溶質的粒子莫耳數<span class="nowrap">（莫耳分率）</span>，而與溶質的種類、大小、形狀無關</b>。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">③</span>
+                        <div class="bullet-text"><b>稀薄水溶液之近似正比關係</b>：在極稀薄溶液中，$n_{\text{質}} \ll n_{\text{水}}$，則 $X_{\text{質}} \approx \dfrac{n_{\text{質}}}{n_{\text{水}}} = \dfrac{n_{\text{質}}}{W_{\text{水}}(\text{g})/18} = \dfrac{18}{1000} \cdot C_m$。故在同溫下：
+                            <div style="text-align: center; margin-top: 2px;" class="nowrap">
+                                $$\Delta P \propto C_m \quad \text{（蒸氣壓下降量與重量莫耳濃度成正比！）}$$
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span class="example-source">課本例題 · 大考經典試題</span>
             </div>
-            <div class="example-stem">
-                在 $25^\circ\text{C}$ 時純水的飽和蒸氣壓為 $23.8\text{ mmHg}$。<br>
-                若將 $180\text{ 克}$ 葡萄糖（$\text{C}_6\text{H}_{12}\text{O}_6$）完全溶於 $162.0\text{ 克}$ 水中形成稀薄溶液，試求：<br>
-                (1) 該葡萄糖水溶液中，溶劑水的莫耳分率（$X_{\text{水}}$）為何？<br>
-                (2) 該溶液在 $25^\circ\text{C}$ 時之蒸氣壓為多少 $\text{mmHg}$？<br>
-                (3) 該溶液之蒸氣壓下降量 $\Delta P$ 為多少 $\text{mmHg}$？<br>
-                （已知原子量：$\text{H}=1.0,\ \text{C}=12.0,\ \text{O}=16.0$；葡萄糖分子量 $= 180$）
-            </div>
+        </div>
 
-            <div class="handwriting-title">✍ 課堂筆記與引導手寫區：</div>
-            <div class="note-lines">
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+                <span style="font-size: 8.8pt; color: #64748b; font-weight: normal;">（依拉午耳定律填入核心變數）</span>
             </div>
-
-            <table class="answer-table">
-                <thead>
-                    <tr>
-                        <th>(1) 溶劑水莫耳分率 X水</th>
-                        <th>(2) 溶液蒸氣壓 P (mmHg)</th>
-                        <th>(3) 蒸氣壓下降量 ΔP (mmHg)</th>
-                        <th>(4) 驗證 P + ΔP = P°</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="q-list">
+                <div class="check-item">
+                    <span class="check-num">1.</span>
+                    <span>非揮發性溶質之溶液蒸氣壓大小直接正比於<span class="fill-blank"></span>的莫耳分率。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">2.</span>
+                    <span>蒸氣壓下降量 $\Delta P$ 則直接正比於<span class="fill-blank"></span>的莫耳分率<span class="nowrap">（$\Delta P = X_{\text{質}} \cdot P_A^\circ$）</span>。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">3.</span>
+                    <span>在 $25^\circ\text{C}$ 水蒸氣壓 $24\text{ mmHg}$ 下，$0.1$ 莫耳分率的葡萄糖水溶液，其蒸氣壓下降量為<span class="fill-blank"></span>。</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         PAGE 3: 揮發性雙成分理想溶液、氣相富集現象與經典範例 2 & 3
-         ========================================== -->
-    <div class="concept-page" id="page-3">
+    <!-- ======================= PAGE 3 (觀念三) ======================= -->
+    <div class="concept-page" id="page-3" style="gap: 5px;">
         <header class="handout-header">
             <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
-            <div class="student-fields">
-                <span>班級：<span class="under-line" style="width: 70px;"></span></span>
-                <span>座號：<span class="under-line" style="width: 50px;"></span></span>
-                <span>姓名：<span class="under-line" style="width: 90px;"></span></span>
-            </div>
         </header>
 
-        <div class="section-title">
-            <span>三、揮發性雙成分理想溶液、氣相富集現象與經典範例 2 & 3</span>
-            <span class="tag">道耳吞分壓 · 拉午耳定律 · 易揮發成份氣相富集 · 分餾原理</span>
+        <h2 class="section-title">
+            <span>三、揮發性雙成分理想溶液、道耳吞分壓與氣相富集分餾原理</span>
+            <span class="tag">雙成分理想溶液 · 道耳吞分壓 · 氣相富集分餾</span>
+        </h2>
+
+        <!-- 知識卡片 1：揮發性雙成分理想溶液熱力學 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">雙成分模型</span>
+                <span>兩揮發性成分理想溶液之分壓、總壓與拉午耳定律公式</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>成分分壓<span class="nowrap">（遵循拉午耳定律）</span></b>：當溶質與溶劑均為<b>具揮發性之液體</b>，且混合形成理想溶液時：
+                            <div style="text-align: center; margin: 2px 0;">
+                                $$P_A = X_A \cdot P_A^\circ, \quad P_B = X_B \cdot P_B^\circ = (1 - X_A) \cdot P_B^\circ$$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>溶液總蒸氣壓<span class="nowrap">（遵循道耳吞分壓定律）</span></b>：
+                            <div class="formula-box" style="margin-top: 2px;">
+                                $P_{\text{總}} = P_A + P_B = X_A P_A^\circ + X_B P_B^\circ = P_B^\circ + X_A (P_A^\circ - P_B^\circ)$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">③</span>
+                        <div class="bullet-text"><b>相圖線性特徵</b>：在 $P-X$ 相圖中，$P_A$ 與 $P_B$ 均為通過原點的直線，而總蒸氣壓 $P_{\text{總}}$ 為連接兩純質蒸氣壓 $P_B^\circ$ 與 $P_A^\circ$ 的直線。</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="diagram-row">
-            <div class="diagram-card">
-                <div class="caption">圖 3-25 揮發性雙成分理想溶液拉午耳分壓與總蒸氣壓線圖</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 向量圖 3-03-3：揮發性雙成分理想溶液相圖 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 3-03-3 揮發性雙成分理想溶液氣液平衡相圖與易揮發成分氣相富集模型</div>
+            <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <g transform="translate(65, 18)">
                         <!-- 背景輕量參考網格 -->
@@ -804,161 +958,107 @@
                         <text x="190" y="38" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#b91c1c" class="svg-label">總蒸氣壓 PT = PA + PB = P°A·XA + P°B·XB</text>
                     </g>
                 </svg>
-                <div class="sub-caption">理想雙成分線圖：總蒸氣壓 PT 為兩成分分壓 PA 與 PB 之嚴格直線相加疊加（完全符合拉午耳定律）。</div>
-            </div>
-
-            <div class="diagram-card">
-                <div class="caption">圖 3-26 分餾塔級進汽化冷凝與氣相富集分離幾何模型</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
-                    <!-- 分餾塔階梯進程圖 -->
-                    <g transform="translate(40, 20)">
-                        <!-- 階梯 1: 原始溶液混合物 -->
-                        <rect x="15" y="70" width="80" height="35" rx="3" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
-                        <text x="55" y="84" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#334155" class="svg-label">1. 原始液相</text>
-                        <text x="55" y="96" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">XA = 0.30</text>
-
-                        <!-- 汽化箭頭 1 -->
-                        <path d="M 95 80 L 130 55" stroke="#0284c7" stroke-width="1.5" marker-end="url(#arrow)"/>
-                        <text x="115" y="62" font-size="6.8" fill="#0284c7" class="svg-label">第1次汽化</text>
-
-                        <!-- 階梯 2: 第 1 次蒸氣 (YA1 富集) -->
-                        <rect x="135" y="40" width="80" height="35" rx="3" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2"/>
-                        <text x="175" y="54" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0369a1" class="svg-label">2. 初級蒸氣</text>
-                        <text x="175" y="66" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">YA1 = 0.55 ↑</text>
-
-                        <!-- 冷凝再汽化箭頭 2 -->
-                        <path d="M 215 50 L 250 25" stroke="#16a34a" stroke-width="1.5"/>
-                        <text x="235" y="32" font-size="6.8" fill="#16a34a" class="svg-label">第2次汽化</text>
-
-                        <!-- 階梯 3: 第 2 次蒸氣 -->
-                        <rect x="255" y="10" width="85" height="35" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
-                        <text x="297" y="24" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#15803d" class="svg-label">3. 再次富集</text>
-                        <text x="297" y="36" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#16a34a" class="svg-label">YA2 = 0.82 ↑↑</text>
-
-                        <!-- 頂端產物 -->
-                        <rect x="360" y="25" width="85" height="65" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2"/>
-                        <text x="402" y="45" text-anchor="middle" font-size="8" font-weight="bold" fill="#b91c1c" class="svg-label">塔頂餾出物</text>
-                        <text x="402" y="60" text-anchor="middle" font-size="7.2" fill="#78350f" class="svg-label">純度 &gt; 99%</text>
-                        <text x="402" y="75" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#dc2626" class="svg-label">易揮發成分 A</text>
-                    </g>
-                </svg>
-                <div class="sub-caption">分餾的核心本質：利用每次「汽化-冷凝」易揮發成分在氣相富集的特性，經塔內無數次連續循環，高純度分離沸點相近之混合物。</div>
-            </div>
         </div>
 
-        <div class="method-card">
-            <b>💡 核心破題關鍵：揮發性溶液解題雙核心定律</b><br>
-            ① <b>求分壓</b>：代入拉午耳定律 $P_A = P^\circ_A \cdot X_A$，$P_B = P^\circ_B \cdot X_B$；總壓 $P_T = P_A + P_B$。<br>
-            ② <b>求氣相莫耳分率</b>：依道耳吞分壓定律，氣相莫耳分率即為分壓所佔總壓之比值：$Y_A = \frac{P_A}{P_T}$，$Y_B = \frac{P_B}{P_T}$。
-        </div>
-
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">經典範例 2</span>
-                    <span class="example-title">揮發性溶液分壓平衡計算</span>
+        <!-- 知識卡片 2：氣相富集原理與分餾技術 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag purple">氣相富集</span>
+                <span>氣相莫耳分率計算、易揮發成分富集與連續汽化冷凝分餾</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>氣相莫耳分率 <span class="nowrap">($Y_A, Y_B$)</span> 計算</b>：由道耳吞分壓定律，氣相中各成分莫耳分率等於其分壓佔總壓之比值：
+                            <div style="text-align: center; margin: 2px 0;">
+                                $$Y_A = \dfrac{P_A}{P_{\text{總}}} = \dfrac{X_A P_A^\circ}{X_A P_A^\circ + X_B P_B^\circ}, \quad Y_B = \dfrac{P_B}{P_{\text{總}}} = 1 - Y_A$$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>易揮發成分氣相富集原理<span class="nowrap">（超高頻考點）</span></b>：<br>
+                        • 若純質蒸氣壓 $P_A^\circ > P_B^\circ$<span class="nowrap">（A 沸點較低，為<b>較易揮發成分</b>）</span>，則在平衡蒸氣中：
+                            <div class="formula-box" style="color: var(--blue-dark); margin: 3px 0;">
+                                $Y_A > X_A \quad \text{且} \quad Y_B < X_B$
+                            </div>
+                        </div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">③</span>
+                        <div class="bullet-text"><b>分餾原理 <span class="nowrap">(Fractional Distillation)</span></b>：將平衡蒸氣冷凝，所得液體中易揮發成分 A 的比例大幅提高；經多次「汽化-冷凝」循環，即可在分餾塔頂部取得高純度的純 A。</div>
+                    </div>
                 </div>
-                <span class="example-source">考卷高頻計算題</span>
-            </div>
-            <div class="example-stem">
-                在某定溫下，甲、乙兩種純揮發性溶劑之飽和蒸氣壓分別為 $250\text{ mmHg}$ 及 $150\text{ mmHg}$，甲與乙能互相均勻混合形成理想溶液。<br>
-                今取 $0.3\text{ 莫耳}$ 之甲與一未知量之乙混合，結果與該溶液達平衡之蒸氣中，<b>甲與乙之分壓正好相等</b>。試問該溶液所取用之乙的莫耳數為何？<br>
-                (A) 0.18　(B) 0.36　(C) 0.42　(D) 0.50
             </div>
         </div>
 
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">經典範例 3</span>
-                    <span class="example-title">揮發性混合溶液氣相組成計算</span>
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+                <span style="font-size: 8.8pt; color: #64748b; font-weight: normal;">（依分餾原理填入大小關係與名詞）</span>
+            </div>
+            <div class="q-list">
+                <div class="check-item">
+                    <span class="check-num">1.</span>
+                    <span>已知 $P_A^\circ > P_B^\circ$，則氣液平衡蒸氣中，A 的莫耳分率 $Y_A$<span class="fill-blank"></span>液相莫耳分率 $X_A$。</span>
                 </div>
-                <span class="example-source">大考經典代表題</span>
+                <div class="check-item">
+                    <span class="check-num">2.</span>
+                    <span>在石油分餾塔中，沸點最低、蒸氣壓最大的成分會最先自塔的<span class="fill-blank"></span>蒸出收集。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">3.</span>
+                    <span>揮發性雙成分理想溶液的總蒸氣壓介於純質蒸氣壓 $P_A^\circ$ 與 $P_B^\circ$ 之間，且隨液相組成呈<span class="fill-blank"></span>關係。</span>
+                </div>
             </div>
-            <div class="example-stem">
-                某溫度時，庚烷（$\text{C}_7\text{H}_{16}$）及辛烷（$\text{C}_8\text{H}_{18}$）的純飽和蒸氣壓各為 $90\text{ mmHg}$ 及 $30\text{ mmHg}$。<br>
-                若只含庚烷及辛烷的理想溶液，測得其<b>總蒸氣壓為 $45\text{ mmHg}$</b>，則與該溶液平衡之蒸氣中，<b>辛烷氣體分子的莫耳分率（$Y_O$）</b>為何？<br>
-                (A) 0.25　(B) 0.50　(C) 0.75　(D) 0.90
-            </div>
-
-            <div class="handwriting-title">✍ 課堂筆記與引導手寫區：</div>
-            <div class="note-lines">
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-            </div>
-
-            <table class="answer-table">
-                <thead>
-                    <tr>
-                        <th>範例 2 列式條件 (P甲 = P乙)</th>
-                        <th>範例 2 乙之莫耳數與選項</th>
-                        <th>範例 3 辛烷液相分率 XO</th>
-                        <th>範例 3 氣相分率 YO 與選項</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <!-- ==========================================
-         PAGE 4: 理想與非理想溶液（正負偏差）分子引力模型與熱力學判據
-         ========================================== -->
-    <div class="concept-page" id="page-4">
+    <!-- ======================= PAGE 4 (觀念四) ======================= -->
+    <div class="concept-page" id="page-4" style="gap: 5px;">
         <header class="handout-header">
             <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
-            <div class="student-fields">
-                <span>班級：<span class="under-line" style="width: 70px;"></span></span>
-                <span>座號：<span class="under-line" style="width: 50px;"></span></span>
-                <span>姓名：<span class="under-line" style="width: 90px;"></span></span>
-            </div>
         </header>
 
-        <div class="section-title">
-            <span>四、理想與非理想溶液（正負偏差）分子引力模型與熱力學判據</span>
-            <span class="tag">分子間引力對比 · 焓變 ΔH · 體積變化 ΔV · 正偏差 vs 負偏差</span>
+        <h2 class="section-title">
+            <span>四、理想與非理想溶液（正負偏差）分子引力模型與同槽密閉平衡</span>
+            <span class="tag">分子間引力 · 正負偏差 · 密閉同槽溶劑遷移</span>
+        </h2>
+
+        <!-- 知識卡片 1：理想溶液 vs 非理想溶液熱力學判據 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">溶液分類</span>
+                <span>分子間作用力微觀對比與正負偏差熱力學判據</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>理想溶液 <span class="nowrap">(Ideal Solution)</span></b>：$F_{A-B} = F_{A-A} = F_{B-B}$。<br>
+                        • <b>熱力學特性</b>：混合熱 $\Delta H_{\text{混}} = 0$<span class="nowrap">（不吸熱不放熱）</span>；體積具加成性 $\Delta V_{\text{混}} = 0$；嚴格遵守拉午耳定律。<br>
+                        • <b>常見實例</b>：結構相似之同系物<span class="nowrap">（如苯＋甲苯、正己烷＋正庚烷）</span>。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>非理想溶液 · 正偏差 <span class="nowrap">(Positive Deviation)</span></b>：$F_{A-B} < F_{A-A}, F_{B-B}$<span class="nowrap">（異種引力較弱）</span>。<br>
+                        • <b>特性</b>：分子易逃逸，實測蒸氣壓<b>大於理論值</b>；吸熱 $\Delta H_{\text{混}} > 0$<span class="nowrap">（溫降）</span>；體積膨脹 $\Delta V_{\text{混}} > 0$<span class="nowrap">（如乙醇＋環己烷）</span>。</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">③</span>
+                        <div class="bullet-text"><b>非理想溶液 · 負偏差 <span class="nowrap">(Negative Deviation)</span></b>：$F_{A-B} > F_{A-A}, F_{B-B}$<span class="nowrap">（異種引力超強）</span>。<br>
+                        • <b>特性</b>：分子不易逃逸，實測蒸氣壓<b>小於理論值</b>；放熱 $\Delta H_{\text{混}} < 0$<span class="nowrap">（溫升）</span>；體積收縮 $\Delta V_{\text{混}} < 0$<span class="nowrap">（如丙酮＋氯仿形成氫鍵）</span>。</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="concept-row">
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag blue">理想溶液</span>
-                    <span>引力相等、無熱效應與體積加成</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>分子引力條件</b>：$F_{AB} \approx F_{AA} \approx F_{BB}$（同種與異種分子間引力幾乎完全相同）。</li>
-                    <li><b>熱力學特性</b>：混合熱 $\Delta H_{\text{混}} = 0$（不吸熱也不放熱）；混合體積變化 $\Delta V_{\text{混}} = 0$（體積完全具加成性）。</li>
-                    <li><b>蒸氣壓</b>：實測總蒸氣壓完全吻合拉午耳定律直線 ($P_{\text{實}} = P_{\text{理}}$)。</li>
-                    <li><b>典型實例</b>：結構極其相似之同系物，如<b>苯＋甲苯</b>、<b>正庚烷＋正辛烷</b>。</li>
-                </ul>
-            </div>
-            <div class="concept-card">
-                <div class="card-header">
-                    <span class="card-tag amber">非理想溶液</span>
-                    <span>引力差異產生之正偏差與負偏差</span>
-                </div>
-                <ul class="concept-list">
-                    <li><b>正偏差 (Positive)</b>：$F_{AB} < F_{AA}, F_{BB}$（異種引力弱，易逃逸）$\implies$ <b>吸熱 $\Delta H > 0$、膨脹 $\Delta V > 0$、$P_{\text{實}} > P_{\text{理}}$</b>（如乙醇＋環己烷）。</li>
-                    <li><b>負偏差 (Negative)</b>：$F_{AB} > F_{AA}, F_{BB}$（形成額外強氫鍵，束縛緊）$\implies$ <b>放熱 $\Delta H < 0$、收縮 $\Delta V < 0$、$P_{\text{實}} < P_{\text{理}}$</b>（如丙酮＋氯仿）。</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="diagram-row">
-            <div class="diagram-card">
-                <div class="caption">圖 3-27 理想與非理想溶液分子間引力微觀作用力模型</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 向量圖 3-03-4：理想與正負偏差引力模型 -->
+        <div class="diagram-card-wide">
+            <div class="caption">圖 3-03-4 理想溶液、正偏差與負偏差分子間引力對比及非理想蒸氣壓相圖模型</div>
+            <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <!-- 1. 理想溶液 -->
                     <rect x="15" y="15" width="155" height="120" rx="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.2"/>
@@ -996,12 +1096,322 @@
                         <text x="67" y="68" text-anchor="middle" font-size="7" fill="#7e22ce" class="svg-label">放熱 ΔH&lt;0 , 收縮 ΔV&lt;0</text>
                     </g>
                 </svg>
-                <div class="sub-caption">微觀引力對比：正偏差異種分子引力變弱容易逃逸揮發；負偏差形成額外強氫鍵引力緊密，蒸氣壓受強烈抑制。</div>
-            </div>
+        </div>
 
-            <div class="diagram-card">
-                <div class="caption">圖 3-28 正偏差與負偏差實測蒸氣壓-組成偏離曲線</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 知識卡片 2：同槽密閉容器中之蒸氣壓平衡與溶劑自發遷移 -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag amber">溶劑遷移</span>
+                <span>同槽密閉鐘罩之熱力學平衡條件與溶劑水轉移通則</span>
+            </div>
+            <div style="font-size: 10pt; line-height: 1.44;">
+                <div class="concept-intro-list">
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">①</span>
+                        <div class="bullet-text"><b>遷移方向通則</b>：水蒸氣自<b>蒸氣壓較高處<span class="nowrap">（濃度較稀處/純水）</span>自發揮發，冷凝遷移至蒸氣壓較低處<span class="nowrap">（濃度較濃處）</span></b>！</div>
+                    </div>
+                    <div class="concept-intro-item">
+                        <span class="bullet-dot">②</span>
+                        <div class="bullet-text"><b>最終平衡條件<span class="nowrap">（熱力學定律）</span></b>：<br>
+                        • <b>若有純水存在</b>：純水蒸氣壓永遠高於任何溶液，故<b>純水必定完全蒸乾乾涸</b>！<br>
+                        • <b>各溶液杯最終蒸氣壓必相等</b> $\implies$ <b>各杯最終的溶劑莫耳分率相等<span class="nowrap">（有效濃度 $i \cdot C_m$ 相等）</span></b>！<br>
+                        • <b>平衡水量分配比例</b>：各溶液杯平衡時的水量與其內含有的<b>有效溶質莫耳數 <span class="nowrap">($i \cdot n_{\text{質}}$)</span> 嚴格成正比</b>。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-card">
+            <div class="check-title">
+                <span>📝 隨堂觀念自我檢核</span>
+                <span style="font-size: 8.8pt; color: #64748b; font-weight: normal;">（依熱力學偏差與遷移原理填入關鍵特徵）</span>
+            </div>
+            <div class="q-list">
+                <div class="check-item">
+                    <span class="check-num">1.</span>
+                    <span>丙酮與氯仿混合時因形成額外氫鍵，分子間引力增強，蒸氣壓呈現<span class="fill-blank"></span><span class="nowrap">（填：正/負偏差）</span>。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">2.</span>
+                    <span>密閉鐘罩內將純水與濃糖水並置，長時間平衡後，純水杯內的水量最終會變為<span class="fill-blank"></span>。</span>
+                </div>
+                <div class="check-item">
+                    <span class="check-num">3.</span>
+                    <span>呈現正偏差的非理想溶液混合時，體系會<span class="fill-blank"></span>熱量，且混合後總體積會<span class="fill-blank"></span>。</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 5 (經典範例 1 & 2) ======================= -->
+    <div class="concept-page" id="page-5" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 5 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <!-- 經典範例 1 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 1</span>
+                    <span class="example-title">非揮發性溶質之溶液蒸氣壓與下降量計算</span>
+                </div>
+                <span class="example-source">考點：拉午耳公式應用 · 蒸氣壓下降量</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>已知在 $25^\circ\text{C}$ 時純水的飽和蒸氣壓為 $24.0\text{ mmHg}$。今將 $18.0\text{ g}$ 葡萄糖<span class="nowrap">（分子量 $180$）</span>完全溶解於 $180\text{ g}$ 水中<span class="nowrap">（分子量 $18$）</span>形成稀薄溶液：<br>
+                    (1) 試計算該葡萄糖水溶液中，水<span class="nowrap">（溶劑）</span>的莫耳分率 $X_{\text{水}}$ 及葡萄糖的莫耳分率 $X_{\text{葡}}$。<br>
+                    (2) 該溶液在 $25^\circ\text{C}$ 時的蒸氣壓為何？蒸氣壓下降量 $\Delta P$ 為若干 $\text{mmHg}$？<br>
+                    <div class="opts-grid" style="margin-top: 3px;">
+                        <div>(A) 蒸氣壓 $21.6\text{ mmHg}$，$\Delta P = 2.4\text{ mmHg}$</div>
+                        <div>(B) 蒸氣壓 $23.76\text{ mmHg}$，$\Delta P = 0.24\text{ mmHg}$</div>
+                        <div>(C) 蒸氣壓 $22.8\text{ mmHg}$，$\Delta P = 1.2\text{ mmHg}$</div>
+                        <div>(D) 蒸氣壓 $24.0\text{ mmHg}$，$\Delta P = 0\text{ mmHg}$</div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-5 範例 1 拉午耳直線關係幾何模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
+                    <g transform="translate(70, 20)">
+                        <!-- 坐標軸 -->
+                        <line x1="20" y1="100" x2="360" y2="100" stroke="#475569" stroke-width="1.2"/>
+                        <line x1="20" y1="100" x2="20" y2="15" stroke="#475569" stroke-width="1.2"/>
+                        <line x1="360" y1="100" x2="360" y2="15" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2,2"/>
+                        <text x="190" y="115" text-anchor="middle" font-size="7.5" fill="#334155" class="svg-label">溶劑莫耳分率 X溶劑 (0 → 1) ； (溶質莫耳分率 X溶質 1 ← 0)</text>
+                        <text x="15" y="15" text-anchor="end" font-size="7.5" fill="#64748b" class="svg-label">蒸氣壓 P</text>
+                        <text x="20" y="112" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">0</text>
+                        <text x="360" y="112" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">1.0</text>
+
+                        <!-- P° 最高點 -->
+                        <line x1="20" y1="25" x2="360" y2="25" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="2,2"/>
+                        <circle cx="360" cy="25" r="3.5" fill="#0284c7"/>
+                        <text x="365" y="22" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">純溶劑 P°</text>
+
+                        <!-- 拉午耳定律斜直線 -->
+                        <line x1="20" y1="100" x2="360" y2="25" stroke="#0284c7" stroke-width="2"/>
+                        <text x="210" y="55" font-size="8" font-weight="bold" fill="#0369a1" class="svg-label">P溶液 = P° × X溶劑</text>
+
+                        <!-- 任意點 XA 下降量標示 -->
+                        <line x1="260" y1="100" x2="260" y2="25" stroke="#ef4444" stroke-width="1" stroke-dasharray="2,2"/>
+                        <circle cx="260" cy="47" r="3" fill="#dc2626"/>
+                        <!-- ΔP 垂直箭頭 -->
+                        <line x1="270" y1="25" x2="270" y2="47" stroke="#dc2626" stroke-width="1.2"/>
+                        <text x="275" y="38" font-size="7.5" font-weight="bold" fill="#dc2626" class="svg-label">ΔP = P° · X溶質</text>
+                    </g>
+                </svg>
+                </div>
+            </div>
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(B) 】</div>
+            </div>
+        </div>
+
+        <!-- 經典範例 2 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 2</span>
+                    <span class="example-title">揮發性雙成分理想溶液分壓與純質蒸氣壓推求</span>
+                </div>
+                <span class="example-source">考點：題庫 Q2 · 道耳吞分壓反推純質蒸氣壓</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>兩揮發性液態純質甲和乙混合可形成理想溶液。若 $50^\circ\text{C}$ 時，測得溶液的總蒸氣壓為 $400\text{ mmHg}$，而在蒸氣中甲的莫耳分率為 $0.25$，在溶液中甲的莫耳分率為 $0.40$。試求在 $50^\circ\text{C}$ 時：<br>
+                    (1) 氣相中甲與乙之分壓分別為何？<br>
+                    (2) 純甲與純乙各自的飽和蒸氣壓 $P_A^\circ$ 與 $P_B^\circ$ 為何？<br>
+                    <div class="opts-grid" style="margin-top: 3px;">
+                        <div>(A) 純甲 $100\text{ mmHg}$，純乙 $300\text{ mmHg}$</div>
+                        <div>(B) 純甲 $200\text{ mmHg}$，純乙 $400\text{ mmHg}$</div>
+                        <div>(C) 純甲 $250\text{ mmHg}$，純乙 $300\text{ mmHg}$</div>
+                        <div>(D) 純甲 $250\text{ mmHg}$，純乙 $500\text{ mmHg}$</div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-6 範例 2 雙成分氣相分壓幾何模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 155" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="520" height="155" fill="#f8fafc" rx="4"/>
+                    <!-- 左區：P-V 關係曲線 -->
+                    <g transform="translate(30, 20)">
+                        <line x1="20" y1="95" x2="190" y2="95" stroke="#475569" stroke-width="1.2"/>
+                        <line x1="20" y1="95" x2="20" y2="10" stroke="#475569" stroke-width="1.2"/>
+                        <text x="190" y="105" text-anchor="end" font-size="7" fill="#64748b" class="svg-label">容器體積 V →</text>
+                        <text x="15" y="10" text-anchor="end" font-size="7" fill="#64748b" class="svg-label">壓力 P ↑</text>
+
+                        <!-- 水平飽和線 (只要有液態存在，P=Psat 恆定) -->
+                        <line x1="20" y1="35" x2="100" y2="35" stroke="#0284c7" stroke-width="2"/>
+                        <circle cx="100" cy="35" r="3" fill="#ef4444"/>
+                        <text x="60" y="28" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">氣液共存 P = Psat</text>
+                        <text x="100" y="48" font-size="6.8" fill="#ef4444" class="svg-label">液滴恰乾涸點</text>
+
+                        <!-- 雙曲線 (波以耳定律 P ∝ 1/V) -->
+                        <path d="M 100 35 Q 130 65 180 85" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="3,2"/>
+                        <text x="145" y="65" font-size="7" font-weight="bold" fill="#7c3aed" class="svg-label">完全汽化 P ∝ 1/V</text>
+                    </g>
+
+                    <!-- 右區：活塞推拉微觀圖解 -->
+                    <g transform="translate(260, 20)">
+                        <!-- 容器 1: 體積 V (液體多) -->
+                        <rect x="10" y="15" width="50" height="75" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+                        <rect x="11" y="70" width="48" height="19" fill="#bae6fd" opacity="0.8"/>
+                        <rect x="11" y="25" width="48" height="6" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
+                        <text x="35" y="50" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">P = Psat</text>
+                        <text x="35" y="102" text-anchor="middle" font-size="7" fill="#334155" class="svg-label">體積 V (液滴多)</text>
+
+                        <!-- 拉開活塞箭頭 -->
+                        <path d="M 70 50 L 95 50" stroke="#0284c7" stroke-width="1.8"/>
+                        <text x="82" y="44" text-anchor="middle" font-size="7" font-weight="bold" fill="#0284c7" class="svg-label">拉開</text>
+
+                        <!-- 容器 2: 體積 2V (液滴減少，蒸氣壓仍為 Psat) -->
+                        <rect x="105" y="15" width="50" height="75" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+                        <rect x="106" y="80" width="48" height="9" fill="#bae6fd" opacity="0.8"/>
+                        <rect x="106" y="17" width="48" height="6" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
+                        <text x="130" y="50" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">P = Psat</text>
+                        <text x="130" y="102" text-anchor="middle" font-size="7" fill="#334155" class="svg-label">體積 2V (液滴少)</text>
+
+                        <!-- 結論方框 -->
+                        <rect x="170" y="25" width="75" height="55" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+                        <text x="207" y="40" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#b45309" class="svg-label">核心規律</text>
+                        <text x="207" y="53" text-anchor="middle" font-size="6.8" fill="#78350f" class="svg-label">只要尚有液體殘留</text>
+                        <text x="207" y="64" text-anchor="middle" font-size="7" font-weight="bold" fill="#dc2626" class="svg-label">蒸氣壓絕對恆定！</text>
+                    </g>
+                </svg>
+                </div>
+            </div>
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(D) 】</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 6 (經典範例 3 & 4) ======================= -->
+    <div class="concept-page" id="page-6" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 6 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <!-- 經典範例 3 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 3</span>
+                    <span class="example-title">連續汽化冷凝與分餾組成計算<span class="nowrap">（苯-甲苯相圖）</span></span>
+                </div>
+                <span class="example-source">考點：題庫 Q8/Q9 · 連續汽化冷凝富集</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>已知在 $20^\circ\text{C}$ 下純苯<span class="nowrap">（A）</span>與純甲苯<span class="nowrap">（B）</span>的飽和蒸氣壓依次為 $70\text{ mmHg}$ 與 $20\text{ mmHg}$，兩者混合形成理想溶液。若取某比例之苯-甲苯溶液與其蒸氣達平衡，測得平衡蒸氣中苯的莫耳分率 $Y_A = 0.70$：<br>
+                    (1) 試求該液體中苯之液相莫耳分率 $X_A$ 為何？<br>
+                    (2) 若將此平衡蒸氣全部冷凝為新溶液，該新溶液之總蒸氣壓變為多少？<br>
+                    <div class="opts-grid" style="margin-top: 3px;">
+                        <div>(A) $X_A = 0.30$，新總壓 $45\text{ mmHg}$</div>
+                        <div>(B) $X_A = 0.40$，新總壓 $55\text{ mmHg}$</div>
+                        <div>(C) $X_A = 0.50$，新總壓 $50\text{ mmHg}$</div>
+                        <div>(D) $X_A = 0.60$，新總壓 $60\text{ mmHg}$</div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-7 範例 3 分餾富集汽化冷凝模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
+                    <!-- 分餾塔階梯進程圖 -->
+                    <g transform="translate(40, 20)">
+                        <!-- 階梯 1: 原始溶液混合物 -->
+                        <rect x="15" y="70" width="80" height="35" rx="3" fill="#ffffff" stroke="#64748b" stroke-width="1.2"/>
+                        <text x="55" y="84" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#334155" class="svg-label">1. 原始液相</text>
+                        <text x="55" y="96" text-anchor="middle" font-size="7" fill="#64748b" class="svg-label">XA = 0.30</text>
+
+                        <!-- 汽化箭頭 1 -->
+                        <path d="M 95 80 L 130 55" stroke="#0284c7" stroke-width="1.5" marker-end="url(#arrow)"/>
+                        <text x="115" y="62" font-size="6.8" fill="#0284c7" class="svg-label">第1次汽化</text>
+
+                        <!-- 階梯 2: 第 1 次蒸氣 (YA1 富集) -->
+                        <rect x="135" y="40" width="80" height="35" rx="3" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2"/>
+                        <text x="175" y="54" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0369a1" class="svg-label">2. 初級蒸氣</text>
+                        <text x="175" y="66" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#0284c7" class="svg-label">YA1 = 0.55 ↑</text>
+
+                        <!-- 冷凝再汽化箭頭 2 -->
+                        <path d="M 215 50 L 250 25" stroke="#16a34a" stroke-width="1.5"/>
+                        <text x="235" y="32" font-size="6.8" fill="#16a34a" class="svg-label">第2次汽化</text>
+
+                        <!-- 階梯 3: 第 2 次蒸氣 -->
+                        <rect x="255" y="10" width="85" height="35" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.2"/>
+                        <text x="297" y="24" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#15803d" class="svg-label">3. 再次富集</text>
+                        <text x="297" y="36" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#16a34a" class="svg-label">YA2 = 0.82 ↑↑</text>
+
+                        <!-- 頂端產物 -->
+                        <rect x="360" y="25" width="85" height="65" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="1.2"/>
+                        <text x="402" y="45" text-anchor="middle" font-size="8" font-weight="bold" fill="#b91c1c" class="svg-label">塔頂餾出物</text>
+                        <text x="402" y="60" text-anchor="middle" font-size="7.2" fill="#78350f" class="svg-label">純度 &gt; 99%</text>
+                        <text x="402" y="75" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#dc2626" class="svg-label">易揮發成分 A</text>
+                    </g>
+                </svg>
+                </div>
+            </div>
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(B) 】</div>
+            </div>
+        </div>
+
+        <!-- 經典範例 4 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 4</span>
+                    <span class="example-title">氣流法測定蒸氣壓與未知溶質分子量計算</span>
+                </div>
+                <span class="example-source">考點：題庫 Q4 · 氣流飽和失重法</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>某不具揮發性、不解離之未知溶質 $10.0\text{ g}$，溶於 $78.0\text{ g}$ 純苯中。以乾燥空氣緩慢通過該溶液使其達飽和蒸氣壓，發現溶液失重 $1.000\text{ g}$；同溫下以同量空氣對純苯做相同實驗，純苯失重 $1.073\text{ g}$。試求該溶質之分子量 $M$ 為何？<span class="nowrap">（苯 $\text{C}_6\text{H}_6 = 78.0$）</span><br>
+                    <div class="opts-grid" style="margin-top: 3px;">
+                        <div>(A) 128</div>
+                        <div>(B) 138</div>
+                        <div>(C) 148</div>
+                        <div>(D) 158</div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-8 範例 4 氣流帶出飽和蒸氣幾何模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <!-- 左區：正偏差曲線 (向上凸起) -->
                     <g transform="translate(35, 20)">
@@ -1033,117 +1443,56 @@
                         <text x="110" y="106" text-anchor="middle" font-size="6.8" fill="#334155" class="svg-label">如：丙酮 + 氯仿</text>
                     </g>
                 </svg>
-                <div class="sub-caption">宏觀熱力學規律：正偏差產生最高蒸氣壓（對應最低沸點共沸物）；負偏差產生最低蒸氣壓（對應最高沸點共沸物）。</div>
-            </div>
-        </div>
-
-        <table class="summary-table">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">溶液類別</th>
-                    <th style="width: 25%;">分子間引力關係</th>
-                    <th style="width: 15%;">混合熱 ΔH</th>
-                    <th style="width: 15%;">混合體積 ΔV</th>
-                    <th style="width: 15%;">蒸氣壓特徵</th>
-                    <th style="width: 15%;">經典代表實例</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="font-weight: 700; color: #0284c7;">理想溶液</td>
-                    <td>$F_{AB} \approx F_{AA} \approx F_{BB}$</td>
-                    <td>$\Delta H = 0$</td>
-                    <td>$\Delta V = 0$（加成）</td>
-                    <td>$P_{\text{實}} = P_{\text{理}}$</td>
-                    <td>苯＋甲苯、正己烷＋正庚烷</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: 700; color: #b91c1c;">正偏差</td>
-                    <td>$F_{AB} < F_{AA},\ F_{BB}$（互斥逸散）</td>
-                    <td><span style="color: #b91c1c; font-weight: 700;">$\Delta H > 0$（吸熱）</span></td>
-                    <td><span style="color: #b91c1c; font-weight: 700;">$\Delta V > 0$（膨脹）</span></td>
-                    <td>$P_{\text{實}} > P_{\text{理}}$</td>
-                    <td>乙醇＋環己烷、丙酮＋二硫化碳</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: 700; color: #7e22ce;">負偏差</td>
-                    <td>$F_{AB} > F_{AA},\ F_{BB}$（形成強氫鍵）</td>
-                    <td><span style="color: #7e22ce; font-weight: 700;">$\Delta H < 0$（放熱）</span></td>
-                    <td><span style="color: #7e22ce; font-weight: 700;">$\Delta V < 0$（收縮）</span></td>
-                    <td>$P_{\text{實}} < P_{\text{理}}$</td>
-                    <td>丙酮＋氯仿、濃硫酸＋水</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">觀念檢核</span>
-                    <span class="example-title">理想與非理想溶液微觀作用力與熱力學判據精熟評判</span>
                 </div>
-                <span class="example-source">大考熱門核心題</span>
             </div>
-            <div class="example-stem">
-                請根據分子間作用力與拉午耳定律偏差理論，回答下列核心問題：<br>
-                (1) 兩液體混合形成「理想溶液」時，其混合過程中的反應熱 $\Delta H_{\text{混}}$ 必等於__________，且混合後的總體積__________（填：具有或不具有）加成性。<br>
-                (2) 將丙酮與氯仿（$\text{CHCl}_3$）混合時，兩者分子間會額外形成強大的__________鍵，使得異種分子間引力大於同種引力，故此溶液屬於__________偏差溶液，實測蒸氣壓較理論值__________。<br>
-                (3) 某液態混合物在配製時溫度明顯下降（吸收熱量），且混合後體積微幅膨脹，則該混合液之實測飽和蒸氣壓必__________（填：大於、小於或等於）依拉午耳定律計算之理論蒸氣壓。<br>
-                (4) 下列哪一組液體混合後，最接近理想溶液的行為？（甲）水＋乙醇；（乙）苯＋甲苯；（丙）丙酮＋水。答：__________。
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(B) 】</div>
             </div>
-
-            <div class="handwriting-title">✍ 課堂筆記與引導手寫區：</div>
-            <div class="note-lines">
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-            </div>
-
-            <table class="answer-table">
-                <thead>
-                    <tr>
-                        <th>(1) 理想溶液熱力學特徵</th>
-                        <th>(2) 丙酮與氯仿偏差機制</th>
-                        <th>(3) 吸熱膨脹對應蒸氣壓</th>
-                        <th>(4) 理想溶液最佳實例</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
-    <!-- ==========================================
-         PAGE 5: 同槽密閉容器蒸氣壓平衡、溶劑遷移機制與經典範例
-         ========================================== -->
-    <div class="concept-page" id="page-5">
+    <!-- ======================= PAGE 7 (經典範例 5 & 6) ======================= -->
+    <div class="concept-page" id="page-7" style="gap: 6px;">
         <header class="handout-header">
             <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
             <div class="student-fields">
-                <span>班級：<span class="under-line" style="width: 70px;"></span></span>
-                <span>座號：<span class="under-line" style="width: 50px;"></span></span>
-                <span>姓名：<span class="under-line" style="width: 90px;"></span></span>
+                <span style="color: var(--blue); font-weight: 800;">第 7 頁 / 共 11 頁</span>
             </div>
         </header>
 
-        <div class="section-title">
-            <span>五、同槽密閉容器蒸氣壓平衡、溶劑遷移機制與經典範例</span>
-            <span class="tag">同槽密閉平衡 · 溶劑水自發遷移 · 純溶劑完全乾涸 · 莫耳分率相等</span>
-        </div>
-
-        <div class="diagram-row">
-            <div class="diagram-card">
-                <div class="caption">圖 3-29 純水與蔗糖水共置於同槽密閉容器之溶劑轉移幾何模型</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 經典範例 5 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 5</span>
+                    <span class="example-title">同槽密閉容器中之蒸氣壓平衡與溶劑水轉移量計算</span>
+                </div>
+                <span class="example-source">考點：題庫 Q6 · 密閉同槽溶劑遷移</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>在 $1000\text{ g}$ 的水中溶解 $15.0\text{ g}$ 尿素<span class="nowrap">（$\text{CO(NH}_2\text{)}_2$）</span>配成 A 液；在 $500\text{ g}$ 的水中溶解葡萄糖 $30.0\text{ g}$ 配成 B 液。將此二溶液同置於真空密閉鐘罩中，使其自發達成蒸氣壓平衡：<br>
+                    (1) 試問水分子由哪一溶液移至哪一溶液？<br>
+                    (2) 達平衡時，兩溶液之重量莫耳濃度為何？共移動多少克水？<span class="nowrap">（尿素分子量 $60$，葡萄糖分子量 $180$）</span><br>
+                    <div class="opts-grid" style="margin-top: 3px;">
+                        <div>(A) B $\to$ A，移動 $50\text{ g}$</div>
+                        <div>(B) A $\to$ B，移動 $50\text{ g}$</div>
+                        <div>(C) B $\to$ A，移動 $100\text{ g}$</div>
+                        <div>(D) A $\to$ B，移動 $100\text{ g}$</div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-9 範例 5 密閉容器溶劑自發遷移模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <!-- 密閉大鐘罩框架 -->
                     <path d="M 30 135 L 30 35 Q 260 5 490 35 L 490 135 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
@@ -1178,12 +1527,44 @@
                         <text x="52" y="98" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#15803d" class="svg-label">最終：體積水位大幅上升！</text>
                     </g>
                 </svg>
-                <div class="sub-caption">熱力學驅動力：純水之蒸氣壓恆高於溶液；純水上方無法達平衡而持續揮發，並在糖水冷凝，直到純水完全蒸乾為止。</div>
+                </div>
             </div>
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(D) 】</div>
+            </div>
+        </div>
 
-            <div class="diagram-card">
-                <div class="caption">圖 3-30 兩杯不同濃度溶液共置之等蒸氣壓平衡轉移模型</div>
-                <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- 經典範例 6 -->
+        <div class="example-section">
+            <div class="example-header">
+                <div>
+                    <span class="example-tag">經典範例 6</span>
+                    <span class="example-title">非理想溶液正負偏差微觀引力與熱力學判定</span>
+                </div>
+                <span class="example-source">考點：題庫 Q7 · 正負偏差判據</span>
+            </div>
+            <div class="example-body-row">
+                <div class="example-stem-col">
+                    <b>【題目情境】</b>某混合液含 $7.36\text{ g}$ 乙醇<span class="nowrap">（分子量 $46$）</span>及 $4.78\text{ g}$ 氯仿<span class="nowrap">（分子量 $119.5$）</span>，在 $35^\circ\text{C}$ 下測得溶液總蒸氣壓為 $190\text{ mmHg}$。已知 $35^\circ\text{C}$ 時純乙醇與純氯仿之飽和蒸氣壓依次為 $100\text{ mmHg}$ 與 $300\text{ mmHg}$。下列關於此混合溶液之敘述，何者<b>正確</b>？<br>
+                    <div class="q-list" style="margin-top: 2px;">
+                        <div class="q-item-indent"><span class="q-num">(A)</span><span class="q-content">若二者混合為理想溶液，則理論總蒸氣壓應為 $140\text{ mmHg}$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(B)</span><span class="q-content">此混合溶液配製時為放熱反應，混合後液體溫度上升</span></div>
+                        <div class="q-item-indent"><span class="q-num">(C)</span><span class="q-content">混合液中分子間的吸引力大於純物質各自分子間的引力</span></div>
+                        <div class="q-item-indent"><span class="q-num">(D)</span><span class="q-content">此溶液實測蒸氣壓小於拉午耳定律理論值，呈現負偏差</span></div>
+                    </div>
+                </div>
+                <div class="example-diagram-col">
+                    <div class="caption">圖 3-03-10 範例 6 正偏差引力破壞模型</div>
+                    <svg class="print-svg" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
                     <rect x="0" y="0" width="520" height="150" fill="#f8fafc" rx="4"/>
                     <g transform="translate(40, 20)">
                         <!-- 初始狀態對比框 -->
@@ -1207,78 +1588,412 @@
                         <text x="355" y="95" text-anchor="middle" font-size="7.2" font-weight="bold" fill="#b45309" class="svg-label">兩杯最終濃度相等 (Cm1 = Cm2)</text>
                     </g>
                 </svg>
-                <div class="sub-caption">平衡鐵律：達最終平衡時，兩杯蒸氣壓必相等，意即兩杯之莫耳分率（或重量莫耳濃度）必完全相等，水重依溶質莫耳數比例分配。</div>
-            </div>
-        </div>
-
-        <div class="method-card">
-            <b>💡 核心破題關鍵：同槽密閉平衡解題雙絕招</b><br>
-            ① <b>純溶劑 vs 溶液</b>：純水蒸氣壓永遠高於溶液，純水無法達成動態平衡，結果為<b>純水必定完全蒸乾</b>，全部轉移至溶液中！<br>
-            ② <b>兩杯溶液平衡</b>：最終平衡時兩杯濃度必相等：$\frac{n_{\text{質1}}}{W_{\text{水1}}} = \frac{n_{\text{質2}}}{W_{\text{水2}}}$。總水量保持守恆：$W_{\text{水1}} + W_{\text{水2}} = W_{\text{總水}}$，依溶質莫耳數比例拆解即得各杯最終水重！
-        </div>
-
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">經典範例 4</span>
-                    <span class="example-title">密閉四杯糖水蒸氣壓平衡與液面高度比較</span>
                 </div>
-                <span class="example-source">大考經典概念題</span>
             </div>
-            <div class="example-stem">
-                將（甲）純水、（乙）$0.1\text{ m}$ 蔗糖水、（丙）$0.5\text{ m}$ 蔗糖水、（丁）$1.0\text{ m}$ 蔗糖水等四杯液面等高之燒杯，共置於同一真空密閉容器中。<br>
-                在定溫下長時間靜置達蒸氣壓平衡後，下列敘述哪些正確？（應選 2 項）<br>
-                (A) 甲杯中的水將完全蒸乾，液面降為零<br>
-                (B) 達平衡時，乙、丙、丁三杯的蒸氣壓依然滿足 乙 &gt; 丙 &gt; 丁<br>
-                (C) 達平衡時，乙、丙、丁三杯的重量莫耳濃度必完全相等<br>
-                (D) 達平衡時，液面最高者為乙杯<br>
-                (E) 達平衡時，液面最高者為丁杯
+            <div class="example-notes-area">
+                <div class="notes-header">
+                    <span>✍️ 課堂解題演算與思考筆記：</span>
+                </div>
+                <div class="note-lines">
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                    <div class="note-line"></div>
+                </div>
+                <div class="example-ans-corner">【 參考答案：(A) 】</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 8 (單元檢核練習 Q1~Q4) ======================= -->
+    <div class="concept-page" id="page-8" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 8 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <h2 class="section-title">
+            <span>五、單元檢核練習</span>
+            <span class="tag">題庫精選 · 概念通關</span>
+        </h2>
+
+        <!-- Q1 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 1 題</span>
+                <span class="quiz-core-tag">考點：密閉容器蒸氣壓平衡 · 溶劑遷移（quiz.html 原題 Q2）</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">1.</span>
+                <div class="q-content">
+                    將<span class="nowrap">(甲)純水</span>、<span class="nowrap">(乙)$0.1\text{ m}$ 蔗糖水</span>、<span class="nowrap">(丙)$0.5\text{ m}$ 蔗糖水</span>、<span class="nowrap">(丁)$1.0\text{ m}$ 蔗糖水</span>等四杯液面等高的液體，共置於一真空密閉容器中，同溫下蒸氣壓達平衡後，何者的<b>液面最高</b>？
+                    <div class="opts-grid-4">
+                        <div>(A) 甲</div>
+                        <div>(B) 乙</div>
+                        <div>(C) 丙</div>
+                        <div>(D) 丁</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="example-box">
-            <div class="example-header">
-                <div>
-                    <span class="example-tag">經典範例 5</span>
-                    <span class="example-title">同槽密閉容器水轉移量計算</span>
+        <!-- Q2 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 2 題</span>
+                <span class="quiz-core-tag">考點：揮發性雙成分理想溶液 · 純質蒸氣壓推求（quiz.html 原題 Q3）</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">2.</span>
+                <div class="q-content">
+                    兩揮發性液態純質甲和乙混合可形成理想溶液。若 $50^\circ\text{C}$ 時，測得溶液的總蒸氣壓為 $400\text{ mmHg}$，而在蒸氣中甲的莫耳分率為 $0.25$，在溶液中甲的莫耳分率為 $0.40$，則 $50^\circ\text{C}$ 時下列敘述何者<b>正確</b>？
+                    <div class="opts-grid">
+                        <div>(A) 純甲的蒸氣壓為 $100\text{ mmHg}$</div>
+                        <div>(B) 純甲的蒸氣壓為 $200\text{ mmHg}$</div>
+                        <div>(C) 純乙的蒸氣壓為 $300\text{ mmHg}$</div>
+                        <div>(D) 純乙的蒸氣壓為 $500\text{ mmHg}$</div>
+                    </div>
                 </div>
-                <span class="example-source">考卷壓軸計算題</span>
             </div>
-            <div class="example-stem">
-                在同溫密閉容器中置入兩只敞口燒杯：<br>
-                A 杯盛有 $180\text{ g}$ 水中溶有 $18.0\text{ g}$ 葡萄糖（$\text{C}_6\text{H}_{12}\text{O}_6$，分子量 $180$）；<br>
-                B 杯盛有 $180\text{ g}$ 水中溶有 $34.2\text{ g}$ 蔗糖（$\text{C}_{12}\text{H}_{22}\text{O}_{11}$，分子量 $342$）。<br>
-                同溫下長時間放置達蒸氣壓平衡時，試問：水自哪一杯轉移至哪一杯若干克？<br>
-                (A) 水由 A 杯轉移 $10\text{ g}$ 至 B 杯　(B) 水由 B 杯轉移 $10\text{ g}$ 至 A 杯　(C) 水不發生淨轉移，兩杯水重維持不變　(D) A 杯完全蒸乾
-            </div>
+        </div>
 
-            <div class="handwriting-title">✍ 課堂筆記與引導手寫區：</div>
-            <div class="note-lines">
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
-                <div class="note-line"></div>
+        <!-- Q3 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 3 題</span>
+                <span class="quiz-core-tag">考點：理想溶液蒸餾 · 氣液平衡組成比較（quiz.html 原題 Q4）</span>
             </div>
+            <div class="q-item-indent">
+                <span class="q-num">3.</span>
+                <div class="q-content">
+                    有一理想溶液含有二成分，其莫耳分率為 $X_A$ 與 $X_B$，又知成分 A 之純蒸氣壓 $P_A^\circ$ 大於成分 B 之純蒸氣壓 $P_B^\circ$。定溫下，其蒸餾後的冷凝液<span class="nowrap">（氣相冷凝）</span>之莫耳分率分別為 $Y_A$ 與 $Y_B$，則下列關係中何者<b>正確</b>？
+                    <div class="opts-grid">
+                        <div>(A) $X_A > Y_A$ 且 $X_B > Y_B$</div>
+                        <div>(B) $X_A < Y_A$ 且 $X_B > Y_B$</div>
+                        <div>(C) $X_A > Y_A$ 且 $X_B < Y_B$</div>
+                        <div>(D) $X_A < Y_A$ 且 $X_B < Y_B$</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <table class="answer-table">
-                <thead>
-                    <tr>
-                        <th>範例 4 正確選項 (應選2項)</th>
-                        <th>範例 4 丁杯液面最高核心原因</th>
-                        <th>範例 5 A杯與B杯溶質莫耳數</th>
-                        <th>範例 5 水轉移方向與克數 (選項)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Q4 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 4 題</span>
+                <span class="quiz-core-tag">考點：氣流法蒸氣壓測定 · 未知溶質分子量計算（quiz.html 原題 Q5）</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">4.</span>
+                <div class="q-content">
+                    某不具揮發性、不易解離之溶質 $10\text{ 克}$，溶解於 $78.0\text{ 克}$ 苯中，以空氣通過此溶液，使通過的空氣充滿此溶液之飽和蒸氣壓，發現溶液之重量減少 $1.000\text{ 克}$；若同溫時，以同量空氣對純苯作同樣實驗，而純苯所減少重量為 $1.073\text{ 克}$，則此物之分子量為多大？<span class="nowrap">（式量：苯 $\text{C}_6\text{H}_6 = 78$）</span>
+                    <div class="opts-grid-4">
+                        <div>(A) 128</div>
+                        <div>(B) 138</div>
+                        <div>(C) 148</div>
+                        <div>(D) 158</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 9 (單元檢核練習 Q5~Q8) ======================= -->
+    <div class="concept-page" id="page-9" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 9 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <h2 class="section-title">
+            <span>五、單元檢核練習 <span class="nowrap">（續）</span></span>
+            <span class="tag">題庫精選 · 深度思維</span>
+        </h2>
+
+        <!-- Q5 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 5 題</span>
+                <span class="quiz-core-tag">考點：理想溶液判定 · 體積可加成性與分子間力</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">5.</span>
+                <div class="q-content">
+                    純液體 A 的蒸氣壓為 $300\text{ mmHg}$，純液體 B 的蒸氣壓為 $100\text{ mmHg}$，今 A 與 B 各取 $1.0\text{ 莫耳}$ 混合形成之溶液，測得蒸氣壓為 $200\text{ mmHg}$，則此溶液形成時，下列敘述何者<b>正確</b>？
+                    <div class="opts-grid">
+                        <div>(A) 混合時分子間無作用力</div>
+                        <div>(B) 混合時分子間引力變大</div>
+                        <div>(C) 混合時吸收熱量</div>
+                        <div>(D) 混合時體積具有可加成性</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 6 題</span>
+                <span class="quiz-core-tag">考點：密閉容器蒸氣壓平衡 · 水移動量計算</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">6.</span>
+                <div class="q-content">
+                    在 $1000\text{ 克}$ 的水中溶解 $15\text{ 克}$ 尿素<span class="nowrap">（$\text{CO(NH}_2\text{)}_2$）</span>後之溶液<span class="nowrap">（A 液）</span>，與在 $500\text{ 克}$ 的水中溶解葡萄糖 $30\text{ 克}$ 所成的溶液<span class="nowrap">（B 液）</span>。將此二溶液同置於密閉容器中，使其達成蒸氣壓平衡，水由哪一溶液移至哪一溶液？共移動多少克？<span class="nowrap">（分子量：尿素 $60$，葡萄糖 $180$）</span>
+                    <div class="opts-grid">
+                        <div>(A) B $\to$ A，移動 $50\text{ 克}$</div>
+                        <div>(B) A $\to$ B，移動 $50\text{ 克}$</div>
+                        <div>(C) B $\to$ A，移動 $100\text{ 克}$</div>
+                        <div>(D) A $\to$ B，移動 $100\text{ 克}$</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 7 題</span>
+                <span class="quiz-core-tag">考點：非理想溶液 · 正偏差與分子間引力</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">7.</span>
+                <div class="q-content">
+                    某混合液含 $7.36\text{ 克}$ 乙醇<span class="nowrap">（分子量 $46$）</span>及 $4.78\text{ 克}$ 氯仿<span class="nowrap">（分子量 $119.5$）</span>，在 $35^\circ\text{C}$ 下測得溶液總蒸氣壓為 $190\text{ mmHg}$。已知 $35^\circ\text{C}$ 時純乙醇與純氯仿之飽和蒸氣壓依次為 $100\text{ mmHg}$ 與 $300\text{ mmHg}$。下列關於此混合溶液之敘述，何者<b>正確</b>？
+                    <div class="q-list" style="margin-top: 2px;">
+                        <div class="q-item-indent"><span class="q-num">(A)</span><span class="q-content">若二者混合為理想溶液，則理論蒸氣壓應為 $140\text{ mmHg}$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(B)</span><span class="q-content">此混合溶液配製時為放熱反應，混合後液溫上升</span></div>
+                        <div class="q-item-indent"><span class="q-num">(C)</span><span class="q-content">混合液中分子間的吸引力大於純物質各自分子間的引力</span></div>
+                        <div class="q-item-indent"><span class="q-num">(D)</span><span class="q-content">此溶液實測蒸氣壓小於拉午耳定律理論值，呈現負偏差</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 8 題</span>
+                <span class="quiz-core-tag">考點：苯-甲苯理想溶液相圖 · 氣液平衡組成計算</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">8.</span>
+                <div class="q-content">
+                    已知 $20^\circ\text{C}$ 純苯<span class="nowrap">（$\text{C}_6\text{H}_6$）</span>及純甲苯<span class="nowrap">（$\text{C}_7\text{H}_8$）</span>的飽和蒸氣壓依次為 $70\text{ mmHg}$ 與 $20\text{ mmHg}$，兩者混合遵守拉午耳定律。若 $20^\circ\text{C}$ 某濃度之苯-甲苯溶液與其蒸氣達平衡時，測得蒸氣中苯的莫耳分率為 $0.70$，則該溶液中苯的莫耳分率<span class="nowrap">（液相莫耳分率）</span>應為多少？
+                    <div class="opts-grid-4">
+                        <div>(A) 0.30</div>
+                        <div>(B) 0.40</div>
+                        <div>(C) 0.50</div>
+                        <div>(D) 0.60</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 10 (單元檢核練習 Q9~Q10 & 課堂運算手寫專區) ======================= -->
+    <div class="concept-page" id="page-10" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 10 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <h2 class="section-title">
+            <span>五、單元檢核練習 <span class="nowrap">（續）</span></span>
+            <span class="tag">題庫精選 · 實戰筆記</span>
+        </h2>
+
+        <!-- Q9 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 9 題</span>
+                <span class="quiz-core-tag">考點：連續汽化冷凝 · 分餾蒸氣壓與莫耳分率</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">9.</span>
+                <div class="q-content">
+                    已知 A 與 B 混合所形成的溶液為理想溶液，且在 $80^\circ\text{C}$ 時純 A 飽和蒸氣壓為 $100\text{ mmHg}$，純 B 為 $300\text{ mmHg}$。在密閉容器中取 $4.5\text{ mol}$ 的 A 和 $0.5\text{ mol}$ 的 B 混合成溶液甲；加熱至 $80^\circ\text{C}$，將所生成的蒸氣乙全部冷凝為溶液丙。下列關於各階段之數值敘述，何者<b>正確</b>？
+                    <div class="q-list" style="margin-top: 2px;">
+                        <div class="q-item-indent"><span class="q-num">(A)</span><span class="q-content">溶液甲中 B 的莫耳分率為 $0.20$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(B)</span><span class="q-content">溶液甲之總蒸氣壓為 $150\text{ mmHg}$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(C)</span><span class="q-content">蒸氣乙中 B 的莫耳分率為 $0.25$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(D)</span><span class="q-content">溶液丙<span class="nowrap">（冷凝液）</span>之總蒸氣壓為 $200\text{ mmHg}$</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="quiz-card">
+            <div class="quiz-card-header">
+                <span class="quiz-q-tag">第 10 題</span>
+                <span class="quiz-core-tag">考點：密閉三杯平衡 · 電解質凡特何夫因子與水重分配</span>
+            </div>
+            <div class="q-item-indent">
+                <span class="q-num">10.</span>
+                <div class="q-content">
+                    若某溫度下水之飽和蒸氣壓為 $557\text{ mmHg}$，在一密閉容器中放置三杯不同液體：A 杯盛 $0.01\text{ mol}$ 葡萄糖 $+ 200\text{ g}$ 水；B 杯盛 $0.02\text{ mol}$ 蔗糖 $+ 300\text{ g}$ 水；C 杯盛 $0.03\text{ mol } \text{NaCl} + 400\text{ g}$ 水。同溫下蒸氣壓達平衡後，下列敘述何者<b>正確</b>？
+                    <div class="q-list" style="margin-top: 2px;">
+                        <div class="q-item-indent"><span class="q-num">(A)</span><span class="q-content">剛置入容器時，各杯水蒸發速率大小順序為 C &gt; B &gt; A</span></div>
+                        <div class="q-item-indent"><span class="q-num">(B)</span><span class="q-content">未達平衡前，B 杯的蒸發速率小於 C 杯</span></div>
+                        <div class="q-item-indent"><span class="q-num">(C)</span><span class="q-content">達最終平衡時，A 杯中的水重量減少為 $100\text{ 克}$</span></div>
+                        <div class="q-item-indent"><span class="q-num">(D)</span><span class="q-content">達最終平衡時，C 杯中水的重量變為 $300\text{ 克}$</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 課堂運算與手寫速記筆記區 -->
+        <div class="concept-card" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card-header">
+                <span class="card-tag purple">筆記專區</span>
+                <span>✍️ 課堂拉午耳定律公式推導、氣液相圖草繪與密閉平衡演算專用區</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding: 4px 0;">
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+                <div class="note-line" style="border-bottom: 1.2px dashed #94a3b8;"></div>
+            </div>
+            <div style="font-size: 8.6pt; color: #64748b; text-align: right;">
+                ✦ 提示：可在上方空白區繪製雙成分溶液 $P-X$ 相圖，練習標註分壓線與總壓線交會點。
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= PAGE 11 (答案速查表) ======================= -->
+    <div class="concept-page" id="page-11" style="gap: 6px;">
+        <header class="handout-header">
+            <h1 class="doc-title">單元 3-3 拉午耳定律 · 課堂講義學習單</h1>
+            <div class="student-fields">
+                <span style="color: var(--blue); font-weight: 800;">第 11 頁 / 共 11 頁</span>
+            </div>
+        </header>
+
+        <h2 class="section-title">
+            <span>六、單元檢核練習題 · 解題破題思維指引 <span class="nowrap">（不直接提供答案）</span></span>
+            <span class="tag">自主思考 · 關鍵破題指引</span>
+        </h2>
+
+        <!-- 10 題破題指引矩陣（不直接提供答案） -->
+        <div class="concept-card">
+            <div class="card-header">
+                <span class="card-tag">破題指針</span>
+                <span>單元檢核練習 Q1～Q10 題核心考點與解題切入提示矩陣</span>
+            </div>
+            <div>
+                <table class="ans-matrix-table" style="font-size: 8.4pt; margin: 2px 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%; padding: 2px 3px;">題號</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q1</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q2</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q3</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q4</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q5</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q6</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q7</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q8</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q9</th>
+                            <th style="width: 9%; padding: 2px 1px;">Q10</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 800; background: #f8fafc; font-size: 8.4pt; padding: 2px 3px;">破題核心</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">純水乾涸<br>溶質最多</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">道耳吞分壓<br>反推純質</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">易揮發成分<br>氣相富集</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">飽和失重比<br>等於分壓比</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">引力均等<br>ΔH=0, ΔV=0</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">稀移向濃<br>水重比=莫耳比</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">實測大於理論<br>正偏差吸熱</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">蒸氣莫耳分率<br>代入拉午耳</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">分餾冷凝<br>新液體易揮發增</td>
+                            <td style="color: #0369a1; font-weight: 700; background: #f0f9ff; padding: 2px 1px; font-size: 8pt; line-height: 1.25;">強電解質解離<br>計算有效粒子 i·n</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 10 題破題深度思路導引表格 -->
+        <div class="concept-card" style="flex: 1; display: flex; flex-direction: column;">
+            <div class="card-header">
+                <span class="card-tag amber">思路解析</span>
+                <span>單元檢核練習題 1～10 題深度破題思維步驟指引</span>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <table class="compare-table" style="font-size: 8.5pt; flex: 1; height: 100%; line-height: 1.35;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%; padding: 2px 4px;">題號</th>
+                            <th style="width: 24%; padding: 2px 4px;">命題核心概念</th>
+                            <th style="width: 68%; padding: 2px 6px;">自主解題思維脈絡與關鍵推導步驟</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q1</b></td>
+                            <td style="padding: 2px 4px;">密閉同槽蒸氣壓平衡</td>
+                            <td style="padding: 2px 6px; text-align: left;">① 純水蒸氣壓永遠高於溶液，密閉長時間平衡下純水必完全蒸乾；② 平衡時各杯溶劑莫耳分率相等（濃度相等），水量與溶質莫耳數成正比；算哪一杯溶質莫耳數最多即為液面最高者。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q2</b></td>
+                            <td style="padding: 2px 4px;">揮發性雙成分分壓反推</td>
+                            <td style="padding: 2px 6px; text-align: left;">① 依道耳吞分壓算出各分壓：$P_A = P_{\text{總}} \cdot Y_A$、$P_B = P_{\text{總}} \cdot (1 - Y_A)$；② 依拉午耳定律 $P = X \cdot P^\circ$，由已知液相莫耳分率反除即可求得純甲與純乙之飽和蒸氣壓。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q3</b></td>
+                            <td style="padding: 2px 4px;">易揮發成分氣相富集</td>
+                            <td style="padding: 2px 6px; text-align: left;">依分餾原理，沸點低、蒸氣壓大（較易揮發）之成分在蒸氣相的莫耳分率必大於其在液相中的莫耳分率（即 $Y_{\text{易}} > X_{\text{易}}$）；請據此判斷 $X_A$ 與 $Y_A$ 之大小關係。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q4</b></td>
+                            <td style="padding: 2px 4px;">氣流帶出飽和蒸氣失重</td>
+                            <td style="padding: 2px 6px; text-align: left;">① 乾燥空氣帶出蒸氣質量與飽和蒸氣壓成正比；② 溶液失重比純溶劑失重 $\dfrac{\Delta W_{\text{液}}}{\Delta W_{\text{純}}} = \dfrac{P_{\text{液}}}{P^\circ} = X_{\text{溶劑}}$；③ 由溶劑莫耳分率反求溶質莫耳數與分子量。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q5</b></td>
+                            <td style="padding: 2px 4px;">理想溶液熱力學特徵</td>
+                            <td style="padding: 2px 6px; text-align: left;">理想溶液微觀分子間引力均等（$F_{A-B} = F_{A-A} = F_{B-B}$）。混合過程不吸熱亦不放熱（$\Delta H = 0$），分子排列緊密程度不變，體積具加成性（$\Delta V = 0$），嚴格遵守拉午耳定律。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q6</b></td>
+                            <td style="padding: 2px 4px;">同槽密閉平衡水移動量</td>
+                            <td style="padding: 2px 6px; text-align: left;">① 分別計算兩液溶質莫耳數比較濃度；② 水由高蒸氣壓處（稀液）自發移向低蒸氣壓處（濃液）；③ 平衡時兩杯濃度相等，水量依溶質莫耳數比例分配，即可算出 A 液移動水量。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q7</b></td>
+                            <td style="padding: 2px 4px;">非理想溶液正偏差特性</td>
+                            <td style="padding: 2px 6px; text-align: left;">① 依拉午耳定律計算理論總壓 $P_{\text{理}} = X_A P_A^\circ + X_B P_B^\circ$；② 實測 $190 > 140\text{ mmHg}$ 呈現正偏差；③ 正偏差因異種引力較弱，混合時吸熱（$\Delta H > 0$、液溫下降）、體積微膨脹。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q8</b></td>
+                            <td style="padding: 2px 4px;">苯-甲苯相圖組成計算</td>
+                            <td style="padding: 2px 6px; text-align: left;">設液相中苯莫耳分率為 $X$，總壓為 $P_{\text{總}} = 70X + 20(1-X) = 50X + 20$。氣相莫耳分率 $Y_{\text{苯}} = \dfrac{70X}{50X + 20} = 0.70$，一元一次方程式直接解得 $X$。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q9</b></td>
+                            <td style="padding: 2px 4px;">連續分餾汽化冷凝</td>
+                            <td style="padding: 2px 6px; text-align: left;">溶液汽化之蒸氣富含易揮發成分；冷凝後的新溶液中易揮發成分比例等於原蒸氣組成；再次加熱汽化時易揮發成分含量進一步富集，純度大幅提升。</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 2px 3px;"><b>Q10</b></td>
+                            <td style="padding: 2px 4px;">電解質凡特何夫因子</td>
+                            <td style="padding: 2px 6px; text-align: left;">強電解質（$\text{NaCl}$）完全解離 $i = 2$！密閉同槽平衡水量分配取決於「有效粒子莫耳數 $i \cdot n$」而非單純化學式莫耳數；乘上 $i$ 因子後按比例計算平衡水量。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
