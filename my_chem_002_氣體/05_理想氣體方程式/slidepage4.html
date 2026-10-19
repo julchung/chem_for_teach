@@ -1,123 +1,210 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2-5 理想氣體方程式 · 範例 1</title>
-<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']],displayMath:[['$$','$$'],['\\\\[','\\\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
+<title>2-5 理想氣體方程式 · 真實氣體趨近理想條件與偏差比較</title>
+<script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
-:root{--bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;--blue:#38bdf8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;--glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);}
+:root{
+  --bg:#0f172a;--text:#f8fafc;--sub:#94a3b8;
+  --blue:#38bdf8;--green:#34d399;--red:#f87171;
+  --yellow:#fbbf24;--purple:#a78bfa;--cyan:#22d3ee;--orange:#fb923c;
+  --glass:rgba(255,255,255,0.04);--gb:rgba(255,255,255,0.12);
+}
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;}
-html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;overflow:hidden;background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);background-size:30px 30px;}
+html,body{
+  width:100%;height:100%;background:var(--bg);color:var(--text);
+  font-family:'Segoe UI','Microsoft JhengHei','PingFang TC',sans-serif;
+  overflow:hidden;
+  background-image:radial-gradient(rgba(56,189,248,0.07) 1.2px,transparent 1.2px);
+  background-size:30px 30px;
+}
 #app{position:relative;width:100vw;height:100vh;overflow:hidden;}
 #slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
 .slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
-h1{color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.35rem;display:flex;align-items:center;gap:.55rem;border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.22rem;flex-shrink:0;}
-h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
-h2{font-size:clamp(.9rem,1.12vw,1.08rem);margin-bottom:.2rem;font-weight:700;flex-shrink:0;}
-p,li{font-size:clamp(.8rem,.95vw,.95rem);line-height:1.52;}
+
+h1{
+  color:var(--cyan);font-size:clamp(1.28rem,1.75vw,1.72rem);margin-bottom:.35rem;
+  display:flex;align-items:center;gap:.55rem;
+  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
+}
+h1::before{content:"";width:6px;height:24px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(1.12rem,1.38vw,1.32rem);font-weight:700;}
+p,li{font-size:clamp(1.02rem,1.18vw,1.14rem);line-height:1.68;}
 strong{color:var(--cyan);font-weight:700;}
 em{color:var(--yellow);font-style:normal;font-weight:600;}
-.grid2{display:grid;grid-template-columns:1.15fr 1fr;gap:.78rem;flex:1;min-height:0;overflow:hidden;}
-.panel{background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;padding:.75rem 1rem;backdrop-filter:blur(12px);display:flex;flex-direction:column;box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow-y:auto;gap:.42rem;}
-.panel::-webkit-scrollbar{width:4px;}.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
-.tag{display:inline-block;padding:.1rem .55rem;border-radius:10px;font-size:.78rem;font-weight:700;}
-.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
-.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
-.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
-.rule-card{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .82rem;}
-.rule-card.g{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.25);}
-.rule-card.y{background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.25);}
-.formula-box{background:rgba(0,0,0,.38);border-radius:8px;border-left:4px solid var(--cyan);padding:.42rem .72rem;text-align:center;font-size:1.05rem;margin:.22rem 0;}
-.step-block{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--blue);border-radius:8px;padding:.48rem .78rem;line-height:1.56;font-size:.84rem;}
-.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
-.step-block.r{border-left-color:var(--red);background:rgba(248,113,113,.04);}
-.step-block.y{border-left-color:var(--yellow);background:rgba(251,191,36,.04);}
-.btn-action{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#0f172a;border:none;border-radius:8px;font-weight:700;cursor:pointer;transition:.2s;touch-action:manipulation;padding:9px 16px;font-size:.92rem;width:100%;display:flex;align-items:center;justify-content:center;gap:.5rem;}
-.btn-action:hover{transform:scale(1.02);box-shadow:0 0 12px rgba(34,211,238,.4);}
-.solution-card{display:none;opacity:0;transform:translateY(8px);transition:opacity .32s,transform .32s;flex-direction:column;gap:.55rem;}
-.solution-card.revealed{display:flex;opacity:1;transform:translateY(0);}
-.ex-options{list-style:none;margin:.3rem 0;display:flex;flex-direction:column;gap:.35rem;}
-.ex-options li{padding:.35rem .6rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:6px;font-size:.88rem;line-height:1.5;}
-@media(max-width:900px){.grid2{grid-template-columns:1fr!important;overflow-y:auto;}html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}}
+
+.grid2{
+  display:grid;grid-template-columns:1.08fr 1fr;gap:.95rem;
+  flex:1;min-height:0;overflow:hidden;
+}
+.panel{
+  background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;
+  padding:.8rem 1.15rem;backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;justify-content:space-between;gap:.5rem;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow:hidden;
+}
+
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;flex-shrink:0;
+}
+
+.tag{display:inline-block;padding:.18rem .72rem;border-radius:10px;font-size:.95rem;font-weight:700;}
+.tag-g{background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.45);color:var(--green);}
+.tag-b{background:rgba(56,189,248,.18);border:1px solid rgba(56,189,248,.45);color:var(--blue);}
+.tag-y{background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.45);color:var(--yellow);}
+.tag-r{background:rgba(248,113,113,.18);border:1px solid rgba(248,113,113,.45);color:var(--red);}
+
+/* 核心條件大橫幅 */
+.banner-card{
+  background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(56,189,248,.14));
+  border:1.5px solid rgba(52,211,153,.45);border-left:5.5px solid var(--green);
+  border-radius:10px;padding:.55rem .95rem;text-align:center;flex-shrink:0;
+}
+.banner-title{
+  font-size:clamp(1.35rem,1.8vw,1.85rem);font-weight:900;color:var(--green);
+  letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:.6rem;
+}
+.banner-sub{
+  font-size:1.06rem;color:#e2e8f0;margin-top:.2rem;font-weight:600;
+}
+
+/* 說明大卡片 */
+.step-block{
+  background:rgba(255,255,255,0.035);border:1.2px solid rgba(255,255,255,0.1);
+  border-left:5px solid var(--blue);border-radius:10px;
+  padding:.55rem .95rem;line-height:1.68;font-size:clamp(1.02rem, 1.18vw, 1.14rem);
+  display:flex;flex-direction:column;justify-content:center;gap:.25rem;flex:1;min-height:0;
+}
+.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,0.05);}
+.step-block.b{border-left-color:var(--blue);background:rgba(56,189,248,0.05);}
+.step-block.r{border-left-color:var(--red);background:rgba(248,113,113,0.05);}
+
+/* 氣體偏離比較大卡片 */
+.compare-box{
+  border-radius:9px;padding:.55rem .85rem;display:flex;flex-direction:column;
+  gap:.25rem;flex:1;min-height:0;justify-content:center;
+}
+.compare-box.near{
+  background:rgba(52,211,153,.08);border:1.2px solid rgba(52,211,153,.35);border-left:4.5px solid var(--green);
+}
+.compare-box.far{
+  background:rgba(248,113,113,.08);border:1.2px solid rgba(248,113,113,.35);border-left:4.5px solid var(--red);
+}
+.compare-head{
+  font-size:1.14rem;font-weight:800;display:flex;align-items:center;gap:.4rem;
+}
+.compare-desc{
+  font-size:1.0rem;color:var(--sub);line-height:1.6;
+}
+.compare-examples{
+  font-size:1.10rem;font-weight:700;margin-top:.15rem;
+}
+
+@media(max-width:900px){
+  .grid2{grid-template-columns:1fr!important;overflow-y:auto;}
+  html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}
+}
 </style>
 </head>
-<body><div id="app"><div id="slides-container"><div class="slide active"><h1>範例 1：STP 氣體密度與分子量求法</h1>
+
+<body>
+<div id="app"><div id="slides-container"><div class="slide active">
+<h1>2-5 理想氣體方程式 · 真實氣體趨近理想條件與偏差比較</h1>
 
 <div class="grid2">
-  <!-- 左：題目 -->
+
+  <!-- ═══ 左欄：高溫低壓核心環境與物理成因 ═══ -->
   <div class="panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
-      <div style="display:flex;align-items:center;gap:.45rem;">
-        <span class="tag tag-y">範例 1</span>
-        <h2 style="color:var(--yellow);margin:0;">STP 氣體密度與分子量求法</h2>
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-g">環境條件</span>
+        <h2 style="color:var(--green);margin:0;">趨近理想氣體的先決條件與物理機制</h2>
       </div>
-      <span style="font-size:.75rem;color:rgba(255,255,255,.45);">基礎題</span>
+      <span style="font-size:.84rem;color:var(--sub);">大考必考口訣</span>
     </div>
 
-    <div class="rule-card">
-      <p style="font-size:1.02rem;line-height:1.6;">
-        某純氣體在 <strong>STP（標準狀態：$0^\circ\text{C},\ 1\text{ atm}$）</strong> 下，測得其密度為 $\mathbf{1.43\text{ g/L}}$，請問該氣體之分子量約為多少？最可能為何種氣體？
+    <!-- 核心條件橫幅 -->
+    <div class="banner-card">
+      <div class="banner-title">
+        <span>🌡️ 高 溫</span>
+        <span style="color:rgba(255,255,255,.4);font-size:1.1rem;">&bull;</span>
+        <span>低 壓 💨</span>
+      </div>
+      <div class="banner-sub">真實氣體在「<strong>高溫</strong>、<strong>低壓</strong>」環境下，行為最趨近於理想氣體</div>
+    </div>
+
+    <!-- 為什麼高溫？ -->
+    <div class="step-block g">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--green);font-size:1.04rem;">✅ 為什麼要「高溫」？（消除分子間引力）</strong>
+        <span class="tag tag-g">消弭引力</span>
+      </div>
+      <p style="margin:0;line-height:1.6;">
+        溫度愈高 $\implies$ 分子平均動能劇增、熱運動速率極快 $\implies$ 分子間瞬間交錯掠過，<strong>引力影響微乎其微</strong>（極度趨近「無分子間引力」之假定）。
       </p>
     </div>
 
-    <ul class="ex-options">
-      <li><strong>(A)</strong> $16\text{ g/mol}\ (\text{CH}_4)$</li>
-      <li><strong>(B)</strong> $28\text{ g/mol}\ (\text{N}_2)$</li>
-      <li><strong>(C)</strong> $32\text{ g/mol}\ (\text{O}_2)$</li>
-      <li><strong>(D)</strong> $44\text{ g/mol}\ (\text{CO}_2)$</li>
-    </ul>
-
-    <div style="margin-top:auto;padding-top:.5rem;">
-      <button class="btn-action" onclick="toggleSolution('sol-ex1')">
-        <span>&#128161; 顯示／隱藏詳細解答</span>
-      </button>
+    <!-- 為什麼低壓？ -->
+    <div class="step-block b">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--blue);font-size:1.04rem;">✅ 為什麼要「低壓」？（消除分子自體體積）</strong>
+        <span class="tag tag-b">消弭體積</span>
+      </div>
+      <p style="margin:0;line-height:1.6;">
+        壓力愈低 $\implies$ 容器總容積膨脹至極大、氣體分子間距離極為遼闊 $\implies$ 分子本身體積相較於巨大空間<strong>顯得微不足道</strong>（極度趨近「分子無體積」之假定）。
+      </p>
     </div>
-  </div>
 
-  <!-- 右：解答（預設留空） -->
+  </div><!-- /左欄 -->
+
+  <!-- ═══ 右欄：氣體種類偏差大比拼與極端條件 ═══ -->
   <div class="panel">
-    <div id="sol-ex1" class="solution-card">
-      <div style="display:flex;align-items:center;gap:.45rem;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;">
-        <span class="tag tag-g">詳細解析</span>
-        <h2 style="color:var(--green);margin:0;">正解：(C) 32 g/mol</h2>
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-y">氣體種類比較</span>
+        <h2 style="color:var(--yellow);margin:0;">氣體本性與理想氣體偏差比較</h2>
       </div>
+      <span style="font-size:.84rem;color:var(--sub);">分子結構判定</span>
+    </div>
 
-      <div class="step-block y">
-        <strong style="color:var(--yellow);">&#128300; 方法一：直接使用公式 $PM = dRT$</strong><br>
-        $M = \dfrac{dRT}{P}$<br>
-        已知條件：$P = 1\text{ atm}$，$T = 273.15\text{ K}$，$d = 1.43\text{ g/L}$，$R = 0.082$<br>
-        $M = \dfrac{1.43 \times 0.082 \times 273}{1} \approx \mathbf{32.0\text{ g/mol}}$
-      </div>
-
-      <div class="step-block g">
-        <strong style="color:var(--green);">&#9889; 方法二：利用 STP 莫耳體積速算（推薦）</strong><br>
-        在 STP 下，任一理想氣體 $1\text{ mol}$ 之體積皆為 $22.4\text{ L}$：<br>
-        $M = d \times 22.4\text{ L/mol} = 1.43\text{ g/L} \times 22.4\text{ L/mol} \approx \mathbf{32.0\text{ g/mol}}$
-      </div>
-
-      <div class="step-block">
-        <strong style="color:var(--blue);">&#128204; 氣體判斷：</strong><br>
-        常溫常壓常見氣體中，分子量約為 $32$ 者為<strong>氧氣（$\text{O}_2 = 16 \times 2 = 32$）</strong>。故選 <strong>(C)</strong>。
+    <!-- 最接近理想氣體 -->
+    <div class="compare-box near">
+      <div class="compare-head" style="color:var(--green);">⚡ 最接近理想氣體（引力最小）</div>
+      <div class="compare-desc">分子量極小、非極性分子、凡得瓦分散力微弱、極難液化。</div>
+      <div class="compare-examples" style="color:var(--text);">
+        ★ <strong style="color:var(--green);">$\text{He}$（全氣體中最接近理想氣體）</strong>、$\text{H}_2$、$\text{Ne}$
       </div>
     </div>
-  </div>
+
+    <!-- 最偏離理想氣體 -->
+    <div class="compare-box far">
+      <div class="compare-head" style="color:var(--red);">⚠️ 最偏離理想氣體（引力強烈）</div>
+      <div class="compare-desc">分子量大、極性強烈、分子間具強氫鍵作用力、極易液化。</div>
+      <div class="compare-examples" style="color:var(--text);">
+        ★ <strong style="color:var(--red);">$\text{H}_2\text{O}$（具強氫鍵）</strong>、$\text{NH}_3$、$\text{SO}_2$
+      </div>
+    </div>
+
+    <!-- 極端偏差狀態 -->
+    <div class="step-block r">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--red);font-size:1.02rem;">⚠️ 哪種條件下偏離最嚴重？</strong>
+        <span class="tag tag-r">大考陷阱</span>
+      </div>
+      <p style="margin:0;line-height:1.55;">
+        在「<strong>低溫、高壓</strong>」環境下：分子運動緩慢且彼此擠壓緊密，分子引力與體積修正極為顯著，偏差達到最大，最終會<strong>凝聚液化</strong>脫離氣相！
+      </p>
+    </div>
+
+  </div><!-- /右欄 -->
+
 </div>
 </div></div></div>
-<script>
-window.toggleSolution=function(id){
-  const el=document.getElementById(id);
-  if(!el)return;
-  const on=el.classList.contains('revealed');
-  if(on){
-    el.classList.remove('revealed');
-  }else{
-    el.classList.add('revealed');
-    if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([el]).catch(()=>{});
-  }
-};
-</script>
-<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
 
-</body></html>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2-6 飽和蒸氣壓 · 液氣動態平衡與 P-V 模擬</title>
+<title>2-6 分壓定律重要推論 · 三率合一與平均分子量</title>
 <script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
@@ -25,419 +25,176 @@ html,body{
 #slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
 .slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
 h1{
-  color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.35rem;
+  color:var(--cyan);font-size:clamp(1.28rem,1.75vw,1.72rem);margin-bottom:.35rem;
   display:flex;align-items:center;gap:.55rem;
   border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
 }
-h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
-h2{font-size:clamp(.92rem,1.15vw,1.12rem);margin-bottom:.2rem;font-weight:700;flex-shrink:0;}
-p,li{font-size:clamp(.82rem,.96vw,.95rem);line-height:1.56;}
+h1::before{content:"";width:6px;height:24px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(1.06rem,1.32vw,1.28rem);font-weight:700;}
+p,li{font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.6;}
 strong{color:var(--cyan);font-weight:700;}
 em{color:var(--yellow);font-style:normal;font-weight:600;}
-.grid2{display:grid;grid-template-columns:1.15fr 1fr;gap:.78rem;flex:1;min-height:0;overflow:hidden;}
+
+.grid2{
+  display:grid;grid-template-columns:1fr 1fr;gap:.95rem;
+  flex:1;min-height:0;overflow:hidden;
+}
 .panel{
   background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;
-  padding:.75rem 1rem;backdrop-filter:blur(12px);display:flex;flex-direction:column;
+  padding:.8rem 1.15rem;backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;justify-content:space-between;gap:.5rem;
   box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow:hidden;
 }
-/* 左欄：各卡片均分欄高 */
-.panel-left{justify-content:space-between;gap:.3rem;}
-/* 右欄：兩個互動圖各佔半欄 */
-.panel-right{gap:0;padding:.6rem .8rem;}
-.panel::-webkit-scrollbar{width:4px;}
-.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
-.tag{display:inline-block;padding:.12rem .58rem;border-radius:10px;font-size:.8rem;font-weight:700;}
-.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
-.tag-b{background:rgba(56,189,248,.16);border:1px solid rgba(56,189,248,.4);color:var(--blue);}
-.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
-.tag-p{background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.4);color:var(--purple);}
-.rule-card{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .82rem;}
-.rule-card.g{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.25);}
-.rule-card.y{background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.25);}
-.formula-box{
-  background:rgba(0,0,0,.38);border-radius:8px;border-left:4px solid var(--cyan);
-  padding:.45rem .75rem;text-align:center;font-size:1.15rem;margin:.22rem 0;
+
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;flex-shrink:0;
 }
-.step-block{
-  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-left:4px solid var(--blue);
-  border-radius:8px;padding:.48rem .78rem;line-height:1.56;font-size:.88rem;
+
+.tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.88rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.45);color:var(--yellow);}
+.tag-g{background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.45);color:var(--green);}
+.tag-p{background:rgba(167,139,250,.18);border:1px solid rgba(167,139,250,.45);color:var(--purple);}
+.tag-c{background:rgba(34,211,238,.18);border:1px solid rgba(34,211,238,.45);color:var(--cyan);}
+.tag-r{background:rgba(248,113,113,.18);border:1px solid rgba(248,113,113,.45);color:var(--red);}
+
+/* 推論與結論大卡片 */
+.concl-card{
+  border-radius:10px;padding:.55rem .95rem;
+  display:flex;flex-direction:column;justify-content:center;gap:.3rem;
+  flex:1;min-height:0;
 }
-.step-block.g{border-left-color:var(--green);background:rgba(52,211,153,.04);}
-.step-block.r{border-left-color:var(--red);background:rgba(248,113,113,.04);}
-.step-block.y{border-left-color:var(--yellow);background:rgba(251,191,36,.04);}
-@media(max-width:900px){.grid2{grid-template-columns:1fr!important;overflow-y:auto;}html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}}
+.concl-card.g{background:rgba(52,211,153,.07);border:1.5px solid rgba(52,211,153,.32);border-left:5px solid var(--green);}
+.concl-card.y{background:rgba(251,191,36,.07);border:1.5px solid rgba(251,191,36,.32);border-left:5px solid var(--yellow);}
+.concl-card.p{background:rgba(167,139,250,.07);border:1.5px solid rgba(167,139,250,.32);border-left:5px solid var(--purple);}
+.concl-card.r{background:rgba(248,113,113,.07);border:1.5px solid rgba(248,113,113,.35);border-left:5px solid var(--red);}
+
+/* 公式外框 */
+.fbox{
+  background:rgba(0,0,0,.45);border-radius:8px;
+  padding:.45rem .85rem;text-align:center;
+  font-size:clamp(1.2rem,1.48vw,1.6rem);
+  margin:.15rem 0;border:1px solid rgba(255,255,255,0.08);
+}
+
+.triple-box{
+  background:rgba(0,0,0,.45);border:1.2px solid rgba(167,139,250,.4);
+  border-radius:8px;padding:.45rem .6rem;
+  display:flex;align-items:center;justify-content:space-evenly;gap:.5rem;
+}
+.triple-item{
+  text-align:center;padding:.3rem .6rem;
+  background:rgba(255,255,255,.06);border-radius:6px;
+  font-size:clamp(1.05rem,1.25vw,1.3rem);
+}
+.triple-eq{font-size:1.45rem;color:rgba(255,255,255,.7);font-weight:800;}
+
+@media(max-width:900px){
+  .grid2{grid-template-columns:1fr!important;overflow-y:auto;}
+  html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}
+}
 </style>
 </head>
 
-<body><div id="app"><div id="slides-container"><div class="slide active" id="slide-sat-vp">
-<h1>2-6 飽和蒸氣壓 · 動態平衡與 P-V 曲線</h1>
+<body><div id="app"><div id="slides-container"><div class="slide active">
+<h1>2-6 分壓定律重要推論 · 平均分子量與三率合一</h1>
 
 <div class="grid2">
-  <!-- 左：理論定義與特徵 -->
-  <div class="panel panel-left">
-    <!-- 標題 -->
-    <div style="display:flex;align-items:center;justify-content:space-between;
-        border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.28rem;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:.45rem;">
-        <span class="tag tag-y">平衡熱力學</span>
-        <h2 style="color:var(--yellow);margin:0;">液氣動態平衡與飽和蒸氣壓</h2>
+
+  <!-- ═══ 左欄：推論 1 與 推論 2 ═══ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-g">理論延伸</span>
+        <h2 style="color:var(--green);margin:0;">分壓定律推論 · 莫耳比與平均分子量</h2>
       </div>
-      <span style="font-size:.76rem;color:rgba(255,255,255,.4);">相平衡概念</span>
+      <span style="font-size:.84rem;color:var(--sub);">定溫定容分析</span>
     </div>
 
-    <!-- 定義卡 -->
-    <div class="rule-card" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.3rem;">
-      <p style="line-height:1.65;">
-        在 <strong>密閉容器</strong> 中，液體表面分子持續蒸發，同時空間中的蒸氣分子持續凝結。
-        當 <strong>液體蒸發速率 ＝ 蒸氣凝結速率</strong> 時，達到 <strong>動態平衡</strong>，
-        此時蒸氣所呈現的壓力稱為 <em>飽和蒸氣壓 $P_{sat}$</em>。
+    <!-- 推論 1 -->
+    <div class="concl-card g">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--green);font-size:1.06rem;">推論 1 · 分壓比等於莫耳數比（同溫同容）</strong>
+        <span class="tag tag-g">P ∝ n</span>
+      </div>
+      <div class="fbox" style="border-left:4px solid var(--green);color:#a7f3d0;">
+        $$P_A : P_B : P_C : \cdots = n_A : n_B : n_C : \cdots = N_A : N_B : N_C : \cdots$$
+      </div>
+      <p style="color:var(--sub);margin:0;">
+        由狀態方程式 $P_i = \dfrac{n_i R T}{V}$，當 $T, V$ 固定時，氣體分壓嚴格<strong>正比於莫耳數</strong>（即分子數個數比）。
       </p>
     </div>
 
-    <!-- 公式框 -->
-    <div class="formula-box" style="flex-shrink:0;font-size:clamp(.88rem,1.05vw,1.08rem);
-        border-left-color:var(--green);background:rgba(52,211,153,0.08);margin:0;">
-      $$\text{蒸發速率} = \text{凝結速率} \iff \text{達到飽和蒸氣壓}\; P_{sat}$$
-    </div>
-
-    <!-- P-V 判讀卡 -->
-    <div class="rule-card g" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.28rem;">
-      <h2 style="color:var(--green);font-size:.93rem;margin:0;">📌 P-V 圖兩大相態區域判讀</h2>
-      <!-- 兩列獨立排列不截斷 -->
-      <div style="display:flex;gap:.5rem;align-items:baseline;">
-        <span style="color:var(--yellow);font-weight:800;flex-shrink:0;">①</span>
-        <p style="margin:0;"><strong>液氣共存區</strong>（水平段）：只要仍有液體，壓力恆為 <strong>$P = P_{sat}$</strong>（定值），體積擴縮只改變液汽比例。</p>
+    <!-- 推論 2 -->
+    <div class="concl-card y">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--yellow);font-size:1.06rem;">推論 2 · 混合氣體平均分子量 $\bar{M}$</strong>
+        <span class="tag tag-y">加權平均</span>
       </div>
-      <div style="display:flex;gap:.5rem;align-items:baseline;">
-        <span style="color:var(--cyan);font-weight:800;flex-shrink:0;">②</span>
-        <p style="margin:0;"><strong>全部汽化區</strong>（曲線段）：液體耗盡後蒸氣未飽和，符合波以耳定律 $P \propto \dfrac{1}{V}$。</p>
+      <div class="fbox" style="border-left:4px solid var(--yellow);color:#fde68a;">
+        $$\bar{M} = X_A M_A + X_B M_B + \cdots = \frac{W_{total}}{n_{total}} = \frac{d \cdot R T}{P_{total}}$$
       </div>
-    </div>
-
-    <!-- 三大特性 -->
-    <div class="step-block r" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:.32rem;">
-      <strong style="color:var(--red);font-size:.9rem;">⚠️ 飽和蒸氣壓三大關鍵特性</strong>
-      <div style="display:flex;gap:.5rem;align-items:baseline;">
-        <span style="color:var(--red);font-weight:800;flex-shrink:0;">①</span>
-        <p style="margin:0;"><strong>只隨溫度改變</strong>：溫度升高 → 分子動能增大 → 蒸發速率加快 → $P_{sat}$ 增大。</p>
-      </div>
-      <div style="display:flex;gap:.5rem;align-items:baseline;">
-        <span style="color:var(--red);font-weight:800;flex-shrink:0;">②</span>
-        <p style="margin:0;"><strong>與容器體積無關</strong>：體積改變，液汽量重新分配，平衡後 $P_{sat}$ 仍不變。</p>
-      </div>
-      <div style="display:flex;gap:.5rem;align-items:baseline;">
-        <span style="color:var(--red);font-weight:800;flex-shrink:0;">③</span>
-        <p style="margin:0;"><strong>與液體殘餘量無關</strong>：只要有液體殘留（1 滴或半瓶），$P_{sat}$ 皆相同。</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 右：互動雙 Canvas：P-V 圖與活塞容器 -->
-  <div class="panel panel-right" style="background:rgba(15,23,42,0.85);">
-    <!-- 標題 -->
-    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.28rem;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:.45rem;">
-        <span class="tag" style="background:rgba(34,211,238,0.16);border:1px solid rgba(34,211,238,0.4);color:var(--cyan);">實時模擬</span>
-        <h2 style="color:var(--cyan);margin:0;">P-V 相圖與活塞拖曳實驗</h2>
-      </div>
-      <span style="font-size:.75rem;color:var(--yellow);font-weight:700;">← 拖曳活塞 →</span>
-    </div>
-
-    <!-- ══ 上半：P-V 圖 ══ -->
-    <div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:.28rem 0 .18rem;">
-      <div style="display:flex;justify-content:space-between;font-size:.74rem;color:var(--sub);margin-bottom:.15rem;flex-shrink:0;">
-        <span>📊 P-V 曲線關係圖</span>
-        <span style="color:var(--yellow);">黃點：當前系統狀態</span>
-      </div>
-      <!-- canvas 外層 flex:1 讓它撐滿 -->
-      <div id="pv-wrap" style="flex:1;min-height:0;position:relative;">
-        <canvas id="canvas-pv"
-          style="position:absolute;inset:0;width:100%;height:100%;
-            border-radius:8px;border:1px solid rgba(255,255,255,0.15);
-            background:rgba(0,0,0,0.4);display:block;">
-        </canvas>
-      </div>
-    </div>
-
-    <!-- 狀態標籤列 -->
-    <div style="flex-shrink:0;text-align:center;padding:.22rem .5rem;
-        background:rgba(255,255,255,0.04);border-radius:7px;margin:.1rem 0;">
-      <p id="sat-vp-label" style="font-size:.82rem;color:var(--yellow);font-weight:700;margin:0;">
-        狀態：液氣共存 ｜ 壓力 ＝ 1.00 atm (Psat 定值)
+      <p style="color:var(--sub);margin:0;">
+        ① <strong>加權平均原則</strong>：$\bar{M}$ 必介於混合物中各純物質之最大與最小分子量之間（例如空氣 $\bar{M} \approx 28.8$）。<br>
+        ② <strong>質量與莫耳關係</strong>：混合氣體總質量 $W_{total} = \sum n_i M_i$；總莫耳數 $n_{total} = \sum n_i$。
       </p>
     </div>
 
-    <!-- ══ 下半：活塞容器 ══ -->
-    <div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:.18rem 0 .2rem;">
-      <div style="display:flex;justify-content:space-between;font-size:.74rem;color:var(--sub);margin-bottom:.15rem;flex-shrink:0;">
-        <span>🧪 密閉活塞容器（左右拖曳調整體積）</span>
-        <span style="color:var(--cyan);">藍：液體 | 綠點：蒸氣</span>
+  </div><!-- /左欄 -->
+
+  <!-- ═══ 右欄：三率合一與考點大陷阱 ═══ -->
+  <div class="panel">
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-p">關鍵概念</span>
+        <h2 style="color:var(--purple);margin:0;">三率合一等式與考點陷阱辨析</h2>
       </div>
-      <div id="piston-wrap" style="flex:1;min-height:0;position:relative;">
-        <canvas id="canvas-piston"
-          style="position:absolute;inset:0;width:100%;height:100%;
-            border-radius:8px;border:1.5px solid rgba(56,189,248,0.35);
-            background:rgba(0,0,0,0.45);cursor:ew-resize;touch-action:none;display:block;">
-        </canvas>
-      </div>
+      <span style="font-size:.84rem;color:var(--sub);">大考必考核心</span>
     </div>
-  </div>
+
+    <!-- 推論 3：三率合一 -->
+    <div class="concl-card p">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--purple);font-size:1.06rem;">推論 3 · 三率合一（★ 僅限同溫同壓成立）</strong>
+        <span class="tag tag-p">同溫同壓限定</span>
+      </div>
+      <div class="triple-box">
+        <div class="triple-item">
+          <div style="font-size:.84rem;color:var(--yellow);font-weight:700;">莫耳分率</div>
+          <div>$X_i = \dfrac{n_i}{n_{tot}}$</div>
+        </div>
+        <span class="triple-eq">＝</span>
+        <div class="triple-item">
+          <div style="font-size:.84rem;color:var(--cyan);font-weight:700;">分壓分率</div>
+          <div>$\dfrac{P_i}{P_{tot}}$</div>
+        </div>
+        <span class="triple-eq">＝</span>
+        <div class="triple-item">
+          <div style="font-size:.84rem;color:var(--green);font-weight:700;">體積分率</div>
+          <div>$\dfrac{V_i}{V_{tot}}$</div>
+        </div>
+      </div>
+      <p style="color:var(--sub);margin:0;">
+        ※ <strong>體積分率定義</strong>：指各成分氣體在相同溫度與壓力下，單獨佔有的體積比例（例如：一大氣壓下乾燥空氣中 $N_2$ 佔 $78\%$ 體積 $\implies$ 分壓為 $0.78\text{ atm}$）。
+      </p>
+    </div>
+
+    <!-- 考點大陷阱 -->
+    <div class="concl-card r">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--red);font-size:1.06rem;">⚠️ 考點大陷阱 · 注入惰性氣體（如 He）對各分壓的影響</strong>
+        <span class="tag tag-r">聯考常考題</span>
+      </div>
+      <p style="margin:0;line-height:1.6;">
+        ① <strong>等溫定容容器</strong>加入惰性氣體：總壓 $P_{total}$ 增加，但原氣體 $n_i, V, T$ 皆未變 $\implies$ <strong>原分壓 $P_i$ 恆定不變</strong>！（雖然 $X_i$ 減小，但因總壓增大，兩者相乘恰好互相抵消）。<br>
+        ② <strong>等溫定壓容器（活塞自由膨脹）</strong>加入惰性氣體：容器體積 $V$ 膨脹變大 $\implies$ <strong>原氣體分壓 $P_i$ 必然下降</strong>！
+      </p>
+    </div>
+
+  </div><!-- /右欄 -->
+
 </div>
 </div></div></div>
 
-<script>
-(function() {
-  function initSatVaporSim() {
-    const pvCanvas = document.getElementById('canvas-pv');
-    const pistonCanvas = document.getElementById('canvas-piston');
-    if (!pvCanvas || !pistonCanvas) return;
-
-    const pvCtx = pvCanvas.getContext('2d');
-    const pisCtx = pistonCanvas.getContext('2d');
-
-    function resizeCvs(c, wrap) {
-      const dpr = window.devicePixelRatio || 1;
-      const w = wrap ? wrap.clientWidth  : (c.offsetWidth  || 340);
-      const h = wrap ? wrap.clientHeight : (c.offsetHeight || 130);
-      c.width  = Math.round(w * dpr);
-      c.height = Math.round(h * dpr);
-      c.getContext('2d').scale(dpr, dpr);
-    }
-    const pvWrap = document.getElementById('pv-wrap');
-    const pistonWrap = document.getElementById('piston-wrap');
-    resizeCvs(pvCanvas, pvWrap);
-    resizeCvs(pistonCanvas, pistonWrap);
-
-    const Psat  = 1.0;
-    const Vmin  = 0.18;   // 最左邊（壓縮極限）
-    const Vcrit = 0.36;   // 臨界點（液體耗盡）←往左縮，曲線段更寬
-    const Vmax  = 1.00;
-    const Pmax  = 1.28;   // Y 軸上限↓，讓 Psat 位於約 78% 高度
-    let volume  = 0.26;
-    let dragging = false;
-
-    function drawPV() {
-      const W = pvCanvas.width, H = pvCanvas.height;
-      pvCtx.clearRect(0, 0, W, H);
-
-      const padL = 46, padB = 28, padR = 18, padT = 14;
-      const cW = W - padL - padR, cH = H - padT - padB;
-
-      const toX = v => padL + ((v - Vmin) / (Vmax - Vmin)) * cW;
-      const toY = p => padT + cH - (p / Pmax) * cH;
-
-      // ── 背景區域填色 ──
-      // 液氣共存區（水平段下方）
-      pvCtx.save();
-      pvCtx.beginPath();
-      pvCtx.moveTo(toX(Vmin), toY(Psat));
-      pvCtx.lineTo(toX(Vcrit), toY(Psat));
-      pvCtx.lineTo(toX(Vcrit), padT + cH);
-      pvCtx.lineTo(toX(Vmin), padT + cH);
-      pvCtx.closePath();
-      pvCtx.fillStyle = 'rgba(251,191,36,0.07)';
-      pvCtx.fill();
-
-      // 全部汽化區（曲線下方）
-      pvCtx.beginPath();
-      pvCtx.moveTo(toX(Vcrit), toY(Psat));
-      for (let v = Vcrit; v <= Vmax; v += 0.005) {
-        pvCtx.lineTo(toX(v), toY(Psat * Vcrit / v));
-      }
-      pvCtx.lineTo(toX(Vmax), padT + cH);
-      pvCtx.lineTo(toX(Vcrit), padT + cH);
-      pvCtx.closePath();
-      pvCtx.fillStyle = 'rgba(34,211,238,0.06)';
-      pvCtx.fill();
-      pvCtx.restore();
-
-      // ── 坐標軸 ──
-      pvCtx.strokeStyle = 'rgba(255,255,255,0.38)';
-      pvCtx.lineWidth = 1.5;
-      pvCtx.beginPath();
-      pvCtx.moveTo(padL, padT);
-      pvCtx.lineTo(padL, padT + cH);
-      pvCtx.lineTo(padL + cW, padT + cH);
-      pvCtx.stroke();
-
-      // 軸標籤
-      pvCtx.fillStyle = 'rgba(255,255,255,0.55)';
-      pvCtx.font = `${Math.max(9, W * 0.028)}px sans-serif`;
-      pvCtx.textAlign = 'center';
-      pvCtx.fillText('體積 V  →', padL + cW / 2, H - 6);
-      pvCtx.save();
-      pvCtx.translate(14, padT + cH / 2);
-      pvCtx.rotate(-Math.PI / 2);
-      pvCtx.fillText('壓力 P  ↑', 0, 0);
-      pvCtx.restore();
-
-      // ── Psat 虛線 ──
-      pvCtx.strokeStyle = 'rgba(251,191,36,0.55)';
-      pvCtx.lineWidth = 1.2;
-      pvCtx.setLineDash([5, 4]);
-      pvCtx.beginPath();
-      pvCtx.moveTo(padL, toY(Psat));
-      pvCtx.lineTo(padL + cW, toY(Psat));
-      pvCtx.stroke();
-      pvCtx.setLineDash([]);
-      // Psat 標籤（左側）
-      pvCtx.fillStyle = 'rgba(251,191,36,0.9)';
-      pvCtx.font = `bold ${Math.max(9, W * 0.028)}px sans-serif`;
-      pvCtx.textAlign = 'right';
-      pvCtx.fillText('Psat', padL - 3, toY(Psat) + 4);
-
-      // ── Vcrit 垂直虛線 ──
-      pvCtx.strokeStyle = 'rgba(167,139,250,0.4)';
-      pvCtx.lineWidth = 1;
-      pvCtx.setLineDash([3, 4]);
-      pvCtx.beginPath();
-      pvCtx.moveTo(toX(Vcrit), toY(Psat));
-      pvCtx.lineTo(toX(Vcrit), padT + cH);
-      pvCtx.stroke();
-      pvCtx.setLineDash([]);
-      // Vcrit 標籤
-      pvCtx.fillStyle = 'rgba(167,139,250,0.8)';
-      pvCtx.font = `${Math.max(8, W * 0.025)}px sans-serif`;
-      pvCtx.textAlign = 'center';
-      pvCtx.fillText('Vc', toX(Vcrit), padT + cH + 12);
-
-      // ── 主曲線 ──
-      // 水平段（液氣共存）
-      pvCtx.strokeStyle = '#fbbf24';
-      pvCtx.lineWidth = 2.8;
-      pvCtx.beginPath();
-      pvCtx.moveTo(toX(Vmin), toY(Psat));
-      pvCtx.lineTo(toX(Vcrit), toY(Psat));
-      pvCtx.stroke();
-      // 波以耳曲線段（全部汽化）
-      pvCtx.strokeStyle = '#38bdf8';
-      pvCtx.lineWidth = 2.8;
-      pvCtx.beginPath();
-      pvCtx.moveTo(toX(Vcrit), toY(Psat));
-      for (let v = Vcrit; v <= Vmax; v += 0.005) {
-        pvCtx.lineTo(toX(v), toY(Psat * Vcrit / v));
-      }
-      pvCtx.stroke();
-
-      // ── 區域文字標注 ──
-      const fSize = Math.max(8, W * 0.026);
-      pvCtx.font = `${fSize}px sans-serif`;
-      pvCtx.fillStyle = 'rgba(251,191,36,0.7)';
-      pvCtx.textAlign = 'center';
-      pvCtx.fillText('液氣共存', toX((Vmin + Vcrit) / 2), toY(Psat) - 6);
-      pvCtx.fillStyle = 'rgba(56,189,248,0.7)';
-      pvCtx.fillText('波以耳定律', toX((Vcrit + Vmax) / 2 + 0.05), toY(Psat * Vcrit / ((Vcrit + Vmax) / 2 + 0.05)) - 7);
-
-      // ── 當前狀態點 ──
-      let curP, curState;
-      if (volume <= Vcrit) {
-        curP = Psat; curState = 'coexist';
-      } else {
-        curP = Psat * Vcrit / volume; curState = 'gas';
-      }
-
-      pvCtx.beginPath();
-      pvCtx.arc(toX(volume), toY(curP), 7, 0, Math.PI * 2);
-      pvCtx.fillStyle = curState === 'coexist' ? '#fbbf24' : '#34d399';
-      pvCtx.shadowBlur = 12;
-      pvCtx.shadowColor = pvCtx.fillStyle;
-      pvCtx.fill();
-      pvCtx.shadowBlur = 0;
-
-      const label = document.getElementById('sat-vp-label');
-      if (label) {
-        if (curState === 'coexist') {
-          label.innerHTML = `狀態：<span style="color:#fbbf24;">液氣共存</span> ｜ 壓力 ＝ <strong>${Psat.toFixed(2)} atm</strong> (定值)`;
-        } else {
-          label.innerHTML = `狀態：<span style="color:#34d399;">全部汽化（未飽和）</span> ｜ 壓力 ＝ <strong>${curP.toFixed(2)} atm</strong> (符合波以耳定律)`;
-        }
-      }
-    }
-
-    function drawPiston() {
-      const W = pistonCanvas.width, H = pistonCanvas.height;
-      pisCtx.clearRect(0, 0, W, H);
-
-      const boxX = 20, boxY = 12, boxW = W - 40, boxH = H - 24;
-      const pistonX = boxX + volume * boxW;
-
-      pisCtx.strokeStyle = 'rgba(255,255,255,0.5)';
-      pisCtx.lineWidth = 2;
-      pisCtx.strokeRect(boxX, boxY, boxW, boxH);
-
-      if (volume <= Vcrit) {
-        const liquidRatio = (1 - (volume - Vmin)/(Vcrit - Vmin));
-        const liquidH = Math.max(8, liquidRatio * 0.45 * boxH);
-        pisCtx.fillStyle = 'rgba(56,189,248,0.45)';
-        pisCtx.fillRect(boxX + 1, boxY + boxH - liquidH, pistonX - boxX - 1, liquidH);
-
-        const numDots = Math.floor(((volume - Vmin)/(Vcrit - Vmin)) * 18) + 4;
-        pisCtx.fillStyle = '#38bdf8';
-        for (let i = 0; i < numDots; i++) {
-          const px = boxX + 6 + Math.random() * (pistonX - boxX - 12);
-          const py = boxY + 6 + Math.random() * (boxH - liquidH - 10);
-          pisCtx.beginPath();
-          pisCtx.arc(px, py, 2.2, 0, Math.PI * 2);
-          pisCtx.fill();
-        }
-      } else {
-        const numDots = Math.floor(volume * 22) + 6;
-        pisCtx.fillStyle = '#34d399';
-        for (let i = 0; i < numDots; i++) {
-          const px = boxX + 6 + Math.random() * (pistonX - boxX - 12);
-          const py = boxY + 6 + Math.random() * (boxH - 12);
-          pisCtx.beginPath();
-          pisCtx.arc(px, py, 2.2, 0, Math.PI * 2);
-          pisCtx.fill();
-        }
-      }
-
-      pisCtx.fillStyle = 'rgba(255,255,255,0.85)';
-      pisCtx.fillRect(pistonX - 6, boxY, 12, boxH);
-      pisCtx.fillStyle = '#0f172a';
-      pisCtx.font = 'bold 10px sans-serif';
-      pisCtx.textAlign = 'center';
-      pisCtx.fillText('↔', pistonX, boxY + boxH/2 + 3);
-    }
-
-    function render() {
-      drawPV();
-      drawPiston();
-      requestAnimationFrame(render);
-    }
-    render();
-
-    function getPistonVolume(clientX) {
-      const rect = pistonCanvas.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const scaleX = pistonCanvas.width / rect.width;
-      const canvasX = x * scaleX;
-      const boxX = 20, boxW = pistonCanvas.width - 40;
-      const raw = (canvasX - boxX) / boxW;
-      return Math.max(0.12, Math.min(0.98, raw));
-    }
-
-    pistonCanvas.addEventListener('pointerdown', e => {
-      dragging = true;
-      pistonCanvas.setPointerCapture(e.pointerId);
-    });
-    pistonCanvas.addEventListener('pointermove', e => {
-      if (dragging) volume = getPistonVolume(e.clientX);
-    });
-    pistonCanvas.addEventListener('pointerup', e => {
-      dragging = false;
-      try { pistonCanvas.releasePointerCapture(e.pointerId); } catch(err) {}
-    });
-    pistonCanvas.addEventListener('pointercancel', () => dragging = false);
-
-    window.addEventListener('resize', () => {
-      resizeCvs(pvCanvas, pvWrap);
-      resizeCvs(pistonCanvas, pistonWrap);
-    });
-  }
-
-  setTimeout(initSatVaporSim, 200);
-})();
-</script>
 <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
 </body></html>

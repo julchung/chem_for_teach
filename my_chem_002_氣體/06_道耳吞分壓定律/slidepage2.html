@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2-6 分壓與莫耳分率 · 公式推導</title>
+<title>2-6 分壓公式推導 · 莫耳分率與核心分壓關係</title>
 <script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
@@ -25,264 +25,195 @@ html,body{
 #slides-container{position:absolute;top:1.1vh;left:1.6vw;right:1.6vw;bottom:1.1vh;}
 .slide{position:absolute;inset:0;padding:.12rem .12rem;display:flex;flex-direction:column;overflow:hidden;height:100%;}
 h1{
-  color:var(--cyan);font-size:clamp(1.18rem,1.65vw,1.6rem);margin-bottom:.4rem;
+  color:var(--cyan);font-size:clamp(1.28rem,1.75vw,1.72rem);margin-bottom:.35rem;
   display:flex;align-items:center;gap:.55rem;
-  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.28rem;flex-shrink:0;
+  border-bottom:2px solid rgba(34,211,238,.22);padding-bottom:.25rem;flex-shrink:0;
 }
-h1::before{content:"";width:6px;height:22px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
-h2{font-size:clamp(.9rem,1.1vw,1.08rem);font-weight:700;}
-p,li{font-size:clamp(.8rem,.94vw,.93rem);line-height:1.58;}
+h1::before{content:"";width:6px;height:24px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
+h2{font-size:clamp(1.06rem,1.32vw,1.28rem);font-weight:700;}
+p,li{font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.6;}
 strong{color:var(--cyan);font-weight:700;}
 em{color:var(--yellow);font-style:normal;font-weight:600;}
 
-.derive-grid{
-  display:grid;
-  grid-template-columns:1.15fr 1fr;
-  gap:.72rem;
+.grid2{
+  display:grid;grid-template-columns:1.12fr 1fr;gap:.95rem;
   flex:1;min-height:0;overflow:hidden;
 }
 .panel{
   background:var(--glass);border:1.5px solid var(--gb);border-radius:13px;
-  padding:.65rem .9rem;backdrop-filter:blur(12px);
-  display:flex;flex-direction:column;gap:.4rem;
-  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow-y:auto;
+  padding:.8rem 1.15rem;backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;justify-content:space-between;gap:.5rem;
+  box-shadow:0 6px 24px rgba(0,0,0,.32);min-height:0;overflow:hidden;
 }
-.panel::-webkit-scrollbar{width:4px;}
-.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:2px;}
 
-.derive-step{display:flex;gap:.55rem;align-items:flex-start;}
-.step-num{
-  flex-shrink:0;width:1.6rem;height:1.6rem;
-  border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:.78rem;font-weight:900;
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;flex-shrink:0;
 }
-.step-body{flex:1;min-width:0;}
 
-.sn-b{background:rgba(56,189,248,.22);color:var(--blue);border:1.5px solid rgba(56,189,248,.5);}
-.sn-g{background:rgba(52,211,153,.22);color:var(--green);border:1.5px solid rgba(52,211,153,.5);}
-.sn-y{background:rgba(251,191,36,.22);color:var(--yellow);border:1.5px solid rgba(251,191,36,.5);}
-.sn-c{background:rgba(34,211,238,.22);color:var(--cyan);border:1.5px solid rgba(34,211,238,.5);}
+.tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.88rem;font-weight:700;}
+.tag-y{background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.45);color:var(--yellow);}
+.tag-g{background:rgba(52,211,153,.18);border:1px solid rgba(52,211,153,.45);color:var(--green);}
+.tag-p{background:rgba(167,139,250,.18);border:1px solid rgba(167,139,250,.45);color:var(--purple);}
+.tag-c{background:rgba(34,211,238,.18);border:1px solid rgba(34,211,238,.45);color:var(--cyan);}
+.tag-b{background:rgba(56,189,248,.18);border:1px solid rgba(56,189,248,.45);color:var(--blue);}
 
-.derive-label{font-size:.78rem;font-weight:800;margin-bottom:.12rem;}
-.lb-b{color:var(--blue);}
-.lb-g{color:var(--green);}
-.lb-y{color:var(--yellow);}
-.lb-c{color:var(--cyan);}
+/* 步驟大卡片 */
+.step-card{
+  background:rgba(255,255,255,0.035);border:1.2px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:.55rem .95rem;display:flex;flex-direction:column;
+  justify-content:center;gap:.3rem;flex:1;min-height:0;
+}
+.step-card.b{border-left:5px solid var(--blue);background:rgba(56,189,248,0.04);}
+.step-card.g{border-left:5px solid var(--green);background:rgba(52,211,153,0.04);}
+.step-card.c{border-left:5px solid var(--cyan);background:rgba(34,211,238,0.06);border-color:rgba(34,211,238,0.3);}
 
+/* 公式外框 */
 .fbox{
-  background:rgba(0,0,0,.4);border-radius:8px;
-  padding:.32rem .65rem;text-align:center;font-size:clamp(.86rem,.93vw,.98rem);
-  margin:.1rem 0;
+  background:rgba(0,0,0,.45);border-radius:8px;
+  padding:.45rem .85rem;text-align:center;
+  font-size:clamp(1.2rem,1.5vw,1.6rem);
+  margin:.15rem 0;border:1px solid rgba(255,255,255,0.08);
 }
-.fbox-b{border-left:4px solid var(--blue);}
-.fbox-g{border-left:4px solid var(--green);}
-.fbox-y{border-left:4px solid var(--yellow);}
-.fbox-c{border-left:4px solid var(--cyan);background:rgba(34,211,238,.06);}
-
-.derive-arrow{
-  display:flex;align-items:center;gap:.4rem;
-  padding:.04rem 0 .04rem 2.15rem;
-  color:rgba(255,255,255,.38);font-size:.76rem;
-}
-.derive-arrow::before{
-  content:"";flex-shrink:0;
-  width:1px;height:16px;background:rgba(255,255,255,.2);
+.fbox-highlight{
+  background:rgba(34,211,238,.12);border:1.5px solid rgba(34,211,238,.45);
+  box-shadow:0 0 16px rgba(34,211,238,0.18);
+  font-size:clamp(1.45rem,1.85vw,2rem);padding:.6rem .9rem;
 }
 
-.tag{display:inline-block;padding:.1rem .52rem;border-radius:10px;font-size:.76rem;font-weight:700;}
-.tag-y{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.4);color:var(--yellow);}
-.tag-g{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.4);color:var(--green);}
-.tag-p{background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.4);color:var(--purple);}
-.tag-c{background:rgba(34,211,238,.16);border:1px solid rgba(34,211,238,.4);color:var(--cyan);}
-
-.concl-card{
-  border-radius:10px;padding:.52rem .78rem;
-  display:flex;flex-direction:column;gap:.25rem;
+/* 右欄概念卡片 */
+.concept-card{
+  background:rgba(255,255,255,0.035);border:1.2px solid rgba(255,255,255,0.1);
+  border-radius:10px;padding:.6rem .95rem;display:flex;flex-direction:column;
+  justify-content:center;gap:.35rem;flex:1;min-height:0;
 }
-.concl-card.y{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.28);}
-.concl-card.g{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.28);}
-.concl-card.p{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.28);}
-
-.divider{height:1px;background:rgba(255,255,255,.1);margin:.18rem 0;}
-
-.triple-box{
-  background:rgba(0,0,0,.35);border:1.5px solid rgba(167,139,250,.4);
-  border-radius:10px;padding:.45rem .7rem;
-  display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;
-}
-.triple-item{
-  text-align:center;padding:.3rem .55rem;
-  background:rgba(255,255,255,.05);border-radius:8px;
-  font-size:clamp(.74rem,.86vw,.86rem);
-}
-.triple-eq{font-size:1.1rem;color:rgba(255,255,255,.4);font-weight:700;}
+.concept-card.y{border-left:5px solid var(--yellow);background:rgba(251,191,36,0.04);}
+.concept-card.p{border-left:5px solid var(--purple);background:rgba(167,139,250,0.04);}
 
 @media(max-width:900px){
-  .derive-grid{grid-template-columns:1fr!important;overflow-y:auto;}
+  .grid2{grid-template-columns:1fr!important;overflow-y:auto;}
   html,body,#app{overflow:auto;}.slide{position:relative;height:auto;}
 }
 </style>
 </head>
 
 <body><div id="app"><div id="slides-container"><div class="slide active">
-<h1>2-6 分壓公式推導 · 莫耳分率與分壓關係</h1>
+<h1>2-6 分壓公式嚴密推導 · 莫耳分率與核心分壓關係</h1>
 
-<div class="derive-grid">
+<div class="grid2">
 
-  <!-- ═══ 左欄：逐步推導 ═══ -->
+  <!-- ═══ 左欄：由理想氣體方程式嚴密推導 ═══ -->
   <div class="panel">
-    <div style="display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.28rem;flex-shrink:0;">
-      <span class="tag tag-c">推導過程</span>
-      <h2 style="color:var(--cyan);margin:0;">由理想氣體方程式推導分壓公式</h2>
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-c">推導鏈</span>
+        <h2 style="color:var(--cyan);margin:0;">由理想氣體方程式推導分壓核心公式</h2>
+      </div>
+      <span style="font-size:.84rem;color:var(--sub);">同溫同容體系</span>
     </div>
 
-    <!-- ① -->
-    <div class="derive-step">
-      <div class="step-num sn-b">①</div>
-      <div class="step-body">
-        <div class="derive-label lb-b">已知條件（同溫同容）</div>
-        <p style="font-size:.8rem;color:var(--sub);margin-bottom:.15rem;">
-          混合氣體各成分與整體均在 <strong>溫度 $T$、體積 $V$</strong> 固定的容器中：
-        </p>
-        <div class="fbox fbox-b">$$P_A V = n_A R T \qquad P_B V = n_B R T$$</div>
-        <div class="fbox fbox-b" style="margin-top:.1rem;">$$P_{total}\, V = n_{total}\, R T$$</div>
+    <!-- 步驟 1 -->
+    <div class="step-card b">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--blue);font-size:1.05rem;">步驟 ① · 確立已知條件（同溫同容）</strong>
+        <span class="tag tag-b">狀態方程式</span>
+      </div>
+      <p style="color:var(--sub);margin:0;">混合氣體各成分共同處於容器體積 $V$ 與絕對溫度 $T$ 中：</p>
+      <div class="fbox" style="border-left:4px solid var(--blue);color:#bae6fd;">
+        $$P_A \cdot V = n_A \cdot R T \qquad P_{total} \cdot V = n_{total} \cdot R T$$
       </div>
     </div>
 
-    <div class="derive-arrow">各成分氣體分別套用理想氣體方程式</div>
-
-    <!-- ② -->
-    <div class="derive-step">
-      <div class="step-num sn-g">②</div>
-      <div class="step-body">
-        <div class="derive-label lb-g">氣體 A 方程式 ÷ 總壓方程式</div>
-        <div class="fbox fbox-g">
-          $$\frac{P_A\, V}{P_{total}\, V} = \frac{n_A\, R\, T}{n_{total}\, R\, T}$$
-        </div>
+    <!-- 步驟 2 -->
+    <div class="step-card g">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--green);font-size:1.05rem;">步驟 ② · 兩式相除化簡（約去同值量）</strong>
+        <span class="tag tag-g">約去 V, R, T</span>
+      </div>
+      <p style="color:var(--sub);margin:0;">以成分氣體 $A$ 之狀態式除以混合氣體總狀態式：</p>
+      <div class="fbox" style="border-left:4px solid var(--green);color:#a7f3d0;">
+        $$\frac{P_A \cdot V}{P_{total} \cdot V} = \frac{n_A \cdot R T}{n_{total} \cdot R T} \quad \implies \quad \frac{P_A}{P_{total}} = \frac{n_A}{n_{total}}$$
       </div>
     </div>
 
-    <div class="derive-arrow">$V$、$R$、$T$ 相同，約分消去</div>
-
-    <!-- ③ -->
-    <div class="derive-step">
-      <div class="step-num sn-g">③</div>
-      <div class="step-body">
-        <div class="derive-label lb-g">化簡後得到壓力比等於莫耳比</div>
-        <div class="fbox fbox-g">
-          $$\frac{P_A}{P_{total}} = \frac{n_A}{n_{total}}$$
-        </div>
+    <!-- 步驟 3：核心成果 -->
+    <div class="step-card c">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--cyan);font-size:1.08rem;">步驟 ③ · 引入莫耳分率 $X_A$（核心定律）</strong>
+        <span class="tag tag-y">核心公式</span>
       </div>
-    </div>
-
-    <div class="derive-arrow">引入莫耳分率定義 $X_A$</div>
-
-    <!-- ④ -->
-    <div class="derive-step">
-      <div class="step-num sn-y">④</div>
-      <div class="step-body">
-        <div class="derive-label lb-y">莫耳分率（Mole Fraction）定義</div>
-        <div class="fbox fbox-y">
-          $$X_A = \frac{n_A}{n_{total}} = \frac{n_A}{n_A + n_B + \cdots}$$
-        </div>
-        <p style="font-size:.76rem;color:var(--sub);margin-top:.1rem;">
-          無因次量，$0 \le X_i \le 1$；所有成分：$\displaystyle\sum_i X_i = 1$
-        </p>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.95rem;color:var(--text);">
+        <span>莫耳分率定義：$X_A = \dfrac{n_A}{n_{total}} = \dfrac{n_A}{n_A + n_B + \cdots}$</span>
+        <span style="font-size:.85rem;color:var(--yellow);">$0 \le X_i \le 1,\; \sum X_i = 1$</span>
       </div>
-    </div>
-
-    <div class="derive-arrow">代入③式，整理</div>
-
-    <!-- ⑤ -->
-    <div class="derive-step">
-      <div class="step-num sn-c">⑤</div>
-      <div class="step-body">
-        <div class="derive-label lb-c">分壓公式（核心結論）</div>
-        <div class="fbox fbox-c" style="font-size:clamp(1rem,1.2vw,1.25rem);padding:.42rem .7rem;">
-          $$\boxed{P_A = X_A \cdot P_{total}}$$
-        </div>
-        <p style="font-size:.82rem;margin-top:.12rem;">
-          <strong>成分分壓</strong> ＝ 莫耳分率 × 混合氣體總壓
-        </p>
+      <div class="fbox fbox-highlight">
+        $$\boxed{\mathbf{P_A = X_A \cdot P_{total}}}$$
       </div>
+      <p style="text-align:center;color:var(--cyan);font-weight:700;margin:0;font-size:1.02rem;">
+        ★ 任一成分氣體分壓 ＝ 該氣體莫耳分率 × 混合氣體總壓
+      </p>
     </div>
 
   </div><!-- /左欄 -->
 
-  <!-- ═══ 右欄：結論彙整 ═══ -->
+  <!-- ═══ 右欄：概念解析與計算雙途徑 ═══ -->
   <div class="panel">
-    <div style="display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.28rem;flex-shrink:0;">
-      <span class="tag tag-y">延伸結論</span>
-      <h2 style="color:var(--yellow);margin:0;">重要推論與應用</h2>
+    <div class="panel-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <span class="tag tag-y">微觀與實務</span>
+        <h2 style="color:var(--yellow);margin:0;">莫耳分率意涵與分壓計算雙途徑</h2>
+      </div>
+      <span style="font-size:.84rem;color:var(--sub);">解題核心工具</span>
     </div>
 
-    <!-- 推論 1 -->
-    <div class="concl-card g">
-      <div style="display:flex;align-items:center;gap:.45rem;">
-        <span style="font-size:.8rem;font-weight:900;color:var(--green);">推論 1</span>
-        <span style="font-size:.8rem;font-weight:700;">同溫同容下──分壓比 ＝ 莫耳比</span>
+    <!-- 概念卡 1：莫耳分率特性 -->
+    <div class="concept-card y">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--yellow);font-size:1.05rem;">📌 莫耳分率（Mole Fraction）特性解析</strong>
+        <span class="tag tag-y">無因次量</span>
       </div>
-      <div class="fbox fbox-g" style="font-size:.9rem;">
-        $$P_A : P_B : \cdots = n_A : n_B : \cdots$$
+      <div style="display:flex;gap:.55rem;align-items:baseline;">
+        <span style="color:var(--yellow);font-weight:900;">①</span>
+        <p style="margin:0;"><strong>純數比值</strong>：分子與分母單位皆為 $\text{mol}$，彼此抵消，為純數無單位。</p>
       </div>
-      <p style="font-size:.76rem;color:var(--sub);">
-        由 $P_i = \dfrac{n_i RT}{V}$ 推得，$R, T, V$ 固定時分壓正比於莫耳數。
-      </p>
+      <div style="display:flex;gap:.55rem;align-items:baseline;">
+        <span style="color:var(--yellow);font-weight:900;">②</span>
+        <p style="margin:0;"><strong>全體總和必為 1</strong>：$\sum X_i = X_A + X_B + \dots = 1$，百分比總和必為 $100\%$。</p>
+      </div>
+      <div style="display:flex;gap:.55rem;align-items:baseline;">
+        <span style="color:var(--yellow);font-weight:900;">③</span>
+        <p style="margin:0;"><strong>壓縮體積時</strong>：僅改變氣體密度與壓力，成分比例未變 $\implies X_i$ 恆定不變。</p>
+      </div>
     </div>
 
-    <!-- 推論 2 -->
-    <div class="concl-card y">
-      <div style="display:flex;align-items:center;gap:.45rem;">
-        <span style="font-size:.8rem;font-weight:900;color:var(--yellow);">推論 2</span>
-        <span style="font-size:.8rem;font-weight:700;">混合氣體平均分子量 $\bar{M}$</span>
+    <!-- 概念卡 2：求分壓的兩大路徑 -->
+    <div class="concept-card p">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong style="color:var(--purple);font-size:1.05rem;">🛠 求氣體分壓 $P_i$ 的兩大計算路徑</strong>
+        <span class="tag tag-p">解題對照</span>
       </div>
-      <div class="fbox fbox-y" style="font-size:.88rem;">
-        $$\bar{M} = X_A M_A + X_B M_B + \cdots = \frac{W_{total}}{n_{total}}$$
-      </div>
-      <p style="font-size:.76rem;color:var(--sub);">
-        $W_{total}$：總質量（g）；$n_{total}$：總莫耳數。
-      </p>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- 三率合一 -->
-    <div class="concl-card p" style="gap:.32rem;">
-      <div style="display:flex;align-items:center;gap:.4rem;">
-        <span class="tag tag-p">三率合一</span>
-        <span style="font-size:.8rem;font-weight:700;color:var(--purple);">同溫同壓時三率相等</span>
-      </div>
-      <div class="triple-box">
-        <div class="triple-item">
-          <div style="font-size:.7rem;color:var(--yellow);font-weight:700;margin-bottom:.1rem;">莫耳分率</div>
-          <div>$X_i = \dfrac{n_i}{n_{total}}$</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.2rem;">
+        <div style="background:rgba(0,0,0,.4);border-radius:8px;padding:.5rem;border:1px solid rgba(167,139,250,.3);">
+          <div style="color:var(--purple);font-weight:800;font-size:.9rem;margin-bottom:.2rem;">路徑 A · 直接狀態法</div>
+          <div style="font-size:1.05rem;color:#e9d5ff;text-align:center;">$$P_i = \frac{n_i R T}{V}$$</div>
+          <div style="font-size:.82rem;color:var(--sub);margin-top:.15rem;">已知該成分莫耳數 $n_i$ 與總體積 $V$ 時使用。</div>
         </div>
-        <span class="triple-eq">=</span>
-        <div class="triple-item">
-          <div style="font-size:.7rem;color:var(--cyan);font-weight:700;margin-bottom:.1rem;">分壓分率</div>
-          <div>$\dfrac{P_i}{P_{total}}$</div>
-        </div>
-        <span class="triple-eq">=</span>
-        <div class="triple-item">
-          <div style="font-size:.7rem;color:var(--green);font-weight:700;margin-bottom:.1rem;">體積分率</div>
-          <div>$\dfrac{V_i}{V_{total}}$</div>
+        <div style="background:rgba(0,0,0,.4);border-radius:8px;padding:.5rem;border:1px solid rgba(34,211,238,.3);">
+          <div style="color:var(--cyan);font-weight:800;font-size:.9rem;margin-bottom:.2rem;">路徑 B · 莫耳分率法</div>
+          <div style="font-size:1.05rem;color:#bae6fd;text-align:center;">$$P_i = X_i \cdot P_{total}$$</div>
+          <div style="font-size:.82rem;color:var(--sub);margin-top:.15rem;">已知混合總壓 $P_{tot}$ 與莫耳比例 $X_i$ 時使用。</div>
         </div>
       </div>
-      <p style="font-size:.74rem;color:var(--sub);">
-        ※ 體積分率等式<strong>僅限同溫同壓</strong>成立（$V_i$ 為各氣體在同溫同壓下的體積）。
+    </div>
+
+    <!-- 底部叮嚀 -->
+    <div style="background:rgba(52,211,153,0.06);border:1.2px solid rgba(52,211,153,0.3);border-radius:9px;padding:.5rem .85rem;display:flex;align-items:center;gap:.6rem;flex-shrink:0;">
+      <span style="font-size:1.25rem;">💡</span>
+      <p style="margin:0;font-size:.94rem;color:#a7f3d0;line-height:1.5;">
+        <strong>教學點撥：</strong>道耳吞分壓定律的微觀本質，在於理想氣體分子間沒有作用力，每一種氣體在容器中均「<strong>視其他氣體為不存在</strong>」，獨立撞擊器壁產生各自的分壓！
       </p>
     </div>
 
-    <div class="divider"></div>
-
-    <!-- 常見錯誤 -->
-    <div style="background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.3);border-radius:9px;padding:.5rem .75rem;display:flex;flex-direction:column;gap:.2rem;margin-top:auto;">
-      <span style="font-size:.8rem;font-weight:800;color:var(--red);">⚠ 常見錯誤提醒</span>
-      <p style="font-size:.76rem;line-height:1.58;">
-        體積縮小時：$X_i$ <strong style="color:var(--green);">不變</strong>，但 $P_i$ <strong style="color:var(--red);">增大</strong>（因 $P_{total}$ 增大）。<br>
-        加入惰性氣體（等溫等容）：$P_{total}$ 增大，原成分 $X_i$ <strong style="color:var(--red);">減小</strong>，$P_i$ <strong style="color:var(--green);">不變</strong>。
-      </p>
-    </div>
   </div><!-- /右欄 -->
 
 </div>

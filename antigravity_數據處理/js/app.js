@@ -137,22 +137,31 @@ function updateStudioUI() {
   }
   if (methodContent) {
     methodContent.innerHTML = `
-      <div style="margin-bottom:0.45rem;">
-        <strong style="color:#38bdf8;">📌 最適作圖型態：</strong>
-        <span style="color:#f8fafc; font-weight:600;">${ds.bestPlotMethodLabel || '科學趨勢曲線'}</span>
-      </div>
-      <div style="margin-bottom:0.45rem;">
-        <strong style="color:#f59e0b;">💡 科學機理與理由：</strong>
-        <span style="color:#cbd5e1;">${ds.graphingRationale || '依據學科原理分析數據分布特徵。'}</span>
-      </div>
-      <div style="border-top:1px dashed rgba(255,255,255,0.12); padding-top:0.45rem;">
-        <strong style="color:${ds.regressionApplicable ? '#34d399' : '#f87171'};">
-          ${ds.regressionApplicable ? '✓ 回歸檢核通過：' : '🚫 嚴禁線性回歸原因：'}
-        </strong>
-        <span style="color:${ds.regressionApplicable ? '#cbd5e1' : '#fca5a5'};">${ds.regressionWarning}</span>
+      <div style="display:flex; flex-direction:column; gap:0.95rem; font-size:1.02rem; line-height:1.85; color:#cbd5e1;">
+        <div>
+          <strong style="color:#38bdf8; font-size:1.1rem;">📌 最適作圖型態：</strong>
+          <span style="color:#f8fafc; font-weight:700; font-size:1.15rem; margin-left:0.35rem;">${ds.bestPlotMethodLabel || '科學趨勢曲線'}</span>
+        </div>
+        <div style="background:rgba(245,158,11,0.08); border-left:3.5px solid #f59e0b; padding:0.85rem 1.1rem; border-radius:8px;">
+          <strong style="color:#f59e0b; font-size:1.05rem;">💡 科學機理與作圖理由：</strong>
+          <div style="margin-top:0.4rem; color:#f1f5f9; line-height:1.85;">
+            ${ds.graphingRationale || '依據學科原理分析數據分布特徵。'}
+          </div>
+        </div>
+        <div style="background:${ds.regressionApplicable ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'}; border-left:3.5px solid ${ds.regressionApplicable ? '#10b981' : '#ef4444'}; padding:0.85rem 1.1rem; border-radius:8px;">
+          <strong style="color:${ds.regressionApplicable ? '#34d399' : '#f87171'}; font-size:1.05rem;">
+            ${ds.regressionApplicable ? '✓ 回歸檢核通過（物理/化學嚴格正比）：' : '🚫 嚴禁全域線性回歸原因：'}
+          </strong>
+          <div style="margin-top:0.4rem; color:${ds.regressionApplicable ? '#cbd5e1' : '#fca5a5'}; line-height:1.85;">
+            ${ds.regressionWarning}
+          </div>
+        </div>
       </div>
     `;
   }
+
+  // 4. 動態生成與更新右下欄【數據記錄及有效數字等說明】
+  renderDataRecordExplanation(ds);
 
   // 更新下載 CSV 按鈕
   const dlBtn = document.getElementById("btnDownloadCSV");
@@ -162,17 +171,18 @@ function updateStudioUI() {
     dlBtn.setAttribute("title", `下載 ${ds.csvFileName}`);
   }
 
-  // 更新原始試題完整情境抽屜
+  // 更新原始試題完整情境（大字體、舒適行距）
   const examBox = document.getElementById("studioExamBox");
   if (examBox && ds.fullExamText) {
     examBox.innerHTML = `
-      <div style="margin-bottom:0.4rem; color:#38bdf8; font-weight:700; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-        <span>📖 大考中心原始試卷題幹情境與提問全文對照：</span>
-        <span class="badge badge-emerald" style="font-size:0.7rem;">真實考卷還原</span>
-        <span class="badge badge-cyan" style="font-size:0.7rem;">${ds.subject || '探究與實作'}</span>
+      <div style="margin-bottom:0.75rem; color:#38bdf8; font-weight:800; font-size:1.12rem; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <span style="font-size:1.3rem;">📖</span>
+        <span>大考中心原始試卷題幹情境與提問全文對照：</span>
+        <span class="badge badge-emerald" style="font-size:0.8rem; padding:0.3rem 0.65rem;">真實考卷還原</span>
+        <span class="badge badge-cyan" style="font-size:0.8rem; padding:0.3rem 0.65rem;">${ds.subject || '探究與實作'}</span>
       </div>
-      <div style="background:rgba(255,255,255,0.03); padding:0.6rem; border-radius:6px; margin-bottom:0.5rem; white-space:pre-line; line-height:1.6; border-left:3px solid #38bdf8;">${ds.fullExamText.intro}</div>
-      <div style="background:rgba(6,182,212,0.08); padding:0.6rem; border-radius:6px; white-space:pre-line; line-height:1.6; color:#e2e8f0;">${ds.fullExamText.question}</div>
+      <div style="background:rgba(255,255,255,0.035); padding:1.15rem 1.35rem; border-radius:10px; margin-bottom:0.85rem; white-space:pre-line; line-height:1.85; border-left:4px solid #38bdf8; font-size:1.05rem; color:#f1f5f9;">${ds.fullExamText.intro}</div>
+      <div style="background:rgba(6,182,212,0.09); padding:1.15rem 1.35rem; border-radius:10px; white-space:pre-line; line-height:1.85; color:#f8fafc; border-left:4px solid #06b6d4; font-size:1.05rem;">${ds.fullExamText.question}</div>
     `;
   }
 
@@ -219,7 +229,7 @@ function updateStudioUI() {
         tr.innerHTML = `
           <td>${pt.x}</td>
           <td>${pt.y}</td>
-          <td style="color:var(--text-muted)">${pt.note || pt.label || (pt.isRequiredPoint ? '重點標的點' : '-')}</td>
+          <td style="color:#94a3b8">${pt.note || pt.label || (pt.isRequiredPoint ? '重點標的點' : '-')}</td>
         `;
         tableBody.appendChild(tr);
       });
@@ -261,8 +271,101 @@ function updateStudioUI() {
   // 更新大考中心評分原則
   const scoringBox = document.getElementById("studioScoringGuide");
   if (scoringBox && ds.analysis.scoringKey) {
-    scoringBox.innerHTML = ds.analysis.scoringKey.map(item => `<p style="margin-bottom:0.4rem; line-height:1.5;">• ${item}</p>`).join("");
+    scoringBox.innerHTML = ds.analysis.scoringKey.map(item => `
+      <p style="margin-bottom:0.65rem; line-height:1.85;">• ${item}</p>
+    `).join("");
   }
+}
+
+// 動態產生右下欄：【數據記錄及有效數字等說明】
+function renderDataRecordExplanation(ds) {
+  const el = document.getElementById("studioDataRecordExplain");
+  if (!el || !ds) return;
+
+  let xUnitDesc = `${ds.xLabel}，公制單位為 <code>${ds.xUnit}</code>`;
+  let yUnitDesc = `${ds.yLabel}，公制單位為 <code>${ds.yUnit}</code>`;
+
+  let hasNegative = false;
+  if (ds.data) {
+    ds.data.forEach(pt => {
+      if (pt.x < 0 || pt.y < 0) hasNegative = true;
+    });
+  } else if (ds.series) {
+    ds.series.forEach(s => {
+      s.data.forEach(pt => {
+        if (pt.x < 0 || pt.y < 0) hasNegative = true;
+      });
+    });
+  }
+
+  let sigFigNotes = "";
+  if (ds.id === "ceec111_balance") {
+    sigFigNotes = `
+      • <strong>有效位數規格</strong>：速度 <i>v</i> 數據（如 <code>-3.8</code>、<code>0.1</code>、<code>3.6</code>）均包含 1 位準確值 ＋ 1 位估計值，為 <strong>2 位有效數字</strong>；感應電壓 <i>V</i> 數據（如 <code>-95</code>、<code>45</code>）亦為 <strong>2 位有效數字</strong>。<br>
+      • <strong>結尾 0 之嚴謹性</strong>：若讀數正好落在整數刻度（如 90 mV），結尾的 <code>0</code> 具有確定有效數字意義，絕不可任意省略。
+    `;
+  } else if (ds.id === "ceec115_induced_current") {
+    sigFigNotes = `
+      • <strong>有效位數規格</strong>：磁鐵位置 <i>z</i> 數據如 <code>-18.0</code>、<code>12.0</code> 記錄至小數點後第 1 位（<strong>3 位有效數字</strong>）；感應電流 <i>I</i> 數據如 <code>-15.0</code>、<code>24.0</code> 亦具備小數點後 1 位估計值。<br>
+      • <strong>大考關鍵陷阱</strong>：末尾的 <code>.0</code> 為儀器刻度之估計位數，不可隨便簡寫為整數 12 或 -15，否則在探究評分中將失分！
+    `;
+  } else if (ds.id === "ceec115_tidal") {
+    sigFigNotes = `
+      • <strong>有效位數規格</strong>：相對潮位數值均記至整數公分（如 <code>-42 cm</code>、<code>58 cm</code>），全天平均水位計算時應注意有效數字取捨規則。<br>
+      • <strong>基準面平移校正</strong>：水位記錄為「以全日平均潮位為基準之淨偏差值」，正值表示高於平均海平面，負值表示低於平均海平面。
+    `;
+  } else {
+    sigFigNotes = `
+      • <strong>有效位數規格</strong>：所有原始測量值均由【所有準確位數】＋【1 位估計位數】組成。表格記錄中，同欄數據之小數點位數必須保持統一，不可隨意增刪末尾的 <code>0</code>。<br>
+      • <strong>讀數原則</strong>：刻度儀器必估計一位；數位電子儀器則照抄顯示器數值，嚴禁自行加估計值。
+    `;
+  }
+
+  let signNotes = "";
+  if (hasNegative) {
+    signNotes = `
+      <div style="background:rgba(239,68,68,0.08); border-left:3.5px solid #ef4444; padding:0.75rem 1rem; border-radius:6px; font-size:0.98rem; line-height:1.8; color:#fecaca;">
+        ⚠️ <strong>物理方向性正負號不可省略</strong>：本題涉及空間向度、運動方向或極性（具有負值數據）。在數據表格與作圖坐標中，正負號具決定性物理意涵，絕對不可任意取絕對值！
+      </div>
+    `;
+  } else {
+    signNotes = `
+      <div style="background:rgba(16,185,129,0.08); border-left:3.5px solid #10b981; padding:0.75rem 1rem; border-radius:6px; font-size:0.98rem; line-height:1.8; color:#d1fae5;">
+        ✓ <strong>單向純量與標準參考點</strong>：本題變因為非負純量，數據記錄自基準點起算，表格格位內僅留純數字，不得重複填寫單位。
+      </div>
+    `;
+  }
+
+  let focusRec = ds.inquiryFocus && ds.inquiryFocus.recording ? ds.inquiryFocus.recording : '嚴格遵守表格欄頭標註物理量與公制單位，數據記錄遵守有效數字原則。';
+
+  el.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:0.95rem; font-size:1.02rem; line-height:1.85; color:#cbd5e1;">
+      <div>
+        <strong style="color:#38bdf8; font-size:1.08rem;">🏷️ 欄頭物理量與公制單位規範：</strong>
+        <div style="margin-top:0.35rem;">
+          • 自變數（橫軸）：${xUnitDesc}<br>
+          • 應變數（縱軸）：${yUnitDesc}<br>
+          • <strong>表格記錄守則</strong>：欄頭已標註 <code>物理量名稱 (符號, 單位)</code>，格位內僅填純數字，<strong>嚴禁在格位內重複書寫單位</strong>。
+        </div>
+      </div>
+
+      <div style="border-top:1px dashed rgba(255,255,255,0.12); padding-top:0.65rem;">
+        <strong style="color:#fbbf24; font-size:1.08rem;">📏 有效數字與小數點末位規範：</strong>
+        <div style="margin-top:0.35rem;">
+          ${sigFigNotes}
+        </div>
+      </div>
+
+      ${signNotes}
+
+      <div style="border-top:1px dashed rgba(255,255,255,0.12); padding-top:0.65rem;">
+        <strong style="color:#a78bfa; font-size:1.08rem;">💡 探究實作記錄核心要領：</strong>
+        <div style="margin-top:0.35rem; color:#f1f5f9;">
+          ${focusRec}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // 核心繪圖函數
@@ -277,7 +380,7 @@ function renderStudioChart() {
 
   ctx.clearRect(0, 0, w, h);
 
-  const pad = { left: 56, right: 24, top: 28, bottom: 42 };
+  const pad = { left: 58, right: 20, top: 28, bottom: 42 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
 
@@ -315,7 +418,7 @@ function renderStudioChart() {
   const mapY = (val) => pad.top + plotH - ((val - minY) / (maxY - minY)) * plotH;
 
   // 2. 繪製背景網格
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   ctx.lineWidth = 1;
 
   const xTicks = 6;
@@ -327,11 +430,11 @@ function renderStudioChart() {
     ctx.lineTo(px, pad.top + plotH);
     ctx.stroke();
 
-    // 刻度文字
-    ctx.fillStyle = "#64748b";
-    ctx.font = "11px 'JetBrains Mono', monospace";
+    // 刻度文字放大
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "13px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
-    ctx.fillText(vx >= 100 || vx <= -100 ? vx.toFixed(0) : vx.toFixed(1), px, pad.top + plotH + 18);
+    ctx.fillText(vx >= 100 || vx <= -100 ? vx.toFixed(0) : vx.toFixed(1), px, pad.top + plotH + 20);
   }
 
   const yTicks = 6;
@@ -343,14 +446,15 @@ function renderStudioChart() {
     ctx.lineTo(pad.left + plotW, py);
     ctx.stroke();
 
-    ctx.fillStyle = "#64748b";
-    ctx.font = "11px 'JetBrains Mono', monospace";
+    // 刻度文字放大
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "13px 'JetBrains Mono', monospace";
     ctx.textAlign = "right";
-    ctx.fillText(vy >= 100 || vy <= -100 ? vy.toFixed(0) : vy.toFixed(1), pad.left - 10, py + 4);
+    ctx.fillText(vy >= 100 || vy <= -100 ? vy.toFixed(0) : vy.toFixed(1), pad.left - 10, py + 5);
   }
 
   // 3. 繪製 X 軸與 Y 軸 (若 0 在範圍內則畫明顯坐標軸)
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
   ctx.lineWidth = 1.5;
 
   if (minX <= 0 && maxX >= 0) {
@@ -371,14 +475,14 @@ function renderStudioChart() {
   // 外框
   ctx.strokeRect(pad.left, pad.top, plotW, plotH);
 
-  // 軸標籤
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = "12px 'Inter', sans-serif";
+  // 軸標籤放大
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = "14px 'Inter', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(`${ds.xLabel} (${ds.xUnit})`, pad.left + plotW / 2, pad.top + plotH + 38);
+  ctx.fillText(`${ds.xLabel} (${ds.xUnit})`, pad.left + plotW / 2, pad.top + plotH + 42);
 
   ctx.save();
-  ctx.translate(pad.left - 44, pad.top + plotH / 2);
+  ctx.translate(pad.left - 48, pad.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText(`${ds.yLabel} (${ds.yUnit})`, 0, 0);
   ctx.restore();
@@ -571,9 +675,9 @@ function renderStudioChart() {
         const bStr = Math.abs(reg.b) < 0.05 && reg.b !== 0 ? reg.b.toFixed(4) : reg.b.toFixed(2);
         const sign = reg.b >= 0 ? '+' : '-';
         ctx.fillStyle = "#34d399";
-        ctx.font = "bold 11px 'JetBrains Mono', monospace";
+        ctx.font = "bold 13px 'JetBrains Mono', monospace";
         ctx.textAlign = "left";
-        ctx.fillText(`配適直線: y = ${mStr}x ${sign} ${Math.abs(bStr)} (R² = ${reg.r2.toFixed(4)})`, pad.left + 8, pad.top + 18);
+        ctx.fillText(`配適直線: y = ${mStr}x ${sign} ${Math.abs(bStr)} (R² = ${reg.r2.toFixed(4)})`, pad.left + 8, pad.top + 20);
 
         // 111 電磁天平標記斜率 fB
         if (ds.id === "ceec111_balance") {
