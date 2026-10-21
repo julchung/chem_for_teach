@@ -6,7 +6,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   initStudio();
   initPracticeCanvas();
-  initCaseStudyCharts();
   initTimelineAndSlideMode();
   initSigFigTool();
   initExamTabs();
@@ -83,289 +82,143 @@ function updateStudioUI() {
   const ds = EXAM_DATASETS[currentDatasetKey];
   if (!ds) return;
 
-  // 更新標題與簡介
-  const titleEl = document.getElementById("studioDatasetTitle");
-  const descEl = document.getElementById("studioDatasetDesc");
-  if (titleEl) titleEl.innerText = ds.title;
-  if (descEl) descEl.innerText = ds.summary;
+  const meta = (typeof CASE_STUDY_META !== "undefined" && CASE_STUDY_META[currentDatasetKey]) || {};
 
-  // 1. 動態更新作圖模式切換按鈕（嚴格依據大考科學原理，絕不容許非線性數據出現回歸線）
-  const toggleGroup = document.getElementById("studioModeToggleGroup") || document.querySelector(".mode-toggle-group");
-  if (toggleGroup && ds.allowedModes) {
-    toggleGroup.innerHTML = ds.allowedModes.map(m => `
-      <button class="toggle-btn ${m.mode === currentPlotMode ? 'active' : ''}" data-mode="${m.mode}">
-        ${m.label}
-      </button>
-    `).join("");
-
-    toggleGroup.querySelectorAll(".toggle-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        toggleGroup.querySelectorAll(".toggle-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentPlotMode = btn.dataset.mode;
-        renderStudioChart();
-      });
-    });
+  // 1. 更新頂部徽章與標題
+  const badgePill = document.getElementById("caseBadgePill");
+  if (badgePill) {
+    badgePill.className = "case-badge-pill " + (meta.badgeClass || "case-badge-physics");
+    badgePill.innerText = meta.badgeText || (ds.subject + " · 探究實作");
   }
 
-  // 2. 更新回歸分析適配狀態標籤 (提示適用或嚴禁回歸)
-  const regStatusEl = document.getElementById("studioRegressionStatus");
-  if (regStatusEl) {
-    if (ds.regressionApplicable) {
-      regStatusEl.innerHTML = `
-        <span class="badge badge-emerald" style="font-size:0.75rem; padding:0.25rem 0.65rem; display:inline-flex; align-items:center; gap:0.35rem;" title="${ds.regressionWarning}">
-          <span>✓ 適用線性回歸</span>
-          <span style="font-size:0.68rem; opacity:0.85;">(物理/化學正比定律)</span>
-        </span>
-      `;
-    } else {
-      regStatusEl.innerHTML = `
-        <span class="badge" style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.35); font-size:0.75rem; padding:0.25rem 0.65rem; display:inline-flex; align-items:center; gap:0.35rem;" title="${ds.regressionWarning}">
-          <span>🚫 嚴禁全域線性回歸</span>
-          <span style="font-size:0.68rem; opacity:0.9;">(非線性飽和/轉折/週期)</span>
-        </span>
-      `;
+  const subjectBadge = document.getElementById("caseSubjectBadge");
+  if (subjectBadge) {
+    subjectBadge.innerText = ds.subject || "學測真題";
+  }
+
+  const studyTitle = document.getElementById("caseStudyTitle");
+  if (studyTitle) {
+    studyTitle.innerText = ds.title;
+  }
+
+  // 2. 更新一、大考中心原始完整試題題幹與非選題目
+  const examContent = document.getElementById("caseExamContent");
+  if (examContent && ds.fullExamText) {
+    examContent.innerHTML = 
+      '<div style="background:rgba(255,255,255,0.04); padding:1.1rem 1.35rem; border-radius:10px; border-left:4.5px solid #38bdf8; margin-bottom:0.9rem; font-size:1.18rem; line-height:1.85; color:#f1f5f9; white-space:pre-line;">' +
+        ds.fullExamText.intro +
+      '</div>' +
+      '<div style="background:rgba(6,182,212,0.11); padding:1.1rem 1.35rem; border-radius:10px; border-left:4.5px solid #06b6d4; font-size:1.18rem; line-height:1.85; color:#f8fafc; white-space:pre-line;">' +
+        ds.fullExamText.question +
+      '</div>';
+  }
+
+  // 3. 更新二、原始測量數據記錄表格
+  const tableContent = document.getElementById("caseTableContent");
+  if (tableContent) {
+    if (ds.series) {
+      const xVals = ds.series[0].data.map(d => d.x);
+      tableContent.innerHTML = 
+        '<div style="overflow-x:auto;">' +
+          '<table class="tide-exam-table" style="text-align:right; min-width:100%;">' +
+            '<thead>' +
+              '<tr>' +
+                '<th style="text-align:left;">' + ds.xLabel + ' (' + ds.xUnit + ')</th>' +
+                xVals.map(x => '<td>' + x + '</td>').join('') +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' +
+              ds.series.map(s => 
+                '<tr>' +
+                  '<th style="text-align:left; color:' + (s.color || '#38bdf8') + ';">' + s.name + '</th>' +
+                  s.data.map(d => '<td>' + d.y + '</td>').join('') +
+                '</tr>'
+              ).join('') +
+            '</tbody>' +
+          '</table>' +
+        '</div>';
+    } else if (ds.data) {
+      tableContent.innerHTML = 
+        '<div style="overflow-x:auto;">' +
+          '<table class="tide-exam-table" style="text-align:right; min-width:100%;">' +
+            '<thead>' +
+              '<tr>' +
+                '<th style="text-align:left;">' + ds.xLabel + ' (' + ds.xUnit + ')</th>' +
+                ds.data.map(d => '<td>' + d.x + '</td>').join('') +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' +
+              '<tr>' +
+                '<th style="text-align:left; color:#38bdf8;">' + ds.yLabel + ' (' + ds.yUnit + ')</th>' +
+                ds.data.map(d => '<td style="font-weight:600;">' + d.y + '</td>').join('') +
+              '</tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>';
     }
   }
 
-  // 3. 更新科學作圖方法剖析與檢核面板
-  const methodBadge = document.getElementById("studioMethodBadge");
-  const methodContent = document.getElementById("studioMethodContent");
-  if (methodBadge && ds.bestPlotMethodLabel) {
-    methodBadge.innerText = ds.regressionApplicable ? "✓ 適用線性回歸" : "⚠️ 嚴禁回歸 · 推薦折線/曲線";
-    methodBadge.className = ds.regressionApplicable ? "badge badge-emerald" : "badge badge-amber";
-  }
-  if (methodContent) {
-    methodContent.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap:0.95rem; font-size:1.02rem; line-height:1.85; color:#cbd5e1;">
-        <div>
-          <strong style="color:#38bdf8; font-size:1.1rem;">📌 最適作圖型態：</strong>
-          <span style="color:#f8fafc; font-weight:700; font-size:1.15rem; margin-left:0.35rem;">${ds.bestPlotMethodLabel || '科學趨勢曲線'}</span>
-        </div>
-        <div style="background:rgba(245,158,11,0.08); border-left:3.5px solid #f59e0b; padding:0.85rem 1.1rem; border-radius:8px;">
-          <strong style="color:#f59e0b; font-size:1.05rem;">💡 科學機理與作圖理由：</strong>
-          <div style="margin-top:0.4rem; color:#f1f5f9; line-height:1.85;">
-            ${ds.graphingRationale || '依據學科原理分析數據分布特徵。'}
-          </div>
-        </div>
-        <div style="background:${ds.regressionApplicable ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'}; border-left:3.5px solid ${ds.regressionApplicable ? '#10b981' : '#ef4444'}; padding:0.85rem 1.1rem; border-radius:8px;">
-          <strong style="color:${ds.regressionApplicable ? '#34d399' : '#f87171'}; font-size:1.05rem;">
-            ${ds.regressionApplicable ? '✓ 回歸檢核通過（物理/化學嚴格正比）：' : '🚫 嚴禁全域線性回歸原因：'}
-          </strong>
-          <div style="margin-top:0.4rem; color:${ds.regressionApplicable ? '#cbd5e1' : '#fca5a5'}; line-height:1.85;">
-            ${ds.regressionWarning}
-          </div>
-        </div>
-      </div>
-    `;
+  // 4. 更新三、數據處理方法與轉換推導
+  const processContent = document.getElementById("caseProcessContent");
+  if (processContent) {
+    if (meta && meta.dataProcessing) {
+      processContent.innerHTML = meta.dataProcessing;
+    } else {
+      processContent.innerHTML = 
+        '• <strong>核心理論公式</strong>：<code>' + (ds.theoryFormula || "依據實驗數據關係建立數學模型") + '</code><br>' +
+        '• <strong>數據解析重點</strong>：' + ds.summary + '<br>' +
+        (ds.analysis && ds.analysis.stats ? ds.analysis.stats.map(s => '• <strong>' + s.label + '</strong>：' + s.value).join('<br>') : '');
+    }
   }
 
-  // 4. 動態生成與更新右下欄【數據記錄及有效數字等說明】
-  renderDataRecordExplanation(ds);
+  // 5. 更新四、適合的作圖類型與呈現理由
+  const rationaleContent = document.getElementById("caseRationaleContent");
+  if (rationaleContent) {
+    const warnBg = ds.regressionApplicable ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+    const warnColor = ds.regressionApplicable ? '#34d399' : '#f87171';
+    rationaleContent.innerHTML = 
+      '• <strong>推薦最佳圖型</strong>：<strong style="color:#38bdf8;">' + (ds.bestPlotMethodLabel || "科學趨勢作圖") + '</strong>。<br>' +
+      '• <strong>呈現理由與科學機理</strong>：' + (ds.graphingRationale || "依據試題物理化學機理繪製最符合物理規律的幾何圖線。") + '<br>' +
+      '<div style="margin-top:0.65rem; padding:0.85rem 1.15rem; border-radius:8px; background:' + warnBg + '; color:' + warnColor + '; font-size:1.12rem; line-height:1.7;">' +
+        ds.regressionWarning +
+      '</div>';
+  }
 
-  // 更新下載 CSV 按鈕
+  // 6. 更新右側：作圖標籤、要點、地雷與官方評分
+  const chartTitle = document.getElementById("caseChartTitle");
+  if (chartTitle) chartTitle.innerText = '標準作圖呈現範例 (' + ds.xLabel + ' vs ' + ds.yLabel + ')';
+
+  const chartBadge = document.getElementById("caseChartBadge");
+  if (chartBadge) {
+    chartBadge.innerText = (ds.analysis && ds.analysis.rSquared) ? ('R² = ' + ds.analysis.rSquared.toFixed(4)) : (ds.bestPlotMethodLabel || "大考滿分示範");
+  }
+
+  const ruleDoEl = document.getElementById("caseRuleDoText");
+  if (ruleDoEl) {
+    ruleDoEl.innerHTML = meta.ruleDo || "• 標記精確數據點<br>• 選擇最合適之科學連線型態<br>• 標記自變數與應變數坐標軸";
+  }
+
+  const ruleDontEl = document.getElementById("caseRuleDontText");
+  if (ruleDontEl) {
+    ruleDontEl.innerHTML = meta.ruleDont || "• 鋸齒折線硬連點群放大隨機誤差<br>• 未寫出計算與推導步驟直接猜答案";
+  }
+
+  const scoringText = document.getElementById("caseScoringText");
+  if (scoringText) {
+    if (ds.analysis && ds.analysis.scoringKey) {
+      scoringText.innerHTML = ds.analysis.scoringKey.map(k => '<div>' + k + '</div>').join('');
+    } else {
+      scoringText.innerHTML = '<div>大考中心非選擇題給分規準：作圖題完整規範佔 2 分，計算與列式步驟佔 2 分。</div>';
+    }
+  }
+
+  // 7. 更新 CSV 下載按鈕
   const dlBtn = document.getElementById("btnDownloadCSV");
   if (dlBtn && ds.csvFileName) {
     dlBtn.href = "data/" + encodeURIComponent(ds.csvFileName);
     dlBtn.download = ds.csvFileName;
-    dlBtn.setAttribute("title", `下載 ${ds.csvFileName}`);
+    dlBtn.setAttribute("title", "下載 " + ds.csvFileName);
   }
-
-  // 更新原始試題完整情境（大字體、舒適行距）
-  const examBox = document.getElementById("studioExamBox");
-  if (examBox && ds.fullExamText) {
-    examBox.innerHTML = `
-      <div style="margin-bottom:0.75rem; color:#38bdf8; font-weight:800; font-size:1.12rem; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-        <span style="font-size:1.3rem;">📖</span>
-        <span>大考中心原始試卷題幹情境與提問全文對照：</span>
-        <span class="badge badge-emerald" style="font-size:0.8rem; padding:0.3rem 0.65rem;">真實考卷還原</span>
-        <span class="badge badge-cyan" style="font-size:0.8rem; padding:0.3rem 0.65rem;">${ds.subject || '探究與實作'}</span>
-      </div>
-      <div style="background:rgba(255,255,255,0.035); padding:1.15rem 1.35rem; border-radius:10px; margin-bottom:0.85rem; white-space:pre-line; line-height:1.85; border-left:4px solid #38bdf8; font-size:1.05rem; color:#f1f5f9;">${ds.fullExamText.intro}</div>
-      <div style="background:rgba(6,182,212,0.09); padding:1.15rem 1.35rem; border-radius:10px; white-space:pre-line; line-height:1.85; color:#f8fafc; border-left:4px solid #06b6d4; font-size:1.05rem;">${ds.fullExamText.question}</div>
-    `;
-  }
-
-  // 填寫側邊數據表格
-  const tableBody = document.getElementById("studioDataTableBody");
-  if (tableBody) {
-    tableBody.innerHTML = "";
-    if (ds.series) {
-      // 多系列（如 112 溶解度、114 虱目魚）
-      const tableHead = document.getElementById("studioDataTableHead");
-      if (tableHead) {
-        tableHead.innerHTML = `
-          <tr>
-            <th>${ds.xLabel} (${ds.xUnit})</th>
-            <th style="color:${ds.series[0].color || '#38bdf8'}">${ds.series[0].name}</th>
-            <th style="color:${ds.series[1] ? (ds.series[1].color || '#f59e0b') : '#fff'}">${ds.series[1] ? ds.series[1].name : '-'}</th>
-          </tr>
-        `;
-      }
-      ds.series[0].data.forEach((pt, i) => {
-        const pt2 = ds.series[1] ? ds.series[1].data[i] : null;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${pt.x}</td>
-          <td style="color:${ds.series[0].color || '#38bdf8'}">${pt.y}</td>
-          <td style="color:${ds.series[1] ? (ds.series[1].color || '#f59e0b') : '#fff'}">${pt2 ? pt2.y : '-'}</td>
-        `;
-        tableBody.appendChild(tr);
-      });
-    } else {
-      // 單系列
-      const tableHead = document.getElementById("studioDataTableHead");
-      if (tableHead) {
-        tableHead.innerHTML = `
-          <tr>
-            <th>${ds.xLabel} (${ds.xUnit})</th>
-            <th>${ds.yLabel} (${ds.yUnit})</th>
-            <th>狀態 / 備註</th>
-          </tr>
-        `;
-      }
-      ds.data.forEach(pt => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${pt.x}</td>
-          <td>${pt.y}</td>
-          <td style="color:#94a3b8">${pt.note || pt.label || (pt.isRequiredPoint ? '重點標的點' : '-')}</td>
-        `;
-        tableBody.appendChild(tr);
-      });
-    }
-  }
-
-  // 更新統計與物理/化學分析面板 (通用資料驅動渲染)
-  const statsBox = document.getElementById("studioStatsBox");
-  if (statsBox) {
-    if (ds.analysis && ds.analysis.stats && ds.analysis.stats.length > 0) {
-      statsBox.innerHTML = ds.analysis.stats.map(st => `
-        <div class="stat-row">
-          <span class="stat-label">${st.label}</span>
-          <span class="stat-value ${st.highlight ? 'highlight' : ''}">${st.value}</span>
-        </div>
-      `).join("");
-    } else if (ds.id === "ceec111_balance") {
-      statsBox.innerHTML = `
-        <div class="stat-row">
-          <span class="stat-label">最佳配適斜率 fB</span>
-          <span class="stat-value highlight">${ds.analysis.slope} ${ds.analysis.slopeUnit}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">判定係數 R²</span>
-          <span class="stat-value">${ds.analysis.rSquared}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">靜態線圈電流 I</span>
-          <span class="stat-value">${ds.staticCurrent_mA} mA (0.040 A)</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">換算待測物質量 M</span>
-          <span class="stat-value highlight">${ds.analysis.roundedMass}</span>
-        </div>
-      `;
-    }
-  }
-
-  // 更新大考中心評分原則
-  const scoringBox = document.getElementById("studioScoringGuide");
-  if (scoringBox && ds.analysis.scoringKey) {
-    scoringBox.innerHTML = ds.analysis.scoringKey.map(item => `
-      <p style="margin-bottom:0.65rem; line-height:1.85;">• ${item}</p>
-    `).join("");
-  }
-}
-
-// 動態產生右下欄：【數據記錄及有效數字等說明】
-function renderDataRecordExplanation(ds) {
-  const el = document.getElementById("studioDataRecordExplain");
-  if (!el || !ds) return;
-
-  let xUnitDesc = `${ds.xLabel}，公制單位為 <code>${ds.xUnit}</code>`;
-  let yUnitDesc = `${ds.yLabel}，公制單位為 <code>${ds.yUnit}</code>`;
-
-  let hasNegative = false;
-  if (ds.data) {
-    ds.data.forEach(pt => {
-      if (pt.x < 0 || pt.y < 0) hasNegative = true;
-    });
-  } else if (ds.series) {
-    ds.series.forEach(s => {
-      s.data.forEach(pt => {
-        if (pt.x < 0 || pt.y < 0) hasNegative = true;
-      });
-    });
-  }
-
-  let sigFigNotes = "";
-  if (ds.id === "ceec111_balance") {
-    sigFigNotes = `
-      • <strong>有效位數規格</strong>：速度 <i>v</i> 數據（如 <code>-3.8</code>、<code>0.1</code>、<code>3.6</code>）均包含 1 位準確值 ＋ 1 位估計值，為 <strong>2 位有效數字</strong>；感應電壓 <i>V</i> 數據（如 <code>-95</code>、<code>45</code>）亦為 <strong>2 位有效數字</strong>。<br>
-      • <strong>結尾 0 之嚴謹性</strong>：若讀數正好落在整數刻度（如 90 mV），結尾的 <code>0</code> 具有確定有效數字意義，絕不可任意省略。
-    `;
-  } else if (ds.id === "ceec115_induced_current") {
-    sigFigNotes = `
-      • <strong>有效位數規格</strong>：磁鐵位置 <i>z</i> 數據如 <code>-18.0</code>、<code>12.0</code> 記錄至小數點後第 1 位（<strong>3 位有效數字</strong>）；感應電流 <i>I</i> 數據如 <code>-15.0</code>、<code>24.0</code> 亦具備小數點後 1 位估計值。<br>
-      • <strong>大考關鍵陷阱</strong>：末尾的 <code>.0</code> 為儀器刻度之估計位數，不可隨便簡寫為整數 12 或 -15，否則在探究評分中將失分！
-    `;
-  } else if (ds.id === "ceec115_tidal") {
-    sigFigNotes = `
-      • <strong>有效位數規格</strong>：相對潮位數值均記至整數公分（如 <code>-42 cm</code>、<code>58 cm</code>），全天平均水位計算時應注意有效數字取捨規則。<br>
-      • <strong>基準面平移校正</strong>：水位記錄為「以全日平均潮位為基準之淨偏差值」，正值表示高於平均海平面，負值表示低於平均海平面。
-    `;
-  } else {
-    sigFigNotes = `
-      • <strong>有效位數規格</strong>：所有原始測量值均由【所有準確位數】＋【1 位估計位數】組成。表格記錄中，同欄數據之小數點位數必須保持統一，不可隨意增刪末尾的 <code>0</code>。<br>
-      • <strong>讀數原則</strong>：刻度儀器必估計一位；數位電子儀器則照抄顯示器數值，嚴禁自行加估計值。
-    `;
-  }
-
-  let signNotes = "";
-  if (hasNegative) {
-    signNotes = `
-      <div style="background:rgba(239,68,68,0.08); border-left:3.5px solid #ef4444; padding:0.75rem 1rem; border-radius:6px; font-size:0.98rem; line-height:1.8; color:#fecaca;">
-        ⚠️ <strong>物理方向性正負號不可省略</strong>：本題涉及空間向度、運動方向或極性（具有負值數據）。在數據表格與作圖坐標中，正負號具決定性物理意涵，絕對不可任意取絕對值！
-      </div>
-    `;
-  } else {
-    signNotes = `
-      <div style="background:rgba(16,185,129,0.08); border-left:3.5px solid #10b981; padding:0.75rem 1rem; border-radius:6px; font-size:0.98rem; line-height:1.8; color:#d1fae5;">
-        ✓ <strong>單向純量與標準參考點</strong>：本題變因為非負純量，數據記錄自基準點起算，表格格位內僅留純數字，不得重複填寫單位。
-      </div>
-    `;
-  }
-
-  let focusRec = ds.inquiryFocus && ds.inquiryFocus.recording ? ds.inquiryFocus.recording : '嚴格遵守表格欄頭標註物理量與公制單位，數據記錄遵守有效數字原則。';
-
-  el.innerHTML = `
-    <div style="display:flex; flex-direction:column; gap:0.95rem; font-size:1.02rem; line-height:1.85; color:#cbd5e1;">
-      <div>
-        <strong style="color:#38bdf8; font-size:1.08rem;">🏷️ 欄頭物理量與公制單位規範：</strong>
-        <div style="margin-top:0.35rem;">
-          • 自變數（橫軸）：${xUnitDesc}<br>
-          • 應變數（縱軸）：${yUnitDesc}<br>
-          • <strong>表格記錄守則</strong>：欄頭已標註 <code>物理量名稱 (符號, 單位)</code>，格位內僅填純數字，<strong>嚴禁在格位內重複書寫單位</strong>。
-        </div>
-      </div>
-
-      <div style="border-top:1px dashed rgba(255,255,255,0.12); padding-top:0.65rem;">
-        <strong style="color:#fbbf24; font-size:1.08rem;">📏 有效數字與小數點末位規範：</strong>
-        <div style="margin-top:0.35rem;">
-          ${sigFigNotes}
-        </div>
-      </div>
-
-      ${signNotes}
-
-      <div style="border-top:1px dashed rgba(255,255,255,0.12); padding-top:0.65rem;">
-        <strong style="color:#a78bfa; font-size:1.08rem;">💡 探究實作記錄核心要領：</strong>
-        <div style="margin-top:0.35rem; color:#f1f5f9;">
-          ${focusRec}
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 // 核心繪圖函數
@@ -380,7 +233,7 @@ function renderStudioChart() {
 
   ctx.clearRect(0, 0, w, h);
 
-  const pad = { left: 58, right: 20, top: 28, bottom: 42 };
+  const pad = { left: 74, right: 28, top: 32, bottom: 54 };
   const plotW = w - pad.left - pad.right;
   const plotH = h - pad.top - pad.bottom;
 
@@ -414,47 +267,91 @@ function renderStudioChart() {
   if (minX > 0 && minX < spanX * 0.25) minX = 0;
   if (minY > 0 && minY < spanY * 0.25) minY = 0;
 
+  // 自訂坐標軸範圍與整數刻度優先支援 (如烷類碳數整數 0~9 軸)
+  let xTickValues = null;
+  let yTickValues = null;
+  if (ds.customAxis) {
+    if (ds.customAxis.minX !== undefined) minX = ds.customAxis.minX;
+    if (ds.customAxis.maxX !== undefined) maxX = ds.customAxis.maxX;
+    if (ds.customAxis.minY !== undefined) minY = ds.customAxis.minY;
+    if (ds.customAxis.maxY !== undefined) maxY = ds.customAxis.maxY;
+    if (ds.customAxis.xTicks) xTickValues = ds.customAxis.xTicks;
+    if (ds.customAxis.yTicks) yTickValues = ds.customAxis.yTicks;
+  }
+
   const mapX = (val) => pad.left + ((val - minX) / (maxX - minX)) * plotW;
   const mapY = (val) => pad.top + plotH - ((val - minY) / (maxY - minY)) * plotH;
 
-  // 2. 繪製背景網格
+  // 2. 繪製背景網格與刻度
   ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   ctx.lineWidth = 1;
 
-  const xTicks = 6;
-  for (let i = 0; i <= xTicks; i++) {
-    const vx = minX + (i / xTicks) * (maxX - minX);
-    const px = mapX(vx);
-    ctx.beginPath();
-    ctx.moveTo(px, pad.top);
-    ctx.lineTo(px, pad.top + plotH);
-    ctx.stroke();
+  if (xTickValues) {
+    xTickValues.forEach(vx => {
+      const px = mapX(vx);
+      ctx.beginPath();
+      ctx.moveTo(px, pad.top);
+      ctx.lineTo(px, pad.top + plotH);
+      ctx.stroke();
 
-    // 刻度文字放大
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px 'JetBrains Mono', monospace";
-    ctx.textAlign = "center";
-    ctx.fillText(vx >= 100 || vx <= -100 ? vx.toFixed(0) : vx.toFixed(1), px, pad.top + plotH + 20);
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 14px 'JetBrains Mono', monospace";
+      ctx.textAlign = "center";
+      const txt = Number.isInteger(vx) ? vx.toString() : (vx >= 100 || vx <= -100 ? vx.toFixed(0) : vx.toFixed(1));
+      ctx.fillText(txt, px, pad.top + plotH + 24);
+    });
+  } else {
+    const xTicks = 6;
+    for (let i = 0; i <= xTicks; i++) {
+      const vx = minX + (i / xTicks) * (maxX - minX);
+      const px = mapX(vx);
+      ctx.beginPath();
+      ctx.moveTo(px, pad.top);
+      ctx.lineTo(px, pad.top + plotH);
+      ctx.stroke();
+
+      // 刻度文字放大
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 14px 'JetBrains Mono', monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(vx >= 100 || vx <= -100 ? vx.toFixed(0) : vx.toFixed(1), px, pad.top + plotH + 24);
+    }
   }
 
-  const yTicks = 6;
-  for (let i = 0; i <= yTicks; i++) {
-    const vy = minY + (i / yTicks) * (maxY - minY);
-    const py = mapY(vy);
-    ctx.beginPath();
-    ctx.moveTo(pad.left, py);
-    ctx.lineTo(pad.left + plotW, py);
-    ctx.stroke();
+  if (yTickValues) {
+    yTickValues.forEach(vy => {
+      const py = mapY(vy);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, py);
+      ctx.lineTo(pad.left + plotW, py);
+      ctx.stroke();
 
-    // 刻度文字放大
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "13px 'JetBrains Mono', monospace";
-    ctx.textAlign = "right";
-    ctx.fillText(vy >= 100 || vy <= -100 ? vy.toFixed(0) : vy.toFixed(1), pad.left - 10, py + 5);
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 14px 'JetBrains Mono', monospace";
+      ctx.textAlign = "right";
+      const txt = Number.isInteger(vy) ? vy.toString() : (vy >= 100 || vy <= -100 ? vy.toFixed(0) : vy.toFixed(1));
+      ctx.fillText(txt, pad.left - 12, py + 5);
+    });
+  } else {
+    const yTicks = 6;
+    for (let i = 0; i <= yTicks; i++) {
+      const vy = minY + (i / yTicks) * (maxY - minY);
+      const py = mapY(vy);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, py);
+      ctx.lineTo(pad.left + plotW, py);
+      ctx.stroke();
+
+      // 刻度文字放大
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 14px 'JetBrains Mono', monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(vy >= 100 || vy <= -100 ? vy.toFixed(0) : vy.toFixed(1), pad.left - 12, py + 5);
+    }
   }
 
   // 3. 繪製 X 軸與 Y 軸 (若 0 在範圍內則畫明顯坐標軸)
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
   ctx.lineWidth = 1.5;
 
   if (minX <= 0 && maxX >= 0) {
@@ -476,13 +373,13 @@ function renderStudioChart() {
   ctx.strokeRect(pad.left, pad.top, plotW, plotH);
 
   // 軸標籤放大
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = "14px 'Inter', sans-serif";
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "bold 16px 'Inter', sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText(`${ds.xLabel} (${ds.xUnit})`, pad.left + plotW / 2, pad.top + plotH + 42);
+  ctx.fillText(`${ds.xLabel} (${ds.xUnit})`, pad.left + plotW / 2, pad.top + plotH + 46);
 
   ctx.save();
-  ctx.translate(pad.left - 48, pad.top + plotH / 2);
+  ctx.translate(pad.left - 54, pad.top + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText(`${ds.yLabel} (${ds.yUnit})`, 0, 0);
   ctx.restore();
@@ -529,24 +426,24 @@ function renderStudioChart() {
     });
 
     // 圖例 (Legend)
-    const legX = pad.left + plotW - 190;
+    const legX = pad.left + plotW - 210;
     const legY = pad.top + 12;
-    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
-    ctx.fillRect(legX, legY, 180, 24 * ds.series.length + 8);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+    ctx.fillRect(legX, legY, 200, 28 * ds.series.length + 8);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
     ctx.lineWidth = 1;
-    ctx.strokeRect(legX, legY, 180, 24 * ds.series.length + 8);
+    ctx.strokeRect(legX, legY, 200, 28 * ds.series.length + 8);
 
     ds.series.forEach((s, idx) => {
-      const iy = legY + 16 + idx * 24;
+      const iy = legY + 18 + idx * 28;
       ctx.fillStyle = s.color;
       ctx.beginPath();
-      ctx.arc(legX + 16, iy - 4, 5, 0, Math.PI * 2);
+      ctx.arc(legX + 16, iy - 4, 6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#e2e8f0";
-      ctx.font = "11px sans-serif";
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "bold 13px sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText(s.name, legX + 28, iy);
+      ctx.fillText(s.name, legX + 30, iy);
     });
 
     // 112 溶解度曲線交點高亮 (非純散布點模式才顯示)
@@ -658,10 +555,27 @@ function renderStudioChart() {
         ctx.fillText("⚠️ 科學警示：本試題為非線性規律（飽和平台/轉折/週期），科學上嚴禁使用線性回歸！", pad.left + plotW / 2, pad.top + 30);
       } else {
         const reg = calculateLinearRegression(pts);
-        const x1 = minX;
-        const y1 = reg.m * x1 + reg.b;
-        const x2 = maxX;
-        const y2 = reg.m * x2 + reg.b;
+        let x1 = minX;
+        let y1 = reg.m * x1 + reg.b;
+        let x2 = maxX;
+        let y2 = reg.m * x2 + reg.b;
+
+        // 修剪直線端點以防超出圖表邊界
+        if (y1 < minY && reg.m !== 0) {
+          x1 = (minY - reg.b) / reg.m;
+          y1 = minY;
+        } else if (y1 > maxY && reg.m !== 0) {
+          x1 = (maxY - reg.b) / reg.m;
+          y1 = maxY;
+        }
+
+        if (y2 > maxY && reg.m !== 0) {
+          x2 = (maxY - reg.b) / reg.m;
+          y2 = maxY;
+        } else if (y2 < minY && reg.m !== 0) {
+          x2 = (minY - reg.b) / reg.m;
+          y2 = minY;
+        }
 
         ctx.strokeStyle = "#10b981";
         ctx.lineWidth = 2.5;
@@ -675,9 +589,9 @@ function renderStudioChart() {
         const bStr = Math.abs(reg.b) < 0.05 && reg.b !== 0 ? reg.b.toFixed(4) : reg.b.toFixed(2);
         const sign = reg.b >= 0 ? '+' : '-';
         ctx.fillStyle = "#34d399";
-        ctx.font = "bold 13px 'JetBrains Mono', monospace";
+        ctx.font = "bold 15px 'JetBrains Mono', monospace";
         ctx.textAlign = "left";
-        ctx.fillText(`配適直線: y = ${mStr}x ${sign} ${Math.abs(bStr)} (R² = ${reg.r2.toFixed(4)})`, pad.left + 8, pad.top + 20);
+        ctx.fillText(`配適直線: y = ${mStr}x ${sign} ${Math.abs(bStr)} (R² = ${reg.r2.toFixed(4)})`, pad.left + 10, pad.top + 22);
 
         // 111 電磁天平標記斜率 fB
         if (ds.id === "ceec111_balance") {
@@ -902,17 +816,17 @@ function drawCallout(ctx, x, y, text, color, offset) {
   ctx.fill();
 
   ctx.strokeStyle = color;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(x, y);
-  ctx.lineTo(x + 20, y + offset);
-  ctx.lineTo(x + 130, y + offset);
+  ctx.lineTo(x + 22, y + offset);
+  ctx.lineTo(x + 160, y + offset);
   ctx.stroke();
 
   ctx.fillStyle = color;
-  ctx.font = "bold 11px 'Inter', sans-serif";
+  ctx.font = "bold 14px 'Inter', sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText(text, x + 25, y + offset - 4);
+  ctx.fillText(text, x + 26, y + offset - 5);
 }
 
 // 最小平方法 (Linear Least Squares)
@@ -1283,327 +1197,17 @@ function initQuiz() {
 }
 
 /* ==========================================================================
-   4. 實例深入講解繪圖引擎 (Case Studies Dedicated Charts)
-   ========================================================================== */
-function initCaseStudyCharts() {
-  renderCaseCanvas1();
-  renderCaseCanvas2();
-  renderCaseCanvas3();
-  renderCaseCanvas4();
-
-  window.addEventListener("resize", () => {
-    renderCaseCanvas1();
-    renderCaseCanvas2();
-    renderCaseCanvas3();
-    renderCaseCanvas4();
-  });
-}
-
-// 實例一：111 學測電磁天平 (散布圖 + 最佳配適直線)
-function renderCaseCanvas1() {
-  const canvas = document.getElementById("caseCanvas1");
-  if (!canvas) return;
-  resizeCanvas(canvas);
-  const ctx = canvas.getContext("2d");
-  const w = canvas.getBoundingClientRect().width;
-  const h = canvas.getBoundingClientRect().height;
-  ctx.clearRect(0, 0, w, h);
-
-  const pad = { left: 50, right: 20, top: 30, bottom: 35 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  const pts = [
-    { x: -3.8, y: -95 },
-    { x: -2.2, y: -55 },
-    { x: 0.1,  y: 2.5 },
-    { x: 1.8,  y: 45 },
-    { x: 3.6,  y: 90 }
-  ];
-
-  const minX = -4.5, maxX = 4.5;
-  const minY = -120, maxY = 120;
-
-  const mx = (x) => pad.left + ((x - minX) / (maxX - minX)) * pw;
-  const my = (y) => pad.top + ph - ((y - minY) / (maxY - minY)) * ph;
-
-  // 網格與原點十字軸
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pad.left, pad.top, pw, ph);
-
-  const zeroX = mx(0);
-  const zeroY = my(0);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-  ctx.beginPath();
-  ctx.moveTo(zeroX, pad.top); ctx.lineTo(zeroX, pad.top + ph);
-  ctx.moveTo(pad.left, zeroY); ctx.lineTo(pad.left + pw, zeroY);
-  ctx.stroke();
-
-  // 坐標刻度文字
-  ctx.fillStyle = "#64748b";
-  ctx.font = "10px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  [-4, -2, 0, 2, 4].forEach(val => ctx.fillText(val, mx(val), pad.top + ph + 14));
-  ctx.textAlign = "right";
-  [-100, -50, 0, 50, 100].forEach(val => ctx.fillText(val, pad.left - 6, my(val) + 3));
-
-  // 最佳配適直線 (y = 25x)
-  ctx.strokeStyle = "#10b981";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(mx(-4.4), my(25 * -4.4));
-  ctx.lineTo(mx(4.4), my(25 * 4.4));
-  ctx.stroke();
-
-  // 散布點
-  pts.forEach(p => {
-    ctx.fillStyle = "#38bdf8";
-    ctx.beginPath();
-    ctx.arc(mx(p.x), my(p.y), 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  });
-
-  // 公式標註
-  ctx.fillStyle = "#34d399";
-  ctx.font = "bold 11px 'JetBrains Mono', monospace";
-  ctx.textAlign = "left";
-  ctx.fillText("配適直線: V = 25.0v (斜率 fB = 25.0 V·s/m)", pad.left + 10, pad.top + 15);
-}
-
-// 實例二：112 學測溶解度曲線 (雙平滑曲線與交點)
-function renderCaseCanvas2() {
-  const canvas = document.getElementById("caseCanvas2");
-  if (!canvas) return;
-  resizeCanvas(canvas);
-  const ctx = canvas.getContext("2d");
-  const w = canvas.getBoundingClientRect().width;
-  const h = canvas.getBoundingClientRect().height;
-  ctx.clearRect(0, 0, w, h);
-
-  const pad = { left: 45, right: 20, top: 30, bottom: 35 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  const kno3 = [
-    { x: 0, y: 13.3 }, { x: 10, y: 20.9 }, { x: 20, y: 31.6 }, { x: 30, y: 45.8 },
-    { x: 40, y: 63.9 }, { x: 50, y: 85.5 }, { x: 60, y: 110 }, { x: 70, y: 138 }
-  ];
-  const kcl = [
-    { x: 0, y: 27.6 }, { x: 10, y: 31.0 }, { x: 20, y: 34.0 }, { x: 30, y: 37.0 },
-    { x: 40, y: 40.0 }, { x: 50, y: 42.6 }, { x: 60, y: 45.5 }, { x: 70, y: 48.3 }
-  ];
-
-  const minX = 0, maxX = 75;
-  const minY = 0, maxY = 150;
-  const mx = (x) => pad.left + ((x - minX) / (maxX - minX)) * pw;
-  const my = (y) => pad.top + ph - ((y - minY) / (maxY - minY)) * ph;
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pad.left, pad.top, pw, ph);
-
-  // 刻度
-  ctx.fillStyle = "#64748b";
-  ctx.font = "10px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  [0, 20, 40, 60].forEach(val => ctx.fillText(val + "℃", mx(val), pad.top + ph + 14));
-  ctx.textAlign = "right";
-  [0, 50, 100, 150].forEach(val => ctx.fillText(val, pad.left - 6, my(val) + 3));
-
-  // KNO3 曲線
-  ctx.strokeStyle = "#f43f5e";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  kno3.forEach((p, idx) => {
-    if (idx === 0) ctx.moveTo(mx(p.x), my(p.y));
-    else ctx.lineTo(mx(p.x), my(p.y));
-  });
-  ctx.stroke();
-
-  // KCl 曲線
-  ctx.strokeStyle = "#06b6d4";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  kcl.forEach((p, idx) => {
-    if (idx === 0) ctx.moveTo(mx(p.x), my(p.y));
-    else ctx.lineTo(mx(p.x), my(p.y));
-  });
-  ctx.stroke();
-
-  // 交點虛線
-  const ix = mx(24.5);
-  const iy = my(36.2);
-  ctx.strokeStyle = "#fbbf24";
-  ctx.setLineDash([3, 3]);
-  ctx.beginPath();
-  ctx.moveTo(ix, pad.top + ph); ctx.lineTo(ix, iy); ctx.lineTo(pad.left, iy);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.fillStyle = "#fbbf24";
-  ctx.beginPath(); ctx.arc(ix, iy, 4.5, 0, Math.PI * 2); ctx.fill();
-  ctx.font = "bold 10px sans-serif";
-  ctx.fillText("交點 (24.5℃, 36.2g)", ix + 8, iy - 6);
-
-  // 圖例
-  ctx.fillStyle = "#f43f5e"; ctx.fillText("— KNO3", pad.left + 15, pad.top + 15);
-  ctx.fillStyle = "#06b6d4"; ctx.fillText("— KCl", pad.left + 75, pad.top + 15);
-}
-
-// 實例三：115 學測潮位時間序列 (折線波形與極值)
-function renderCaseCanvas3() {
-  const canvas = document.getElementById("caseCanvas3");
-  if (!canvas) return;
-  resizeCanvas(canvas);
-  const ctx = canvas.getContext("2d");
-  const w = canvas.getBoundingClientRect().width;
-  const h = canvas.getBoundingClientRect().height;
-  ctx.clearRect(0, 0, w, h);
-
-  const pad = { left: 45, right: 20, top: 30, bottom: 35 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  const pts = [
-    { x: 13, y: -0.75 }, { x: 15, y: -1.50 }, { x: 17, y: -1.00 },
-    { x: 19, y: 0.25 },  { x: 21, y: 1.75 },  { x: 23, y: 1.00 }, { x: 25, y: -0.25 }
-  ];
-
-  const minX = 12, maxX = 26;
-  const minY = -2.0, maxY = 2.0;
-  const mx = (x) => pad.left + ((x - minX) / (maxX - minX)) * pw;
-  const my = (y) => pad.top + ph - ((y - minY) / (maxY - minY)) * ph;
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pad.left, pad.top, pw, ph);
-
-  // 0 基準線
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-  ctx.beginPath();
-  ctx.moveTo(pad.left, my(0)); ctx.lineTo(pad.left + pw, my(0));
-  ctx.stroke();
-
-  // 刻度
-  ctx.fillStyle = "#64748b";
-  ctx.font = "10px 'JetBrains Mono', monospace";
-  ctx.textAlign = "center";
-  [13, 15, 17, 19, 21, 23, 25].forEach(val => {
-    let lbl = val === 25 ? "次日1" : val;
-    ctx.fillText(lbl, mx(val), pad.top + ph + 14);
-  });
-  ctx.textAlign = "right";
-  [-1.5, 0, 1.5].forEach(val => ctx.fillText(val + "m", pad.left - 6, my(val) + 3));
-
-  // 波形連線
-  ctx.strokeStyle = "#38bdf8";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  pts.forEach((p, idx) => {
-    if (idx === 0) ctx.moveTo(mx(p.x), my(p.y));
-    else ctx.lineTo(mx(p.x), my(p.y));
-  });
-  ctx.stroke();
-
-  // 節點
-  pts.forEach(p => {
-    ctx.fillStyle = (p.x === 21 || p.x === 15) ? "#fbbf24" : "#0284c7";
-    ctx.beginPath(); ctx.arc(mx(p.x), my(p.y), 4.5, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
-  });
-
-  // 滿潮與乾潮標註
-  ctx.fillStyle = "#38bdf8";
-  ctx.font = "bold 10px sans-serif";
-  ctx.fillText("滿潮 +1.75m", mx(21) - 15, my(1.75) - 8);
-  ctx.fillStyle = "#f43f5e";
-  ctx.fillText("乾潮 -1.50m", mx(15) - 15, my(-1.50) + 16);
-}
-
-// 實例四：115 學測感應電流 (第 1、3 象限分佈)
-function renderCaseCanvas4() {
-  const canvas = document.getElementById("caseCanvas4");
-  if (!canvas) return;
-  resizeCanvas(canvas);
-  const ctx = canvas.getContext("2d");
-  const w = canvas.getBoundingClientRect().width;
-  const h = canvas.getBoundingClientRect().height;
-  ctx.clearRect(0, 0, w, h);
-
-  const pad = { left: 45, right: 20, top: 30, bottom: 35 };
-  const pw = w - pad.left - pad.right;
-  const ph = h - pad.top - pad.bottom;
-
-  // 8 個數據點
-  const pts = [
-    { x: -5,  y: -3.40 }, { x: -10, y: -2.10 }, { x: -15, y: -0.95 }, { x: -20, y: -0.43 },
-    { x: 5,   y: 4.30 },  { x: 10,  y: 2.70 },  { x: 15,  y: 1.20 },  { x: 20,  y: 0.54 }
-  ];
-
-  const minX = -25, maxX = 25;
-  const minY = -5.5, maxY = 5.5;
-  const mx = (x) => pad.left + ((x - minX) / (maxX - minX)) * pw;
-  const my = (y) => pad.top + ph - ((y - minY) / (maxY - minY)) * ph;
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pad.left, pad.top, pw, ph);
-
-  // 原點十字坐標軸
-  const zx = mx(0);
-  const zy = my(0);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(zx, pad.top); ctx.lineTo(zx, pad.top + ph);
-  ctx.moveTo(pad.left, zy); ctx.lineTo(pad.left + pw, zy);
-  ctx.stroke();
-
-  // 象限標記
-  ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-  ctx.font = "bold 14px 'Inter', sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("第 1 象限 (穿出, v較大)", mx(12), my(3.8));
-  ctx.fillText("第 3 象限 (進入, v較小)", mx(-12), my(-3.8));
-
-  // 刻度
-  ctx.fillStyle = "#64748b";
-  ctx.font = "10px 'JetBrains Mono', monospace";
-  [-20, -10, 0, 10, 20].forEach(val => ctx.fillText(val + "cm", mx(val), pad.top + ph + 14));
-  ctx.textAlign = "right";
-  [-4, 0, 4].forEach(val => ctx.fillText(val + "mA", pad.left - 6, my(val) + 3));
-
-  // 8 個數據點
-  pts.forEach(p => {
-    ctx.fillStyle = p.y > 0 ? "#10b981" : "#f43f5e";
-    ctx.beginPath(); ctx.arc(mx(p.x), my(p.y), 5, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
-  });
-
-  // 非對稱性標註
-  ctx.fillStyle = "#34d399";
-  ctx.font = "bold 10px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("|I(+5)| = 4.30 > |I(-5)| = 3.40 (加速穿出)", pad.left + 10, pad.top + 16);
-}
-
-/* ==========================================================================
    5. 90分鐘時間軸與雙模式切換 (Timeline & Slide Presentation)
    ========================================================================== */
 let isSlideMode = false;
 let currentSlideIndex = 0;
 const SLIDE_IDS = [
   "sec-intro",      // 0~10m 導言
-  "sec-acquisition",// 10~25m 取得數據與真題
+  "sec-acquisition",// 10~25m 取得數據與真題辨析
   "sec-errors",     // 25~35m 系統誤差 vs 隨機誤差專題
-  "sec-recording",  // 35~50m 記錄數據
-  "sec-analysis",   // 50~75m 作圖工作室
-  "sec-cases",      // 75~90m 實例深度剖析
-  "sec-stem-labs"   // 延伸專案：理工實驗專案
+  "sec-recording",  // 35~50m 記錄數據與有效數字
+  "sec-cases",      // 50~80m 實例深度剖析與作圖全攻略 (歷屆真題全收錄)
+  "sec-stem-labs"   // 80~90m 理工跨學科實驗專題實戰
 ];
 
 function initTimelineAndSlideMode() {
@@ -1681,6 +1285,12 @@ function goToSlide(index) {
 
   const counter = document.getElementById("slideCurrentCounter");
   if (counter) counter.innerText = `${currentSlideIndex + 1} / ${SLIDE_IDS.length}`;
+
+  const activeStep = document.querySelector(`.timeline-step[data-target="${SLIDE_IDS[currentSlideIndex]}"]`);
+  const activeSlot = document.getElementById("activeTimeSlot");
+  if (activeSlot && activeStep && activeStep.title) {
+    activeSlot.innerText = activeStep.title;
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }

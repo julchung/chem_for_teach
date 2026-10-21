@@ -418,6 +418,14 @@ const EXAM_DATASETS = {
     xUnit: "個碳",
     yLabel: "莫耳燃燒熱 ΔH",
     yUnit: "kJ/mol",
+    customAxis: {
+      minX: 0,
+      maxX: 9,
+      xTicks: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      minY: 0,
+      maxY: 6000,
+      yTicks: [0, 1000, 2000, 3000, 4000, 5000, 6000]
+    },
     data: [
       { x: 1, y: 890,  label: "甲烷 (CH4, M=16)" },
       { x: 2, y: 1560, label: "乙烷 (C2H6, M=30)" },
@@ -640,3 +648,77 @@ const EXAM_DATASETS = {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = EXAM_DATASETS;
 }
+
+// 直接講解專屬元數據 (Case Study Direct Explanation Meta)
+const CASE_STUDY_META = {
+  "ceec111_electromagnetic_balance": {
+    "badgeClass": "case-badge-physics",
+    "badgeText": "物理動態校準實驗 · 連續變數之線性回歸",
+    "dataProcessing": "• <strong>正負號物理意義</strong>：速度與電壓的正負號代表運動方向與感應電動勢極性，不可任意省略或取絕對值。<br>\n• <strong>單位換算技巧</strong>：(mV) / (mm/s) = (10⁻³ V) / (10⁻³ m/s) = 1 V·s/m，單位自動抵消，方便推算 SI 制。<br>\n• <strong>斜率計算與物理量轉換</strong>：<em>f<sub>B</sub></em> = Δ<em>V</em> / Δ<em>v</em> = [90 - (-95)] / [3.6 - (-3.8)] = 25.0 V·s/m。代入 <em>M</em> = (<em>f<sub>B</sub></em> · <em>I</em>) / <em>g</em> = (25.0 × 0.040) / 9.8 ≈ 0.1 kg。",
+    "ruleDo": "• 標記 5 個精確散布點<br>• 用直尺繪製最佳直線穿過點群<br>• 自變數 v 橫軸、應變數 V 縱軸",
+    "ruleDont": "• 鋸齒折線連接各點（扣大分）<br>• 只取頭尾兩點拉線忽略中點<br>• 換算質量漏列步驟直接寫答案"
+  },
+  "ceec111_coastal_uplift": {
+    "badgeClass": "case-badge-earth",
+    "badgeText": "地質構造抬升實驗 · 連續背景 vs 突發地震跳升",
+    "dataProcessing": "• <strong>長期平均抬升速率計算</strong>：速率 = 高程差 / 年代差 = (18 m) / (2400 yr) = (18,000 mm) / (2400 yr) = <strong>7.5 mm/yr</strong>。<br>\n• <strong>單位換算陷阱</strong>：公尺 (m) 必須換算成公釐 (mm，乘 1,000)，漏乘以 1,000 扣 1 分。<br>\n• <strong>大考中心官方指定連線型態</strong>：題幹強調「大地震引發的突發性快速抬升」，在無地震期間高程不變（水平線段），地震發生瞬間在同一年代急遽跳升（垂直線段），故大考中心閱卷標準答案明訂：<strong>必須繪製階梯狀跳升折線 (Step Curve)</strong>！若畫成一般直線或平滑曲線，扣 1~2 分！",
+    "ruleDo": "• 繪製水平維持＋垂直急升之階梯線<br>• 橫軸年代向右增加、縱軸高程向上增加<br>• 精確標示 5 個測量年代點",
+    "ruleDont": "• 畫單一條穿過各點的平滑直線（扣2分）<br>• 平均速率漏寫單位或算錯公釐（扣1分）<br>• 階梯方向顛倒"
+  },
+  "ceec112_solubility_curves": {
+    "badgeClass": "case-badge-chemistry",
+    "badgeText": "化學固液平衡實驗 · 溫度效應與非線性多變數對比",
+    "dataProcessing": "• <strong>基準化</strong>：統一以「100 克水」為固定溶劑基準，使不同溫度下的容納能力具有可比性。<br>\n• <strong>溫差析出量計算</strong>：KNO₃ 從 70℃ 降至 10℃ 可析出晶體 138 - 20.9 = 117.1 克，而 KCl 僅微量析出 48.3 - 31.0 = 17.3 克。<br>\n• <strong>交點內插法</strong>：在 24~25℃ 附近兩者曲線相交，等溶解度值 36.0 < <em>x</em> < 37.0 g（驗證選項 B 正確）。",
+    "ruleDo": "• 必須包含明確圖例 (Legend)<br>• 兩系列使用不同顏色與節點形狀<br>• 曲線平滑圓弧轉折，內插交點 (~24.5℃)",
+    "ruleDont": "• 未標明哪條線是 KNO3 哪條是 KCl<br>• 用直線硬接產生尖銳折角<br>• 縱坐標刻度不均勻縮放"
+  },
+  "ceec112_metal_oxide_stoichiometry": {
+    "badgeClass": "case-badge-chemistry",
+    "badgeText": "化學計量化合反應 · 限量試劑消耗與水平飽和轉折",
+    "dataProcessing": "• <strong>限量試劑轉換與轉折點判定</strong>：實驗 1~3 氧氣為限量試劑（斜率 2.125）；實驗 3~5 金屬耗盡固定於 10.2g，金屬轉為限量試劑。<br>\n• <strong>轉折點坐標</strong>：(4.8, 10.2)。完全反應消耗 4.8g 氧氣生成 10.2g 氧化物，金屬重 = 10.2 - 4.8 = 5.4g。<br>\n• <strong>原子量推導</strong>：氧 0.30 mol，金屬 0.20 mol (莫耳比 2:3)，原子量 M = 5.4 / 0.20 = <strong>27.0</strong> (鋁 Al, x = 3)。",
+    "ruleDo": "• (0,0) 至 (4.8, 10.2) 繪製上升斜直線<br>• (4.8, 10.2) 往右繪製水平線 (y=10.2)<br>• 兩直線於 (4.8, 10.2) 形成明顯轉折",
+    "ruleDont": "• 用一條回歸直線穿過全部 5 點（扣大分）<br>• 轉折點偏離 (4.8, 10.2)<br>• 水平段畫成微幅上升直線"
+  },
+  "ceec114_milkfish_rgn_mrna": {
+    "badgeClass": "case-badge-earth",
+    "badgeText": "生物耐寒生理調適 · 答題卷坐標紙描點作圖",
+    "dataProcessing": "• <strong>相對生成量對比</strong>：淡水池受寒害刺激緩慢上升至 3.3 倍；鹹水池在 12 小時達到 3.5 倍應激峰值，隨後回落。<br>\n• <strong>答題卷坐標作圖要求</strong>：114 學測答題卷要求考生根據表 4 數據在坐標紙上描繪兩組折線並標示池別。",
+    "ruleDo": "• 正確標註淡水池與鹹水池兩組折線<br>• 標明圖例或線條旁直接註明池別<br>• 精確標示 12 小時鹹水池峰值 (3.5)",
+    "ruleDont": "• 兩條曲線混在一起未標明圖例<br>• 橫軸時間刻度未按真實時間比例分佈"
+  },
+  "ceec114_neuron_na_channel": {
+    "badgeClass": "case-badge-physics",
+    "badgeText": "生物物理電生理實驗 · 膜電位與歐姆定律線性回歸",
+    "dataProcessing": "• <strong>歐姆定律與膜電導</strong>：<em>I</em><sub>Na</sub> = <em>g</em><sub>Na</sub> · (<em>V</em> - <em>E</em><sub>Na</sub>)，直線斜率即為通道電導 <em>g</em><sub>Na</sub>。<br>\n• <strong>平衡電位內插</strong>：當 <em>I</em><sub>Na</sub> = 0 時，膜電位 <em>V</em> = <em>E</em><sub>Na</sub> ≈ +50 mV。<br>\n• <strong>負電阻現象解析</strong>：在低膜電位下電壓閘門開啟產生負斜率，高電位下完全開啟呈現良好線性歐姆特性。",
+    "ruleDo": "• 在高電位線性段繪製回歸直線求電導<br>• 橫軸交點精確標示平衡電壓 ENa ≈ 50 mV<br>• 標明電流單位 pA 與電壓單位 mV",
+    "ruleDont": "• 將全段（含失活非線性區）硬拉一條直線<br>• 忽略橫軸截距的生理學意義（平衡電位）"
+  },
+  "ceec114_alkane_combustion_heat": {
+    "badgeClass": "case-badge-chemistry",
+    "badgeText": "有機同系物熱化學實驗 · 連續整數碳數之線性回歸",
+    "dataProcessing": "• <strong>同系物等差鍵能規律</strong>：每增加一個 -CH₂-，完全燃燒放熱遞增約 650~670 kJ/mol。<br>\n• <strong>線性回歸方程</strong>：Δ<em>H</em> = 651.97 · <em>n</em> + 250.73（<em>R</em>² = 1.0000）。<br>\n• <strong>丙烷內插推算</strong>：代入 <em>n</em> = 3，Δ<em>H</em> = 651.97 × 3 + 250.73 ≈ 2206.6 kJ/mol（或差值遞加 1560 + 670 = 2230 kJ/mol）。大考給分區間 2196 ~ 2230 kJ/mol 皆給滿分！",
+    "ruleDo": "• 橫軸碳數使用純整數值（0, 1, 2, 3...）<br>• 繪製最佳配適直線穿過 5 個散布點<br>• 在 x=3 處垂直內插並標註丙烷數值",
+    "ruleDont": "• 橫軸出現小數點碳數（如 1.5 個碳）<br>• 用折線硬接 5 個點忽略回歸規律<br>• 計算未寫出推導步驟直接猜答案"
+  },
+  "ceec115_zns_quantum_dots": {
+    "badgeClass": "case-badge-chemistry",
+    "badgeText": "奈米材料化學計量實驗 · 反應物莫耳比與產率飽和",
+    "dataProcessing": "• <strong>反應莫耳比化學計量</strong>：Zn²⁺ + S²⁻ → ZnS，理論反應莫耳比為 1:1。<br>\n• <strong>硫源限量與飽和平台</strong>：硫化物濃度低於鋅時為限量試劑，產率隨濃度上升；達到化學計量比後產率達飽和平台（約 46~50 mg）。<br>\n• <strong>奈米顆粒數推算</strong>：結合晶胞體積、密度與產物質量，推算膠體中量子點顆粒總數。",
+    "ruleDo": "• 上升段與飽和平台段平滑過渡<br>• 標明飽和臨界濃度轉折區間<br>• 正確列出莫耳比計算步驟",
+    "ruleDont": "• 全區通拉一條回歸直線（無視飽和效應）<br>• 誤把飽和平台後的點視為實驗異常值剃除"
+  },
+  "ceec115_tidal_water_level": {
+    "badgeClass": "case-badge-earth",
+    "badgeText": "地球科學連續觀測 · 時間序列與週期極值",
+    "dataProcessing": "• <strong>系統基線校正</strong>：減去全日平均水位，使基準值歸零（正為高潮位，負為低潮位）。<br>\n• <strong>極值判讀</strong>：滿潮極大值出現在 21 時（+1.75 m），乾潮極小值出現在 15 時（-1.50 m）。<br>\n• <strong>潮差運算</strong>：潮差 Δ<em>h</em> = 1.75 - (-1.50) = 3.25 公尺。",
+    "ruleDo": "• 7 個指定時間點坐標準確無誤<br>• 點與點之間務必平順連線（佔1分）<br>• 潮差計算務必寫出 1.75 - (-1.5)",
+    "ruleDont": "• 只有點而沒有連線（依規準扣1分）<br>• 負負得正算錯成 1.75 - 1.5 = 0.25<br>• 算式留白直接寫答案（計算0分）"
+  },
+  "ceec115_induced_current_quadrants": {
+    "badgeClass": "case-badge-physics",
+    "badgeText": "物理格放分析實驗 · 多象限方向性與非對稱加速度效應",
+    "dataProcessing": "• <strong>楞次定律與正負符號</strong>：向上靠近線圈時與穿出線圈時，磁通量變化方向相反，感應電流分佈在第 1 與第 3 象限。<br>\n• <strong>非對稱加速度效應</strong>：磁鐵由靜止向上加速，穿出時速度大於進入時速度，故第 3 象限之感應電流量值大於第 1 象限（|I(+5)| = 4.30 > |I(-5)| = 3.40）。<br>\n• <strong>大考方格紙作圖</strong>：8 個點均勻跨越第 1 與第 3 象限，需準確標記位置與電流值。",
+    "ruleDo": "• 正確標繪 8 個散布點於第 1 與第 3 象限<br>• 明確表達穿出時電流幅值大於進入時<br>• 寫出楞次定律感應磁場抗拒變化的判斷理由",
+    "ruleDont": "• 忽略正負號全部畫在第 1 象限<br>• 點位數量漏標（少於 8 點）<br>• 大小顛倒將較大值誤畫在進入段"
+  }
+};
