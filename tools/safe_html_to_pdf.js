@@ -154,13 +154,55 @@ async function main() {
   // Extra buffer for layout and fonts stabilization
   await new Promise(r => setTimeout(r, 1200));
 
-  const pdfResult = await sendSession("Page.printToPDF", {
-    preferCSSPageSize: true,
-    printBackground: true,
-    displayHeaderFooter: false
-  });
+  let pdfBuffer = null;
+  try {
+    const pdfResult = await sendSession("Page.printToPDF", {
+      preferCSSPageSize: true,
+      printBackground: true,
+      displayHeaderFooter: false
+    });
+    pdfBuffer = Buffer.from(pdfResult.data, 'base64');
+  } catch (err) {
+    console.warn(`[WARN] Single-shot printToPDF failed (${err.message}). Falling back to multi-page chunked print...`);
+    const pageCountRes = await sendSession("Runtime.evaluate", {
+      expression: "document.querySelectorAll('.a4-sheet, .concept-page, .teach-page, [id^=\"sheet-\"], [id^=\"page-\"]').length || 1",
+      returnByValue: true
+    });
+    const pageCount = (pageCountRes && pageCountRes.result && pageCountRes.result.value) || 1;
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pdf-parts-'));
+    const partFiles = [];
 
-  fs.writeFileSync(absPdfPath, Buffer.from(pdfResult.data, 'base64'));
+    for (let p = 1; p <= pageCount; p++) {
+      const partRes = await sendSession("Page.printToPDF", {
+        pageRanges: String(p),
+        preferCSSPageSize: true,
+        printBackground: true,
+        displayHeaderFooter: false
+      });
+      const partFile = path.join(tempDir, `part_${p}.pdf`);
+      fs.writeFileSync(partFile, Buffer.from(partRes.data, 'base64'));
+      partFiles.push(partFile);
+    }
+
+    // Merge using python3 pypdf (PdfWriter)
+    const mergeScript = `
+import sys
+from pypdf import PdfWriter
+writer = PdfWriter()
+for f in sys.argv[2:]:
+    writer.append(f)
+writer.write(sys.argv[1])
+writer.close()
+`;
+    const { execFileSync } = require('child_process');
+    execFileSync('python3', ['-c', mergeScript, absPdfPath, ...partFiles]);
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    console.log(`[SUCCESS] PDF successfully generated via chunked merge: ${absPdfPath}`);
+    try { await sendBrowser("Browser.close"); } catch (e) {}
+    return;
+  }
+
+  fs.writeFileSync(absPdfPath, pdfBuffer);
   console.log(`[SUCCESS] PDF successfully generated: ${absPdfPath}`);
 
   // Gracefully request browser exit via CDP

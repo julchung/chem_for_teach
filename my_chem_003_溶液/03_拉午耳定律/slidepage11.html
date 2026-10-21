@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-3 範例 4：密閉容器蒸氣壓平衡與水移動量計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #slides-container {
+            position: absolute;
+            top: 1.2vh;
+            left: 1.8vw;
+            right: 1.8vw;
+            bottom: 1.2vh;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        h1 {
+            color: var(--accent-cyan);
+            font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25);
+            padding-bottom: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        h1::before {
+            content: "";
+            width: 7px;
+            height: 24px;
+            background: var(--accent-cyan);
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        h2 {
+            font-size: clamp(1rem, 1.15vw, 1.25rem);
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+        }
+
+        p,
+        li {
+            font-size: clamp(0.92rem, 1.05vw, 1.1rem);
+            line-height: 1.7;
+        }
+
+        strong {
+            color: var(--accent-cyan);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 0.94fr 1.06fr;
+            gap: 1.0rem;
+            flex: 1;
+            min-height: 0;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1.1rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+            min-height: 0;
+            overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 2px;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            padding: 10px 22px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            align-self: flex-start;
+        }
+
+        .btn-action:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        .calc-step {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 0.75rem 1.0rem;
+            border-left: 4px solid var(--accent-blue);
+            margin-bottom: 0.45rem;
+        }
+
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.45rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.98rem;
+            margin: 4px 0;
+            color: #fff;
+        }
+
+        .options-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 1.0rem 0;
+        }
+
+        .option-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.02rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+            }
+
+            body,
+            html,
+            #app {
+                overflow: auto;
+            }
+
+            #slides-container {
+                position: relative;
+                height: auto;
+                min-height: 100vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="slides-container">
+            <h1>3-3 拉午耳定律 &middot; 實戰演練：範例 4</h1>
+
+            <div class="grid-2">
+                <!-- 左欄：題目內容 -->
+                <div class="panel" style="justify-content:space-between;">
+                    <div>
+                        <div style="font-size:1.06rem; line-height:1.75; color:#f8fafc;">
+                            <p>在 $1000\text{ 克}$ 的水中溶解 $15\text{ 克}$ 尿素（$\text{CO(NH}_2\text{)}_2$）後之溶液（<strong>A
+                                    液</strong>），與在 $500\text{ 克}$ 的水中溶解葡萄糖 $30\text{ 克}$ 所成的溶液（<strong>B
+                                    液</strong>）。<br><br>
+                                將此二溶液同置於一密閉容器中，使其達成蒸氣壓平衡，則<strong>水由哪一溶液移至哪一溶液？共移動多少克？</strong><br>
+                                <span style="font-size:0.95rem; color:#94a3b8;">（原子量：$\text{H}=1, \text{C}=12,
+                                    \text{N}=14, \text{O}=16$；尿素分子量 $= 60$，葡萄糖分子量 $= 180$）</span>
+                            </p>
+
+                            <div class="options-list">
+                                <div class="option-item">(A) B &rarr; A，移動 $50\text{ 克}$</div>
+                                <div class="option-item">(B) A &rarr; B，移動 $50\text{ 克}$</div>
+                                <div class="option-item">(C) B &rarr; A，移動 $100\text{ 克}$</div>
+                                <div class="option-item"
+                                    style="border-color:rgba(52,211,153,0.35); background:rgba(52,211,153,0.06);">(D) A
+                                    &rarr; B，移動 $100\text{ 克}$</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top:0.8rem;">
+                        <button class="btn-action" onclick="toggleSolution('solution-box')">
+                            💡 顯示詳解 / 隱藏
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 右欄：詳解（預設隱藏，點擊按鈕展開） -->
+                <div class="panel" style="background:rgba(255,255,255,0.02);">
+                    <div id="solution-box" style="display:none; flex-direction:column; gap:0.45rem;">
+                        <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.3rem;">💡 範例詳解</h2>
+
+                        <div class="calc-step">
+                            <div style="font-size:0.98rem; color:var(--accent-blue); font-weight:700;">1. 計算起始莫耳數與重量莫耳濃度
+                                ($C_m$)：</div>
+                            <div class="formula-box">
+                                $$\text{A 液（尿素）：} n_A = \frac{15}{60} = 0.25\text{ mol} \,,\quad C_{m,A} =
+                                \frac{0.25\text{ mol}}{1.0\text{ kg}} = \mathbf{0.25\text{ m}}$$
+                                $$\text{B 液（葡萄糖）：} n_B = \frac{30}{180} = \frac{1}{6}\text{ mol} \,,\quad C_{m,B} =
+                                \frac{1/6\text{ mol}}{0.5\text{ kg}} = \frac{1}{3}\text{ m} \approx \mathbf{0.333\text{
+                                m}}$$
+                            </div>
+                        </div>
+
+                        <div class="calc-step" style="border-left-color:var(--accent-cyan);">
+                            <div style="font-size:1rem; color:var(--accent-cyan); font-weight:700;">2. 判斷水分轉移方向：</div>
+                            <p style="font-size:0.95rem; color:#cbd5e1; margin-top:2px;">
+                                因起始濃度 $C_{m,A} < C_{m,B}$，故初始蒸氣壓 <strong>$P_A > P_B$</strong>。<br>
+                                    水蒸氣自蒸氣壓較高的 A 液持續揮發，並凝結滲入 B 液中，故移動方向為：
+                            </p>
+                            <div class="formula-box"
+                                style="background:rgba(56,189,248,0.12); color:#38bdf8; font-weight:800;">
+                                $$\mathbf{A \longrightarrow B \quad \text{（自稀溶液移向濃溶液）}}$$
+                            </div>
+                        </div>
+
+                        <div class="calc-step" style="border-left-color:var(--accent-green);">
+                            <div style="font-size:1rem; color:var(--accent-green); font-weight:700;">3.
+                                依「水量正比定則」計算平衡水量與轉移質量：</div>
+                            <p style="font-size:0.93rem; color:#cbd5e1; margin-top:2px;">
+                                同槽達成動態平衡時，兩杯重量莫耳濃度必相等，水量與溶質莫耳數成正比：
+                            </p>
+                            <div class="formula-box">
+                                $$\frac{W_{水,A}'}{W_{水,B}'} = \frac{n_A}{n_B} = \frac{0.25}{1/6} = \frac{1/4}{1/6} =
+                                \mathbf{\frac{3}{2}}$$
+                            </div>
+                            <p style="font-size:0.92rem; color:#94a3b8; margin-top:3px;">
+                                密閉容器內總水重 $W_{總} = 1000 + 500 = 1500\text{ 克}$，依 $3 : 2$ 比例分配：
+                            </p>
+                            <div class="formula-box" style="background:rgba(52,211,153,0.08);">
+                                $$W_{水,A}' = 1500 \times \frac{3}{3 + 2} = \mathbf{900\text{ 克}}$$
+                                $$W_{水,B}' = 1500 \times \frac{2}{3 + 2} = \mathbf{600\text{ 克}}$$
+                            </div>
+                            <p style="font-size:0.95rem; color:#fde68a; margin-top:3px;">
+                                A 液原含 $1000\text{ 克}$ 水，平衡後剩 $900\text{ 克}$ &rArr; <strong>水自 A 移至 B 共 $1000 - 900 =
+                                    \mathbf{100\text{ 克}}$</strong>！
+                            </p>
+                        </div>
+
+                        <div
+                            style="margin-top:0.3rem; padding:0.6rem 1rem; background:rgba(52,211,153,0.15); border:1px solid rgba(52,211,153,0.3); border-radius:8px;">
+                            <span style="color:#34d399; font-weight:800; font-size:1.15rem;">🎯 正確答案：(D) A &rarr; B，移動
+                                100 克</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.toggleSolution = function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isHidden = (el.style.display === 'none' || el.style.display === '');
+            el.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden && window.MathJax) {
+                window.MathJax.typesetPromise([el]);
+            }
+        };
+    </script>
+    <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+    <script id="__chem_scroll_bridge">
+        (function () {
+            if (window.__chemScrollBridgeInstalled) return; window.__chemScrollBridgeInstalled = true;
+            function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY || 0, sx: window.scrollX || 0 }, '*'); } }
+            window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+            window.addEventListener('message', function (e) { if (!e.data) return; if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY || 0, behavior: 'instant' }); reportScroll(); } else if (e.data.type === '__chem_get_scroll') { reportScroll(); } });
+            reportScroll(); window.addEventListener('load', reportScroll);
+        })();
+    </script>
+</body>
+
+</html>

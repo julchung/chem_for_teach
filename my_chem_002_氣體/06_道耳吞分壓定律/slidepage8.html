@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2-6 排水集氣法 · 集氣瓶內外水面差的三種情形與液柱校正</title>
+<title>2-6 排水集氣法 · 濕氣體分壓與水蒸氣扣除</title>
 <script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
@@ -28,107 +28,84 @@ html,body{
 h1{
   color:var(--cyan);font-size:clamp(1.28rem,1.75vw,1.72rem);margin-bottom:.35rem;
   display:flex;align-items:center;gap:.55rem;
-  border-bottom:2px solid rgba(34,211,238,.25);padding-bottom:.22rem;flex-shrink:0;
+  border-bottom:2px solid rgba(34,211,238,.25);padding-bottom:.25rem;flex-shrink:0;
 }
 h1::before{content:"";width:6px;height:24px;background:var(--cyan);border-radius:3px;flex-shrink:0;}
 h2{font-size:clamp(1.08rem,1.32vw,1.28rem);font-weight:700;letter-spacing:0.02em;}
+p,li{font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.6;}
+
+.grid2{
+  display:grid;grid-template-columns:1.08fr 1.15fr;gap:.95rem;
+  flex:1;min-height:0;overflow:hidden;
+}
 
 .panel{
   background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;
-  padding:.75rem 1.1rem;backdrop-filter:blur(14px);display:flex;flex-direction:column;
-  box-shadow:0 8px 28px rgba(0,0,0,.35);flex:1;min-height:0;overflow-y:auto;gap:.55rem;
+  padding:.85rem 1.15rem;backdrop-filter:blur(14px);display:flex;flex-direction:column;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);min-height:0;overflow-y:auto;gap:.6rem;
 }
 .panel::-webkit-scrollbar{width:4px;}
 .panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
 
 .panel-header{
   display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.3rem;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;flex-shrink:0;
 }
 .tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.88rem;font-weight:700;}
-.tag-y{background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.5);color:var(--yellow);}
+.tag-p{background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.5);color:var(--purple);}
+.tag-g{background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.5);color:var(--green);}
 
-/* 三情況 3 欄並列卡片網格 */
-.cases-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;
-  flex:1;min-height:0;align-items:stretch;
+/* 定義與觀念卡片 */
+.rule-card{
+  background:rgba(255,255,255,.035);border:1.2px solid rgba(255,255,255,.1);
+  border-left:5px solid var(--purple);border-radius:10px;
+  padding:.65rem .95rem;display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;
 }
+.card-title{
+  font-size:clamp(1.02rem,1.2vw,1.2rem);font-weight:900;display:flex;align-items:center;gap:.45rem;
+}
+.card-text{
+  font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.65;color:#e2e8f0;
+}
+.card-text strong{color:var(--cyan);font-weight:700;}
+.card-text em{color:var(--yellow);font-style:normal;font-weight:700;}
 
-.case-card{
-  background:rgba(255,255,255,.035);border:1.5px solid rgba(255,255,255,.12);
-  border-radius:12px;padding:.5rem .65rem;display:flex;flex-direction:column;
-  align-items:center;gap:.35rem;text-align:center;min-width:0;
-  box-shadow:0 6px 18px rgba(0,0,0,.28);
+/* 核心公式大橫幅 */
+.formula-box{
+  background:linear-gradient(135deg,rgba(34,211,238,0.16),rgba(56,189,248,0.06));
+  border:1.5px solid rgba(34,211,238,0.45);border-left:5.5px solid var(--cyan);
+  border-radius:11px;padding:.65rem .95rem;text-align:center;
+  display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;
 }
-.case-card.green{
-  border-top:4.5px solid var(--green);
-  background:linear-gradient(180deg,rgba(52,211,153,.09),rgba(255,255,255,.02));
+.formula-math{
+  font-size:clamp(1.35rem,1.65vw,1.8rem);font-weight:800;color:#fff;margin:.1rem 0;
 }
-.case-card.blue{
-  border-top:4.5px solid var(--blue);
-  background:linear-gradient(180deg,rgba(56,189,248,.09),rgba(255,255,255,.02));
-}
-.case-card.yellow{
-  border-top:4.5px solid var(--yellow);
-  background:linear-gradient(180deg,rgba(251,191,36,.09),rgba(255,255,255,.02));
-}
-
-.case-badge{
-  font-size:.86rem;font-weight:900;padding:.16rem .65rem;border-radius:7px;
-}
-.badge-green{background:rgba(52,211,153,.25);color:var(--green);border:1px solid rgba(52,211,153,.55);}
-.badge-blue{background:rgba(56,189,248,.25);color:var(--blue);border:1px solid rgba(56,189,248,.55);}
-.badge-yellow{background:rgba(251,191,36,.25);color:var(--yellow);border:1px solid rgba(251,191,36,.55);}
-
-.case-title{
-  font-size:clamp(1.05rem,1.22vw,1.22rem);font-weight:900;color:#f8fafc;line-height:1.35;
-}
-.case-sub{
-  font-size:.88rem;color:var(--sub);font-weight:600;
+.formula-desc{
+  font-size:.95rem;color:#cbd5e1;font-weight:700;
 }
 
-/* SVG 繪圖大容器：尺寸放大、寬敞防重疊 */
-.svg-wrap{
-  width:100%;max-width:320px;height:175px;
-  background:rgba(0,0,0,.5);border-radius:12px;
-  border:1.5px solid rgba(255,255,255,.18);
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;padding:6px 4px;
+/* 氣體適用性清單大膠囊卡 */
+.gas-card{
+  background:rgba(255,255,255,.035);border:1.2px solid rgba(255,255,255,.1);
+  border-left:5px solid var(--green);border-radius:10px;
+  padding:.65rem .95rem;display:flex;flex-direction:column;gap:.35rem;flex-shrink:0;
 }
-.svg-wrap svg{width:100%;height:100%;overflow:visible;}
-
-/* 物理機制與公式盒 */
-.case-physics{
-  font-size:.95rem;line-height:1.55;color:#e2e8f0;padding:0 .2rem;
+.gas-badge-list{
+  display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.25rem;
 }
-.case-physics strong{color:var(--yellow);font-weight:800;}
-
-.case-formula{
-  width:100%;background:rgba(0,0,0,.45);border-radius:8px;
-  border:1.2px solid rgba(255,255,255,.15);padding:.48rem .4rem;
-  margin-top:auto;
+.gas-pill{
+  font-size:.88rem;font-weight:800;padding:.2rem .65rem;border-radius:8px;
+  display:inline-flex;align-items:center;gap:.3rem;
 }
-.case-math{
-  font-size:clamp(1.15rem,1.38vw,1.45rem);font-weight:800;color:var(--cyan);
+.gas-pill.ok{
+  background:rgba(52,211,153,.2);border:1.2px solid rgba(52,211,153,.55);color:var(--green);
 }
-
-/* 底部換算核心橫幅 */
-.convert-banner{
-  background:linear-gradient(135deg,rgba(248,113,113,0.14),rgba(251,191,36,0.08));
-  border:1.5px solid rgba(248,113,113,0.4);border-left:5px solid var(--red);
-  border-radius:10px;padding:.55rem 1.1rem;display:flex;align-items:center;
-  justify-content:space-between;gap:.8rem;flex-shrink:0;
+.gas-pill.no{
+  background:rgba(248,113,113,.2);border:1.2px solid rgba(248,113,113,.55);color:var(--red);
 }
-.convert-title{
-  font-size:1.02rem;font-weight:900;color:var(--yellow);white-space:nowrap;
-}
-.convert-body{
-  font-size:.95rem;color:#f1f5f9;line-height:1.6;
-}
-.convert-body strong{color:var(--cyan);font-weight:800;}
 
 @media(max-width:960px){
-  .cases-grid{grid-template-columns:1fr!important;}
+  .grid2{grid-template-columns:1fr!important;overflow-y:auto;}
   html,body,#app{overflow:auto;}
   .slide{position:relative;height:auto;}
 }
@@ -139,190 +116,98 @@ h2{font-size:clamp(1.08rem,1.32vw,1.28rem);font-weight:700;letter-spacing:0.02em
 <div id="app">
   <div id="slides-container">
     <div class="slide active">
-      <h1>2-6 排水集氣法 · 集氣瓶內外水面差的三種情形與液柱校正</h1>
+      <h1>2-6 排水集氣法 · 濕氣體分壓與水蒸氣扣除</h1>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div style="display:flex;align-items:center;gap:.5rem;">
-            <span class="tag tag-y">液柱平衡分析</span>
-            <h2 style="color:var(--yellow);margin:0;">集氣瓶內外水面高度差（Δh）之受力平衡與分壓計算</h2>
+      <div class="grid2">
+        <!-- ======================= 左欄：濕氣體原理與扣除公式 ======================= -->
+        <div class="panel">
+          <div class="panel-header">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <span class="tag tag-p">物理本質</span>
+              <h2 style="color:var(--purple);margin:0;">濕氣體 (Wet Gas) 的分壓疊加</h2>
+            </div>
+            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">道耳吞分壓核心應用</span>
           </div>
-          <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">等高面受力平衡原理</span>
+
+          <!-- 定義說明卡 -->
+          <div class="rule-card">
+            <div class="card-title" style="color:var(--purple);">
+              <span>💧 什麼是「濕氣體 (Wet Gas)」？</span>
+            </div>
+            <div class="card-text">
+              利用排水集氣法收集氣體時，瓶內氣體直接與水面接觸，空間中必充滿該水溫下的<strong>飽和水蒸氣</strong>。<br>
+              因此，集氣瓶內所測得的<strong>總壓力 $P_{\text{total}}$</strong>，是由<em>「乾燥純氣體分壓 $P_{\text{gas}}$」</em>與<em>「飽和水蒸氣壓 $P_{\text{H}_2\text{O}}$」</em>共同構成！
+            </div>
+          </div>
+
+          <!-- 核心公式大橫幅 -->
+          <div class="formula-box">
+            <div class="formula-desc">【道耳吞分壓扣除核心公式】</div>
+            <div class="formula-math">$$P_{\text{total}} = P_{\text{gas}} + P_{\text{H}_2\text{O}}$$</div>
+            <div class="formula-math" style="color:var(--cyan);font-size:clamp(1.25rem,1.52vw,1.6rem);">
+              $$\boxed{P_{\text{gas}} = P_{\text{total}} - P_{\text{H}_2\text{O}}}$$
+            </div>
+            <div class="formula-desc" style="color:var(--yellow);margin-top:.2rem;">
+              ★ 解題鐵律：凡排水集氣所得數據，計算莫耳數或分子量前，<strong>務必先扣除該水溫下的飽和水蒸氣壓</strong>！
+            </div>
+          </div>
+
+          <div style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .85rem;font-size:.88rem;color:#cbd5e1;line-height:1.6;">
+            💡 <strong>關鍵性質</strong>：飽和水蒸氣壓 $P_{\text{H}_2\text{O}}$ <strong>僅隨水溫改變</strong>，與集氣瓶容量大小、水槽深度、水面高低完全無關！
+          </div>
         </div>
 
-        <!-- 三種情況並排展示 -->
-                <div class="cases-grid">
-
-          <!-- 情況 1：等高面 -->
-          <div class="case-card green">
-            <span class="case-badge badge-green">情況 ① · 最理想操作</span>
-            <div class="case-title">瓶內水面 ＝ 瓶外水面</div>
-            <div class="case-sub">標準操作 · 無液柱高度差 (Δh = 0)</div>
-
-            <div class="svg-wrap">
-              <svg viewBox="0 0 220 150">
-                <defs>
-                  <marker id="arr-g1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#34d399"/></marker>
-                  <marker id="arr-y1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#fbbf24"/></marker>
-                </defs>
-                <!-- 水槽外框 -->
-                <rect x="16" y="70" width="188" height="70" rx="8" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.38)" stroke-width="1.8"/>
-                <!-- 水槽內水體 -->
-                <rect x="18" y="85" width="184" height="53" rx="6" fill="rgba(56,189,248,0.22)"/>
-                <!-- 集氣瓶玻璃壁 -->
-                <path d="M 75,138 L 75,32 C 75,18 145,18 145,32 L 145,138" fill="none" stroke="#f8fafc" stroke-width="2.6" stroke-linecap="round"/>
-                <!-- 瓶內氣體空間 -->
-                <path d="M 77,85 L 77,32 C 77,21 143,21 143,32 L 143,85 Z" fill="rgba(52,211,153,0.16)"/>
-                <!-- 氣體名稱標籤 -->
-                <text x="110" y="44" fill="#34d399" font-size="12.5" font-weight="bold" text-anchor="middle">Gas ＋ 水蒸氣</text>
-                <!-- 瓶內氣壓 Ptotal -->
-                <text x="110" y="64" fill="#a7f3d0" font-size="11.5" font-weight="bold" text-anchor="middle">P總</text>
-                <path d="M 110,68 L 110,81" stroke="#34d399" stroke-width="2.4" marker-end="url(#arr-g1)"/>
-                <!-- 瓶內水體 -->
-                <rect x="77" y="85" width="66" height="51" fill="rgba(56,189,248,0.48)"/>
-                <!-- 等高水面虛線貫穿 -->
-                <line x1="14" y1="85" x2="206" y2="85" stroke="#34d399" stroke-width="2.2" stroke-dasharray="4,3"/>
-                <!-- 外界大氣壓 Patm -->
-                <text x="44" y="58" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Patm</text>
-                <path d="M 44,64 L 44,81" stroke="#fbbf24" stroke-width="2.4" marker-end="url(#arr-y1)"/>
-                <!-- 等高面底標卡片 -->
-                <rect x="62" y="102" width="96" height="24" rx="5" fill="rgba(15,23,42,0.85)" stroke="#34d399" stroke-width="1.2"/>
-                <text x="110" y="118" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">等高面 (Δh = 0)</text>
-              </svg>
+        <!-- ======================= 右欄：氣體適用性與實驗操作要領 ======================= -->
+        <div class="panel">
+          <div class="panel-header">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <span class="tag tag-g">實驗適用性</span>
+              <h2 style="color:var(--green);margin:0;">氣體溶解度篩選與防倒吸安全</h2>
             </div>
+            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">化學實驗必考安全</span>
+          </div>
 
-            <div class="case-physics">
-              內外水面無高度差<br>
-              <strong>瓶內總壓 ＝ 外界大氣壓</strong>
+          <!-- 氣體分類卡片 -->
+          <div class="gas-card">
+            <div class="card-title" style="color:var(--green);">
+              <span>✅ 適用氣體（難溶或微溶於水）</span>
             </div>
-
-            <div class="case-formula">
-              <div class="case-math">$P_{\text{total}} = P_{\text{atm}}$</div>
-              <div style="font-size:.85rem;color:#cbd5e1;margin-top:.15rem;">
-                $P_{\text{gas}} = P_{\text{atm}} - P_{\text{H}_2\text{O}}$
+            <div class="card-text">
+              氣體在水中溶解度極低，氣泡能順利排開水柱聚集於瓶頂：
+              <div class="gas-badge-list">
+                <span class="gas-pill ok">H₂ 氫氣</span>
+                <span class="gas-pill ok">O₂ 氧氣</span>
+                <span class="gas-pill ok">N₂ 氮氣</span>
+                <span class="gas-pill ok">CH₄ 甲烷</span>
+                <span class="gas-pill ok">CO 一氧化碳</span>
+                <span class="gas-pill ok">NO 一氧化氮</span>
               </div>
             </div>
           </div>
 
-          <!-- 情況 2：瓶內高於瓶外 -->
-          <div class="case-card blue">
-            <span class="case-badge badge-blue">情況 ② · 向上提起</span>
-            <div class="case-title">瓶內水面「高於」瓶外</div>
-            <div class="case-sub">水柱向下懸拉 · 瓶內減壓</div>
-
-            <div class="svg-wrap">
-              <svg viewBox="0 0 220 150">
-                <defs>
-                  <marker id="arr-r2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#f87171"/></marker>
-                  <marker id="arr-y2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#fbbf24"/></marker>
-                </defs>
-                <!-- 水槽外框 -->
-                <rect x="16" y="70" width="188" height="70" rx="8" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.38)" stroke-width="1.8"/>
-                <!-- 外槽水體（外水面在 y=100） -->
-                <rect x="18" y="100" width="184" height="38" rx="6" fill="rgba(56,189,248,0.2)"/>
-                <!-- 集氣瓶玻璃壁（向上提起，頂部在 y=22） -->
-                <path d="M 75,130 L 75,22 C 75,10 145,10 145,22 L 145,130" fill="none" stroke="#f8fafc" stroke-width="2.6" stroke-linecap="round"/>
-                <!-- 瓶內氣體空間（y=14 到 y=64） -->
-                <path d="M 77,64 L 77,22 C 77,12 143,12 143,22 L 143,64 Z" fill="rgba(56,189,248,0.18)"/>
-                <text x="110" y="38" fill="#38bdf8" font-size="12.5" font-weight="bold" text-anchor="middle">Gas ＋ 水蒸氣</text>
-                <text x="110" y="55" fill="#bae6fd" font-size="11" font-weight="bold" text-anchor="middle">P總</text>
-                <!-- 瓶內高出之水柱（y=64 到 y=100） -->
-                <rect x="77" y="64" width="66" height="36" fill="rgba(56,189,248,0.52)"/>
-                <rect x="80" y="72" width="60" height="20" rx="4" fill="rgba(15,23,42,0.85)" stroke="#38bdf8" stroke-width="1"/>
-                <text x="110" y="86" fill="#bae6fd" font-size="10" font-weight="bold" text-anchor="middle">水柱重力 ↓</text>
-                <!-- 瓶內水下半部 -->
-                <rect x="77" y="100" width="66" height="28" fill="rgba(56,189,248,0.4)"/>
-                <!-- 外水面基準線 -->
-                <line x1="14" y1="100" x2="160" y2="100" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" stroke-dasharray="4,3"/>
-                <!-- 瓶內水面延長線 -->
-                <line x1="77" y1="64" x2="175" y2="64" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="3,3"/>
-                <!-- 右側高度差 Δh 標記 -->
-                <line x1="168" y1="67" x2="168" y2="97" stroke="#f87171" stroke-width="2.4" marker-start="url(#arr-r2)" marker-end="url(#arr-r2)"/>
-                <text x="180" y="86" fill="#f87171" font-size="13" font-weight="900" text-anchor="start">Δh</text>
-                <!-- 外界大氣壓 Patm -->
-                <text x="44" y="74" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Patm</text>
-                <path d="M 44,80 L 44,96" stroke="#fbbf24" stroke-width="2.4" marker-end="url(#arr-y2)"/>
-              </svg>
+          <div class="gas-card" style="border-left-color:var(--red);">
+            <div class="card-title" style="color:var(--red);">
+              <span>⛔ 嚴禁使用（極易溶於水 · 倒吸爆裂危險！）</span>
             </div>
-
-            <div class="case-physics">
-              高出之水柱重力向下懸拉<br>
-              <strong>瓶內總壓 ＜ 外界大氣壓</strong>
-            </div>
-
-            <div class="case-formula">
-              <div class="case-math" style="color:#67e8f9;">
-                $P_{\text{total}} = P_{\text{atm}} - \dfrac{\Delta h\text{ (cm)}}{1.36}$
-              </div>
-              <div style="font-size:.82rem;color:#cbd5e1;margin-top:.15rem;">
-                外壓減去水柱等效水銀壓
+            <div class="card-text">
+              溶於水會瞬間釋放大量空間形成極大負壓，引發槽水<strong>劇烈倒吸</strong>至加熱試管造成炸裂：
+              <div class="gas-badge-list">
+                <span class="gas-pill no">NH₃ 氨氣（極易溶，噴泉實驗）</span>
+                <span class="gas-pill no">HCl 氯化氫（極易溶）</span>
+                <span class="gas-pill no">SO₂ 二氧化硫（易溶於水）</span>
               </div>
             </div>
           </div>
 
-          <!-- 情況 3：瓶內低於瓶外 -->
-          <div class="case-card yellow">
-            <span class="case-badge badge-yellow">情況 ③ · 向下深壓</span>
-            <div class="case-title">瓶內水面「低於」瓶外</div>
-            <div class="case-sub">外水向下壓迫 · 瓶內增壓</div>
-
-            <div class="svg-wrap">
-              <svg viewBox="0 0 220 150">
-                <defs>
-                  <marker id="arr-r3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#f87171"/></marker>
-                  <marker id="arr-y3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#fbbf24"/></marker>
-                </defs>
-                <!-- 水槽外框 -->
-                <rect x="16" y="52" width="188" height="88" rx="8" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.38)" stroke-width="1.8"/>
-                <!-- 外槽水體（外水面在 y=64） -->
-                <rect x="18" y="64" width="184" height="74" rx="6" fill="rgba(56,189,248,0.22)"/>
-                <!-- 集氣瓶玻璃壁（向下深壓，頂部在 y=38） -->
-                <path d="M 75,145 L 75,38 C 75,24 145,24 145,38 L 145,145" fill="none" stroke="#f8fafc" stroke-width="2.6" stroke-linecap="round"/>
-                <!-- 瓶內氣體空間（y=28 到 y=100） -->
-                <path d="M 77,100 L 77,38 C 77,26 143,26 143,38 L 143,100 Z" fill="rgba(251,191,36,0.18)"/>
-                <text x="110" y="56" fill="#fbbf24" font-size="12.5" font-weight="bold" text-anchor="middle">Gas ＋ 水蒸氣</text>
-                <text x="110" y="78" fill="#fef08a" font-size="11" font-weight="bold" text-anchor="middle">P總 (增壓)</text>
-                <!-- 瓶內水體（y=100 以下） -->
-                <rect x="77" y="100" width="66" height="42" fill="rgba(56,189,248,0.52)"/>
-                <rect x="78" y="112" width="64" height="20" rx="4" fill="rgba(15,23,42,0.85)" stroke="#fbbf24" stroke-width="1"/>
-                <text x="110" y="126" fill="#fef08a" font-size="10" font-weight="bold" text-anchor="middle">外水推擠 ↑</text>
-                <!-- 外水面基準線 -->
-                <line x1="14" y1="64" x2="175" y2="64" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" stroke-dasharray="4,3"/>
-                <!-- 瓶內水面基準線 -->
-                <line x1="77" y1="100" x2="175" y2="100" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="3,3"/>
-                <!-- 右側高度差 Δh 標記 -->
-                <line x1="168" y1="67" x2="168" y2="97" stroke="#f87171" stroke-width="2.4" marker-start="url(#arr-r3)" marker-end="url(#arr-r3)"/>
-                <text x="180" y="86" fill="#f87171" font-size="13" font-weight="900" text-anchor="start">Δh</text>
-                <!-- 外界大氣壓 Patm -->
-                <text x="44" y="44" fill="#fbbf24" font-size="12" font-weight="bold" text-anchor="middle">Patm</text>
-                <path d="M 44,49 L 44,61" stroke="#fbbf24" stroke-width="2.4" marker-end="url(#arr-y3)"/>
-              </svg>
+          <!-- 操作叮嚀卡片 -->
+          <div style="background:rgba(251,191,36,.09);border:1.5px solid rgba(251,191,36,.4);border-left:5px solid var(--yellow);border-radius:10px;padding:.6rem .9rem;margin-top:auto;">
+            <div style="font-weight:900;color:var(--yellow);font-size:clamp(.92rem,1.06vw,1.04rem);display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem;">
+              ⚠️ 實驗停機標準操作程序 (SOP)
             </div>
-
-            <div class="case-physics">
-              外側高出水柱推擠壓迫<br>
-              <strong>瓶內總壓 ＞ 外界大氣壓</strong>
+            <div style="font-size:.88rem;line-height:1.6;color:#e2e8f0;">
+              實驗結束熄滅酒精燈前，<strong>務必「先將導管移出水槽水面」，然後才熄滅熱源</strong>！<br>
+              若先熄火，試管內氣體冷縮壓降，槽水將迅速逆流倒吸入高溫試管中，導致試管受冷驟裂！
             </div>
-
-            <div class="case-formula">
-              <div class="case-math" style="color:#fde047;">
-                $P_{\text{total}} = P_{\text{atm}} + \dfrac{\Delta h\text{ (cm)}}{1.36}$
-              </div>
-              <div style="font-size:.82rem;color:#cbd5e1;margin-top:.15rem;">
-                外壓加上外水柱推擠壓
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 底部換算核心關鍵橫幅 -->
-        <div class="convert-banner">
-          <div class="convert-title">💡 液柱換算為水銀柱（mmHg）核心原理：</div>
-          <div class="convert-body">
-            依力平衡 $d_{\text{Hg}} \cdot h_{\text{Hg}} = d_{\text{水}} \cdot h_{\text{水}}$，水銀密度為水（$1.0\text{ g/cm}^3$）的 <strong>13.6 倍</strong>，故：<br>
-            <strong>$1\text{ mmHg} = 1.36\text{ cm } \text{H}_2\text{O} = 13.6\text{ mm } \text{H}_2\text{O}$</strong>
-            （計算時若 $\Delta h$ 單位為<strong>公分 (cm) 則除以 1.36</strong>；單位為<strong>公釐 (mm) 則除以 13.6</strong>）。
           </div>
         </div>
       </div>

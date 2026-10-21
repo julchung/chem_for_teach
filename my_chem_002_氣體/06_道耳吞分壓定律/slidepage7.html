@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>2-6 排水集氣法 · 濕氣體分壓與水蒸氣扣除</title>
+<title>2-6 飽和蒸氣壓與溫度相圖 · 沸點與分子間引力</title>
 <script>MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},svg:{fontCache:'global'}};</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 <style>
@@ -35,73 +35,123 @@ h2{font-size:clamp(1.08rem,1.32vw,1.28rem);font-weight:700;letter-spacing:0.02em
 p,li{font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.6;}
 
 .grid2{
-  display:grid;grid-template-columns:1.08fr 1.15fr;gap:.95rem;
+  display:grid;grid-template-columns:1.25fr 1fr;gap:.95rem;
   flex:1;min-height:0;overflow:hidden;
 }
 
 .panel{
   background:var(--glass);border:1.5px solid var(--gb);border-radius:14px;
-  padding:.85rem 1.15rem;backdrop-filter:blur(14px);display:flex;flex-direction:column;
-  box-shadow:0 8px 28px rgba(0,0,0,.35);min-height:0;overflow-y:auto;gap:.6rem;
+  padding:.8rem 1.1rem;backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;justify-content:space-between;gap:.42rem;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);min-height:0;overflow:hidden;
 }
-.panel::-webkit-scrollbar{width:4px;}
-.panel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
 
 .panel-header{
   display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.35rem;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:.32rem;flex-shrink:0;
 }
 .tag{display:inline-block;padding:.15rem .65rem;border-radius:10px;font-size:.88rem;font-weight:700;}
-.tag-p{background:rgba(167,139,250,.2);border:1px solid rgba(167,139,250,.5);color:var(--purple);}
+.tag-y{background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.5);color:var(--yellow);}
 .tag-g{background:rgba(52,211,153,.2);border:1px solid rgba(52,211,153,.5);color:var(--green);}
 
-/* 定義與觀念卡片 */
-.rule-card{
-  background:rgba(255,255,255,.035);border:1.2px solid rgba(255,255,255,.1);
-  border-left:5px solid var(--purple);border-radius:10px;
-  padding:.65rem .95rem;display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;
+/* 圖表展示容器：超大尺寸、滿版自適應、高清晰 */
+.figure-container{
+  background:#ffffff;border-radius:12px;
+  padding:.4rem .6rem;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.38);
+  border:1.5px solid rgba(255,255,255,.3);
+  flex:1;min-height:0;
 }
-.card-title{
-  font-size:clamp(1.02rem,1.2vw,1.2rem);font-weight:900;display:flex;align-items:center;gap:.45rem;
-}
-.card-text{
-  font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.65;color:#e2e8f0;
-}
-.card-text strong{color:var(--cyan);font-weight:700;}
-.card-text em{color:var(--yellow);font-style:normal;font-weight:700;}
-
-/* 核心公式大橫幅 */
-.formula-box{
-  background:linear-gradient(135deg,rgba(34,211,238,0.16),rgba(56,189,248,0.06));
-  border:1.5px solid rgba(34,211,238,0.45);border-left:5.5px solid var(--cyan);
-  border-radius:11px;padding:.65rem .95rem;text-align:center;
-  display:flex;flex-direction:column;gap:.3rem;flex-shrink:0;
-}
-.formula-math{
-  font-size:clamp(1.35rem,1.65vw,1.8rem);font-weight:800;color:#fff;margin:.1rem 0;
-}
-.formula-desc{
-  font-size:.95rem;color:#cbd5e1;font-weight:700;
+.diagram-img{
+  max-height:100%;max-width:100%;height:clamp(340px,46vh,490px);
+  width:auto;object-fit:contain;display:block;
 }
 
-/* 氣體適用性清單大膠囊卡 */
-.gas-card{
+/* 四大物質單排 4 欄精緻膠囊列 */
+.substance-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem;flex-shrink:0;
+}
+.sub-pill{
+  background:rgba(255,255,255,.05);border:1.2px solid rgba(255,255,255,.15);
+  border-radius:8px;padding:.32rem .5rem;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;gap:.1rem;
+}
+.sub-name-row{display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+.sub-name{font-size:.9rem;font-weight:900;}
+.sub-bp{font-size:1.05rem;font-weight:900;}
+.sub-note{font-size:.75rem;color:var(--sub);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.sub-pill.ether{border-color:rgba(244,114,182,.5);background:rgba(244,114,182,.12);}
+.sub-pill.ether .sub-name{color:#f472b6;}
+.sub-pill.ether .sub-bp{color:#fbcfe8;}
+
+.sub-pill.chloroform{border-color:rgba(96,165,250,.5);background:rgba(96,165,250,.12);}
+.sub-pill.chloroform .sub-name{color:#60a5fa;}
+.sub-pill.chloroform .sub-bp{color:#bfdbfe;}
+
+.sub-pill.ethanol{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.12);}
+.sub-pill.ethanol .sub-name{color:#4ade80;}
+.sub-pill.ethanol .sub-bp{color:#bbf7d0;}
+
+.sub-pill.water{border-color:rgba(251,146,60,.5);background:rgba(251,146,60,.12);}
+.sub-pill.water .sub-name{color:#fb923c;}
+.sub-pill.water .sub-bp{color:#fed7aa;}
+
+/* 觀念大卡片 */
+.step-card{
   background:rgba(255,255,255,.035);border:1.2px solid rgba(255,255,255,.1);
-  border-left:5px solid var(--green);border-radius:10px;
-  padding:.65rem .95rem;display:flex;flex-direction:column;gap:.35rem;flex-shrink:0;
+  border-left:4.5px solid var(--yellow);border-radius:9px;
+  padding:.45rem .85rem;display:flex;flex-direction:column;gap:.2rem;flex-shrink:0;
 }
-.gas-badge-list{
-  display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.25rem;
+.step-card.green{border-left-color:var(--green);background:rgba(52,211,153,.05);}
+.step-card.yellow{border-left-color:var(--yellow);background:rgba(251,191,36,.05);}
+
+.step-title-row{
+  display:flex;align-items:center;gap:.5rem;
 }
-.gas-pill{
-  font-size:.88rem;font-weight:800;padding:.2rem .65rem;border-radius:8px;
-  display:inline-flex;align-items:center;gap:.3rem;
+.step-badge{
+  font-size:.84rem;font-weight:900;padding:.12rem .55rem;border-radius:6px;flex-shrink:0;
 }
-.gas-pill.ok{
-  background:rgba(52,211,153,.2);border:1.2px solid rgba(52,211,153,.55);color:var(--green);
+.step-badge-y{background:rgba(251,191,36,.25);color:var(--yellow);border:1px solid rgba(251,191,36,.55);}
+.step-badge-g{background:rgba(52,211,153,.25);color:var(--green);border:1px solid rgba(52,211,153,.55);}
+
+.step-heading{
+  font-size:clamp(.98rem,1.15vw,1.12rem);font-weight:800;color:#f8fafc;
 }
-.gas-pill.no{
-  background:rgba(248,113,113,.2);border:1.2px solid rgba(248,113,113,.55);color:var(--red);
+.step-text{
+  font-size:clamp(.88rem,1.02vw,1rem);line-height:1.55;color:#e2e8f0;margin:0;
+}
+.step-text strong{color:var(--cyan);font-weight:700;}
+.step-text em{color:var(--yellow);font-style:normal;font-weight:700;}
+
+/* 序列比較表格：結構化對齊、彈性伸展、防止截斷 */
+.compare-table{
+  background:rgba(0,0,0,.5);border:1.5px solid rgba(255,255,255,.16);border-radius:10px;
+  padding:.55rem .85rem;display:flex;flex-direction:column;gap:.45rem;
+  box-shadow:inset 0 0 16px rgba(0,0,0,0.3);flex-shrink:0;
+}
+.compare-row{
+  display:flex;align-items:center;justify-content:space-between;gap:.4rem;
+}
+.cmp-label{
+  font-weight:800;color:#cbd5e1;font-size:clamp(.88rem,1.04vw,1rem);
+  white-space:nowrap;display:flex;align-items:center;gap:.3rem;flex-shrink:0;
+  min-width:105px;
+}
+.cmp-chain{
+  display:flex;align-items:center;justify-content:space-between;flex:1;min-width:0;
+}
+.cmp-item{
+  text-align:center;font-weight:800;font-size:clamp(.94rem,1.1vw,1.08rem);
+  white-space:nowrap;display:inline-flex;align-items:baseline;justify-content:center;
+}
+.cmp-op{
+  font-weight:900;font-size:1.25rem;line-height:1;color:var(--yellow);
+  padding:0 .25rem;user-select:none;flex-shrink:0;
+}
+.cmp-temp{
+  font-size:.78rem;font-weight:700;opacity:.88;margin-left:2px;letter-spacing:-0.02em;
 }
 
 @media(max-width:960px){
@@ -116,100 +166,127 @@ p,li{font-size:clamp(.94rem,1.1vw,1.08rem);line-height:1.6;}
 <div id="app">
   <div id="slides-container">
     <div class="slide active">
-      <h1>2-6 排水集氣法 · 濕氣體分壓與水蒸氣扣除</h1>
+      <h1>2-6 飽和蒸氣壓與溫度相圖 · 沸點與分子間引力</h1>
 
       <div class="grid2">
-        <!-- ======================= 左欄：濕氣體原理與扣除公式 ======================= -->
+        <!-- ======================= 左欄：相圖與四大常見物質 ======================= -->
         <div class="panel">
           <div class="panel-header">
             <div style="display:flex;align-items:center;gap:.5rem;">
-              <span class="tag tag-p">物理本質</span>
-              <h2 style="color:var(--purple);margin:0;">濕氣體 (Wet Gas) 的分壓疊加</h2>
+              <span class="tag tag-y">相圖特徵</span>
+              <h2 style="color:var(--yellow);margin:0;">飽和蒸氣壓 — 溫度變化曲線圖</h2>
             </div>
-            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">道耳吞分壓核心應用</span>
+            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">氣液相平衡線</span>
           </div>
 
-          <!-- 定義說明卡 -->
-          <div class="rule-card">
-            <div class="card-title" style="color:var(--purple);">
-              <span>💧 什麼是「濕氣體 (Wet Gas)」？</span>
-            </div>
-            <div class="card-text">
-              利用排水集氣法收集氣體時，瓶內氣體直接與水面接觸，空間中必充滿該水溫下的<strong>飽和水蒸氣</strong>。<br>
-              因此，集氣瓶內所測得的<strong>總壓力 $P_{\text{total}}$</strong>，是由<em>「乾燥純氣體分壓 $P_{\text{gas}}$」</em>與<em>「飽和水蒸氣壓 $P_{\text{H}_2\text{O}}$」</em>共同構成！
-            </div>
+          <!-- 顯著放大蒸氣壓相圖展示區（清晰辨讀 4 條曲線與 760 mmHg 虛線交點） -->
+          <div class="figure-container">
+            <img src="vapor_pressure_curves.png" class="diagram-img" alt="飽和蒸氣壓隨溫度變化關係圖">
           </div>
 
-          <!-- 核心公式大橫幅 -->
-          <div class="formula-box">
-            <div class="formula-desc">【道耳吞分壓扣除核心公式】</div>
-            <div class="formula-math">$$P_{\text{total}} = P_{\text{gas}} + P_{\text{H}_2\text{O}}$$</div>
-            <div class="formula-math" style="color:var(--cyan);font-size:clamp(1.25rem,1.52vw,1.6rem);">
-              $$\boxed{P_{\text{gas}} = P_{\text{total}} - P_{\text{H}_2\text{O}}}$$
+          <!-- 四大物質單排 4 欄沸點速查膠囊（超緊湊，為上方相圖釋放最大高度） -->
+          <div class="substance-grid">
+            <div class="sub-pill ether">
+              <div class="sub-name-row"><span class="sub-name">乙醚</span><span class="sub-bp">34.6°C</span></div>
+              <span class="sub-note">無氫鍵 · 易揮發</span>
             </div>
-            <div class="formula-desc" style="color:var(--yellow);margin-top:.2rem;">
-              ★ 解題鐵律：凡排水集氣所得數據，計算莫耳數或分子量前，<strong>務必先扣除該水溫下的飽和水蒸氣壓</strong>！
+            <div class="sub-pill chloroform">
+              <div class="sub-name-row"><span class="sub-name">氯仿</span><span class="sub-bp">61.2°C</span></div>
+              <span class="sub-note">偶極力作用</span>
             </div>
-          </div>
-
-          <div style="background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.25);border-radius:9px;padding:.55rem .85rem;font-size:.88rem;color:#cbd5e1;line-height:1.6;">
-            💡 <strong>關鍵性質</strong>：飽和水蒸氣壓 $P_{\text{H}_2\text{O}}$ <strong>僅隨水溫改變</strong>，與集氣瓶容量大小、水槽深度、水面高低完全無關！
+            <div class="sub-pill ethanol">
+              <div class="sub-name-row"><span class="sub-name">乙醇</span><span class="sub-bp">78.3°C</span></div>
+              <span class="sub-note">分子間單氫鍵</span>
+            </div>
+            <div class="sub-pill water">
+              <div class="sub-name-row"><span class="sub-name">水</span><span class="sub-bp">100.0°C</span></div>
+              <span class="sub-note">強網狀四氫鍵</span>
+            </div>
           </div>
         </div>
 
-        <!-- ======================= 右欄：氣體適用性與實驗操作要領 ======================= -->
+        <!-- ======================= 右欄：正常沸點與序列因果規律 ======================= -->
         <div class="panel">
           <div class="panel-header">
             <div style="display:flex;align-items:center;gap:.5rem;">
-              <span class="tag tag-g">實驗適用性</span>
-              <h2 style="color:var(--green);margin:0;">氣體溶解度篩選與防倒吸安全</h2>
+              <span class="tag tag-g">核心推論</span>
+              <h2 style="color:var(--green);margin:0;">正常沸點定義與大小序列判讀</h2>
             </div>
-            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">化學實驗必考安全</span>
+            <span style="font-size:.84rem;color:rgba(255,255,255,.6);font-weight:600;">大考必背比較鏈</span>
           </div>
 
-          <!-- 氣體分類卡片 -->
-          <div class="gas-card">
-            <div class="card-title" style="color:var(--green);">
-              <span>✅ 適用氣體（難溶或微溶於水）</span>
+          <!-- 觀念 1：正常沸點定義 -->
+          <div class="step-card yellow">
+            <div class="step-title-row">
+              <span class="step-badge step-badge-y">觀念 1</span>
+              <span class="step-heading">正常沸點 (Normal Boiling Point) 定義</span>
             </div>
-            <div class="card-text">
-              氣體在水中溶解度極低，氣泡能順利排開水柱聚集於瓶頂：
-              <div class="gas-badge-list">
-                <span class="gas-pill ok">H₂ 氫氣</span>
-                <span class="gas-pill ok">O₂ 氧氣</span>
-                <span class="gas-pill ok">N₂ 氮氣</span>
-                <span class="gas-pill ok">CH₄ 甲烷</span>
-                <span class="gas-pill ok">CO 一氧化碳</span>
-                <span class="gas-pill ok">NO 一氧化氮</span>
+            <p class="step-text">
+              當液體的<strong>飽和蒸氣壓 ＝ 外界標準大氣壓 $760\text{ mmHg}$ ($1\text{ atm}$)</strong> 時的溫度。<br>
+              圖中各物質蒸氣壓曲線與水平虛線 $760\text{ mmHg}$ 之交點，垂直投影至橫軸所得之溫度即為正常沸點。
+            </p>
+          </div>
+
+          <!-- 核心序列對比表格（結構對齊、彈性伸展、防止最右側被截斷） -->
+          <div class="compare-table">
+            <!-- 第 1 列：分子間引力 -->
+            <div class="compare-row">
+              <div class="cmp-label">🔗 分子間引力：</div>
+              <div class="cmp-chain">
+                <span class="cmp-item" style="color:var(--green);">乙醚</span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--green);">氯仿</span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--green);">乙醇</span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--green);">水</span>
+              </div>
+            </div>
+
+            <!-- 第 2 列：同溫蒸氣壓 -->
+            <div class="compare-row">
+              <div class="cmp-label">💨 同溫蒸氣壓：</div>
+              <div class="cmp-chain">
+                <span class="cmp-item" style="color:var(--cyan);">乙醚</span>
+                <span class="cmp-op">＞</span>
+                <span class="cmp-item" style="color:var(--cyan);">氯仿</span>
+                <span class="cmp-op">＞</span>
+                <span class="cmp-item" style="color:var(--cyan);">乙醇</span>
+                <span class="cmp-op">＞</span>
+                <span class="cmp-item" style="color:var(--cyan);">水</span>
+              </div>
+            </div>
+
+            <!-- 第 3 列：正常沸點高低 -->
+            <div class="compare-row">
+              <div class="cmp-label">🌡️ 正常沸點：</div>
+              <div class="cmp-chain">
+                <span class="cmp-item" style="color:var(--orange);">乙醚<span class="cmp-temp">(35°)</span></span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--orange);">氯仿<span class="cmp-temp">(61°)</span></span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--orange);">乙醇<span class="cmp-temp">(78°)</span></span>
+                <span class="cmp-op">＜</span>
+                <span class="cmp-item" style="color:var(--orange);">水<span class="cmp-temp">(100°)</span></span>
               </div>
             </div>
           </div>
 
-          <div class="gas-card" style="border-left-color:var(--red);">
-            <div class="card-title" style="color:var(--red);">
-              <span>⛔ 嚴禁使用（極易溶於水 · 倒吸爆裂危險！）</span>
+          <!-- 觀念 2：因果鏈心法 -->
+          <div class="step-card green">
+            <div class="step-title-row">
+              <span class="step-badge step-badge-g">觀念 2</span>
+              <span class="step-heading">分子間引力、蒸氣壓與沸點之因果鏈心法</span>
             </div>
-            <div class="card-text">
-              溶於水會瞬間釋放大量空間形成極大負壓，引發槽水<strong>劇烈倒吸</strong>至加熱試管造成炸裂：
-              <div class="gas-badge-list">
-                <span class="gas-pill no">NH₃ 氨氣（極易溶，噴泉實驗）</span>
-                <span class="gas-pill no">HCl 氯化氫（極易溶）</span>
-                <span class="gas-pill no">SO₂ 二氧化硫（易溶於水）</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 操作叮嚀卡片 -->
-          <div style="background:rgba(251,191,36,.09);border:1.5px solid rgba(251,191,36,.4);border-left:5px solid var(--yellow);border-radius:10px;padding:.6rem .9rem;margin-top:auto;">
-            <div style="font-weight:900;color:var(--yellow);font-size:clamp(.92rem,1.06vw,1.04rem);display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem;">
-              ⚠️ 實驗停機標準操作程序 (SOP)
-            </div>
-            <div style="font-size:.88rem;line-height:1.6;color:#e2e8f0;">
-              實驗結束熄滅酒精燈前，<strong>務必「先將導管移出水槽水面」，然後才熄滅熱源</strong>！<br>
-              若先熄火，試管內氣體冷縮壓降，槽水將迅速逆流倒吸入高溫試管中，導致試管受冷驟裂！
+            <div class="step-text" style="font-size:clamp(.92rem,1.06vw,1.04rem);line-height:1.7;">
+              $$ \text{分子間引力越小} \implies \text{分子越易汽化脫離} \implies \mathbf{同溫下蒸氣壓越大} \implies \text{揮發性越高} \implies \mathbf{正常沸點越低} $$
+              <span style="font-size:.9rem;color:#cbd5e1;">
+                ★ <strong>背誦口訣</strong>：引力小、易汽化、蒸氣壓大、衝到 1 atm 快，所以沸點低！
+              </span>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>

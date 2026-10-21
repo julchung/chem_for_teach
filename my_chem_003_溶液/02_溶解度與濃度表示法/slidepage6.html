@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>3-2 再結晶與亨利定律動態平衡 | 互動教學</title>
+    <title>3-2 溶解度曲線圖形特徵解析 | 互動教學</title>
     <script>
         MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
@@ -41,309 +41,271 @@
         }
         h1 {
             color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
-            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.6rem;
             border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
         }
         h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
-        h2 { font-size: clamp(0.95rem, 1.1vw, 1.15rem); font-weight: 700; margin-bottom: 0.35rem; }
-        p, li { font-size: clamp(0.82rem, 0.94vw, 0.98rem); line-height: 1.55; }
-        ol, ul { margin-left: 1.2rem; }
+        h2 { font-size: clamp(1.02rem, 1.15vw, 1.28rem); font-weight: 700; margin-bottom: 0.25rem; }
+        p, li { font-size: clamp(0.85rem, 0.95vw, 1.02rem); line-height: 1.5; }
         strong { color: var(--accent-cyan); }
 
         .grid-main {
-            display: grid; grid-template-columns: 1fr 1.1fr;
-            gap: 0.85rem; flex: 1; min-height: 0;
+            display: grid; grid-template-columns: 1.12fr 1fr;
+            gap: 1rem; flex: 1; min-height: 0;
         }
         .panel {
             background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
-            padding: 0.9rem 1.1rem; backdrop-filter: blur(12px);
-            display: flex; flex-direction: column; gap: 0.6rem;
+            padding: 0.85rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.55rem;
             min-height: 0; overflow-y: auto;
             box-shadow: 0 6px 24px rgba(0,0,0,0.3);
         }
         .panel::-webkit-scrollbar { width: 4px; }
         .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
 
-        .step-list {
-            display: flex; flex-direction: column; gap: 8px; margin-top: 4px;
+        .chart-box {
+            background: rgba(0,0,0,0.42); border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column;
+            align-items: center; flex: 1; min-height: 0; justify-content: center;
         }
-        .step-item {
-            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px; padding: 7px 12px; display: flex; align-items: flex-start; gap: 10px;
-        }
-        .step-num {
-            width: 22px; height: 22px; border-radius: 50%;
-            background: var(--accent-yellow); color: #0f172a;
-            font-size: 0.78rem; font-weight: 800; display: flex;
-            align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+        .chart-title-row {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 4px;
         }
 
-        /* 亨利定律模擬器面板 */
-        .henry-box {
-            background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8));
-            border: 1.5px solid rgba(56,189,248,0.3); border-radius: 14px;
-            padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;
-            flex: 1; min-height: 0;
+        .summary-card-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex-shrink: 0;
         }
-        #henry-anim-container {
-            position: relative; flex: 1; min-height: 180px;
-            border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(56,189,248,0.3);
-            background: #050c1a;
+        .summary-pill {
+            background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 10px; padding: 9px 14px;
+            font-size: clamp(0.98rem, 1.12vw, 1.25rem); line-height: 1.6;
         }
-        #henry-anim-canvas {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        .summary-pill strong {
+            font-size: 1.05em;
         }
-
-        .btn-henry-reset {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff;
-            border: none; padding: 5px 16px; border-radius: 20px; font-size: 0.85rem;
-            cursor: pointer; font-weight: bold; transition: transform 0.2s;
-        }
-        .btn-henry-reset:hover { transform: translateY(-1px); }
 
         @media (max-width: 900px) {
             .grid-main { grid-template-columns: 1fr; overflow-y: auto; }
             body, html, #app { overflow: auto; }
             #slides-container { position: relative; height: auto; min-height: 100vh; }
-            #henry-anim-container { height: 180px; }
         }
     </style>
 </head>
 <body>
 <div id="app">
     <div id="slides-container">
-        <h1>3-2 溶解度與濃度表示法 &middot; 再結晶純化與亨利定律動態平衡</h1>
+        <h1>3-2 溶解度與濃度表示法 &middot; 溶解度曲線圖形特徵與規律</h1>
 
         <div class="grid-main">
-            <!-- 左欄：再結晶純化法 -->
+            <!-- 左欄：固體溶解度曲線圖 (完整高解析度 SVG) -->
             <div class="panel">
-                <div>
-                    <h2 style="color:var(--accent-yellow);">一、再結晶 (Recrystallization) 原理</h2>
-                    <p style="color:#cbd5e1;">
-                        利用物質在不同溫度下的<strong>溶解度差異顯著</strong>，以及各成分溶解度特徵不同的原理，藉由高溫飽和後降溫析出晶體，來達到高純度分離的實驗技術。
-                    </p>
+                <div class="chart-box">
+                    <div class="chart-title-row">
+                        <span style="font-size:clamp(1.05rem, 1.25vw, 1.35rem); font-weight:800; color:var(--accent-cyan);">📈 固體溶解度曲線 (Solubility vs. Temperature)</span>
+                        <span style="font-size:clamp(0.85rem, 0.95vw, 1.05rem); color:#94a3b8;">單位：$\text{g} / 100\text{g } \text{H}_2\text{O}$</span>
+                    </div>
+
+                    <svg viewBox="0 0 530 360" style="width:100%; height:auto; max-height:285px;">
+                        <!-- 背景淡色座標格線 -->
+                        <!-- 水平格線 (y=0..200) -->
+                        <line x1="55" y1="315" x2="475" y2="315" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="289" x2="475" y2="289" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="263" x2="475" y2="263" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="237" x2="475" y2="237" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="211" x2="475" y2="211" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="185" x2="475" y2="185" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="159" x2="475" y2="159" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="133" x2="475" y2="133" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="107" x2="475" y2="107" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="81" x2="475" y2="81" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="55" x2="475" y2="55" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+                        <!-- 垂直格線 (x=0..100) 每 10℃ 42px -->
+                        <line x1="55" y1="315" x2="55" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="97" y1="315" x2="97" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="139" y1="315" x2="139" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="181" y1="315" x2="181" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="223" y1="315" x2="223" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="265" y1="315" x2="265" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="307" y1="315" x2="307" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="349" y1="315" x2="349" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="391" y1="315" x2="391" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="433" y1="315" x2="433" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="475" y1="315" x2="475" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+                        <!-- 座標軸主線 -->
+                        <line x1="55" y1="315" x2="485" y2="315" stroke="rgba(255,255,255,0.75)" stroke-width="2"/>
+                        <line x1="55" y1="315" x2="55" y2="35" stroke="rgba(255,255,255,0.75)" stroke-width="2"/>
+                        <text x="490" y="321" fill="rgba(255,255,255,0.9)" font-size="14" font-weight="bold">T (℃)</text>
+                        <text x="18" y="30" fill="rgba(255,255,255,0.9)" font-size="14" font-weight="bold">S (g)</text>
+
+                        <!-- 縱軸刻度文字 (放大至 12px) -->
+                        <text x="46" y="320" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">0</text>
+                        <text x="46" y="268" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">40</text>
+                        <text x="46" y="216" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">80</text>
+                        <text x="46" y="164" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">120</text>
+                        <text x="46" y="112" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">160</text>
+                        <text x="46" y="60" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">200</text>
+
+                        <!-- 橫軸刻度文字 (放大至 12px) -->
+                        <text x="55" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">0</text>
+                        <text x="139" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">20</text>
+                        <text x="223" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">40</text>
+                        <text x="307" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">60</text>
+                        <text x="391" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">80</text>
+                        <text x="475" y="333" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">100</text>
+
+                        <!-- 1. KI 曲線 -->
+                        <path d="M 55 146 L 475 42" fill="none" stroke="#38bdf8" stroke-width="2.4"/>
+                        <text x="480" y="44" fill="#38bdf8" font-size="13.5" font-weight="bold">KI</text>
+
+                        <!-- 2. KNO3 陡升曲線 (最核心考點，醒目加粗) -->
+                        <path d="M 55 298 Q 181 260 265 195 T 433 50" fill="none" stroke="#f87171" stroke-width="3.5"/>
+                        <text x="438" y="52" fill="#f87171" font-size="14" font-weight="bold">KNO₃ (陡升)</text>
+
+                        <!-- 3. CaCl2 階梯結晶轉折線 -->
+                        <path d="M 55 237 L 181 182 L 235 143 L 475 104" fill="none" stroke="#fb923c" stroke-width="2.4"/>
+                        <text x="110" y="203" fill="#fb923c" font-size="11" font-weight="bold">CaCl₂·6H₂O</text>
+                        <text x="180" y="153" fill="#fb923c" font-size="11" font-weight="bold">4H₂O</text>
+                        <text x="480" y="106" fill="#fb923c" font-size="13.5" font-weight="bold">CaCl₂</text>
+
+                        <!-- 4. KBr 曲線 -->
+                        <path d="M 55 244 L 475 168" fill="none" stroke="#60a5fa" stroke-width="2.2"/>
+                        <text x="480" y="170" fill="#60a5fa" font-size="13" font-weight="bold">KBr</text>
+
+                        <!-- 5. KCl 曲線 -->
+                        <path d="M 55 278 L 475 238" fill="none" stroke="#93c5fd" stroke-width="2.2"/>
+                        <text x="480" y="240" fill="#93c5fd" font-size="13" font-weight="bold">KCl</text>
+
+                        <!-- 6. Na2SO4 結晶水轉折奇點 (經典必考！) -->
+                        <path d="M 55 308 L 191 237 L 475 258" fill="none" stroke="#fbbf24" stroke-width="3"/>
+                        <!-- 轉折點圓圈 -->
+                        <circle cx="191" cy="237" r="5" fill="#fbbf24"/>
+                        <text x="115" y="278" fill="#fbbf24" font-size="11.5" font-weight="bold">Na₂SO₄·10H₂O</text>
+                        <text x="191" y="224" fill="#fbbf24" font-size="13" font-weight="800" text-anchor="middle">32.4℃ 轉折尖峰</text>
+                        <text x="480" y="260" fill="#fbbf24" font-size="13.5" font-weight="bold">Na₂SO₄</text>
+
+                        <!-- 7. NaCl 幾乎水平直線 -->
+                        <path d="M 55 268 L 475 263" fill="none" stroke="#34d399" stroke-width="2.8"/>
+                        <text x="480" y="275" fill="#34d399" font-size="14" font-weight="bold">NaCl (平直)</text>
+
+                        <!-- 8. K2SO4 曲線 -->
+                        <path d="M 55 305 L 475 284" fill="none" stroke="#f472b6" stroke-width="2.2"/>
+                        <text x="480" y="290" fill="#f472b6" font-size="12.5" font-weight="bold">K₂SO₄</text>
+                    </svg>
                 </div>
 
-                <div class="step-list">
-                    <div class="step-item" style="border-left:3px solid var(--accent-red);">
-                        <span class="step-num">1</span>
-                        <div>
-                            <strong style="color:var(--accent-red);">高溫配製熱飽和溶液</strong>
-                            <p style="color:#cbd5e1; font-size:0.83rem;">加入剛好量的熱溶劑加熱溶解，使待純化混合物完全溶解成高溫飽和狀態。</p>
-                        </div>
+                <div class="summary-card-grid">
+                    <div class="summary-pill" style="border-left:3px solid var(--accent-red);">
+                        <strong style="color:var(--accent-red);">KNO₃（斜率陡峭）：</strong><br>
+                        溶解吸熱量大，高溫飽和後冷卻降溫可析出大量晶體，最適用<strong>降溫再結晶法</strong>純化。
                     </div>
-                    <div class="step-item" style="border-left:3px solid var(--accent-yellow);">
-                        <span class="step-num" style="background:var(--accent-yellow);">2</span>
-                        <div>
-                            <strong style="color:var(--accent-yellow);">趁熱過濾（關鍵步驟！）</strong>
-                            <p style="color:#cbd5e1; font-size:0.83rem;">使用預熱過的漏斗快速過濾，去除不溶性機械雜質（避免降溫過早結晶堵塞）。</p>
-                        </div>
+                    <div class="summary-pill" style="border-left:3px solid var(--accent-green);">
+                        <strong style="color:var(--accent-green);">NaCl（近水平直線）：</strong><br>
+                        溶解熱極小，溶解度隨溫度幾無變化，降溫無法有效析晶，必須藉由<strong>蒸發溶劑結晶法</strong>析出。
                     </div>
-                    <div class="step-item" style="border-left:3px solid var(--accent-cyan);">
-                        <span class="step-num" style="background:var(--accent-cyan);">3</span>
-                        <div>
-                            <strong style="color:var(--accent-cyan);">緩慢冷卻結晶</strong>
-                            <p style="color:#cbd5e1; font-size:0.83rem;">靜置室溫自然冷卻，目標溶質隨溶解度驟降析出大而純淨的晶體；微量可溶雜質留在母液中。</p>
-                        </div>
-                    </div>
-                    <div class="step-item" style="border-left:3px solid var(--accent-green);">
-                        <span class="step-num" style="background:var(--accent-green);">4</span>
-                        <div>
-                            <strong style="color:var(--accent-green);">減壓抽濾與冰水洗滌</strong>
-                            <p style="color:#cbd5e1; font-size:0.83rem;">布氏漏斗抽濾分離晶體與母液，並用<strong>少量冰溶劑</strong>洗滌晶體表面殘留母液後乾燥。</p>
-                        </div>
+                    <div class="summary-pill" style="border-left:3px solid var(--accent-yellow); grid-column: 1 / -1;">
+                        <strong style="color:var(--accent-yellow);">Na₂SO₄ 結晶水轉折奇異現象：</strong>
+                        $32.4^\circ\text{C}$ 前為水合鹽 $\text{Na}_2\text{SO}_4\cdot 10\text{H}_2\text{O}$（吸熱，$T\uparrow, S\uparrow$）；$32.4^\circ\text{C}$ 後脫去結晶水變為無水鹽 $\text{Na}_2\text{SO}_4$（放熱，$T\uparrow, S\downarrow$）。
                     </div>
                 </div>
             </div>
 
-            <!-- 右欄：亨利定律動態平衡微觀動畫 -->
+            <!-- 右欄：氣體溶解度曲線圖 (完整高解析度 SVG) -->
             <div class="panel">
-                <div class="henry-box">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h2 style="color:var(--accent-cyan); margin:0;">二、亨利定律：氣體溶解動態平衡</h2>
-                        <button class="btn-henry-reset" id="btn-reset-henry">↺ 重置模擬</button>
+                <div class="chart-box">
+                    <div class="chart-title-row">
+                        <span style="font-size:clamp(1.05rem, 1.25vw, 1.35rem); font-weight:800; color:var(--accent-green);">📉 氣體相對溶解度曲線 (Gas Relative Solubility)</span>
+                        <span style="font-size:clamp(0.85rem, 0.95vw, 1.05rem); color:#94a3b8;">0℃ 歸一化基準 = 1.0</span>
                     </div>
 
-                    <div style="text-align:center; font-size:1.1rem; font-weight:bold; color:#fbbf24;">
-                        $\text{H}_2\text{(g, 氣相)} \rightleftharpoons \text{H}_2\text{(aq, 溶解態)}$
-                    </div>
+                    <svg viewBox="0 0 530 360" style="width:100%; height:auto; max-height:285px;">
+                        <!-- 背景淡色座標格線 -->
+                        <!-- 水平格線 (y=0.2..1.0) 每 0.1 32px -->
+                        <line x1="55" y1="306" x2="475" y2="306" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="274" x2="475" y2="274" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="242" x2="475" y2="242" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="210" x2="475" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="178" x2="475" y2="178" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="146" x2="475" y2="146" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="114" x2="475" y2="114" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="82" x2="475" y2="82" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="55" y1="50" x2="475" y2="50" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
 
-                    <div id="henry-anim-container">
-                        <canvas id="henry-anim-canvas"></canvas>
-                    </div>
+                        <!-- 垂直格線 (0..50℃) 每 10℃ 84px -->
+                        <line x1="55" y1="306" x2="55" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="139" y1="306" x2="139" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="223" y1="306" x2="223" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="307" y1="306" x2="307" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="391" y1="306" x2="391" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                        <line x1="475" y1="306" x2="475" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
 
-                    <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem;">
-                        <div id="henry-status" style="font-weight:bold; color:#fbbf24; background:rgba(251,191,36,0.12); padding:3px 12px; border-radius:14px; border:1px solid rgba(251,191,36,0.3);">
-                            ⏳ 正在建立動態平衡...
-                        </div>
-                        <div style="display:flex; gap:12px; color:rgba(255,255,255,0.7);">
-                            <span><span style="color:#22d3ee;">●</span> 氣態分子</span>
-                            <span><span style="color:#60a5fa;">●</span> 溶劑中水合粒子</span>
-                        </div>
-                    </div>
+                        <!-- 座標軸主線 -->
+                        <line x1="55" y1="306" x2="485" y2="306" stroke="rgba(255,255,255,0.75)" stroke-width="2"/>
+                        <line x1="55" y1="306" x2="55" y2="35" stroke="rgba(255,255,255,0.75)" stroke-width="2"/>
+                        <text x="490" y="311" fill="rgba(255,255,255,0.9)" font-size="14" font-weight="bold">T (℃)</text>
+                        <text x="18" y="30" fill="rgba(255,255,255,0.9)" font-size="14" font-weight="bold">Rel. S</text>
 
-                    <p style="font-size:0.82rem; color:#94a3b8; line-height:1.45; margin:0;">
-                        💡 <strong>觀察重點：</strong>氣相分子撞擊液面溶解入液體中（$R_{\text{進}}$），同時液中溶質隨熱運動自液面逸出（$R_{\text{出}}$），當兩者速率相等時達到<strong>動態溶解平衡</strong>。
-                    </p>
+                        <!-- 縱軸刻度文字 (放大至 12px) -->
+                        <text x="46" y="310" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">0.2</text>
+                        <text x="46" y="246" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">0.4</text>
+                        <text x="46" y="182" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">0.6</text>
+                        <text x="46" y="118" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">0.8</text>
+                        <text x="46" y="54" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="end">1.0</text>
+
+                        <!-- 橫軸刻度文字 (放大至 12px) -->
+                        <text x="55" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">0</text>
+                        <text x="139" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">10</text>
+                        <text x="223" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">20</text>
+                        <text x="307" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">30</text>
+                        <text x="391" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">40</text>
+                        <text x="475" y="324" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">50</text>
+
+                        <!-- 1. He 曲線 (降幅最平緩) -->
+                        <path d="M 55 50 Q 265 74 475 76" fill="none" stroke="#38bdf8" stroke-width="2.8"/>
+                        <text x="480" y="80" fill="#38bdf8" font-size="13.5" font-weight="bold">He</text>
+
+                        <!-- 2. Ne 曲線 -->
+                        <path d="M 55 50 Q 225 105 475 130" fill="none" stroke="#fb923c" stroke-width="2.6"/>
+                        <text x="480" y="134" fill="#fb923c" font-size="13.5" font-weight="bold">Ne</text>
+
+                        <!-- 3. N2 曲線 -->
+                        <path d="M 55 50 Q 185 160 475 220" fill="none" stroke="#c084fc" stroke-width="2.4" stroke-dasharray="5,3"/>
+                        <text x="480" y="217" fill="#c084fc" font-size="13.5" font-weight="bold">N₂</text>
+
+                        <!-- 4. Ar 曲線 -->
+                        <path d="M 55 50 Q 180 170 475 228" fill="none" stroke="#fbbf24" stroke-width="2.4"/>
+                        <text x="480" y="232" fill="#fbbf24" font-size="13.5" font-weight="bold">Ar</text>
+
+                        <!-- 5. O2 曲線 -->
+                        <path d="M 55 50 Q 175 178 475 236" fill="none" stroke="#34d399" stroke-width="2.8" stroke-dasharray="4,3"/>
+                        <text x="480" y="246" fill="#34d399" font-size="13.5" font-weight="bold">O₂</text>
+
+                        <!-- 6. Kr 曲線 -->
+                        <path d="M 55 50 Q 165 200 475 264" fill="none" stroke="#60a5fa" stroke-width="2.4"/>
+                        <text x="480" y="269" fill="#60a5fa" font-size="13.5" font-weight="bold">Kr</text>
+
+                        <!-- 7. Xe 曲線 (降幅最劇烈) -->
+                        <path d="M 55 50 Q 155 225 475 290" fill="none" stroke="#f87171" stroke-width="2.8"/>
+                        <text x="480" y="295" fill="#f87171" font-size="13.5" font-weight="bold">Xe</text>
+                    </svg>
+                </div>
+
+                <div class="summary-card-grid">
+                    <div class="summary-pill" style="border-left:3px solid var(--accent-green); grid-column: 1 / -1;">
+                        <strong style="color:var(--accent-green);">氣體溶解共通熱力學規律（放熱反應）：</strong><br>
+                        氣體分子從高自由度之氣相溶入液相，亂度驟減（$\Delta S < 0$），自發溶解過程必然釋放熱量（$\Delta H < 0$）。因此<strong>無論何種氣體，隨溫度升高其溶解度必定持續下降</strong>！
+                    </div>
+                    <div class="summary-pill" style="border-left:3px solid var(--accent-cyan); grid-column: 1 / -1;">
+                        <strong style="color:var(--accent-cyan);">分子量與極化率效應：</strong>
+                        同族惰性氣體由 $\text{He} \to \text{Xe}$，分子量增大、電子雲極化率增強，色散力顯著增加，與水分子之凡得瓦力吸引越強，高溫下熱動能克服引力逸出的效應最劇烈，故 $\text{Xe}$ 溶解度隨溫度下降最為陡峭！
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-(() => {
-    let henryAnimId = null;
-    let _henryParticles = [];
-    let _henryCtx = null, _henryCanvas = null;
-    let _henryStartTime = 0;
-    const HENRY_TARGET = 6;
-
-    function initHenryEquilibrium() {
-        const container = document.getElementById('henry-anim-container');
-        _henryCanvas = document.getElementById('henry-anim-canvas');
-        if (!_henryCanvas || !container) return;
-        _henryCtx = _henryCanvas.getContext('2d');
-        _henryCanvas.width = container.offsetWidth;
-        _henryCanvas.height = container.offsetHeight;
-
-        _henryStartTime = Date.now();
-        _henryParticles = [];
-
-        const W = _henryCanvas.width, H = _henryCanvas.height;
-        const waterY = H * 0.58;
-        for (let i = 0; i < 20; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const spd = 0.9 + Math.random() * 1.5;
-            _henryParticles.push({
-                x: 20 + Math.random() * (W - 40),
-                y: 15 + Math.random() * (waterY - 30),
-                vx: Math.cos(angle) * spd,
-                vy: Math.sin(angle) * spd,
-                r: 5.5,
-                dissolved: false,
-                trail: []
-            });
-        }
-
-        henryLoop();
-    }
-
-    function henryLoop() {
-        const c = _henryCtx, cv = _henryCanvas;
-        if (!c || !cv) return;
-        const W = cv.width, H = cv.height;
-        const waterY = H * 0.58;
-        const elapsed = (Date.now() - _henryStartTime) / 1000;
-
-        c.clearRect(0, 0, W, H);
-
-        const wGrad = c.createLinearGradient(0, waterY, 0, H);
-        wGrad.addColorStop(0, 'rgba(56,189,248,0.35)');
-        wGrad.addColorStop(1, 'rgba(14,60,120,0.7)');
-        c.fillStyle = wGrad;
-        c.fillRect(0, waterY, W, H - waterY);
-
-        c.save();
-        c.beginPath();
-        c.moveTo(0, waterY);
-        for (let x = 0; x <= W; x += 8) {
-            c.lineTo(x, waterY + Math.sin((x / W * 4 + elapsed * 2) * Math.PI) * 2.5);
-        }
-        c.lineTo(W, H); c.lineTo(0, H); c.closePath();
-        c.fillStyle = 'rgba(56,189,248,0.15)'; c.fill();
-        c.restore();
-
-        c.beginPath(); c.moveTo(0, waterY); c.lineTo(W, waterY);
-        c.strokeStyle = 'rgba(56,189,248,0.7)'; c.lineWidth = 1.5; c.stroke();
-
-        c.fillStyle = 'rgba(34,211,238,0.6)'; c.font = 'bold 11px sans-serif';
-        c.fillText('氣相  H₂(g)', 12, 20);
-        c.fillStyle = 'rgba(56,189,248,0.7)';
-        c.fillText('液相  H₂(aq)', 12, waterY + 18);
-
-        const dissolvedCount = _henryParticles.filter(p => p.dissolved).length;
-
-        _henryParticles.forEach(p => {
-            p.x += p.vx; p.y += p.vy;
-            if (p.x < p.r) { p.x = p.r; p.vx = Math.abs(p.vx); }
-            if (p.x > W - p.r) { p.x = W - p.r; p.vx = -Math.abs(p.vx); }
-            if (p.y < p.r) { p.y = p.r; p.vy = Math.abs(p.vy); }
-            if (p.y > H - p.r) { p.y = H - p.r; p.vy = -Math.abs(p.vy); }
-
-            if (!p.dissolved && p.y + p.r >= waterY) {
-                const canDissolve = elapsed < 6 ? (Math.random() < 0.18) :
-                                   (dissolvedCount < HENRY_TARGET ? Math.random() < 0.85 : false);
-                if (canDissolve) {
-                    p.dissolved = true; p.vx *= 0.45; p.vy = Math.abs(p.vy) * 0.45; p.y = waterY + p.r + 1;
-                } else {
-                    p.vy = -Math.abs(p.vy); p.y = waterY - p.r - 1;
-                }
-            } else if (p.dissolved && p.y - p.r <= waterY) {
-                const canEscape = elapsed < 6 ? (Math.random() < 0.08) :
-                                 (dissolvedCount > HENRY_TARGET ? Math.random() < 0.85 : false);
-                if (canEscape) {
-                    p.dissolved = false; const spd = 1.1 + Math.random() * 1.3;
-                    p.vx = (Math.random() - 0.5) * spd * 2; p.vy = -Math.abs(p.vy) / 0.45; p.y = waterY - p.r - 1;
-                } else {
-                    p.vy = Math.abs(p.vy); p.y = waterY + p.r + 1;
-                }
-            }
-
-            p.trail.push({ x: p.x, y: p.y });
-            if (p.trail.length > 10) p.trail.shift();
-
-            if (p.trail.length > 1) {
-                c.beginPath(); c.moveTo(p.trail[0].x, p.trail[0].y);
-                p.trail.forEach(t => c.lineTo(t.x, t.y));
-                c.strokeStyle = p.dissolved ? 'rgba(59,130,246,0.2)' : 'rgba(34,211,238,0.15)';
-                c.lineWidth = 2.5; c.lineCap = 'round'; c.stroke();
-            }
-
-            const grd = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2);
-            if (p.dissolved) {
-                grd.addColorStop(0, 'rgba(96,165,250,0.9)'); grd.addColorStop(0.5, 'rgba(59,130,246,0.5)'); grd.addColorStop(1, 'rgba(59,130,246,0)');
-            } else {
-                grd.addColorStop(0, 'rgba(220,255,255,1)'); grd.addColorStop(0.4, 'rgba(34,211,238,0.8)'); grd.addColorStop(1, 'rgba(34,211,238,0)');
-            }
-            c.beginPath(); c.arc(p.x, p.y, p.r * 2, 0, Math.PI * 2); c.fillStyle = grd; c.fill();
-            c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI * 2); c.fillStyle = p.dissolved ? '#60a5fa' : '#e0fffe'; c.fill();
-        });
-
-        const statusEl = document.getElementById('henry-status');
-        if (statusEl) {
-            if (elapsed < 6) {
-                statusEl.textContent = `⏳ 平衡建立中... ${Math.ceil(6 - elapsed)}s`;
-                statusEl.style.color = '#fbbf24';
-            } else {
-                statusEl.textContent = '✅ 已達動態平衡';
-                statusEl.style.color = '#34d399';
-            }
-        }
-
-        henryAnimId = requestAnimationFrame(henryLoop);
-    }
-
-    window.addEventListener('load', () => {
-        initHenryEquilibrium();
-        const resetBtn = document.getElementById('btn-reset-henry');
-        if (resetBtn) {
-            resetBtn.onclick = () => {
-                if (henryAnimId) cancelAnimationFrame(henryAnimId);
-                initHenryEquilibrium();
-            };
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        const container = document.getElementById('henry-anim-container');
-        if (_henryCanvas && container) {
-            _henryCanvas.width = container.offsetWidth;
-            _henryCanvas.height = container.offsetHeight;
-        }
-    });
-})();
-</script>
 
 <script src="../../unified_chem_spa/js/scroll_relay.js"></script>
 <script id="__chem_scroll_bridge">

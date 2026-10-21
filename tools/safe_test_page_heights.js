@@ -136,7 +136,7 @@ async function main() {
 
   const result = await sendSession("Runtime.evaluate", {
     expression: `
-      Array.from(document.querySelectorAll('.concept-page')).map((el, i) => {
+      Array.from(document.querySelectorAll('.concept-page, .a4-sheet, .teach-page')).map((el, i) => {
         const isOverflow = el.scrollHeight > el.clientHeight;
         return {
           page: i + 1,

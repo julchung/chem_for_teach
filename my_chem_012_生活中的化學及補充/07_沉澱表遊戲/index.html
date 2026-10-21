@@ -10,44 +10,217 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
-    <div id="game-container">
-        <!-- Header / UI Layer -->
-        <div id="ui-layer">
-            <div id="score-board">Score: <span id="score">0</span></div>
-            <div id="level-title">第 <span id="level">1</span> 關</div>
-            <div id="timer">Time: <span id="time">00:00</span></div>
+    <div id="app-wrapper">
+        <!-- Mobile Toggle Bar for small screens -->
+        <div id="mobile-drawer-bar">
+            <button id="toggle-left-btn" class="drawer-toggle-btn" title="查看沉澱物收集庫">
+                <span class="icon">⚗️</span> 沉澱物庫 (<span id="mobile-precip-count">0</span>)
+            </button>
+            <button id="toggle-right-btn" class="drawer-toggle-btn" title="查看計分規則與明細">
+                <span class="icon">📊</span> 計分與規格
+            </button>
         </div>
 
-        <!-- Game Canvas -->
-        <canvas id="gameCanvas"></canvas>
-
-        <!-- Overlays -->
-        <div id="start-screen" class="overlay">
-            <h1>Chemical Bubble Shooter</h1>
-            <div class="instructions">
-                <h2>遊戲說明:</h2>
-                <p>手指左右滑動調整發射角度</p>
-                <p>點擊螢幕任意位置即可發射</p>
-                <p>當上方離子組合成難溶於水之離子</p>
-                <p>完整化合物時，則消去該些粒子。</p>
+        <!-- Left Sidebar: Precipitate Counter & Trophy Panel -->
+        <aside id="left-sidebar" class="game-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span class="title-icon">⚗️</span>
+                    <div>
+                        <h2>沉澱物收集庫</h2>
+                        <span class="subtitle">消除統計與化學特性</span>
+                    </div>
+                </div>
+                <button class="close-drawer-btn" data-target="left-sidebar" title="收起">&times;</button>
             </div>
-            <button id="start-btn">開始遊戲</button>
-        </div>
 
-        <div id="game-over-screen" class="overlay hidden">
-            <h1 style="color: #ff3333;">GAME OVER</h1>
-            <button id="restart-btn">重試</button>
-        </div>
+            <!-- Stats Overview -->
+            <div class="panel-section stats-summary">
+                <div class="summary-metric">
+                    <span class="metric-val" id="total-precip-kinds">0</span>
+                    <span class="metric-lbl">已解鎖種類</span>
+                </div>
+                <div class="summary-metric">
+                    <span class="metric-val" id="total-precip-count">0</span>
+                    <span class="metric-lbl">總消除次數</span>
+                </div>
+            </div>
 
-        <div id="win-screen" class="overlay hidden">
-            <h1 style="color: #33ff33;">YOU WIN!</h1>
-            <div id="win-time">Time: 00:00</div>
-            <button id="next-level-btn">下一關</button>
-        </div>
-        
-        <div id="reset-container">
-            <button id="reset-btn">Reset</button>
-        </div>
+            <!-- Precipitate Cards Container -->
+            <div class="sidebar-scrollable">
+                <div class="section-label">🌟 達成沉澱清單</div>
+                <div id="precipitate-card-list" class="precip-list">
+                    <!-- Dynamic precipitate cards inserted via script.js -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Stage: Canvas & Primary Game Area -->
+        <main id="center-stage">
+            <div id="game-container">
+                <!-- Header / UI Layer -->
+                <div id="ui-layer">
+                    <div id="score-board">
+                        <span class="hud-label">SCORE</span>
+                        <span id="score" class="hud-value">0</span>
+                        <span id="combo-badge" class="combo-pill hidden">Combo x<span id="combo-count">1</span></span>
+                    </div>
+                    <div id="level-title">第 <span id="level">1</span> 關</div>
+                    <div id="timer">
+                        <span class="hud-label">TIME</span>
+                        <span id="time" class="hud-value">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Game Canvas -->
+                <canvas id="gameCanvas"></canvas>
+
+                <!-- Overlays -->
+                <div id="start-screen" class="overlay">
+                    <div class="overlay-modal">
+                        <div class="glow-orb"></div>
+                        <h1>化學沉澱離子射擊</h1>
+                        <p class="en-sub">Chemical Precipitation Cannon</p>
+                        <div class="instructions">
+                            <div class="inst-item">
+                                <span class="inst-icon">🎯</span>
+                                <div><strong>瞄準發射</strong>：滑動手指或移動滑鼠瞄準，點擊或按空白鍵射擊。</div>
+                            </div>
+                            <div class="inst-item">
+                                <span class="inst-icon">🧪</span>
+                                <div><strong>沉澱生成</strong>：組合成難溶於水的鹽類（如 AgCl、BaSO₄、PbI₂ 等）即刻消去。</div>
+                            </div>
+                            <div class="inst-item">
+                                <span class="inst-icon">💎</span>
+                                <div><strong>難度加權</strong>：1:2 或 2:1 的 3 顆成簇沉澱及稀有離子可獲得超高分數！</div>
+                            </div>
+                        </div>
+                        <button id="start-btn" class="primary-btn">開始遊戲</button>
+                    </div>
+                </div>
+
+                <div id="game-over-screen" class="overlay hidden">
+                    <div class="overlay-modal danger">
+                        <h1 style="color: #ef4444;">GAME OVER</h1>
+                        <p class="final-score-text">最終得分: <span id="gameover-score">0</span></p>
+                        <button id="restart-btn" class="primary-btn">再試一次</button>
+                    </div>
+                </div>
+
+                <div id="win-screen" class="overlay hidden">
+                    <div class="overlay-modal success">
+                        <h1 style="color: #10b981;">🎉 恭喜通關！</h1>
+                        <div id="win-time">通關時間: 00:00</div>
+                        <p class="final-score-text">通關得分: <span id="win-score">0</span></p>
+                        <button id="next-level-btn" class="primary-btn">前往下一關</button>
+                    </div>
+                </div>
+                
+                <div id="reset-container">
+                    <button id="reset-btn" title="重新開始本關">重置關卡</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Scoring Table & Difficulty Matrix -->
+        <aside id="right-sidebar" class="game-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <span class="title-icon">📊</span>
+                    <div>
+                        <h2>計分與難度規格</h2>
+                        <span class="subtitle">沉澱難度與機率矩陣</span>
+                    </div>
+                </div>
+                <button class="close-drawer-btn" data-target="right-sidebar" title="收起">&times;</button>
+            </div>
+
+            <!-- Real-time Score Status Box -->
+            <div class="panel-section score-stats-box">
+                <div class="score-card-main">
+                    <span class="score-caption">CURRENT SCORE</span>
+                    <span class="score-big" id="right-panel-score">0</span>
+                </div>
+                <div class="score-stats-grid">
+                    <div class="sub-stat">
+                        <span class="lbl">最高連擊</span>
+                        <span class="val" id="max-combo-val">0</span>
+                    </div>
+                    <div class="sub-stat">
+                        <span class="lbl">懸空掉落</span>
+                        <span class="val" id="drop-count-val">0 顆</span>
+                    </div>
+                    <div class="sub-stat">
+                        <span class="lbl">目前階級</span>
+                        <span class="val rank-pill" id="player-rank">C</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Event Log -->
+            <div class="panel-section event-log-box">
+                <div class="section-label">⚡ 最近消除反應</div>
+                <div id="reaction-feed" class="reaction-feed">
+                    <div class="feed-empty">發射離子觸發沉澱反應...</div>
+                </div>
+            </div>
+
+            <!-- Score Specification Matrix -->
+            <div class="sidebar-scrollable">
+                <div class="section-label">🏆 沉澱消去難度分值表</div>
+                
+                <div class="rule-tier tier-gold">
+                    <div class="tier-badge">★★★ 3 顆成簇難度 (450~600 分)</div>
+                    <div class="tier-desc">需特定 1:2 或 2:1 離子三顆聚集成簇，難度極高</div>
+                    <table class="rule-table">
+                        <thead><tr><th>沉澱物</th><th>化學反應</th><th>基準分</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="dot dot-gold"></span>PbI₂ (金雨)</td><td>Pb²⁺ + 2I⁻</td><td>+600</td></tr>
+                            <tr><td><span class="dot dot-black"></span>Ag₂S</td><td>2Ag⁺ + S²⁻</td><td>+520</td></tr>
+                            <tr><td><span class="dot dot-white"></span>Cu₂SO₄</td><td>2Cu⁺ + SO₄²⁻</td><td>+500</td></tr>
+                            <tr><td><span class="dot dot-yellow"></span>Ag₂CO₃</td><td>2Ag⁺ + CO₃²⁻</td><td>+500</td></tr>
+                            <tr><td><span class="dot dot-blue"></span>Cu(OH)₂</td><td>Cu²⁺ + 2OH⁻</td><td>+480</td></tr>
+                            <tr><td><span class="dot dot-white"></span>PbCl₂ / PbBr₂</td><td>Pb²⁺ + 2X⁻</td><td>+450</td></tr>
+                            <tr><td><span class="dot dot-white"></span>Mg/Pb(OH)₂</td><td>M²⁺ + 2OH⁻</td><td>+450</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="rule-tier tier-purple">
+                    <div class="tier-badge">★★ 稀有離子難度 (220~260 分)</div>
+                    <div class="tier-desc">硫化物、碳酸鹽或低機率陰陽離子配對</div>
+                    <table class="rule-table">
+                        <thead><tr><th>沉澱物</th><th>化學反應</th><th>基準分</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="dot dot-teal"></span>CuCO₃ (藍綠)</td><td>Cu²⁺ + CO₃²⁻</td><td>+260</td></tr>
+                            <tr><td><span class="dot dot-black"></span>PbS / CuS</td><td>M²⁺ + S²⁻</td><td>+250</td></tr>
+                            <tr><td><span class="dot dot-brown"></span>Ag₂O (棕黑)</td><td>2Ag⁺ + 2OH⁻</td><td>+220</td></tr>
+                            <tr><td><span class="dot dot-brown"></span>CuI (棕白)</td><td>Cu⁺ + I⁻</td><td>+220</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="rule-tier tier-cyan">
+                    <div class="tier-badge">★ 雙離子基礎沉澱 (150~200 分)</div>
+                    <div class="tier-desc">鹵化物沉澱、硫酸鹽與常見沉澱</div>
+                    <table class="rule-table">
+                        <thead><tr><th>沉澱物</th><th>化學反應</th><th>基準分</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="dot dot-yellow"></span>AgI (黃色)</td><td>Ag⁺ + I⁻</td><td>+200</td></tr>
+                            <tr><td><span class="dot dot-yellow"></span>AgBr (淡黃)</td><td>Ag⁺ + Br⁻</td><td>+180</td></tr>
+                            <tr><td><span class="dot dot-white"></span>AgCl / CuCl</td><td>M⁺ + Cl⁻</td><td>+180</td></tr>
+                            <tr><td><span class="dot dot-white"></span>BaSO₄ / PbSO₄</td><td>M²⁺ + SO₄²⁻</td><td>+180</td></tr>
+                            <tr><td><span class="dot dot-white"></span>BaCO₃ / MgCO₃</td><td>M²⁺ + CO₃²⁻</td><td>+180</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bonus-rules">
+                    <div class="bonus-item">🔥 <strong>連擊 Combo 加成</strong>：連續消除每次額外增加 +25% 分數！</div>
+                    <div class="bonus-item">🍃 <strong>懸空掉落</strong>：失根掉落泡泡每顆 +80 分！</div>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script src="script.js"></script>

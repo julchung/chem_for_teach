@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>3-5 觀念例題 1：離子沉澱反應 | 互動教學</title>
+    <title>3-5 離子定性分離流程：Al³⁺ 與 Cu²⁺ 的分離與鑑別 | 互動教學</title>
     <script>
         MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
@@ -15,12 +15,13 @@
         :root {
             --bg-dark: #0f172a;
             --text-main: #f8fafc;
+            --accent-cyan: #22d3ee;
             --accent-blue: #38bdf8;
             --accent-green: #34d399;
-            --accent-red: #f87171;
             --accent-yellow: #fbbf24;
             --accent-purple: #a78bfa;
-            --accent-cyan: #22d3ee;
+            --accent-red: #f87171;
+            --accent-royal: #3b82f6;
             --glass: rgba(255, 255, 255, 0.04);
             --glass-border: rgba(255, 255, 255, 0.12);
         }
@@ -30,63 +31,474 @@
             background: var(--bg-dark); color: var(--text-main);
             font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
             overflow: hidden;
-            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(rgba(34, 211, 238, 0.08) 1.2px, transparent 1.2px);
+            background-size: 28px 28px;
         }
         #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
         #slides-container {
             position: absolute;
-            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
-            display: flex; flex-direction: column; gap: 0.5rem;
+            top: 1.2vh; left: 1.5vw; right: 1.5vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.38rem;
         }
+
+        /* 標題列 */
         h1 {
-            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
-            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
-            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+            color: var(--accent-cyan); font-size: clamp(1.15rem, 1.5vw, 1.48rem);
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.3); padding-bottom: 0.2rem; flex-shrink: 0;
         }
-        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
-        h2 { font-size: clamp(1rem, 1.15vw, 1.25rem); font-weight: 700; margin-bottom: 0.35rem; }
-        p, li { font-size: clamp(0.92rem, 1.05vw, 1.1rem); line-height: 1.7; }
+        .title-left { display: flex; align-items: center; gap: 0.5rem; }
+        .title-left::before { content: ""; width: 6px; height: 22px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
 
-        .grid-2 {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 1.1rem; flex: 1; min-height: 0; align-items: stretch;
+        /* 頂部逐步引導控制器 */
+        .stepper-control-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.88);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 9px;
+            padding: 0.28rem 0.8rem;
+            flex-shrink: 0;
+            gap: 0.8rem;
         }
-        .panel {
-            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
-            padding: 1.2rem; backdrop-filter: blur(12px);
-            display: flex; flex-direction: column; gap: 0.8rem;
-            min-height: 0; overflow-y: auto;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        .stepper-tabs {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
         }
-        .panel::-webkit-scrollbar { width: 4px; }
-        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+        .step-pill {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: #94a3b8;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .step-pill:hover {
+            color: #f1f5f9;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .step-pill.active {
+            background: var(--accent-cyan);
+            color: #0f172a;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+            font-weight: 800;
+        }
+        .step-pill-num {
+            width: 17px; height: 17px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.25);
+            color: inherit;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.72rem; font-weight: 900;
+        }
 
-        .btn-action {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #fff; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 10px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.35); padding: 10px 22px;
-            font-size: 1rem; transition: all 0.2s; align-self: flex-start;
+        .stepper-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .btn-action:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .act-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #e2e8f0;
+            padding: 3px 11px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .act-btn:hover {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+        .act-btn-primary {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: var(--accent-blue);
+            color: #7dd3fc;
+        }
+        .act-btn-primary:hover {
+            background: var(--accent-blue);
+            color: #0f172a;
+        }
 
-        .calc-step {
-            background: rgba(0,0,0,0.3); border-radius: 10px;
-            padding: 0.85rem 1.1rem; border-left: 4px solid var(--accent-blue);
-            margin-bottom: 0.5rem;
+        /* 主流程圖對照容器（垂直均分兩段教學） */
+        .flowcharts-container {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 0.42rem;
         }
 
-        .options-list {
-            display: flex; flex-direction: column; gap: 10px; margin: 1rem 0;
+        .flowchart-card {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 11px;
+            padding: 0.4rem 0.95rem;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
-        .option-item {
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-            padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 1rem;
+        .flowchart-card.naoh-card {
+            border-left: 5px solid var(--accent-red);
+            background: linear-gradient(180deg, rgba(248, 113, 113, 0.05) 0%, rgba(15, 23, 42, 0.82) 100%);
+        }
+        .flowchart-card.nh3-card {
+            border-left: 5px solid var(--accent-purple);
+            background: linear-gradient(180deg, rgba(167, 139, 250, 0.05) 0%, rgba(15, 23, 42, 0.82) 100%);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            margin-bottom: 0.12rem;
+        }
+        .card-title {
+            font-size: clamp(0.95rem, 1.12vw, 1.15rem);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .card-tag {
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .tag-naoh {
+            background: rgba(248, 113, 113, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(248, 113, 113, 0.45);
+        }
+        .tag-nh3 {
+            background: rgba(167, 139, 250, 0.2);
+            color: #c4b5fd;
+            border: 1px solid rgba(167, 139, 250, 0.45);
+        }
+
+        /* 經典樹狀流程架構 (Branching Flow Tree) */
+        .flow-tree-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 0;
+        }
+        .flow-tree {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 1120px;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 樹節點樣式（放大、上下分行、絕不疊交） */
+        .tree-node {
+            background: rgba(15, 23, 42, 0.94);
+            border: 1.5px solid rgba(255, 255, 255, 0.16);
+            border-radius: 9px;
+            padding: 0.35rem 0.65rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            position: relative;
+            z-index: 2;
+            transition: all 0.35s ease;
+        }
+        .tree-node.node-dimmed {
+            opacity: 0.2;
+            filter: grayscale(0.8) blur(0.5px);
+            transform: scale(0.97);
+        }
+        .tree-node.node-active {
+            opacity: 1;
+            filter: none;
+            transform: scale(1.02);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.38);
+        }
+
+        .node-init {
+            width: 185px;
+            border-color: rgba(56, 189, 248, 0.45);
+            flex-shrink: 0;
+        }
+        .node-ppt-mid {
+            width: 295px;
+            border-color: rgba(251, 191, 36, 0.55);
+            flex-shrink: 0;
+        }
+        .node-branch {
+            width: 285px;
+            flex-shrink: 0;
+        }
+        .node-ppt-final {
+            border-color: rgba(56, 189, 248, 0.5);
+            background: rgba(15, 23, 42, 0.96);
+        }
+        .node-sol-final {
+            border-color: rgba(52, 211, 153, 0.5);
+            background: rgba(15, 23, 42, 0.96);
+        }
+
+        .node-title-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            letter-spacing: 0.04em;
+            text-align: center;
+        }
+
+        /* 垂直堆疊行結構（上下分開放，互不重疊） */
+        .items-vertical-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .ion-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .ion-sym {
+            font-size: clamp(1.1rem, 1.3vw, 1.32rem);
+            font-weight: 800;
+            color: #f8fafc;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+        .ppt-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .ppt-sym {
+            font-size: clamp(1.05rem, 1.22vw, 1.24rem);
+            font-weight: 800;
+            line-height: 1.25;
+            white-space: nowrap;
+        }
+
+        .branch-formula {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: clamp(1.08rem, 1.28vw, 1.3rem);
+            font-weight: 800;
+            color: #f8fafc;
+            line-height: 1.25;
+            white-space: nowrap;
+            margin: 2px 0;
+        }
+        .node-desc {
+            font-size: clamp(0.72rem, 0.8vw, 0.82rem);
+            color: #cbd5e1;
+            margin-top: 2px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* 沉澱與溶液標籤 */
+        .c-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .c-white { background: rgba(255, 255, 255, 0.22); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.5); }
+        .c-blue { background: rgba(56, 189, 248, 0.25); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.6); }
+        .c-royal { background: rgba(37, 99, 235, 0.4); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.8); }
+        .c-clear { background: rgba(148, 163, 184, 0.22); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.45); }
+
+        /* 樹箭頭與試劑標籤 (Connector 1) */
+        .tree-arrow-connector {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-width: 95px;
+            padding: 0 4px;
+            transition: all 0.35s ease;
+        }
+        .tree-arrow-connector.arrow-dimmed {
+            opacity: 0.2;
+            filter: grayscale(0.8);
+        }
+        .tree-arrow-connector.arrow-active {
+            opacity: 1;
+            filter: none;
+        }
+        .reagent-banner {
+            font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+        .arrow-svg-straight {
+            width: 100%;
+            height: 18px;
+            display: block;
+        }
+
+        /* 樹分叉連接器 (Connector 2: Fork) */
+        .tree-fork-connector {
+            width: 110px;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.35s ease;
+        }
+        .tree-fork-connector.fork-dimmed {
+            opacity: 0.2;
+            filter: grayscale(0.8);
+        }
+        .tree-fork-connector.fork-active {
+            opacity: 1;
+            filter: none;
+        }
+        .reagent-fork-banner {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: clamp(0.82rem, 0.95vw, 0.98rem);
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1.5px solid rgba(255, 255, 255, 0.32);
+            white-space: nowrap;
+            z-index: 3;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+        }
+        .fork-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            position: absolute;
+            top: 0; left: 0;
+        }
+
+        /* 右側分叉結果群組 (上下兩分支，縱向對稱) */
+        .branches-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 100%;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* 反應方程式與解說橫條 */
+        .rxn-explain-bar {
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 7px;
+            padding: 0.22rem 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            font-size: clamp(0.76rem, 0.85vw, 0.88rem);
+            line-height: 1.35;
+            transition: all 0.3s ease;
+        }
+        .rxn-formula-highlight {
+            color: #f1f5f9;
+            font-weight: 700;
+        }
+        .rxn-note-highlight {
+            color: #cbd5e1;
+            font-size: clamp(0.72rem, 0.8vw, 0.82rem);
+        }
+
+        /* 底部口訣金匙 */
+        .bottom-summary-bar {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1.5px solid rgba(34, 211, 238, 0.35);
+            border-radius: 8px;
+            padding: 0.3rem 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            font-size: clamp(0.8rem, 0.9vw, 0.92rem);
+            gap: 0.8rem;
+        }
+        .mnemonic-group {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .m-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .m-tag {
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.72rem;
         }
 
         @media (max-width: 900px) {
-            .grid-2 { grid-template-columns: 1fr; overflow-y: auto; }
+            .flowcharts-container { grid-template-rows: auto auto; overflow-y: auto; }
+            .flow-tree { flex-direction: column; height: auto; gap: 10px; }
+            .tree-fork-connector { width: 100%; height: 50px; }
+            .branches-group { width: 100%; }
             body, html, #app { overflow: auto; }
             #slides-container { position: relative; height: auto; min-height: 100vh; }
         }
@@ -95,76 +507,435 @@
 <body>
 <div id="app">
     <div id="slides-container">
-        <h1>3-5 沉澱表與沉澱規則 &middot; 實戰演練：觀念例題 1</h1>
+        <!-- 頂部大標題 -->
+        <h1>
+            <span class="title-left">3-5 離子定性分離流程：$\text{Al}^{3+}$ 與 $\text{Cu}^{2+}$ 之分離與鑑別</span>
+            <span style="font-size:0.86rem; color:#94a3b8; font-weight:500;">🧪 兩性金屬 vs 過渡金屬 · 沉澱與選擇性再溶解反應樹</span>
+        </h1>
 
-        <div class="grid-2">
-            <!-- 左欄：題目內容 -->
-            <div class="panel" style="justify-content:space-between;">
-                <div>
-                    <h2 style="color:var(--accent-yellow); font-size:1.3rem; margin-bottom:0.8rem;">📝 題目內容</h2>
-                    <div style="font-size:1.05rem; line-height:1.75; color:#f8fafc;">
-                        <p>下列何者是水溶液中的<strong>離子沉澱反應</strong>？</p>
+        <!-- 頂部逐步引導控制器 -->
+        <div class="stepper-control-bar">
+            <div class="stepper-tabs">
+                <div class="step-pill active" id="pill-step-1" onclick="goToStep(1)">
+                    <span class="step-pill-num">1</span>
+                    <span>初始混合溶液</span>
+                </div>
+                <div class="step-pill" id="pill-step-2" onclick="goToStep(2)">
+                    <span class="step-pill-num">2</span>
+                    <span>加少量試劑（同時沉澱）</span>
+                </div>
+                <div class="step-pill" id="pill-step-3" onclick="goToStep(3)">
+                    <span class="step-pill-num">3</span>
+                    <span>加過量試劑（再溶解與分離）</span>
+                </div>
+            </div>
 
-                        <div class="options-list">
-                            <div class="option-item">(A) $2\text{Mg}_{(s)} + \text{O}_{2(g)} \rightarrow 2\text{MgO}_{(s)}$</div>
-                            <div class="option-item">(B) $\text{Na}_2\text{CO}_{3(aq)} + 2\text{HCl}_{(aq)} \rightarrow 2\text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)} + \text{CO}_{2(g)}$</div>
-                            <div class="option-item">(C) $\text{MgCl}_{2(aq)} + 2\text{NaOH}_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)} + 2\text{NaCl}_{(aq)}$</div>
-                            <div class="option-item">(D) $\text{HCl}_{(aq)} + \text{NaOH}_{(aq)} \rightarrow \text{NaCl}_{(aq)} + \text{H}_2\text{O}_{(l)}$</div>
+            <div class="stepper-actions">
+                <button class="act-btn" onclick="prevStep()">◀ 上一步</button>
+                <button class="act-btn act-btn-primary" id="btn-next" onclick="nextStep()">下一步 (逐步呈現) ▶</button>
+                <button class="act-btn" onclick="showAll()">✨ 全部展開</button>
+                <button class="act-btn" onclick="resetFlow()">🔄 重新開始</button>
+            </div>
+        </div>
+
+        <!-- 主流程圖對照區（無上下半段字眼，以教學意義命名） -->
+        <div class="flowcharts-container">
+
+            <!-- 流程一：強鹼 NaOH 分離法 -->
+            <div class="flowchart-card naoh-card">
+                <div class="card-header">
+                    <span class="card-title" style="color:#f87171;">
+                        <span>🧪 流程一：以氫氧化鈉（$\text{NaOH}$）分離 —— 兩性金屬特性</span>
+                    </span>
+                    <span class="card-tag tag-naoh">核心原理：兩性 $\text{Al(OH)}_3$ 溶於過量強鹼；非兩性 $\text{Cu(OH)}_2$ 不溶</span>
+                </div>
+
+                <!-- 流程樹 -->
+                <div class="flow-tree-wrap">
+                    <div class="flow-tree">
+                        <!-- 節點 1：初始溶液（兩種離子上下分開放，字體放大） -->
+                        <div class="tree-node node-init node-active" id="tree1-node-1">
+                            <div class="node-title-badge">混合溶液（陽離子）</div>
+                            <div class="items-vertical-col">
+                                <div class="ion-row">
+                                    <span class="ion-sym">$\text{Al}^{3+}_{(aq)}$</span>
+                                    <span class="c-badge c-clear">無色離子</span>
+                                </div>
+                                <div class="ion-row">
+                                    <span class="ion-sym">$\text{Cu}^{2+}_{(aq)}$</span>
+                                    <span class="c-badge c-blue">淺藍色離子</span>
+                                </div>
+                            </div>
+                            <div class="node-desc" style="margin-top:3px;">澄清均相混合液</div>
+                        </div>
+
+                        <!-- 箭頭 1：加少量 NaOH -->
+                        <div class="tree-arrow-connector arrow-dimmed" id="tree1-arrow-1">
+                            <div class="reagent-banner" style="color:#fca5a5; border-color:rgba(248,113,113,0.55);">加少量 $\text{NaOH}$</div>
+                            <svg class="arrow-svg-straight" viewBox="0 0 100 16" preserveAspectRatio="none">
+                                <defs>
+                                    <marker id="arr1-naoh" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#f87171" />
+                                    </marker>
+                                </defs>
+                                <line x1="0" y1="8" x2="94" y2="8" stroke="#f87171" stroke-width="2.5" marker-end="url(#arr1-naoh)" />
+                            </svg>
+                        </div>
+
+                        <!-- 節點 2：同時產生沉澱（生成的沉澱物上下分開放，字體放大） -->
+                        <div class="tree-node node-ppt-mid node-dimmed" id="tree1-node-2">
+                            <div class="node-title-badge" style="color:#fbbf24;">同時生成沉澱物</div>
+                            <div class="items-vertical-col">
+                                <div class="ppt-row" style="border-left: 3.5px solid #ffffff;">
+                                    <span class="ppt-sym" style="color:#ffffff;">$\text{Al(OH)}_{3(s)}\downarrow$</span>
+                                    <span class="c-badge c-white">白色膠狀沉澱</span>
+                                </div>
+                                <div class="ppt-row" style="border-left: 3.5px solid #38bdf8;">
+                                    <span class="ppt-sym" style="color:#7dd3fc;">$\text{Cu(OH)}_{2(s)}\downarrow$</span>
+                                    <span class="c-badge c-blue">淡藍色絮狀沉澱</span>
+                                </div>
+                            </div>
+                            <div class="node-desc" style="margin-top:3px;">兩者濃度積皆大於 $K_{sp}$，產生混濁沉澱</div>
+                        </div>
+
+                        <!-- 分叉箭頭 2：加過量 NaOH -->
+                        <div class="tree-fork-connector fork-dimmed" id="tree1-fork">
+                            <div class="reagent-fork-banner" style="color:#f87171; border-color:#f87171;">加過量 $\text{NaOH}$</div>
+                            <svg class="fork-svg" viewBox="0 0 110 160" preserveAspectRatio="none">
+                                <defs>
+                                    <marker id="fork-arr-ppt1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#38bdf8" />
+                                    </marker>
+                                    <marker id="fork-arr-sol1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#34d399" />
+                                    </marker>
+                                </defs>
+                                <!-- 上分支路徑：指向沉澱 (濾渣) -->
+                                <path d="M 0 80 H 42 V 38 H 102" stroke="#38bdf8" stroke-width="2.5" fill="none" marker-end="url(#fork-arr-ppt1)" />
+                                <!-- 下分支路徑：指向濾液 (再溶解) -->
+                                <path d="M 0 80 H 42 V 122 H 102" stroke="#34d399" stroke-width="2.5" fill="none" marker-end="url(#fork-arr-sol1)" />
+                            </svg>
+                        </div>
+
+                        <!-- 右側分叉結果 -->
+                        <div class="branches-group">
+                            <!-- 上分支：沉澱（濾渣） -->
+                            <div class="tree-node node-branch node-ppt-final node-dimmed" id="tree1-node-3a">
+                                <div class="node-title-badge" style="color:#38bdf8;">沉澱（濾渣 · 固體）</div>
+                                <div class="branch-formula">
+                                    <span style="color:#7dd3fc;">$\text{Cu(OH)}_{2(s)}\downarrow$</span>
+                                    <span class="c-badge c-blue">淡藍沉澱</span>
+                                </div>
+                                <div class="node-desc">非兩性金屬，不溶於過量強鹼</div>
+                            </div>
+
+                            <!-- 下分支：濾液（再溶解） -->
+                            <div class="tree-node node-branch node-sol-final node-dimmed" id="tree1-node-3b">
+                                <div class="node-title-badge" style="color:#34d399;">濾液（再溶解 · 溶液）</div>
+                                <div class="branch-formula">
+                                    <span style="color:#6ee7b7;">$[\text{Al(OH)}_4]^-_{(aq)}$</span>
+                                    <span class="c-badge c-clear">無色澄清</span>
+                                </div>
+                                <div class="node-desc">兩性金屬生成可溶錯離子完全復溶</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div style="padding-top:1rem;">
-                    <button class="btn-action" onclick="toggleSolution('solution-box')">
-                        💡 顯示詳解 / 隱藏
-                    </button>
+                <!-- 反應方程式解說橫條 -->
+                <div class="rxn-explain-bar" id="tree1-explain">
+                    <span class="rxn-formula-highlight" id="tree1-eq">
+                        • 階段方程式：$\text{Al}^{3+}_{(aq)} + \text{Cu}^{2+}_{(aq)}$ 處於溶解態
+                    </span>
+                    <span class="rxn-note-highlight" id="tree1-note">
+                        💡 請點擊上方「下一步」或步驟鈕，逐步觀察強鹼下的沉澱與復溶分歧！
+                    </span>
                 </div>
             </div>
 
-            <!-- 右欄：詳解（預設留白，點擊按鈕展開） -->
-            <div class="panel" style="background:rgba(255,255,255,0.02);">
-                <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
-                    <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 觀念詳解：正解為 (C)</h2>
+            <!-- 流程二：氨水 NH3 分離法 -->
+            <div class="flowchart-card nh3-card">
+                <div class="card-header">
+                    <span class="card-title" style="color:#a78bfa;">
+                        <span>💧 流程二：以氨水（$\text{NH}_3$）分離 —— 過渡金屬錯合特性</span>
+                    </span>
+                    <span class="card-tag tag-nh3">核心原理：過渡 $\text{Cu(OH)}_2$ 溶於過量氨水成深藍錯離子；主族 $\text{Al(OH)}_3$ 不溶</span>
+                </div>
 
-                    <div class="calc-step">
-                        <div style="font-size:1rem; color:var(--accent-blue); font-weight:700;">1. 離子沉澱反應的定義：</div>
-                        <p style="font-size:0.95rem; color:#cbd5e1; margin-top:4px;">
-                            水溶液中的陽離子與陰離子結合，生成在水中溶解度極小之固體產物（沉澱物）的反應。
-                        </p>
-                    </div>
+                <!-- 流程樹 -->
+                <div class="flow-tree-wrap">
+                    <div class="flow-tree">
+                        <!-- 節點 1：初始溶液（兩種離子上下分開放，字體放大） -->
+                        <div class="tree-node node-init node-active" id="tree2-node-1">
+                            <div class="node-title-badge">混合溶液（陽離子）</div>
+                            <div class="items-vertical-col">
+                                <div class="ion-row">
+                                    <span class="ion-sym">$\text{Al}^{3+}_{(aq)}$</span>
+                                    <span class="c-badge c-clear">無色離子</span>
+                                </div>
+                                <div class="ion-row">
+                                    <span class="ion-sym">$\text{Cu}^{2+}_{(aq)}$</span>
+                                    <span class="c-badge c-blue">淺藍色離子</span>
+                                </div>
+                            </div>
+                            <div class="node-desc" style="margin-top:3px;">澄清均相混合液</div>
+                        </div>
 
-                    <div class="calc-step">
-                        <div style="font-size:1rem; color:var(--accent-yellow); font-weight:700;">2. 選項逐一剖析：</div>
-                        <ul style="margin-left:1.2rem; font-size:0.95rem; color:#e2e8f0; margin-top:4px; display:flex; flex-direction:column; gap:6px;">
-                            <li><strong>(A) 錯誤：</strong>為金屬固體在高溫氧氣中的燃燒氧化還原反應，非溶液中的離子反應。</li>
-                            <li><strong>(B) 錯誤：</strong>產生二氧化碳氣體 ($\text{CO}_2\uparrow$) 與水，所有產物離子（$\text{Na}^+, \text{Cl}^-$）均可溶，無沉澱生成。</li>
-                            <li><strong>(C) 正確：</strong>淨離子反應式為 $\text{Mg}^{2+}_{(aq)} + 2\text{OH}^-_{(aq)} \rightarrow \text{Mg(OH)}_{2(s)} \downarrow$，生成白色氫氧化鎂沉澱，屬於典型的離子沉澱反應。</li>
-                            <li><strong>(D) 錯誤：</strong>為強酸與強鹼的酸鹼中和反應（$\text{H}^+ + \text{OH}^- \rightarrow \text{H}_2\text{O}$），產物食鹽水可溶，無沉澱。</li>
-                        </ul>
-                    </div>
+                        <!-- 箭頭 1：加少量 NH3 -->
+                        <div class="tree-arrow-connector arrow-dimmed" id="tree2-arrow-1">
+                            <div class="reagent-banner" style="color:#c4b5fd; border-color:rgba(167,139,250,0.55);">加少量 $\text{NH}_3(aq)$</div>
+                            <svg class="arrow-svg-straight" viewBox="0 0 100 16" preserveAspectRatio="none">
+                                <defs>
+                                    <marker id="arr1-nh3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#a78bfa" />
+                                    </marker>
+                                </defs>
+                                <line x1="0" y1="8" x2="94" y2="8" stroke="#a78bfa" stroke-width="2.5" marker-end="url(#arr1-nh3)" />
+                            </svg>
+                        </div>
 
-                    <div class="calc-step" style="border-left-color:var(--accent-green);">
-                        <div style="font-size:1rem; color:var(--accent-green); font-weight:700;">3. 核心考點速記：</div>
-                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:4px;">
-                            • $\text{IIA}$ 族中，$\text{Mg}^{2+}$ 的氫氧化物 $\text{Mg(OH)}_2$ 為白色難溶沉澱（胃乳片主要成分）。
-                        </p>
+                        <!-- 節點 2：同時產生沉澱（生成的沉澱物上下分開放，字體放大） -->
+                        <div class="tree-node node-ppt-mid node-dimmed" id="tree2-node-2">
+                            <div class="node-title-badge" style="color:#fbbf24;">同時生成沉澱物</div>
+                            <div class="items-vertical-col">
+                                <div class="ppt-row" style="border-left: 3.5px solid #ffffff;">
+                                    <span class="ppt-sym" style="color:#ffffff;">$\text{Al(OH)}_{3(s)}\downarrow$</span>
+                                    <span class="c-badge c-white">白色膠狀沉澱</span>
+                                </div>
+                                <div class="ppt-row" style="border-left: 3.5px solid #38bdf8;">
+                                    <span class="ppt-sym" style="color:#7dd3fc;">$\text{Cu(OH)}_{2(s)}\downarrow$</span>
+                                    <span class="c-badge c-blue">淡藍色絮狀沉澱</span>
+                                </div>
+                            </div>
+                            <div class="node-desc" style="margin-top:3px;">弱鹼水解供 $\text{OH}^-$，兩者皆達沉澱條件</div>
+                        </div>
+
+                        <!-- 分叉箭頭 2：加過量 NH3 -->
+                        <div class="tree-fork-connector fork-dimmed" id="tree2-fork">
+                            <div class="reagent-fork-banner" style="color:#a78bfa; border-color:#a78bfa;">加過量 $\text{NH}_3(aq)$</div>
+                            <svg class="fork-svg" viewBox="0 0 110 160" preserveAspectRatio="none">
+                                <defs>
+                                    <marker id="fork-arr-sol2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#3b82f6" />
+                                    </marker>
+                                    <marker id="fork-arr-ppt2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                        <path d="M 0 0 L 6 3 L 0 6 z" fill="#e2e8f0" />
+                                    </marker>
+                                </defs>
+                                <!-- 上分支路徑：指向濾液 (錯合再溶解) -->
+                                <path d="M 0 80 H 42 V 38 H 102" stroke="#3b82f6" stroke-width="2.5" fill="none" marker-end="url(#fork-arr-sol2)" />
+                                <!-- 下分支路徑：指向沉澱 (濾渣) -->
+                                <path d="M 0 80 H 42 V 122 H 102" stroke="#e2e8f0" stroke-width="2.5" fill="none" marker-end="url(#fork-arr-ppt2)" />
+                            </svg>
+                        </div>
+
+                        <!-- 右側分叉結果 -->
+                        <div class="branches-group">
+                            <!-- 上分支：濾液（錯合再溶解） -->
+                            <div class="tree-node node-branch node-sol-final node-dimmed" id="tree2-node-3a" style="border-color:rgba(59,130,246,0.6);">
+                                <div class="node-title-badge" style="color:#93c5fd;">濾液（錯合再溶解 · 溶液）</div>
+                                <div class="branch-formula">
+                                    <span style="color:#93c5fd;">$[\text{Cu(NH}_3)_4]^{2+}_{(aq)}$</span>
+                                    <span class="c-badge c-royal">深寶藍色</span>
+                                </div>
+                                <div class="node-desc">過渡金屬與 $\text{NH}_3$ 配位成穩定錯離子</div>
+                            </div>
+
+                            <!-- 下分支：沉澱（濾渣） -->
+                            <div class="tree-node node-branch node-ppt-final node-dimmed" id="tree2-node-3b" style="border-color:rgba(255,255,255,0.4);">
+                                <div class="node-title-badge" style="color:#cbd5e1;">沉澱（濾渣 · 固體）</div>
+                                <div class="branch-formula">
+                                    <span style="color:#ffffff;">$\text{Al(OH)}_{3(s)}\downarrow$</span>
+                                    <span class="c-badge c-white">白色沉澱</span>
+                                </div>
+                                <div class="node-desc">主族金屬不與氨錯合且氨鹼度弱，不溶</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- 反應方程式解說橫條 -->
+                <div class="rxn-explain-bar" id="tree2-explain">
+                    <span class="rxn-formula-highlight" id="tree2-eq">
+                        • 階段方程式：$\text{Al}^{3+}_{(aq)} + \text{Cu}^{2+}_{(aq)}$ 處於溶解態
+                    </span>
+                    <span class="rxn-note-highlight" id="tree2-note">
+                        💡 請點擊上方「下一步」或步驟鈕，逐步觀察氨水下的沉澱與復溶分歧！
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 底部速記口訣金匙 -->
+        <div class="bottom-summary-bar">
+            <div class="mnemonic-group">
+                <div class="m-item">
+                    <span class="m-tag" style="background:rgba(248,113,113,0.25); color:#fca5a5; border:1px solid rgba(248,113,113,0.5);">兩性口訣</span>
+                    <span><strong>鈳鈹鋁鎵錫鉛鋅</strong>（$\text{Al}$ 氫氧化物溶於過量強鹼）</span>
+                </div>
+                <div class="m-item">
+                    <span class="m-tag" style="background:rgba(167,139,250,0.25); color:#c4b5fd; border:1px solid rgba(167,139,250,0.5);">氨錯口訣</span>
+                    <span><strong>銅、鋅、銀、鎳、鎘、鈷</strong>（同心贏你哥骨 · $\text{Cu}$ 氫氧化物溶於過量氨水）</span>
+                </div>
+            </div>
+            <div style="font-weight:700; color:var(--accent-yellow);">
+                ⚡ 分離記憶金匙：強鹼溶 $\text{Al}$ 留 $\text{Cu}$ · 氨水溶 $\text{Cu}$ 留 $\text{Al}$
             </div>
         </div>
     </div>
 </div>
 
 <script>
-function toggleSolution(id) {
-    const box = document.getElementById(id);
-    if (!box) return;
-    const isHidden = (box.style.display === 'none' || box.style.display === '');
-    box.style.display = isHidden ? 'flex' : 'none';
-    if (isHidden && window.MathJax && MathJax.typesetPromise) {
-        MathJax.typesetPromise([box]).catch(() => {});
+    let currentStep = 1; // 1: 初始溶液, 2: 同時沉澱, 3: 過量再溶解與分離
+
+    function goToStep(step) {
+        currentStep = step;
+        updateUI();
     }
-}
+
+    function nextStep() {
+        if (currentStep < 3) {
+            currentStep++;
+            updateUI();
+        } else {
+            currentStep = 3;
+            updateUI();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateUI();
+        }
+    }
+
+    function showAll() {
+        currentStep = 3;
+        updateUI();
+    }
+
+    function resetFlow() {
+        currentStep = 1;
+        updateUI();
+    }
+
+    function updateUI() {
+        // 更新頂部按鈕狀態
+        for (let i = 1; i <= 3; i++) {
+            const pill = document.getElementById(`pill-step-${i}`);
+            if (i === currentStep) {
+                pill.classList.add('active');
+            } else {
+                pill.classList.remove('active');
+            }
+        }
+
+        const btnNext = document.getElementById('btn-next');
+        if (currentStep === 3) {
+            btnNext.textContent = '已完整展開 ✨';
+            btnNext.classList.remove('act-btn-primary');
+        } else {
+            btnNext.textContent = '下一步 (逐步呈現) ▶';
+            btnNext.classList.add('act-btn-primary');
+        }
+
+        // 節點引用 - 流程一
+        const t1_arr1 = document.getElementById('tree1-arrow-1');
+        const t1_node2 = document.getElementById('tree1-node-2');
+        const t1_fork = document.getElementById('tree1-fork');
+        const t1_node3a = document.getElementById('tree1-node-3a');
+        const t1_node3b = document.getElementById('tree1-node-3b');
+        const t1_eq = document.getElementById('tree1-eq');
+        const t1_note = document.getElementById('tree1-note');
+
+        // 節點引用 - 流程二
+        const t2_arr1 = document.getElementById('tree2-arrow-1');
+        const t2_node2 = document.getElementById('tree2-node-2');
+        const t2_fork = document.getElementById('tree2-fork');
+        const t2_node3a = document.getElementById('tree2-node-3a');
+        const t2_node3b = document.getElementById('tree2-node-3b');
+        const t2_eq = document.getElementById('tree2-eq');
+        const t2_note = document.getElementById('tree2-note');
+
+        if (currentStep === 1) {
+            // Step 1: 僅初始溶液亮起
+            t1_arr1.className = 'tree-arrow-connector arrow-dimmed';
+            t1_node2.className = 'tree-node node-ppt-mid node-dimmed';
+            t1_fork.className = 'tree-fork-connector fork-dimmed';
+            t1_node3a.className = 'tree-node node-branch node-ppt-final node-dimmed';
+            t1_node3b.className = 'tree-node node-branch node-sol-final node-dimmed';
+
+            t1_eq.innerHTML = '• 階段方程式：$\\text{Al}^{3+}_{(aq)}$ 與 $\\text{Cu}^{2+}_{(aq)}$ 均相溶解';
+            t1_note.innerHTML = '【步驟 1】初始狀態：混合溶液中含主族 $\\text{Al}^{3+}$（無色）與過渡金屬水合銅離子 $\\text{Cu}^{2+}$（澄清淺藍）。';
+
+            t2_arr1.className = 'tree-arrow-connector arrow-dimmed';
+            t2_node2.className = 'tree-node node-ppt-mid node-dimmed';
+            t2_fork.className = 'tree-fork-connector fork-dimmed';
+            t2_node3a.className = 'tree-node node-branch node-sol-final node-dimmed';
+            t2_node3b.className = 'tree-node node-branch node-ppt-final node-dimmed';
+
+            t2_eq.innerHTML = '• 階段方程式：$\\text{Al}^{3+}_{(aq)}$ 與 $\\text{Cu}^{2+}_{(aq)}$ 均相溶解';
+            t2_note.innerHTML = '【步驟 1】初始狀態：兩陽離子均勻共存於同一溶液中，待加入分離試劑。';
+        }
+        else if (currentStep === 2) {
+            // Step 2: 箭頭 1 與「同時沉澱」亮起
+            t1_arr1.className = 'tree-arrow-connector arrow-active';
+            t1_node2.className = 'tree-node node-ppt-mid node-active';
+            t1_fork.className = 'tree-fork-connector fork-dimmed';
+            t1_node3a.className = 'tree-node node-branch node-ppt-final node-dimmed';
+            t1_node3b.className = 'tree-node node-branch node-sol-final node-dimmed';
+
+            t1_eq.innerHTML = '• 沉澱反應式：$\\text{Al}^{3+} + 3\\text{OH}^- \\rightarrow \\text{Al(OH)}_{3}\\downarrow$ (白) ； $\\text{Cu}^{2+} + 2\\text{OH}^- \\rightarrow \\text{Cu(OH)}_{2}\\downarrow$ (淡藍)';
+            t1_note.innerHTML = '【步驟 2：同時產生沉澱】滴加少量強鹼 $\\text{NaOH}$，兩種陽離子皆達沉澱條件，同時生成白色與淡藍色沉澱！';
+
+            t2_arr1.className = 'tree-arrow-connector arrow-active';
+            t2_node2.className = 'tree-node node-ppt-mid node-active';
+            t2_fork.className = 'tree-fork-connector fork-dimmed';
+            t2_node3a.className = 'tree-node node-branch node-sol-final node-dimmed';
+            t2_node3b.className = 'tree-node node-branch node-ppt-final node-dimmed';
+
+            t2_eq.innerHTML = '• 沉澱反應式：$\\text{Al}^{3+} + 3\\text{NH}_3 + 3\\text{H}_2\\text{O} \\rightarrow \\text{Al(OH)}_3\\downarrow + 3\\text{NH}_4^+$ ； $\\text{Cu}^{2+} + 2\\text{NH}_3 + 2\\text{H}_2\\text{O} \\rightarrow \\text{Cu(OH)}_2\\downarrow + 2\\text{NH}_4^+$';
+            t2_note.innerHTML = '【步驟 2：同時產生沉澱】滴加少量氨水，弱鹼水解供 $\\text{OH}^-$，兩者同樣皆沉澱為氫氧化物！';
+        }
+        else if (currentStep === 3) {
+            // Step 3: 全線展開，分叉亮起
+            t1_arr1.className = 'tree-arrow-connector arrow-active';
+            t1_node2.className = 'tree-node node-ppt-mid node-active';
+            t1_fork.className = 'tree-fork-connector fork-active';
+            t1_node3a.className = 'tree-node node-branch node-ppt-final node-active';
+            t1_node3b.className = 'tree-node node-branch node-sol-final node-active';
+
+            t1_eq.innerHTML = '• 再溶解式：$\\text{Al(OH)}_3 + \\text{OH}^- \\rightarrow [\\text{Al(OH)}_4]^-$ (溶，無色) ； $\\text{Cu(OH)}_2 + \\text{過量 OH}^- \\rightarrow \\text{不溶}$ (維持淡藍沉澱)';
+            t1_note.innerHTML = '【步驟 3：選擇性再溶解】兩性金屬 $\\text{Al}$ 復溶成無色濾液；非兩性銅維持沉澱留於濾紙，達成完全分離！';
+
+            t2_arr1.className = 'tree-arrow-connector arrow-active';
+            t2_node2.className = 'tree-node node-ppt-mid node-active';
+            t2_fork.className = 'tree-fork-connector fork-active';
+            t2_node3a.className = 'tree-node node-branch node-sol-final node-active';
+            t2_node3b.className = 'tree-node node-branch node-ppt-final node-active';
+
+            t2_eq.innerHTML = '• 再溶解式：$\\text{Cu(OH)}_2 + 4\\text{NH}_3 \\rightarrow [\\text{Cu(NH}_3)_4]^{2+}$ (溶，深寶藍色) ； $\\text{Al(OH)}_3 + \\text{過量 NH}_3 \\rightarrow \\text{不溶}$ (維持白沉澱)';
+            t2_note.innerHTML = '【步驟 3：選擇性再溶解】過渡金屬 $\\text{Cu}$ 配位復溶成深寶藍色濾液；鋁非過渡元素維持白色沉澱留於濾紙，達成完美分離！';
+        }
+
+        // 觸發 MathJax 動態重新排版
+        if (window.MathJax) {
+            if (MathJax.typesetPromise) {
+                MathJax.typesetPromise([t1_eq, t1_note, t2_eq, t2_note]).catch(err => {});
+            } else if (MathJax.startup && MathJax.startup.promise) {
+                MathJax.startup.promise.then(() => {
+                    if (MathJax.typesetPromise) MathJax.typesetPromise([t1_eq, t1_note, t2_eq, t2_note]).catch(err => {});
+                });
+            }
+        }
+    }
+
+    // 初次載入
+    document.addEventListener('DOMContentLoaded', () => {
+        updateUI();
+    });
 </script>
 </body>
 </html>

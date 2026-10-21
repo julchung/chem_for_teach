@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>3-5 互動挑戰：陽離子分離實驗 | 互動教學</title>
+    <title>3-5 特殊沉澱規則 (三)：溶於過量氨水 | 互動教學</title>
     <script>
         MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
@@ -15,12 +15,12 @@
         :root {
             --bg-dark: #0f172a;
             --text-main: #f8fafc;
+            --accent-cyan: #22d3ee;
             --accent-blue: #38bdf8;
             --accent-green: #34d399;
-            --accent-red: #f87171;
             --accent-yellow: #fbbf24;
             --accent-purple: #a78bfa;
-            --accent-cyan: #22d3ee;
+            --accent-indigo: #818cf8;
             --glass: rgba(255, 255, 255, 0.04);
             --glass-border: rgba(255, 255, 255, 0.12);
         }
@@ -30,246 +30,139 @@
             background: var(--bg-dark); color: var(--text-main);
             font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
             overflow: hidden;
-            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1.2px, transparent 1.2px);
+            background-size: 28px 28px;
         }
         #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
         #slides-container {
             position: absolute;
             top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
-            display: flex; flex-direction: column; gap: 0.6rem;
+            display: flex; flex-direction: column; gap: 0.55rem;
         }
         h1 {
-            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
-            margin-bottom: 0.2rem; display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+            color: var(--accent-purple); font-size: clamp(1.25rem, 1.75vw, 1.7rem);
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid rgba(167, 139, 250, 0.3); padding-bottom: 0.25rem; flex-shrink: 0;
         }
         .title-left { display: flex; align-items: center; gap: 0.6rem; }
-        .title-left::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        .title-left::before { content: ""; width: 7px; height: 24px; background: var(--accent-purple); border-radius: 4px; flex-shrink: 0; }
 
-        .game-layout {
-            display: grid;
-            grid-template-columns: 1fr 240px;
-            gap: 1.1rem;
-            flex: 1;
-            min-height: 0;
-        }
-
-        .stage-panel {
-            background: var(--glass);
-            border: 1.5px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 1.2rem;
-            backdrop-filter: blur(12px);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
-        }
-
-        .stage-scroll-area {
-            flex: 1;
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 20px 10px;
-            position: relative;
-        }
-        .stage-scroll-area::-webkit-scrollbar { height: 6px; }
-        .stage-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
-
-        /* 燒杯卡片 */
-        .beaker-card {
-            background: rgba(30, 41, 59, 0.7);
-            border: 1.5px solid rgba(255,255,255,0.15);
-            border-radius: 14px;
-            padding: 14px 18px;
-            min-width: 140px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-            flex-shrink: 0;
-            animation: popIn 0.3s ease;
-        }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .beaker-icon {
-            font-size: 2.2rem;
-            filter: drop-shadow(0 2px 8px rgba(56,189,248,0.4));
-        }
-        .beaker-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #94a3b8;
-        }
-        .beaker-ions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            font-size: 1.15rem;
-            font-weight: 800;
-        }
-
-        /* 步驟箭頭與反應結果 */
-        .step-arrow-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 120px;
-            flex-shrink: 0;
-            gap: 6px;
-            animation: fadeIn 0.3s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .anion-badge {
-            background: rgba(56, 189, 248, 0.18);
-            border: 1px solid var(--accent-blue);
-            color: var(--accent-cyan);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.95rem;
-            font-weight: 800;
-        }
-        .arrow-graphic {
-            font-size: 1.6rem;
-            color: #64748b;
-        }
-        .ppt-badge {
-            background: rgba(248, 113, 113, 0.2);
-            border: 1px solid var(--accent-red);
-            color: #fca5a5;
-            padding: 3px 10px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-weight: 800;
-        }
-        .ppt-badge.err {
-            background: rgba(239, 68, 68, 0.35);
-            border-color: #ef4444;
-            color: #fecaca;
-        }
-
-        /* 控制台面 */
-        .control-panel {
-            background: var(--glass);
-            border: 1.5px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 1.1rem;
-            backdrop-filter: blur(12px);
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
-            min-height: 0;
-        }
-
-        .control-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--accent-yellow);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .anion-btn-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .btn-anion {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            color: #f8fafc;
+        .mnemonic-banner {
+            background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(129,140,248,0.06));
+            border: 1.5px solid rgba(167,139,250,0.5);
             border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 1rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            padding: 0.45rem 1.4rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
-        .btn-anion:hover {
-            background: rgba(56, 189, 248, 0.15);
-            border-color: var(--accent-blue);
-            color: #38bdf8;
-            transform: translateX(3px);
+        .mnemonic-badge {
+            font-size: 0.88rem; font-weight: 800;
+            background: rgba(167,139,250,0.25); color: #c4b5fd;
+            border: 1px solid rgba(167,139,250,0.55); padding: 3px 10px; border-radius: 6px;
         }
-
-        .feedback-banner {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            line-height: 1.5;
-            display: none;
-        }
-        .feedback-banner.success {
-            background: rgba(52, 211, 153, 0.15);
-            border: 1px solid rgba(52, 211, 153, 0.4);
-            color: #34d399;
-            display: block;
-        }
-        .feedback-banner.error {
-            background: rgba(248, 113, 113, 0.15);
-            border: 1px solid rgba(248, 113, 113, 0.4);
-            color: #fca5a5;
-            display: block;
-        }
-
-        .success-stamp {
-            position: absolute;
-            right: 20px;
-            bottom: 20px;
-            border: 3px solid #34d399;
-            color: #34d399;
-            font-size: 1.6rem;
+        .mnemonic-text {
+            font-size: clamp(1.35rem, 1.75vw, 1.8rem);
             font-weight: 900;
-            padding: 6px 18px;
-            border-radius: 12px;
-            transform: rotate(-10deg);
-            background: rgba(52,211,153,0.1);
-            box-shadow: 0 0 16px rgba(52,211,153,0.3);
-            display: none;
-            animation: stampIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #c4b5fd;
+            letter-spacing: 0.12em;
         }
-        @keyframes stampIn { from { transform: scale(2) rotate(-25deg); opacity: 0; } to { transform: scale(1) rotate(-10deg); opacity: 1; } }
+        .mnemonic-sub {
+            font-size: clamp(0.9rem, 1.05vw, 1.05rem);
+            color: #cbd5e1;
+        }
 
-        .btn-action {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: #f8fafc;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .panel {
+            background: var(--glass);
+            border: 1.5px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.55rem 1rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .panel-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
+            justify-content: space-between;
+            flex-shrink: 0;
+            margin-bottom: 0.1rem;
         }
-        .btn-action:hover {
-            background: rgba(56, 189, 248, 0.2);
-            border-color: var(--accent-blue);
-            color: #38bdf8;
+        .panel-title {
+            font-size: clamp(1.1rem, 1.28vw, 1.32rem);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .rxn-card {
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-left: 5px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 0.5rem 0.95rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.2rem;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .rxn-title {
+            font-size: clamp(0.98rem, 1.15vw, 1.15rem);
+            font-weight: 800;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .rxn-formula {
+            font-size: clamp(1rem, 1.18vw, 1.18rem);
+            color: #f8fafc;
+            text-align: center;
+            padding: 1px 0;
+            line-height: 1.45;
+        }
+
+        .rxn-note {
+            font-size: clamp(0.92rem, 1.06vw, 1.06rem);
+            color: #e2e8f0;
+            line-height: 1.45;
+        }
+
+        .bottom-alert {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(167, 139, 250, 0.4);
+            border-radius: 10px;
+            padding: 0.5rem 1.2rem;
+            font-size: clamp(0.92rem, 1.08vw, 1.08rem);
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            line-height: 1.5;
         }
 
         @media (max-width: 900px) {
-            .game-layout { grid-template-columns: 1fr; }
+            .cards-grid { grid-template-columns: 1fr; overflow-y: auto; }
             body, html, #app { overflow: auto; }
             #slides-container { position: relative; height: auto; min-height: 100vh; }
         }
@@ -279,238 +172,110 @@
 <div id="app">
     <div id="slides-container">
         <h1>
-            <span class="title-left">3-5 沉澱表與沉澱規則 &middot; 陽離子分離實驗</span>
-            <span style="font-size:0.85rem; color:#94a3b8; font-weight:500;">⚗️ 依序加入適當試劑，每次精準只沉澱分離一種陽離子</span>
+            <span class="title-left">3-5 沉澱表與沉澱規則 &middot; 特殊沉澱 (三)：溶於過量氨水</span>
+            <span style="font-size:0.92rem; color:#94a3b8; font-weight:500;">💧 配位共價鍵形成穩定氨錯離子（配位數 2 或 4）</span>
         </h1>
 
-        <div class="game-layout">
-            <!-- 實驗試管主舞台 -->
-            <div class="stage-panel">
-                <div style="font-size:0.9rem; color:#cbd5e1; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>當前實驗題目：<strong id="puzzle-title" style="color:var(--accent-yellow);">題目載入中...</strong></span>
-                    <span id="step-badge" style="color:var(--accent-cyan); font-weight:700;">步驟 1 / 3</span>
+        <!-- 頂部口訣橫幅 -->
+        <div class="mnemonic-banner">
+            <span class="mnemonic-badge">🌟 溶於過量氨水金屬</span>
+            <span class="mnemonic-text">銅、鋅、銀、鎳、鎘、鈷</span>
+            <span class="mnemonic-sub">（口訣記憶：<strong>同心贏你哥骨</strong> · 離子符號：$\text{Cu}^{2+}、\text{Zn}^{2+}、\text{Ag}^+、\text{Ni}^{2+}、\text{Cd}^{2+}、\text{Co}^{2+}$）</span>
+        </div>
+
+        <div class="cards-grid">
+            <!-- 左欄：銅與銀的特徵色彩反應 -->
+            <div class="panel" style="border-top: 3px solid var(--accent-blue);">
+                <div class="panel-header">
+                    <span class="panel-title" style="color:var(--accent-blue);">🎨 經典代表：銅（Cu）與銀（Ag）</span>
+                    <span style="font-size:0.85rem; color:#94a3b8; font-weight:700;">實驗室必考特徵色</span>
                 </div>
 
-                <div class="stage-scroll-area" id="stage-area"></div>
+                <!-- 銅 -->
+                <div class="rxn-card" style="border-color:#38bdf8;">
+                    <div class="rxn-title" style="color:#38bdf8;">
+                        <span>• 銅（$\text{Cu}^{2+}$）：淺藍沉澱 $\longrightarrow$ 深藍色四氨合銅</span>
+                    </div>
+                    <div class="rxn-formula">
+                        $\text{Cu}^{2+} + 2\text{NH}_3 + 2\text{H}_2\text{O} \longrightarrow \text{Cu(OH)}_{2(s)} \downarrow (\text{淺藍}) + 2\text{NH}_4^+$<br>
+                        $\text{Cu(OH)}_{2(s)} + 4\text{NH}_3 \longrightarrow [\text{Cu(NH}_3)_4]^{2+}_{(aq)} + 2\text{OH}^-$
+                    </div>
+                    <div class="rxn-note">
+                        過量氨水提供配位基 $\text{NH}_3$，生成標誌性之深藍色四氨合銅(II)錯離子。
+                    </div>
+                </div>
 
-                <div id="feedback-banner" class="feedback-banner"></div>
-                <div id="success-stamp" class="success-stamp">分離成功 ✓</div>
+                <!-- 銀 -->
+                <div class="rxn-card" style="border-color:#fbbf24;">
+                    <div class="rxn-title" style="color:#fbbf24;">
+                        <span>• 銀（$\text{Ag}^{+}$）：暗褐沉澱 $\longrightarrow$ 無色二氨合銀離子</span>
+                    </div>
+                    <div class="rxn-formula">
+                        $2\text{Ag}^+ + 2\text{NH}_3 + \text{H}_2\text{O} \longrightarrow \text{Ag}_2\text{O}_{(s)} \downarrow (\text{暗褐}) + 2\text{NH}_4^+$<br>
+                        $\text{Ag}_2\text{O}_{(s)} + 4\text{NH}_3 + \text{H}_2\text{O} \longrightarrow 2[\text{Ag(NH}_3)_2]^+ + 2\text{OH}^-$
+                    </div>
+                    <div class="rxn-note">
+                        此為多倫試劑（銀鏡反應試劑）之核心化學製備原理！
+                    </div>
+                </div>
             </div>
 
-            <!-- 控制面板：選擇陰離子試劑 -->
-            <div class="control-panel">
-                <div class="control-title">
-                    <span>🧪 選擇加入之試劑</span>
-                    <button class="btn-action" style="padding:2px 8px; font-size:0.75rem;" onclick="nextPuzzle()">換題 ↻</button>
-                </div>
-                <div style="font-size:0.8rem; color:#94a3b8;">
-                    請點選下方陰離子。目標：使目前溶液中**恰好只有一種**陽離子沉澱！
+            <!-- 右欄：鋅、鎳的氨錯合反應及機理 -->
+            <div class="panel" style="border-top: 3px solid var(--accent-purple);">
+                <div class="panel-header">
+                    <span class="panel-title" style="color:var(--accent-purple);">🧪 鋅（Zn）與鎳（Ni）之氨水反應</span>
+                    <span style="font-size:0.85rem; color:#94a3b8; font-weight:700;">配位數特性</span>
                 </div>
 
-                <div class="anion-btn-grid" id="anion-btn-container"></div>
+                <!-- 鋅 -->
+                <div class="rxn-card" style="border-color:var(--accent-cyan);">
+                    <div class="rxn-title" style="color:var(--accent-cyan);">
+                        <span>• 鋅（$\text{Zn}^{2+}$）：四氨合鋅錯離子（配位數 4）</span>
+                    </div>
+                    <div class="rxn-formula">
+                        $\text{Zn(OH)}_{2(s)} (\text{白}) + 4\text{NH}_3 \longrightarrow [\text{Zn(NH}_3)_4]^{2+}_{(aq)} + 2\text{OH}^-$
+                    </div>
+                    <div class="rxn-note">
+                        白色氫氧化鋅沉澱遇過量氨水生成無色四氨合鋅錯離子完全復溶。
+                    </div>
+                </div>
 
-                <button class="btn-action" onclick="resetCurrentPuzzle()" style="margin-top:auto;">
-                    ↺ 重試此題
-                </button>
+                <!-- 鎳 -->
+                <div class="rxn-card" style="border-color:#a855f7;">
+                    <div class="rxn-title" style="color:#a855f7;">
+                        <span>• 鎳（$\text{Ni}^{2+}$）：六氨合鎳錯離子（配位數 6）</span>
+                    </div>
+                    <div class="rxn-formula">
+                        $\text{Ni(OH)}_{2(s)} (\text{綠}) + 6\text{NH}_3 \longrightarrow [\text{Ni(NH}_3)_6]^{2+}_{(aq)} (\text{藍紫}) + 2\text{OH}^-$
+                    </div>
+                    <div class="rxn-note">
+                        由蘋果綠色沉澱轉化為高貴典雅之藍紫色六氨合鎳(II)溶液。
+                    </div>
+                </div>
+
+                <!-- 配位數總結 -->
+                <div class="rxn-card" style="border-color:var(--accent-green); background:rgba(52,211,153,0.08);">
+                    <div class="rxn-title" style="color:var(--accent-green);">
+                        <span>💡 配位數速記規則</span>
+                    </div>
+                    <div class="rxn-note" style="color:#f1f5f9;">
+                        • $\text{Ag}^+$：配位數為 <strong>2</strong>（直線形 $[\text{Ag(NH}_3)_2]^+$）<br>
+                        • $\text{Cu}^{2+}、\text{Zn}^{2+}、\text{Cd}^{2+}$：配位數為 <strong>4</strong>；$\text{Ni}^{2+}、\text{Co}^{2+}$：配位數為 <strong>6</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部大陷阱條 -->
+        <div class="bottom-alert">
+            <span style="font-size:1.3rem;">⚠️</span>
+            <div>
+                <strong>超高頻考試易錯陷阱</strong>：<br>
+                ① $\text{Fe}^{3+}、\text{Fe}^{2+}、\text{Al}^{3+}、\text{Mg}^{2+}$ 的氫氧化物沉澱，<strong>絕不溶於過量氨水</strong>！<br>
+                ② 特別辨析：$\text{Al(OH)}_3$ 是兩性，<strong>溶於強鹼 $\text{NaOH}$，但不溶於過量氨水</strong>；而 $\text{Zn(OH)}_2$ 既溶於強鹼又溶於氨水！
             </div>
         </div>
     </div>
 </div>
-
-<script>
-const ionDetails = {
-    'Ag':  { label: 'Ag<sup>+</sup>',  color: '#f8fafc' },
-    'Pb':  { label: 'Pb<sup>2+</sup>', color: '#cbd5e1' },
-    'Ba':  { label: 'Ba<sup>2+</sup>', color: '#facc15' },
-    'Ca':  { label: 'Ca<sup>2+</sup>', color: '#fb923c' },
-    'Mg':  { label: 'Mg<sup>2+</sup>', color: '#4ade80' },
-    'Cu':  { label: 'Cu<sup>2+</sup>', color: '#60a5fa' },
-    'Zn':  { label: 'Zn<sup>2+</sup>', color: '#c084fc' },
-    'Fe':  { label: 'Fe<sup>3+</sup>', color: '#f87171' },
-    'K':   { label: 'K<sup>+</sup>',   color: '#f472b6' }
-};
-
-const anionDetails = {
-    'Cl':   { label: '$\\text{Cl}^-$',           name: '鹽酸 / 氯離子' },
-    'SO4':  { label: '$\\text{SO}_4^{2-}$',      name: '硫酸根' },
-    'OH':   { label: '$\\text{OH}^-$',           name: '氫氧根' },
-    'S':    { label: '$\\text{S}^{2-}$',         name: '硫離子' },
-    'CO3':  { label: '$\\text{CO}_3^{2-}$',      name: '碳酸根' },
-    'CrO4': { label: '$\\text{CrO}_4^{2-}$',     name: '鉻酸根' }
-};
-
-// 沉澱規則判斷函數
-function getPrecipitates(cations, anion) {
-    const ppts = [];
-    cations.forEach(cat => {
-        let isPpt = false;
-        let formula = '';
-        if (anion === 'Cl') {
-            if (['Ag', 'Pb'].includes(cat)) { isPpt = true; formula = cat === 'Ag' ? 'AgCl' : 'PbCl₂'; }
-        } else if (anion === 'SO4') {
-            if (['Ba', 'Pb', 'Ca'].includes(cat)) { isPpt = true; formula = cat + 'SO₄'; }
-        } else if (anion === 'OH') {
-            if (['Mg', 'Cu', 'Zn', 'Fe', 'Ag', 'Pb'].includes(cat)) { isPpt = true; formula = cat + '(OH)ₙ'; }
-        } else if (anion === 'S') {
-            if (!['IA', 'IIA', 'Ba', 'Ca', 'Mg', 'K'].includes(cat)) { isPpt = true; formula = cat + 'S'; }
-        } else if (anion === 'CrO4') {
-            if (['Ba', 'Pb', 'Ag'].includes(cat)) { isPpt = true; formula = cat + 'CrO₄'; }
-        } else if (anion === 'CO3') {
-            if (cat !== 'K') { isPpt = true; formula = cat + 'CO₃'; }
-        }
-        if (isPpt) ppts.push({ cation: cat, formula });
-    });
-    return ppts;
-}
-
-const puzzles = [
-    { title: '題組一：[Ag⁺, Ba²⁺, Mg²⁺]', cations: ['Ag', 'Ba', 'Mg'], candidates: ['Cl', 'SO4', 'OH', 'CO3'] },
-    { title: '題組二：[Pb²⁺, Ba²⁺, Cu²⁺]', cations: ['Pb', 'Ba', 'Cu'], candidates: ['Cl', 'SO4', 'S', 'OH'] },
-    { title: '題組三：[Ag⁺, Pb²⁺, Ba²⁺]', cations: ['Ag', 'Pb', 'Ba'], candidates: ['CrO4', 'Cl', 'SO4', 'CO3'] },
-    { title: '題組四：[Cu²⁺, Mg²⁺, K⁺]',  cations: ['Cu', 'Mg', 'K'],  candidates: ['S', 'OH', 'CO3', 'Cl'] }
-];
-
-let currentPuzzleIdx = 0;
-let currentRemaining = [];
-let historySteps = [];
-
-function loadPuzzle(idx) {
-    currentPuzzleIdx = idx;
-    const p = puzzles[currentPuzzleIdx];
-    currentRemaining = [...p.cations];
-    historySteps = [];
-    document.getElementById('puzzle-title').textContent = p.title;
-    document.getElementById('success-stamp').style.display = 'none';
-    hideFeedback();
-    renderStage();
-    renderButtons();
-}
-
-function nextPuzzle() {
-    loadPuzzle((currentPuzzleIdx + 1) % puzzles.length);
-}
-
-function resetCurrentPuzzle() {
-    loadPuzzle(currentPuzzleIdx);
-}
-
-function renderStage() {
-    const stage = document.getElementById('stage-area');
-    stage.innerHTML = '';
-
-    // 起始燒杯
-    stage.appendChild(createBeakerNode('起始混合液', puzzles[currentPuzzleIdx].cations));
-
-    // 歷程步驟
-    historySteps.forEach((st, idx) => {
-        // 箭頭
-        stage.appendChild(createArrowNode(st.anion, st.pptFormula, st.isError));
-        // 後續濾液
-        if (!st.isError) {
-            stage.appendChild(createBeakerNode(`濾液 ${idx + 1}`, st.remaining));
-        }
-    });
-
-    const isComplete = currentRemaining.length === 0 || (currentRemaining.length === 1 && currentRemaining[0] === 'K');
-    if (isComplete && !historySteps.some(s => s.isError)) {
-        document.getElementById('success-stamp').style.display = 'block';
-    }
-
-    document.getElementById('step-badge').textContent = `步驟 ${historySteps.length + 1} / 3`;
-
-    if (window.MathJax && MathJax.typesetPromise) {
-        MathJax.typesetPromise([stage]).catch(() => {});
-    }
-}
-
-function createBeakerNode(title, cations) {
-    const card = document.createElement('div');
-    card.className = 'beaker-card';
-    card.innerHTML = `
-        <div class="beaker-icon">🧪</div>
-        <div class="beaker-title">${title}</div>
-        <div class="beaker-ions">
-            ${cations.length === 0 ? '<span style="color:#94a3b8;font-size:0.85rem;">(全部分離完成)</span>' :
-              cations.map(c => `<span style="color:${ionDetails[c].color}">${ionDetails[c].label}</span>`).join(' ')}
-        </div>
-    `;
-    return card;
-}
-
-function createArrowNode(anion, pptFormula, isError) {
-    const box = document.createElement('div');
-    box.className = 'step-arrow-box';
-    box.innerHTML = `
-        <div class="anion-badge">+ ${anionDetails[anion].label}</div>
-        <div class="arrow-graphic">➔</div>
-        <div class="ppt-badge ${isError ? 'err' : ''}">沉澱：${pptFormula}</div>
-    `;
-    return box;
-}
-
-function renderButtons() {
-    const container = document.getElementById('anion-btn-container');
-    container.innerHTML = '';
-    const cand = puzzles[currentPuzzleIdx].candidates;
-
-    cand.forEach(an => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-anion';
-        btn.innerHTML = `<span>${anionDetails[an].label}</span> <small style="font-size:0.8rem;color:#94a3b8;">${anionDetails[an].name}</small>`;
-        btn.addEventListener('click', () => applyAnion(an));
-        container.appendChild(btn);
-    });
-
-    if (window.MathJax && MathJax.typesetPromise) {
-        MathJax.typesetPromise([container]).catch(() => {});
-    }
-}
-
-function applyAnion(anion) {
-    if (currentRemaining.length === 0) return;
-
-    const ppts = getPrecipitates(currentRemaining, anion);
-
-    if (ppts.length === 0) {
-        showFeedback(`加入 ${anionDetails[anion].label} 無法沉澱任何離子，無法達到分離目的！`, true);
-        return;
-    }
-    if (ppts.length > 1) {
-        const pNames = ppts.map(p => p.formula).join('、');
-        showFeedback(`加入 ${anionDetails[anion].label} 同時沉澱了多種離子（${pNames}），違反「逐一分離」規則！請重試。`, true);
-        historySteps.push({ anion, pptFormula: pNames + ' (多重沉澱)', isError: true, remaining: currentRemaining });
-        renderStage();
-        return;
-    }
-
-    // 剛好沉澱一種
-    const single = ppts[0];
-    currentRemaining = currentRemaining.filter(c => c !== single.cation);
-    historySteps.push({ anion, pptFormula: single.formula + ' ↓', isError: false, remaining: [...currentRemaining] });
-
-    if (currentRemaining.length === 0 || (currentRemaining.length === 1 && currentRemaining[0] === 'K')) {
-        showFeedback(`🎉 成功！成功沉澱 ${single.formula}，所有陽離子皆已分離完成！`, false);
-    } else {
-        showFeedback(`✓ 成功沉澱分離 ${single.formula}，請繼續加入下一種試劑分離剩餘離子。`, false);
-    }
-    renderStage();
-}
-
-function showFeedback(msg, isError) {
-    const fb = document.getElementById('feedback-banner');
-    fb.className = 'feedback-banner ' + (isError ? 'error' : 'success');
-    fb.innerHTML = msg;
-    fb.style.display = 'block';
-}
-
-function hideFeedback() {
-    const fb = document.getElementById('feedback-banner');
-    fb.style.display = 'none';
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    loadPuzzle(0);
-});
-</script>
 </body>
 </html>
