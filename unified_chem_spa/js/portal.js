@@ -774,29 +774,32 @@ class PortalApp {
   loadUserProgress() {
     if (!this.currentUser) return;
 
-    // 判定班級身分 (users01.csv 學生為 205 班；users02~04.csv 學生為 206, 210, 213 班)
-    const isUser01 = Boolean(
+    // 判定班級身分 (users01~04.csv 學生為 205, 206, 210, 213 班)
+    const isUser01To04 = Boolean(
       this.currentUser && (
-        this.currentUser.group === 'users01.csv' ||
-        /^205\d{2}$/.test(this.currentUser.username)
-      )
-    );
-    const isUser02To04 = Boolean(
-      this.currentUser && (
-        ['users02.csv', 'users03.csv', 'users04.csv'].includes(this.currentUser.group) ||
-        /^(206|210|213)\d{2}$/.test(this.currentUser.username)
+        ['users01.csv', 'users02.csv', 'users03.csv', 'users04.csv'].includes(this.currentUser.group) ||
+        /^(205|206|210|213)\d{2}$/.test(this.currentUser.username)
       )
     );
 
-    // 教學指定直接解鎖清單（僅解鎖供提前學習，不加入 completedSections 通關）：
-    // 1. 所有學生一律解鎖 1-1
-    // 2. users01.csv (205班)：加解鎖 2-4、3-1、3-5
-    // 3. users02~04.csv (206, 210, 213班)：加解鎖 2-4、3-5
+    // 教學指定直接解鎖清單（僅解鎖供提前自主學習，不加入 completedSections 通關）：
+    // 1. users01~users04.csv (205, 206, 210, 213班)：
+    //    解鎖第1章至第7章每個第一小節單元 (ch1_s1 ~ ch7_s1)，便於學生從任一單元自主開始學習；
+    //    並保留進階教學指定小節 (ch2_s4, ch3_s5)
+    // 2. 其他一般學生：預設解鎖 1-1 (ch1_s1)
     let defaultUnlocked = ['ch1_s1'];
-    if (isUser01) {
-      defaultUnlocked = ['ch1_s1', 'ch2_s4', 'ch3_s1', 'ch3_s5'];
-    } else if (isUser02To04) {
-      defaultUnlocked = ['ch1_s1', 'ch2_s4', 'ch3_s5'];
+    if (isUser01To04) {
+      defaultUnlocked = [
+        'ch1_s1', // 第1章第一小節：1-1 化學反應類型與質量守恆
+        'ch2_s1', // 第2章第一小節：2-1 氣體通性與氣壓計
+        'ch2_s4', // 第2章精選小節：2-4 道耳吞分壓定律
+        'ch3_s1', // 第3章第一小節：3-1 溶液的分類與濃度
+        'ch3_s5', // 第3章精選小節：3-5 溶液依數性質
+        'ch4_s1', // 第4章第一小節：4-1 原子結構發展近代史
+        'ch5_s1', // 第5章第一小節：5-1 化學鍵概論與八隅體法則
+        'ch6_s1', // 第6章第一小節：6-1 反應速率定義與測量
+        'ch7_s1'  // 第7章第一小節：7-1 化學平衡狀態與動態平衡
+      ];
     }
 
     const progressKey = `chem_progress_${this.currentUser.username}`;

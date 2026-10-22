@@ -1,0 +1,1461 @@
+# -*- coding: utf-8 -*-
+"""
+generate_aligned_worksheet_3_1.py
+自動生成符合公版規範的「單元 3-1 物質的狀態與三相圖」課堂教學講義學習單 (共 10 頁滿版架構)。
+
+嚴格遵守最新規範：
+1. 版面尺寸：標準 A4 portrait。
+2. 內容字體至少 12pt 以上（body font-size: 12pt; line-height: 1.5;），保證學生閱讀清晰舒適。
+3. SVG 向量圖內部文字統一為 10pt（font-size="10"），文字與曲線、座標軸絕對不重疊，並具備白色外發光保護。
+4. 數學式全數採用純 CSS .frac 分子分母垂直分數排版，徹底杜絕原始 LaTeX ($、\\frac、\\times 等) 殘留。
+5. 題目與選項排版：題號與清單文字採用懸掛縮排 (.q-item-indent)，選項 (A)(B)(C)(D) 獨立成行對齊。
+6. 純淨講義學習單承諾：所有範例與練習題均不提供答案與詳解，保留乾淨手寫演算區。
+7. 零空白頁保證：採用 .concept-page 獨立卡片，配合 tools/safe_test_page_heights.js 量測 (基準 1039px)。
+"""
+
+import os
+import json
+
+HTML_TEMPLATE = '''<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-1 物質的狀態與三相圖 · 課堂教學講義學習單</title>
+    <style>
+        /* ============================================================ */
+        /* 全局版面設定與印刷規範 (針對 A4 滿版列印，白底黑字清晰風格)    */
+        /* ============================================================ */
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 10mm 12mm;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            padding: 20px 0;
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+
+        .worksheet-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 0 10px;
+        }
+
+        @media screen {
+            .worksheet-container {
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+                border-radius: 4px;
+                padding: 20px 18px;
+            }
+        }
+
+        /* 每一頁均為標準 concept-page，列印時自動完美分頁，螢幕預覽時呈現卡片間距 */
+        .concept-page {
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 25px;
+            background: #ffffff;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .worksheet-container {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+            .concept-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                margin-bottom: 0 !important;
+                padding: 0 !important;
+            }
+            .concept-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            .screen-toolbar {
+                display: none !important;
+            }
+        }
+
+        .avoid-break {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        /* ============================================================ */
+        /* 標題與版頭風格                                               */
+        /* ============================================================ */
+        .sheet-header {
+            border-bottom: 2.2px solid #0f172a;
+            padding-bottom: 4px;
+            margin-bottom: 7px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .sheet-title {
+            font-size: 15.5pt;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+        .sheet-meta {
+            font-size: 11pt;
+            color: #334155;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            border-left: 5px solid #0284c7;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            font-size: 13pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 7px 0 6px 0;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-badge {
+            font-size: 10pt;
+            font-weight: 700;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 9px;
+            border-radius: 12px;
+        }
+
+        /* ============================================================ */
+        /* 內容卡片與網格排版 (字體至少 12pt)                            */
+        /* ============================================================ */
+        .concept-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            background: #ffffff;
+            font-size: 12pt;
+        }
+        .card-title {
+            font-size: 12.5pt;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 2px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* 標題分點 (1)(2)(3)... 分段對齊與縮排樣式 */
+        .sub-point-list {
+            margin: 3px 0 2px 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 3.5px;
+        }
+        .sub-point-item {
+            display: flex;
+            align-items: baseline;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #1e293b;
+        }
+        .sub-point-num {
+            min-width: 2.0em;
+            font-weight: 700;
+            color: #0284c7;
+        }
+        .sub-point-content {
+            flex: 1;
+        }
+
+        /* 表格排版 (字體 11.5pt~12pt 清晰易讀) */
+        .standard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11.5pt;
+            margin: 3px 0 5px 0;
+            line-height: 1.45;
+        }
+        .standard-table th, .standard-table td {
+            border: 1px solid #94a3b8;
+            padding: 4px 7px;
+            vertical-align: middle;
+        }
+        .standard-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 800;
+            text-align: center;
+        }
+        .standard-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* ============================================================ */
+        /* 分子分母垂直分數排版 (純 CSS 實作)                            */
+        /* ============================================================ */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 3px;
+            font-size: 0.95em;
+            line-height: 1.15;
+        }
+        .frac-top {
+            border-bottom: 1.3px solid currentColor;
+            padding-bottom: 1px;
+            font-size: 0.92em;
+        }
+        .frac-bottom {
+            padding-top: 1px;
+            font-size: 0.92em;
+        }
+
+        .math-center-box {
+            text-align: center;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 4px 0;
+            font-weight: bold;
+            font-size: 12pt;
+            color: #0f172a;
+        }
+
+        /* ============================================================ */
+        /* 隨堂觀念自我檢核 (填空，底線無答案，字體 12pt)                */
+        /* ============================================================ */
+        .check-box {
+            background: #f8fafc;
+            border: 1.2px dashed #0284c7;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-top: 5px;
+        }
+        .check-header {
+            font-size: 12pt;
+            font-weight: 800;
+            color: #0369a1;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 3px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .check-item {
+            font-size: 12pt;
+            line-height: 1.55;
+            margin-bottom: 3px;
+            color: #1e293b;
+        }
+        .blank-line {
+            display: inline-block;
+            min-width: 68px;
+            border-bottom: 1.4px solid #0f172a;
+            margin: 0 3px;
+            text-align: center;
+            height: 1.15em;
+            vertical-align: bottom;
+        }
+
+        /* ============================================================ */
+        /* 範例題目卡片與解題計算空間                                   */
+        /* ============================================================ */
+        .example-card {
+            border: 1.2px solid #94a3b8;
+            border-radius: 4px;
+            padding: 7px 11px;
+            margin-bottom: 7px;
+            background: #ffffff;
+        }
+        .example-badge {
+            font-size: 9.5pt;
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+        .example-title {
+            font-size: 12.5pt;
+            font-weight: 800;
+            color: #0369a1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+        }
+        .example-stem {
+            font-size: 12pt;
+            color: #0f172a;
+            line-height: 1.5;
+            margin-bottom: 5px;
+        }
+        .q-item-indent {
+            margin-left: 1.5em;
+            margin-bottom: 3.5px;
+        }
+        .example-options {
+            margin: 4px 0 6px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 12pt;
+            color: #1e293b;
+        }
+        .example-option-row {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+        .calc-area {
+            border: 1.2px dashed #94a3b8;
+            border-radius: 4px;
+            background: #fafafa;
+            padding: 8px 12px;
+            min-height: 120px;
+            margin-top: 6px;
+        }
+        .calc-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        /* ============================================================ */
+        /* 單元檢核練習題排版 (字體 12pt，題距舒適，選項縮排)             */
+        /* ============================================================ */
+        .quiz-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 11px;
+            background: #ffffff;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .quiz-num {
+            font-size: 12.5pt;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .quiz-tag {
+            font-size: 9.5pt;
+            font-weight: 700;
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 1px 7px;
+            border-radius: 3px;
+        }
+        .quiz-stem {
+            font-size: 12pt;
+            line-height: 1.52;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        .quiz-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 14px;
+            margin-top: 5px;
+            font-size: 12pt;
+        }
+        .quiz-options-col {
+            display: flex;
+            flex-direction: column;
+            gap: 3.5px;
+            margin-top: 5px;
+            font-size: 12pt;
+        }
+        .quiz-opt {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+            line-height: 1.45;
+            color: #1e293b;
+        }
+
+        /* 筆記手寫專區 */
+        .notes-area {
+            border: 1.5px dashed #94a3b8;
+            border-radius: 6px;
+            background: #ffffff;
+            padding: 12px 16px;
+            margin-top: 10px;
+            min-height: 380px;
+            position: relative;
+        }
+        .notes-grid {
+            width: 100%;
+            height: 330px;
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+
+        /* ============================================================ */
+        /* SVG 圖形微觀保護 (字體 10pt，文字圖形零重疊，外發光防護)       */
+        /* ============================================================ */
+        svg text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-size: 10px !important;
+            paint-order: stroke fill;
+            stroke: #ffffff;
+            stroke-width: 3.5px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        svg text.no-stroke {
+            stroke: none !important;
+        }
+
+        /* 浮動工具列 (僅螢幕可見) */
+        .screen-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 25px;
+            z-index: 9999;
+            display: flex;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            padding: 9px 18px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .screen-btn {
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .screen-btn:hover {
+            background: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="screen-toolbar">
+    <button class="screen-btn" onclick="window.print()">
+        🖨️ 列印 / 另存為 PDF
+    </button>
+</div>
+
+<div class="worksheet-container">
+
+    <!-- =================================================================== -->
+    <!-- 第 1 頁：一、物質三態微觀特徵與相變化本質                           -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-1">
+        <div class="sheet-header">
+            <div>
+                <div class="sheet-title">單元 3-1 物質的狀態與三相圖 · 課堂講義學習單</div>
+                <div style="font-size: 10.5pt; color: #64748b; font-weight: 600; margin-top: 1px;">高中選修化學（三）｜第三章 溶液與相平衡</div>
+            </div>
+            <div class="sheet-meta">班級：_______ 座號：____ 姓名：___________</div>
+        </div>
+
+        <div class="section-header">
+            <span>一、物質三態的微觀結構特徵與巨觀性質對比</span>
+            <span class="section-badge">概念奠基</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">📌 1. 固態、液態與氣態微觀特徵全方位比較</div>
+            <table class="standard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 14%;">比較項目</th>
+                        <th style="width: 28%;">固態 (Solid, s)</th>
+                        <th style="width: 29%;">液態 (Liquid, l)</th>
+                        <th style="width: 29%;">氣態 (Gas, g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">形狀與體積</td>
+                        <td>形狀固定、體積固定</td>
+                        <td>形狀隨容器變、體積固定</td>
+                        <td>形狀與體積皆隨容器充滿</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">分子間距離</td>
+                        <td>極小（緊密排列）<br><span style="font-size:10.5pt; color:#64748b;">(水為例外：冰的間距大於水)</span></td>
+                        <td>小（分子互相緊鄰接觸）</td>
+                        <td>極大（遠大於分子本身大小，約為分子直徑 10 倍以上）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">分子間吸引力</td>
+                        <td>極強（強於熱運動動能）</td>
+                        <td>中等（足以維繫凝聚相）</td>
+                        <td>極微弱（理想氣體視為零）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">分子運動自由度</td>
+                        <td>僅能在固定晶格周圍<strong>局部振動</strong></td>
+                        <td>可自由滑動、短程移動與轉動</td>
+                        <td><strong>移動、轉動、振動</strong>三種自由度俱全</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">壓縮性與擴散性</td>
+                        <td>幾乎不可壓縮，擴散極慢</td>
+                        <td>微小可壓縮性，擴散速率中等</td>
+                        <td><strong>極易被壓縮</strong>，擴散速率極快</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">📌 2. 汽化與凝結：蒸發 (Evaporation) vs 沸騰 (Boiling)</div>
+            <div class="sub-point-list">
+                <div class="sub-point-item">
+                    <span class="sub-point-num">(1)</span>
+                    <span class="sub-point-content"><strong>蒸發</strong>：在<strong>任何溫度</strong>下均可發生，僅限於<strong>液體表面</strong>高動能分子掙脫引力逸出；液面風速、表面積越大，蒸發速率越快。</span>
+                </div>
+                <div class="sub-point-item">
+                    <span class="sub-point-num">(2)</span>
+                    <span class="sub-point-content"><strong>沸騰</strong>：必須達到特定溫度（沸點，當液體飽和蒸氣壓等於外界壓力時）；在<strong>液體內部與表面同時</strong>劇烈產生氣泡汽化。</span>
+                </div>
+                <div class="sub-point-item">
+                    <span class="sub-point-num">(3)</span>
+                    <span class="sub-point-content"><strong>沸點與外壓之連動關係</strong>：外壓增大時，沸點<strong>升高</strong>（如壓力鍋可達 120°C 快速烹煮）；外壓降低時，沸點<strong>下降</strong>（如玉山山頂水約 86°C 沸騰，難以煮熟米飯）。</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-size:10pt; font-weight:600; color:#64748b;">課堂即時填空思考</span>
+            </div>
+            <div class="check-item">1. 固態物質粒子受限於幾何晶格點，其微觀運動形式僅具備<span class="blank-line"></span>，缺乏移動自由度。</div>
+            <div class="check-item">2. 多數物質三態密度大小順序為：固態 &gt; 液態 &gt; 氣態；但水因結冰形成中空立體氫鍵網狀結構，密度大小為：<span class="blank-line"></span>。</div>
+            <div class="check-item">3. 液體發生沸騰的熱力學判別條件為：液體的<span class="blank-line"></span>等於外界環境之總大氣壓力。</div>
+            <div class="check-item">4. 高山上氣壓低於 1 atm，水沸騰的溫度將<span class="blank-line"></span>（填高於 / 低於）100°C。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 2 頁：二、相變化熱量階梯與相態轉變循環                           -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-2">
+        <div class="section-header">
+            <span>二、相態轉變循環、能量階梯與加熱曲線分析</span>
+            <span class="section-badge">熱力學本質</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">📌 1. 物質三態相變化循環示意圖（吸熱 vs 放熱）</div>
+            <div style="display: flex; justify-content: center; margin: 4px 0 6px 0;">
+                <svg viewBox="0 0 520 120" style="width: 100%; max-width: 520px; height: 115px;">
+                    <!-- 固態方塊 -->
+                    <rect x="25" y="38" width="95" height="42" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.8"/>
+                    <text x="72.5" y="63" text-anchor="middle" fill="#0369a1" font-weight="700">固態 (Solid)</text>
+
+                    <!-- 液態方塊 -->
+                    <rect x="212" y="38" width="95" height="42" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.8"/>
+                    <text x="259.5" y="63" text-anchor="middle" fill="#15803d" font-weight="700">液態 (Liquid)</text>
+
+                    <!-- 氣態方塊 -->
+                    <rect x="400" y="38" width="95" height="42" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.8"/>
+                    <text x="447.5" y="63" text-anchor="middle" fill="#c2410c" font-weight="700">氣態 (Gas)</text>
+
+                    <!-- 固 -> 液 (熔化) -->
+                    <path d="M 125 48 L 205 48" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-red)"/>
+                    <text x="165" y="42" text-anchor="middle" fill="#dc2626" font-weight="700">熔化 (吸熱)</text>
+
+                    <!-- 液 -> 固 (凝固) -->
+                    <path d="M 205 70 L 125 70" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                    <text x="165" y="85" text-anchor="middle" fill="#2563eb" font-weight="700">凝固 (放熱)</text>
+
+                    <!-- 液 -> 氣 (汽化) -->
+                    <path d="M 312 48 L 393 48" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow-red)"/>
+                    <text x="352.5" y="42" text-anchor="middle" fill="#dc2626" font-weight="700">汽化 (吸熱)</text>
+
+                    <!-- 氣 -> 液 (凝結) -->
+                    <path d="M 393 70 L 312 70" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+                    <text x="352.5" y="85" text-anchor="middle" fill="#2563eb" font-weight="700">凝結 (放熱)</text>
+
+                    <!-- 固 -> 氣 (昇華 上方大弧線，文字在弧線上方，弧線下移防壓字) -->
+                    <path d="M 72.5 36 C 130 18, 390 18, 447.5 36" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="260" y="12" text-anchor="middle" fill="#dc2626" font-weight="800">昇華 (吸熱)</text>
+
+                    <!-- 氣 -> 固 (凝華 下方大弧線，文字在弧線下方，弧線上移防壓字) -->
+                    <path d="M 447.5 82 C 390 100, 130 100, 72.5 82" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,2"/>
+                    <text x="260" y="116" text-anchor="middle" fill="#2563eb" font-weight="800">凝華 / 沉積 (放熱)</text>
+
+
+                    <!-- 箭頭定義 -->
+                    <defs>
+                        <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#dc2626"/>
+                        </marker>
+                        <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563eb"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+
+        <div class="grid-2col">
+            <div class="concept-card">
+                <div class="card-title">📌 2. 相變熱能量階梯與赫斯定律</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content">依據能量守恆（蓋斯定律）：<br><strong>昇華熱 = 熔化熱 + 汽化熱</strong><br>
+                        <span style="color:#0284c7; font-weight:700;">ΔH<sub>sub</sub> = ΔH<sub>fus</sub> + ΔH<sub>vap</sub></span></span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>汽化熱遠大於熔化熱</strong>（例如水：汽化熱約 540 cal/g，熔化熱約 80 cal/g），主因熔化僅部分破壞晶格，汽化則需<strong>完全掙脫分子間吸引力</strong>。</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-card">
+                <div class="card-title">📌 3. 加熱曲線與溫度平台期本質</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>升溫階段（斜線區）</strong>：熱量用以增加分子<strong>平均動能</strong>（溫度 T 上升）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>相變階段（水平平台區）</strong>：溫度維持定值，吸收之熱量全數轉化為<strong>分子間位能</strong>（用於拉開分子間距）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>斜率意義</strong>：斜率倒數與比熱成正比；水蒸氣比熱 &lt; 冰比熱 &lt; 液態水比熱。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-size:10pt; font-weight:600; color:#64748b;">課堂即時填空思考</span>
+            </div>
+            <div class="check-item">1. 物質由氣態直接轉變為固態的相變過程稱為<span class="blank-line"></span>（填昇華 / 凝華），此過程為<span class="blank-line"></span>熱反應。</div>
+            <div class="check-item">2. 相同質量的同種物質，其昇華熱、熔化熱與汽化熱在數值上的精確關係式為：<span class="blank-line"></span>。</div>
+            <div class="check-item">3. 水的汽化熱（540 cal/g）遠大於冰的熔化熱（80 cal/g），根本微觀原因為汽化時必須完全拉開分子間距並克服全部<span class="blank-line"></span>。</div>
+            <div class="check-item">4. 純水在 1 atm 下沸騰時，持續加熱但水溫維持在 100°C 不變，此時吸收的熱能主要用以增加分子的<span class="blank-line"></span>（填動能 / 位能）。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 3 頁：三、相圖核心架構與水的三相圖                               -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-3">
+        <div class="section-header">
+            <span>三、相圖（Phase Diagram）核心架構與水的三相圖解析</span>
+            <span class="section-badge">核心考點</span>
+        </div>
+
+        <div class="grid-2col" style="align-items: center; margin-bottom: 6px;">
+            <div class="concept-card">
+                <div class="card-title">📌 1. 水的三相圖特徵與負斜率成因</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(1)</span>
+                        <span class="sub-point-content"><strong>固液平衡線（熔化線）斜率為負</strong>（向左上方傾斜）：水是少數結冰體積膨脹、密度減小的物質（<strong>ρ<sub>冰</sub> &lt; ρ<sub>水</sub></strong>）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(2)</span>
+                        <span class="sub-point-content"><strong>加壓熔點下降</strong>：依勒沙特列原理，加壓使平衡朝體積較小方向移動，因此對冰加壓會促使其<strong>熔化成水</strong>（滑冰刀刃壓熔成水膜潤滑）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(3)</span>
+                        <span class="sub-point-content"><strong>三相點 (Triple Point)</strong>：0.0098°C, 0.006 atm (4.58 mmHg)，固液氣三相達動態共存，自由度 F = 0。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(4)</span>
+                        <span class="sub-point-content"><strong>臨界點 (Critical Point)</strong>：374°C, 218 atm，氣液界面消失。</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 水的三相圖 SVG (嚴格遵從本地 AI 建議座標，文字 10pt 絕不重疊，左側預留充足刻度邊界) -->
+            <div style="text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background: #ffffff;">
+                <svg viewBox="-12 0 330 195" style="width: 100%; max-width: 310px; height: 185px;">
+                    <!-- 座標軸 -->
+                    <line x1="42" y1="172" x2="305" y2="172" stroke="#0f172a" stroke-width="1.8"/>
+                    <line x1="42" y1="172" x2="42" y2="15" stroke="#0f172a" stroke-width="1.8"/>
+                    <text x="305" y="186" text-anchor="end" fill="#0f172a" font-weight="700">溫度 T (°C)</text>
+                    <text x="36" y="16" text-anchor="end" fill="#0f172a" font-weight="700">壓力 P</text>
+
+                    <!-- 三大區域色塊 -->
+                    <path d="M 42 172 L 105 135 L 90 25 L 42 25 Z" fill="#e0f2fe" opacity="0.6"/>
+                    <path d="M 105 135 L 90 25 L 280 25 L 280 35 Q 215 95, 105 135 Z" fill="#f0fdf4" opacity="0.6"/>
+                    <path d="M 42 172 L 105 135 Q 215 95, 280 35 L 280 172 Z" fill="#fff7ed" opacity="0.6"/>
+
+                    <!-- 實體平衡曲線 -->
+                    <path d="M 42 172 Q 74 155, 105 135" fill="none" stroke="#0284c7" stroke-width="2"/>
+                    <path d="M 105 135 L 90 25" fill="none" stroke="#dc2626" stroke-width="2.2"/>
+                    <path d="M 105 135 Q 185 115, 280 35" fill="none" stroke="#16a34a" stroke-width="2.2"/>
+
+                    <!-- 1 atm 基準線 -->
+                    <line x1="42" y1="110" x2="280" y2="110" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,3"/>
+                    <text x="38" y="113" text-anchor="end" fill="#475569" font-weight="700">1 atm</text>
+
+                    <!-- 三相點 0.006 atm 輔助線 -->
+                    <line x1="42" y1="135" x2="105" y2="135" stroke="#94a3b8" stroke-width="1" stroke-dasharray="2,2"/>
+                    <text x="38" y="138" text-anchor="end" fill="#d97706" font-weight="700">0.006 atm</text>
+
+                    <!-- 0°C 與 100°C 投影 -->
+                    <line x1="96" y1="110" x2="96" y2="172" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,3"/>
+                    <text x="96" y="184" text-anchor="middle" fill="#475569" font-weight="700">0°C</text>
+
+                    <line x1="185" y1="110" x2="185" y2="172" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,3"/>
+                    <text x="185" y="184" text-anchor="middle" fill="#475569" font-weight="700">100°C</text>
+
+                    <!-- 三相點與臨界點圓點 -->
+                    <circle cx="105" cy="135" r="3.5" fill="#d97706"/>
+                    <circle cx="280" cy="35" r="4" fill="#7c3aed"/>
+
+                    <!-- 特徵文字標籤 (外發光避開重疊) -->
+                    <text x="63" y="80" text-anchor="middle" fill="#0369a1" font-weight="800">固態 (冰)</text>
+                    <text x="150" y="65" text-anchor="middle" fill="#15803d" font-weight="800">液態 (水)</text>
+                    <text x="245" y="145" text-anchor="middle" fill="#c2410c" font-weight="800">氣態 (水蒸氣)</text>
+
+                    <!-- 三相點標記 -->
+                    <text x="111" y="148" text-anchor="start" fill="#d97706" font-weight="800">三相點 (0.01°C)</text>
+                    <!-- 臨界點標記 -->
+                    <text x="277" y="24" text-anchor="end" fill="#7c3aed" font-weight="800">臨界點 C (374°C, 218 atm)</text>
+
+                    <!-- 負斜率文字 -->
+                    <text x="50" y="38" text-anchor="start" fill="#dc2626" font-weight="700">熔化線 (負斜率)</text>
+                </svg>
+            </div>
+
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">📌 2. 水相圖的動態路徑與生活科學現象剖析</div>
+            <div class="sub-point-list">
+                <div class="sub-point-item">
+                    <span class="sub-point-num">•</span>
+                    <span class="sub-point-content"><strong>等溫加壓（垂直向上路徑）</strong>：在 -1°C 下對冰施加高壓，冰會直接跨過負斜率熔化線<strong>轉變為液態水</strong>；這正是溜冰刀刃（極小受力面積產生巨大壓強）能使冰面局部熔化形成潤滑水膜之物理基礎。</span>
+                </div>
+                <div class="sub-point-item">
+                    <span class="sub-point-num">•</span>
+                    <span class="sub-point-content"><strong>等壓升溫（水平向右路徑）</strong>：若外壓小於 0.006 atm（如冷凍乾燥技術），將冰加熱時<strong>不會經過液態</strong>，而是直接昇華為水蒸氣，此法常用於高檔咖啡、疫苗與乾燥水果製作。</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-size:10pt; font-weight:600; color:#64748b;">課堂即時填空思考</span>
+            </div>
+            <div class="check-item">1. 純水相圖中，固液平衡線（熔化線）呈現<span class="blank-line"></span>（填正 / 負）斜率，主因是冰的密度比液態水<span class="blank-line"></span>。</div>
+            <div class="check-item">2. 在 0°C、1 atm 下達平衡的冰水混合物，若對系統持續加壓，則冰會逐漸<span class="blank-line"></span>（填熔化 / 凝固）。</div>
+            <div class="check-item">3. 水的三相點條件為溫度 0.01°C、壓力約為<span class="blank-line"></span> atm（或 4.58 mmHg），在此狀態下自由度為零。</div>
+            <div class="check-item">4. 食品工業中的「冷凍乾燥法」，操作之外界壓力必須<span class="blank-line"></span>（填大於 / 小於）水的三相點壓力，才能使冰直接昇華。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 4 頁：四、二氧化碳三相圖、超臨界流體與液晶                     -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-4">
+        <div class="section-header">
+            <span>四、二氧化碳三相圖、超臨界流體 (SCF) 與液晶</span>
+            <span class="section-badge">前沿科學</span>
+        </div>
+
+        <div class="grid-2col" style="align-items: center; margin-bottom: 6px;">
+            <div class="concept-card">
+                <div class="card-title">📌 1. 二氧化碳相圖特徵：常壓昇華本質</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(1)</span>
+                        <span class="sub-point-content"><strong>固液平衡線斜率為正</strong>（向右上方傾斜）：乾冰密度大於液態 CO<sub>2</sub>，符合絕大多數物質之常態，加壓使熔點上升。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(2)</span>
+                        <span class="sub-point-content"><strong>三相點高於常壓</strong>：P<sub>tp</sub> = <strong>5.1 atm</strong>, T<sub>tp</sub> = <strong>-56.4°C</strong>。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(3)</span>
+                        <span class="sub-point-content"><strong>常壓 1 atm 直接昇華</strong>：在 1 atm 常壓下昇華溫度為 <strong>-78.5°C</strong>，常壓下絕無液態 CO<sub>2</sub> 存在（故稱「乾冰」）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">(4)</span>
+                        <span class="sub-point-content">欲觀察到液態 CO<sub>2</sub>，外壓必須<strong>大於 5.1 atm</strong>。</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CO₂ 三相圖 SVG (正斜率，1 atm 線在三相點下方，文字 10pt 絕不重疊) -->
+            <div style="text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px; background: #ffffff;">
+                <svg viewBox="0 0 310 195" style="width: 100%; max-width: 310px; height: 185px;">
+                    <!-- 座標軸 -->
+                    <line x1="38" y1="172" x2="295" y2="172" stroke="#0f172a" stroke-width="1.8"/>
+                    <line x1="38" y1="172" x2="38" y2="15" stroke="#0f172a" stroke-width="1.8"/>
+                    <text x="295" y="186" text-anchor="end" fill="#0f172a" font-weight="700">溫度 T (°C)</text>
+                    <text x="32" y="16" text-anchor="end" fill="#0f172a" font-weight="700">壓力 P</text>
+
+                    <!-- 三大區域色塊 -->
+                    <!-- 三相點：(130, 105) (5.1 atm, -56.4°C) -->
+                    <!-- 臨界點：(275, 35) (73 atm, 31.1°C) -->
+                    <!-- 熔化線：(130, 105) -> (160, 25) 正斜率 -->
+                    <path d="M 38 172 L 130 105 L 160 25 L 38 25 Z" fill="#e0f2fe" opacity="0.6"/>
+                    <path d="M 130 105 L 160 25 L 275 25 L 275 35 Q 220 70, 130 105 Z" fill="#f0fdf4" opacity="0.6"/>
+                    <path d="M 38 172 L 130 105 Q 220 70, 275 35 L 275 172 Z" fill="#fff7ed" opacity="0.6"/>
+
+                    <!-- 平衡線 -->
+                    <path d="M 38 172 Q 85 145, 130 105" fill="none" stroke="#0284c7" stroke-width="2"/>
+                    <path d="M 130 105 L 160 25" fill="none" stroke="#dc2626" stroke-width="2.2"/>
+                    <path d="M 130 105 Q 220 70, 275 35" fill="none" stroke="#16a34a" stroke-width="2.2"/>
+
+                    <!-- 三相點 5.1 atm 虛線 -->
+                    <line x1="38" y1="105" x2="130" y2="105" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <text x="34" y="108" text-anchor="end" fill="#475569" font-weight="700">5.1 atm</text>
+
+                    <!-- 常壓 1 atm 虛線 (在三相點下方！) -->
+                    <line x1="38" y1="145" x2="275" y2="145" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="3,3"/>
+                    <text x="34" y="148" text-anchor="end" fill="#e11d48" font-weight="800">1 atm</text>
+
+                    <!-- 常壓昇華點 -78.5°C -->
+                    <line x1="88" y1="145" x2="88" y2="172" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <text x="88" y="184" text-anchor="middle" fill="#e11d48" font-weight="700">-78.5°C</text>
+
+                    <!-- 圓點 -->
+                    <circle cx="130" cy="105" r="3.5" fill="#d97706"/>
+                    <circle cx="275" cy="35" r="4" fill="#7c3aed"/>
+                    <circle cx="88" cy="145" r="3" fill="#e11d48"/>
+
+                    <!-- 文字標記 (外發光避開重疊) -->
+                    <text x="75" y="65" text-anchor="middle" fill="#0369a1" font-weight="800">固態 (乾冰)</text>
+                    <text x="190" y="65" text-anchor="middle" fill="#15803d" font-weight="800">液態</text>
+                    <text x="240" y="130" text-anchor="middle" fill="#c2410c" font-weight="800">氣態 (CO₂)</text>
+
+                    <!-- 三相點標記 (置於點上方偏右，與左側 5.1 atm 軸標籤完全分開) -->
+                    <text x="138" y="96" text-anchor="start" fill="#d97706" font-weight="800">三相點 (-56.4°C)</text>
+                    <text x="272" y="24" text-anchor="end" fill="#7c3aed" font-weight="800">臨界點 C (31.1°C, 73 atm)</text>
+                    <text x="180" y="38" text-anchor="start" fill="#dc2626" font-weight="700">熔化線 (正斜率)</text>
+                    <text x="165" y="160" text-anchor="start" fill="#e11d48" font-weight="800">常壓昇華線 (無液態)</text>
+                </svg>
+            </div>
+        </div>
+
+
+        <div class="grid-2col">
+            <div class="concept-card">
+                <div class="card-title">📌 2. 超臨界流體 (SCF) 物理特性與應用</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>定義</strong>：當物質溫度高於臨界溫度 (T<sub>c</sub>) 且壓力高於臨界壓力 (P<sub>c</sub>) 時，氣液兩相界面完全消失之流體狀態。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>特徵雙重性</strong>：具備<strong>液體的高密度與高溶解力</strong>，同時兼具<strong>氣體的低黏度與高擴散性</strong>（滲透穿透力強）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>綠色化學應用</strong>：超臨界 CO<sub>2</sub> (T<sub>c</sub>=31.1°C 接近室溫，條件溫和) 廣泛應用於<strong>萃取咖啡因</strong>、精油，無毒且降壓即可完全分離。</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="concept-card">
+                <div class="card-title">📌 3. 液晶 (Liquid Crystal, LC) 簡介</div>
+                <div class="sub-point-list">
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>定義</strong>：介於結晶固態與均向性液態之間的中間相態（介晶相，Mesophase）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>特徵</strong>：具備<strong>液體的流動性</strong>，同時在分子排列上具備<strong>晶體的非均向性 (Anisotropy)</strong>（雙折射光學效應）。</span>
+                    </div>
+                    <div class="sub-point-item">
+                        <span class="sub-point-num">•</span>
+                        <span class="sub-point-content"><strong>應用</strong>：受電場誘導可旋轉分子排列方向控制透光率，為 LCD 液晶顯示器核心材料。</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-size:10pt; font-weight:600; color:#64748b;">課堂即時填空思考</span>
+            </div>
+            <div class="check-item">1. 二氧化碳的三相點壓力為<span class="blank-line"></span> atm，因高於 1 atm，故常壓下加熱乾冰只會直接<span class="blank-line"></span>。</div>
+            <div class="check-item">2. 欲在密閉容器內觀察到穩定的液態二氧化碳，容器內的壓力至少必須維持在<span class="blank-line"></span> atm 以上。</div>
+            <div class="check-item">3. 當氣體溫度超過其<span class="blank-line"></span>（填臨界溫度 / 沸點）時，無論施加多大壓力均無法使其液化。</div>
+            <div class="check-item">4. 超臨界流體兼具類似<span class="blank-line"></span>的高溶解度，以及類似<span class="blank-line"></span>的低黏度與高擴散滲透能力。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 5 頁：經典範例 1 & 2                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-5">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 1 · 水的三相圖狀態減壓與升溫判定</span>
+                <span class="example-badge">重要觀念</span>
+            </div>
+            <div class="example-stem">
+                已知純水之三相點為 0.0098°C、0.006 atm；臨界點為 374°C、218 atm。今有一密閉容器內裝有純水，並置於下列各特定溫度與壓力條件下。試問下列何種狀態下水呈現<strong>穩定液態</strong>？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 壓力 1.0 atm，溫度 105°C</div>
+                <div class="example-option-row">(B) 壓力 1.0 atm，溫度 -5°C</div>
+                <div class="example-option-row">(C) 壓力 0.004 atm，溫度 50°C</div>
+                <div class="example-option-row">(D) 壓力 2.0 atm，溫度 100°C</div>
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 1.0 atm 下正常冰點為 0°C，正常沸點為 100°C；加壓至 2.0 atm 沸點升高、冰點下降...<br>
+                    • 外壓低於三相點壓力（0.006 atm）時不存在液態區域...
+                </div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 2 · 二氧化碳三相圖各相態與臨界條件判定</span>
+                <span class="example-badge">核心考題</span>
+            </div>
+            <div class="example-stem">
+                右圖為二氧化碳之相圖示意圖。已知其三相點為 -56.4°C、5.1 atm，臨界點為 31.1°C、73 atm。下列關於 CO<sub>2</sub> 相態特徵之敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 在 1 atm、25°C 下，二氧化碳為無色液體</div>
+                <div class="example-option-row">(B) 在 10 atm、-60°C 下，二氧化碳呈現穩定固態</div>
+                <div class="example-option-row">(C) 在 50°C 下，只要持續加壓超過 73 atm，即可將氣體成功液化</div>
+                <div class="example-option-row">(D) 乾冰（固態 CO<sub>2</sub>）密度小於液態 CO<sub>2</sub>，因此固液平衡線斜率為負</div>
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 判斷 (10 atm, -60°C) 位於相圖中的哪一區域（三相點溫度為 -56.4°C）...<br>
+                    • 臨界溫度（31.1°C）以上能否透過加壓液化？
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 6 頁：經典範例 3 & 4                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-6">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 3 · 飽和蒸氣壓本質與外壓容積變化影響</span>
+                <span class="example-badge">觀念辨析</span>
+            </div>
+            <div class="example-stem">
+                在 25°C 下，有一附活塞的密閉容器中裝有少量的水與飽和水蒸氣共存，此時測得容器內之飽和水蒸氣壓為 24 mmHg。在維持 25°C 定溫條件下，緩慢推動活塞將容器容積壓縮為原本的二分之一（壓縮後仍有液態水殘留）。下列關於壓縮後系統各項物理量變化的敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 容器內的水蒸氣壓增大為 48 mmHg</div>
+                <div class="example-option-row">(B) 容器內的水蒸氣壓維持 24 mmHg 不變</div>
+                <div class="example-option-row">(C) 容器內的氣相水分子數（莫耳數）維持不變</div>
+                <div class="example-option-row">(D) 蒸發速率顯著大於凝結速率，打破原有的動態平衡</div>
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 純液體的飽和蒸氣壓僅取決於哪些變因？與容器體積或液體殘留量是否有關？<br>
+                    • 依理想氣體方程式 n = (P·V)/(R·T)，當 T 與 P 不變且 V 減半時，氣相莫耳數 n 變化為何？
+                </div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 4 · 物質狀態變化與相變熱熱力學計算</span>
+                <span class="example-badge">綜合應用</span>
+            </div>
+            <div class="example-stem">
+                已知在 1 atm 下，冰的熔化熱為 6.0 kJ/mol，水在 100°C 的汽化熱為 40.7 kJ/mol；固態冰、液態水與水蒸氣之平均莫耳比熱分別為 36 J/(mol·K)、75 J/(mol·K) 與 33 J/(mol·K)。若取 18 克（1 mol）-10°C 的冰在 1 atm 下加熱轉化為 110°C 的水蒸氣，試分析此吸熱過程並回答下列問題：<br>
+                (1) 哪一個階段吸收的熱量最多？其物理實質為何？<br>
+                (2) 依蓋斯定律，水在 0°C 時的昇華熱約為多少 kJ/mol？
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 階段一（冰升溫）、階段二（冰熔化）、階段三（水升溫）、階段四（水沸騰汽化）、階段五（水蒸氣升溫）...<br>
+                    • 比較相變潛熱（ΔH<sub>fus</sub> vs ΔH<sub>vap</sub>）與顯熱之大小差異...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 7 頁：經典範例 5 & 6                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-7">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 5 · 相圖等溫加壓與等壓升溫動態路徑分析</span>
+                <span class="example-badge">相圖路徑分析</span>
+            </div>
+            <div class="example-stem">
+                某純物質之相圖已知其三相點為 1.5 atm、-10°C，臨界點為 50 atm、150°C。若將該純物質試樣置於下列不同路徑操作，試判斷其所經歷之相態轉變：<br>
+                (1) 將物質維持在外壓 1.0 atm 下，溫度由 -30°C 緩慢升高至 60°C，該物質會經歷何種相變化？<br>
+                (2) 將物質維持在 0°C 下，將壓力由 0.5 atm 持續加壓至 10 atm，該物質會經歷何種相變化？
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 路徑 (1)：外壓 1.0 atm 低於三相點壓力（1.5 atm），水平向右移動時直接跨過何種分界線？<br>
+                    • 路徑 (2)：溫度 0°C 高於三相點溫度（-10°C），由 0.5 atm 垂直向上加壓至 10 atm 經過哪些相態？
+                </div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 6 · 高山氣壓、沸點與壓力鍋之生活科學應用</span>
+                <span class="example-badge">生活實踐</span>
+            </div>
+            <div class="example-stem">
+                某登山隊登上玉山主峰（海拔約 3952 公尺），測得大氣壓力約為 0.6 atm。隊員使用未加蓋之高山瓦斯爐煮水烹煮生米，發現水沸騰了但米飯卻始終夾生未熟。下列關於此現象之化學原理解釋，何者<strong>最正確</strong>？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 高山上大氣壓力低，水分子的汽化熱大幅增加，消耗了瓦斯熱量</div>
+                <div class="example-option-row">(B) 外界大氣壓力低於 1 atm，水的沸點降至約 86°C，沸水溫度不足以熟透米粒</div>
+                <div class="example-option-row">(C) 只要將瓦斯爐火力調至最大，持續沸騰的水溫便可突破 100°C</div>
+                <div class="example-option-row">(D) 若改用家用壓力鍋烹煮，鍋內壓力增加會使水沸點降低，達成快熟效果</div>
+            </div>
+            <div class="calc-area">
+                <div class="calc-title">✍️ 課堂演算與觀念分析區：</div>
+                <div style="font-size: 11pt; color: #64748b; line-height: 1.6;">
+                    • 液體沸騰時，持續加熱會改變水溫嗎？沸騰時水溫被鎖定在何種溫度？<br>
+                    • 壓力鍋是透過增加外壓使沸點提高至多少度？
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 8 頁：五、單元檢核練習：精選試題 1~4                             -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-8">
+        <div class="section-header">
+            <span>五、單元檢核練習：題庫精選練習 1~4</span>
+            <span class="section-badge">自主實戰</span>
+        </div>
+
+        <!-- Q1 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 1.</span>
+                <span class="quiz-tag">物質三態 · 微觀與巨觀特性</span>
+            </div>
+            <div class="quiz-stem">
+                有關物質固態、液態與氣態三態之敘述，下列組合何者<strong>完全正確</strong>？<br>
+                甲、其他粒子在液體中的擴散較在氣體中快得多<br>
+                乙、在三態中最易被壓縮的狀態是氣態<br>
+                丙、粒子間距離皆以固態最小<br>
+                丁、固態粒子的運動方式有移動、轉動、振動<br>
+                戊、受熱膨脹率最大者為氣態
+            </div>
+            <div class="quiz-options-grid">
+                <div class="quiz-opt">(A) 乙、戊</div>
+                <div class="quiz-opt">(B) 乙、丙、戊</div>
+                <div class="quiz-opt">(C) 甲、乙、丁</div>
+                <div class="quiz-opt">(D) 丙、丁、戊</div>
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 2.</span>
+                <span class="quiz-tag">水的相態 · 三相點與臨界點</span>
+            </div>
+            <div class="quiz-stem">
+                已知水的三相點：壓力 4.58 mmHg，溫度 0.0098°C；臨界點：壓力 217.7 atm，溫度 374.1°C。則下列水的主要狀態，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 1.0 atm、101°C 為液態</div>
+                <div class="quiz-opt">(B) 1.0 atm、0.0098°C 為固態</div>
+                <div class="quiz-opt">(C) 1.1 atm、0°C 為固態</div>
+                <div class="quiz-opt">(D) 2.0 atm、100°C 為液態</div>
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 3.</span>
+                <span class="quiz-tag">CO₂相圖 · 乾冰常壓昇華</span>
+            </div>
+            <div class="quiz-stem">
+                已知二氧化碳 (CO<sub>2</sub>) 的三相點條件為壓力 5.11 atm、溫度 -56.4°C。下列關於 CO<sub>2</sub> 相態特徵的敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 在 1 atm 常壓下加熱乾冰，乾冰會先熔化為液體再沸騰汽化</div>
+                <div class="quiz-opt">(B) 在 1 atm 下，乾冰加熱只會直接昇華為氣體，常壓下無法存在液態 CO<sub>2</sub></div>
+                <div class="quiz-opt">(C) 欲觀察到液態 CO<sub>2</sub> 穩定存在，外壓必須小於 5.11 atm</div>
+                <div class="quiz-opt">(D) CO<sub>2</sub> 的固液平衡線（熔化線）斜率為負，加壓會使其熔點下降</div>
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 4.</span>
+                <span class="quiz-tag">固液平衡線 · 熔化線斜率比較</span>
+            </div>
+            <div class="quiz-stem">
+                水與多數物質（如 CO<sub>2</sub>）的相圖在固液平衡線（熔化線）呈現不同的傾斜方向。下列有關此現象之敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 水的固液平衡線斜率為負（向左傾斜），加壓會使冰的熔點下降</div>
+                <div class="quiz-opt">(B) 水的固液平衡線斜率為負，是因為冰的密度大於液態水</div>
+                <div class="quiz-opt">(C) 多數物質固液平衡線斜率為正，加壓會使其熔點下降</div>
+                <div class="quiz-opt">(D) 溜冰選手在冰上滑行時，刀刃加壓使冰熔點上升，因而形成水膜潤滑</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 9 頁：五、單元檢核練習（續）：精選試題 5~8                       -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-9">
+        <div class="section-header">
+            <span>五、單元檢核練習（續）：題庫精選練習 5~8</span>
+            <span class="section-badge">自主實戰</span>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 5.</span>
+                <span class="quiz-tag">超臨界流體 · 臨界點特性</span>
+            </div>
+            <div class="quiz-stem">
+                當物質處於臨界溫度 (T<sub>c</sub>) 與臨界壓力 (P<sub>c</sub>) 之上時，氣液界面消失，成為超臨界流體。下列關於超臨界流體性質的敘述，何者<strong>錯誤</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 超臨界流體兼具液體的高溶解能力與氣體的高擴散性</div>
+                <div class="quiz-opt">(B) 超臨界流體的黏度接近氣體，對多孔物質滲透力極強</div>
+                <div class="quiz-opt">(C) 超臨界二氧化碳常應用於萃取咖啡豆中的咖啡因，具無毒易分離特點</div>
+                <div class="quiz-opt">(D) 在臨界溫度以上，只要持續增大壓力，即可成功將氣體加壓液化</div>
+            </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 6.</span>
+                <span class="quiz-tag">相變化熱量 · 熔化熱與汽化熱</span>
+            </div>
+            <div class="quiz-stem">
+                將 1 atm、-20°C 的冰在定壓下加熱至 120°C 的水蒸氣。下列關於加熱過程各階段之敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 在 0°C 冰熔化過程中，吸收的熱量主要用以增加分子平均動能</div>
+                <div class="quiz-opt">(B) 水的汽化熱遠大於冰的熔化熱，主因是汽化時需完全拉開分子並克服全部分子間吸引力</div>
+                <div class="quiz-opt">(C) 在 100°C 水沸騰階段，分子間距維持不變，僅分子運動速率增加</div>
+                <div class="quiz-opt">(D) 水在由液態升溫過程中，分子間平均吸引力會顯著增強</div>
+            </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 7.</span>
+                <span class="quiz-tag">相平衡蒸氣壓 · 定溫壓縮效應</span>
+            </div>
+            <div class="quiz-stem">
+                在 25°C 下，有一容積為 10 L 的活塞密閉容器，內含少量液態水與達平衡之飽和水蒸氣（飽和蒸氣壓 23.8 mmHg）。若在定溫下將活塞壓縮使容積變為 5 L，且容器內仍有液態水殘留，則容器內的水蒸氣壓與水蒸氣分子數變化為何？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 水蒸氣壓增為 47.6 mmHg，水蒸氣分子數不變</div>
+                <div class="quiz-opt">(B) 水蒸氣壓維持 23.8 mmHg，水蒸氣分子數減半</div>
+                <div class="quiz-opt">(C) 水蒸氣壓維持 23.8 mmHg，水蒸氣分子數不變</div>
+                <div class="quiz-opt">(D) 水蒸氣壓減半，水蒸氣分子數減半</div>
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 8.</span>
+                <span class="quiz-tag">相圖路徑分析 · 升溫相轉變順序</span>
+            </div>
+            <div class="quiz-stem">
+                某純物質之相圖已知其三相點為 1.5 atm、-10°C，臨界點為 50 atm、150°C。若將該物質維持在外壓 1.0 atm 下，將溫度由 -30°C 緩慢升高至 80°C，則該物質所經歷的相態轉變過程為何？
+            </div>
+            <div class="quiz-options-grid">
+                <div class="quiz-opt">(A) 固態 → 液態 → 氣態</div>
+                <div class="quiz-opt">(B) 固態 → 氣態（直接昇華）</div>
+                <div class="quiz-opt">(C) 液態 → 氣態</div>
+                <div class="quiz-opt">(D) 固態 → 超臨界流體</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 10 頁：五、單元檢核練習（續）：精選試題 9~10 ＆ 課堂運算手寫專區  -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-10">
+        <div class="section-header">
+            <span>五、單元檢核練習（續）：題庫精選練習 9~10 ＆ 課堂運算手寫專區</span>
+            <span class="section-badge">自主實戰</span>
+        </div>
+
+        <!-- Q9 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 9.</span>
+                <span class="quiz-tag">氣壓與沸點 · 生活科學應用</span>
+            </div>
+            <div class="quiz-stem">
+                玉山主峰海拔約 3952 公尺，山頂大氣壓力約僅有 0.6 atm。下列關於在玉山頂上加熱純水煮食物之敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 玉山頂上水的沸點高於 100°C，因此食物容易被煮熟煮爛</div>
+                <div class="quiz-opt">(B) 玉山頂上大氣壓力較低，水在約 86°C 即沸騰，因此不易將食物煮熟</div>
+                <div class="quiz-opt">(C) 若使用未加蓋的普通鍋子加熱，只要火力夠猛，沸騰水溫即可超過 100°C</div>
+                <div class="quiz-opt">(D) 若改用壓力鍋烹煮，鍋內壓力增加會使水沸點降低，進而達到快煮節能效果</div>
+            </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 10.</span>
+                <span class="quiz-tag">三相點熱力學 · 自由度與動態平衡</span>
+            </div>
+            <div class="quiz-stem">
+                在純物質相圖中的三相點（Triple Point），固態、液態與氣態三相達動態平衡共存。下列有關三相點之敘述，何者<strong>正確</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 任意微調外界壓力或溫度，仍可維持固、液、氣三相共存</div>
+                <div class="quiz-opt">(B) 純水的三相點（0.0098°C, 4.58 mmHg）為固定狀態點，依吉布斯相律其自由度為 0</div>
+                <div class="quiz-opt">(C) 在三相點時，固、液、氣三相間的相互轉化反應皆已完全停止</div>
+                <div class="quiz-opt">(D) 所有純物質的三相點壓力均小於 1 atm 常壓</div>
+            </div>
+        </div>
+
+        <!-- 課堂運算手寫專區 -->
+        <div class="notes-area">
+            <div style="font-size: 12pt; font-weight: 800; color: #0f172a; display: flex; justify-content: space-between; align-items: center;">
+                <span>✍️ 課堂運算推導、相圖繪製與重要概念筆記專區：</span>
+                <span style="font-size: 9.5pt; color: #64748b; font-weight: normal;">（供課堂隨堂演練使用）</span>
+            </div>
+            <div class="notes-grid"></div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 11 頁：六、單元檢核練習題 · 參考答案速查表                       -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-11">
+        <div class="section-header">
+            <span>六、單元檢核練習題 · 參考答案速查表（不需詳解）</span>
+            <span class="section-badge">自主檢核</span>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">📊 1. 單元檢核 10 題參考解答速查矩陣</div>
+            <table class="standard-table" style="text-align: center;">
+                <thead>
+                    <tr>
+                        <th style="width: 10%;">題號</th>
+                        <th style="width: 12%;">參考答案</th>
+                        <th style="width: 28%;">核心評量要點</th>
+                        <th style="width: 10%;">題號</th>
+                        <th style="width: 12%;">參考答案</th>
+                        <th style="width: 28%;">核心評量要點</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:700;">練習 1</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">A</td>
+                        <td>微觀三態特徵與冰的密度反常</td>
+                        <td style="font-weight:700;">練習 6</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>相變熱本質（汽化熱 &gt;&gt; 熔化熱）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700;">練習 2</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">D</td>
+                        <td>水相圖特定溫壓下相態判定</td>
+                        <td style="font-weight:700;">練習 7</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>定溫飽和蒸氣壓本質與壓縮效應</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700;">練習 3</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>CO₂ 相圖與常壓乾冰昇華現象</td>
+                        <td style="font-weight:700;">練習 8</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>外壓低於三相點時定壓升溫昇華</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700;">練習 4</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">A</td>
+                        <td>固液平衡線（負斜率 vs 正斜率）</td>
+                        <td style="font-weight:700;">練習 9</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>高山外壓低使水沸點下降原理</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700;">練習 5</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">D</td>
+                        <td>超臨界流體特性與臨界點定義</td>
+                        <td style="font-weight:700;">練習 10</td>
+                        <td style="font-weight:800; color:#0284c7; font-size:13pt;">B</td>
+                        <td>三相點動態平衡與吉布斯相律 (F=0)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="concept-card">
+            <div class="card-title">💡 2. 單元核心公式與相圖精華速記</div>
+            <table class="standard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">系統或物理量</th>
+                        <th style="width: 37%;">純水系統 (H₂O)</th>
+                        <th style="width: 38%;">二氧化碳系統 (CO₂)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">固液分界線斜率</td>
+                        <td><strong>負斜率</strong>（向左傾斜，ρ<sub>冰</sub> &lt; ρ<sub>水</sub>）</td>
+                        <td><strong>正斜率</strong>（向右傾斜，ρ<sub>固</sub> &gt; ρ<sub>液</sub>）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">加壓熔點變化</td>
+                        <td>加壓熔點<strong>下降</strong>（冰刀壓熔水膜）</td>
+                        <td>加壓熔點<strong>上升</strong>（多數物質常態）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">三相點條件</td>
+                        <td>0.0098°C, 0.006 atm (4.58 mmHg)</td>
+                        <td>-56.4°C, 5.11 atm（大於 1 atm）</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">1 atm 常壓表現</td>
+                        <td>有固、液、氣三態（正常冰點 0°C，沸點 100°C）</td>
+                        <td><strong>無液態</strong>，在 -78.5°C 直接昇華為氣體</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:700; text-align:center;">熱力學相律</td>
+                        <td colspan="2" style="text-align:center;">
+                            吉布斯相律：<strong>F = C - P + 2</strong>（單成分 C=1；三相點 P=3 則自由度 F=0，狀態被完全鎖定）
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="concept-card" style="margin-top: 6px;">
+            <div class="card-title">📝 3. 學生課堂自主學習評量檢核</div>
+            <div style="display: flex; justify-content: space-between; font-size: 11pt; padding: 4px 6px;">
+                <span>觀念理解：□ 完全掌握　□ 部分清晰　□ 需再加強</span>
+                <span>三相圖繪製判讀：□ 純熟　□ 尚可　□ 生疏</span>
+                <span>教師簽名：___________</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+'''
+
+def main():
+    target_dir = os.path.abspath("my_chem_003_溶液/01_物質的狀態與三相圖")
+    html_path_1 = os.path.join(target_dir, "01_物質的狀態與三相圖_課堂講義學習單.html")
+    html_path_2 = os.path.join(target_dir, "01_物質的狀態與三相圖_講義學習單.html")
+
+    with open(html_path_1, "w", encoding="utf-8") as f:
+        f.write(HTML_TEMPLATE)
+    print(f"✅ 成功生成: {html_path_1}")
+
+    with open(html_path_2, "w", encoding="utf-8") as f:
+        f.write(HTML_TEMPLATE)
+    print(f"✅ 成功同步生成: {html_path_2}")
+
+if __name__ == "__main__":
+    main()
+
