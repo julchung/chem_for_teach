@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-4 範例 5：蒸氣壓與凝固點下降綜合計算 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.25rem); font-weight: 700; margin-bottom: 0.35rem; }
+        p, li { font-size: clamp(0.92rem, 1.05vw, 1.1rem); line-height: 1.7; }
+        strong { color: var(--accent-cyan); }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.1rem; flex: 1; min-height: 0; align-items: stretch;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.8rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35); padding: 10px 22px;
+            font-size: 1rem; transition: all 0.2s; align-self: flex-start;
+        }
+        .btn-action:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        .calc-step {
+            background: rgba(0,0,0,0.3); border-radius: 10px;
+            padding: 0.85rem 1.1rem; border-left: 4px solid var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+        .formula-box {
+            background: rgba(255,255,255,0.05); padding: 0.5rem 0.8rem;
+            border-radius: 6px; font-size: 1.1rem; margin: 4px 0; color: #fff;
+        }
+        .options-list {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0.8rem 0;
+        }
+        .option-item {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 14px; border-radius: 8px; font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-4 溶液的依數性質 &middot; 實戰演練：範例 5</h1>
+
+        <div class="grid-2">
+            <!-- 左欄：題目內容 -->
+            <div class="panel" style="justify-content:space-between;">
+                <div>
+                    <h2 style="color:var(--accent-yellow); font-size:1.3rem; margin-bottom:0.8rem;">📝 題目內容</h2>
+                    <div style="font-size:1.05rem; line-height:1.75; color:#f8fafc;">
+                        <p>某非揮發性非電解質水溶液於 $25\text{ }^\circ\text{C}$ 時蒸氣壓為 $23.45\text{ mmHg}$，已知 $25\text{ }^\circ\text{C}$ 時純水蒸氣壓為 $23.76\text{ mmHg}$，則此溶液凝固點最接近若干 $^\circ\text{C}$？<br><br>
+                        （已知水的莫耳凝固點下降常數 $K_f = 1.86\text{ }^\circ\text{C/m}$）</p>
+
+                        <div class="options-list">
+                            <div class="option-item">(A) $-1.36$</div>
+                            <div class="option-item">(B) $-0.66$</div>
+                            <div class="option-item">(C) $-0.99$</div>
+                            <div class="option-item">(D) $-0.69$</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding-top:1rem;">
+                    <button class="btn-action" onclick="toggleSolution('solution-box')">
+                        💡 顯示詳解 / 隱藏
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右欄：詳解（預設留白，點擊按鈕展開） -->
+            <div class="panel" style="background:rgba(255,255,255,0.02);">
+                <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
+                    <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 範例詳解</h2>
+
+                    <div class="calc-step">
+                        <div style="font-size:1rem; color:var(--accent-blue); font-weight:700;">1. 拉午耳定律求莫耳比：</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:2px;">
+                            蒸氣壓下降量 $\Delta P = P^\circ - P = 23.76 - 23.45 = 0.31\text{ mmHg}$：
+                        </p>
+                        <div class="formula-box">
+                            $$\dfrac{n_{質}}{n_{水}} = \dfrac{P^\circ - P}{P} = \dfrac{0.31}{23.45} \approx 0.01322$$
+                        </div>
+                    </div>
+
+                    <div class="calc-step">
+                        <div style="font-size:1rem; color:var(--accent-yellow); font-weight:700;">2. 換算為重量莫耳濃度 $C_m$：</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:2px;">
+                            每 $1\text{ kg}$ 水相當於 $n_{水} = \dfrac{1000}{18} \approx 55.56\text{ mol}$：
+                        </p>
+                        <div class="formula-box">
+                            $$C_m = 55.56 \times \dfrac{n_{質}}{n_{水}} = 55.56 \times \dfrac{0.31}{23.45} \approx 0.734\text{ m}$$
+                        </div>
+                        <p style="font-size:0.88rem; color:#94a3b8; margin-top:3px;">
+                            （若以稀薄溶液近似分母 $C_m \approx 55.56 \times \dfrac{0.31}{23.76} \approx 0.725\text{ m}$）
+                        </p>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-green);">
+                        <div style="font-size:1rem; color:var(--accent-green); font-weight:700;">3. 計算凝固點下降度數與凝固點：</div>
+                        <div class="formula-box">
+                            $$\Delta T_f = K_f \times C_m \times i = 1.86 \times 0.734 \approx 1.36\text{ }^\circ\text{C}$$
+                            $$T_f = 0.00 - \Delta T_f = -1.36\text{ }^\circ\text{C}$$
+                        </div>
+                        <p style="font-size:0.95rem; font-weight:700; color:var(--accent-green); margin-top:4px;">
+                            ✅ 正確答案為 (A) $-1.36$
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSolution(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'flex';
+            if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                window.MathJax.typesetPromise([el]).catch(err => console.error(err));
+            }
+        } else {
+            el.style.display = 'none';
+        }
+    }
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+</body>
+</html>
