@@ -322,6 +322,14 @@ class PortalApp {
       });
     }
 
+    // Google 帳號快速登入按鈕
+    const btnGoogle = document.getElementById('btn-google-login');
+    if (btnGoogle) {
+      btnGoogle.addEventListener('click', () => {
+        this.attemptGoogleLogin();
+      });
+    }
+
     // 清除所有紀錄按鈕
     const btnClearAll = document.getElementById('btn-clear-all-data');
     if (btnClearAll) {
@@ -516,7 +524,7 @@ class PortalApp {
     }
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">該群組目前無學生資料，請點擊上方按鈕匯入。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">該群組目前無學生資料，請點擊上方按鈕匯入。</td></tr>`;
       return;
     }
 
@@ -526,6 +534,9 @@ class PortalApp {
         ? 'background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);'
         : 'background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);';
       const roleText = isT ? '🔑 教師 (全開)' : '🎓 學生 (循序闖關)';
+      const emailDisplay = u.email 
+        ? `<span style="color: #34d399; font-weight: 500;">✉️ ${u.email}</span>` 
+        : `<span style="color: #64748b; font-style: italic;">(未綁定)</span>`;
 
       return `
         <tr style="border-bottom: 1px solid #1e293b;">
@@ -533,6 +544,8 @@ class PortalApp {
           <td style="padding: 10px 8px; color: #f8fafc; font-weight: 700;">${u.username}</td>
           <td style="padding: 10px 8px; color: #cbd5e1; font-family: monospace;">${u.password}</td>
           <td style="padding: 10px 8px; color: #38bdf8; font-weight: 600;">${u.name}</td>
+          <td style="padding: 10px 8px; font-family: monospace; font-size: 0.82rem;">${emailDisplay}</td>
+          <td style="padding: 10px 8px; color: #c084fc; font-weight: 600; font-size: 0.82rem;">👨‍🏫 ${u.teacher || 'jul'}</td>
           <td style="padding: 10px 8px;">
             <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; font-weight: 700; ${badgeStyle}">
               ${roleText}
@@ -573,6 +586,7 @@ class PortalApp {
 
     const openModal = () => {
       modal.style.display = 'flex';
+      this.populateMonitorTeachersSelect();
       this.populateMonitorGroupsSelect();
       this.renderTeacherMonitorTable(cachedCloudData);
       if (window.chemSync && window.chemSync.isInitialized) {
@@ -616,10 +630,41 @@ class PortalApp {
       });
     }
 
+    const selectTeacher = document.getElementById('select-monitor-teacher');
+    if (selectTeacher) {
+      selectTeacher.addEventListener('change', () => {
+        this.renderTeacherMonitorTable(cachedCloudData);
+      });
+    }
+
     if (selectGroup) {
       selectGroup.addEventListener('change', () => {
         this.renderTeacherMonitorTable(cachedCloudData);
       });
+    }
+  }
+
+  populateMonitorTeachersSelect() {
+    const select = document.getElementById('select-monitor-teacher');
+    if (!select) return;
+    const allUsers = window.USER_DATABASE || [];
+    const teacherSet = new Set(['jul']);
+    allUsers.forEach(u => {
+      if (u.teacher) teacherSet.add(u.teacher);
+    });
+
+    const myUsername = (this.currentUser && this.currentUser.username) ? this.currentUser.username : 'jul';
+    let html = `<option value="ALL">🌐 全部任課教師</option>`;
+    Array.from(teacherSet).sort().forEach(t => {
+      const isMe = (t === myUsername) ? ' (我)' : '';
+      const label = (t === 'jul') ? `jul (鍾老師)${isMe}` : `${t}${isMe}`;
+      html += `<option value="${t}">👨‍🏫 ${label}</option>`;
+    });
+    select.innerHTML = html;
+    if (teacherSet.has(myUsername)) {
+      select.value = myUsername;
+    } else {
+      select.value = 'jul';
     }
   }
 
@@ -641,15 +686,23 @@ class PortalApp {
   renderTeacherMonitorTable(cloudData = {}) {
     const tbody = document.getElementById('teacher-monitor-tbody');
     const statsPill = document.getElementById('monitor-stats-pill');
-    const select = document.getElementById('select-monitor-group');
+    const selectGroup = document.getElementById('select-monitor-group');
+    const selectTeacher = document.getElementById('select-monitor-teacher');
     if (!tbody) return;
 
-    const selectedGroup = select ? select.value : 'ALL';
+    const selectedGroup = selectGroup ? selectGroup.value : 'ALL';
+    const selectedTeacher = selectTeacher ? selectTeacher.value : 'ALL';
     const allUsers = (window.USER_DATABASE || []).filter(u => u.role !== 'teacher');
 
-    const students = (selectedGroup === 'ALL')
-      ? allUsers
-      : allUsers.filter(u => u.group === selectedGroup);
+    let students = allUsers;
+    // 1. 依任課教師過濾
+    if (selectedTeacher !== 'ALL') {
+      students = students.filter(u => (u.teacher || 'jul') === selectedTeacher);
+    }
+    // 2. 依班級群組過濾
+    if (selectedGroup !== 'ALL') {
+      students = students.filter(u => u.group === selectedGroup);
+    }
 
     const totalCount = this.allSections.length || 62;
     let activeTodayCount = 0;
@@ -697,6 +750,7 @@ class PortalApp {
           <td style="padding: 10px 8px; color: #94a3b8; font-family: monospace;">${u.group || 'users01.csv'}</td>
           <td style="padding: 10px 8px; color: #f8fafc; font-weight: 700;">${u.username}</td>
           <td style="padding: 10px 8px; color: #38bdf8; font-weight: 700;">${u.name}</td>
+          <td style="padding: 10px 8px; color: #c084fc; font-weight: 600; font-size: 0.82rem;">👨‍🏫 ${u.teacher || 'jul'}</td>
           <td style="padding: 10px 8px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <div style="flex: 1; min-width: 80px; max-width: 120px; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
@@ -711,10 +765,11 @@ class PortalApp {
       `;
     }).join('');
 
-    tbody.innerHTML = rowsHtml || `<tr><td colspan="6" style="padding: 20px; text-align: center; color: #64748b;">暫無學生進度資料</td></tr>`;
+    tbody.innerHTML = rowsHtml || `<tr><td colspan="7" style="padding: 20px; text-align: center; color: #64748b;">暫無學生進度資料</td></tr>`;
 
     if (statsPill) {
-      statsPill.textContent = `共 ${students.length} 位學生 · 今日在線 ${activeTodayCount} 位`;
+      const teacherHint = selectedTeacher === 'ALL' ? '全校' : `教師: ${selectedTeacher}`;
+      statsPill.textContent = `[${teacherHint}] 共 ${students.length} 位學生 · 今日在線 ${activeTodayCount} 位`;
     }
   }
 
@@ -753,6 +808,78 @@ class PortalApp {
         errBox.style.display = 'block';
       }
     }
+  }
+
+  // ── Google 帳號快速登入（雙軌登入機制） ──
+  attemptGoogleLogin() {
+    const errBox = document.getElementById('login-err-msg');
+    if (errBox) errBox.style.display = 'none';
+
+    // 檢查運作環境
+    if (window.location && window.location.protocol === 'file:') {
+      if (errBox) {
+        errBox.innerHTML = '⚠️ Google 登入功能需在 <strong>網站連線環境 (HTTP/HTTPS)</strong> 下運作（如 GitHub Pages 或本機伺服器）。<br><span style="font-size: 0.8rem; color: #94a3b8;">直接開啟 HTML 本地檔案時，請使用上方的「座號 + 學號」登入。</span>';
+        errBox.style.display = 'block';
+      }
+      return;
+    }
+
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      if (errBox) {
+        errBox.textContent = '⚠️ 尚未載入 Firebase 驗證模組，請檢查網路連線或使用帳號密碼登入。';
+        errBox.style.display = 'block';
+      }
+      return;
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    firebase.auth().signInWithPopup(provider)
+      .then((result) => {
+        const user = result.user;
+        const email = (user && user.email) ? user.email.toLowerCase().trim() : '';
+
+        if (!email) {
+          throw new Error('未能由 Google 取得信箱資訊');
+        }
+
+        const db = window.USER_DATABASE || USER_DATABASE || [];
+        const matched = db.find(
+          u => u.email && u.email.toLowerCase().trim() === email
+        );
+
+        if (!matched) {
+          if (errBox) {
+            errBox.innerHTML = `❌ 此 Google 帳號 (<strong>${email}</strong>) 尚未登記在學生名冊中！<br><span style="font-size: 0.82rem; color: #cbd5e1;">請確認是否使用學校配發的信箱，或請聯繫化學科老師協助登記開通。</span>`;
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        // 比對成功！以對應的學號/座號身分進入系統
+        this.currentUser = matched;
+        localStorage.setItem('chem_current_user', JSON.stringify(matched));
+        this.loadUserProgress();
+
+        // 進入全螢幕
+        this.enterFullscreen();
+
+        // 登入後一律進入全螢幕「目錄大廳」
+        this.showView('dashboard');
+        this.showToast(`Google 驗證成功！歡迎回來，${matched.name}！`, 'success');
+      })
+      .catch((err) => {
+        console.error('Google Sign-In Error:', err);
+        // 若使用者自行關閉彈跳視窗，不需顯示報錯紅框
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+          return;
+        }
+        if (errBox) {
+          errBox.textContent = '⚠️ Google 登入發生錯誤：' + (err.message || err.code);
+          errBox.style.display = 'block';
+        }
+      });
   }
 
   logout() {
