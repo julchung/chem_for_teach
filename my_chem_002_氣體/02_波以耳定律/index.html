@@ -127,15 +127,14 @@
         .slide-frame-wrap {
             width: 100%;
             height: var(--slide-height);
-            min-height: 600px;
+            min-height: 580px;
             box-sizing: border-box;
-            padding: 12px var(--side-space) 16px var(--side-space);
+            padding: 8px var(--side-space) 12px var(--side-space);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             border-bottom: 2px solid var(--card-border);
-            scroll-margin-top: var(--header-height);
             overflow: hidden;
         }
 
@@ -363,7 +362,18 @@
             const entry = wrappers[idx];
             if (!entry) return;
             loadIframe(idx);
-            entry.wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            const target = entry.wrap;
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            let count = 0;
+            const timer = setInterval(() => {
+                if (window.__chemReportScroll) window.__chemReportScroll();
+                count++;
+                if (count > 25) clearInterval(timer);
+            }, 30);
         }
 
         window.addEventListener('keydown', (e) => {
@@ -430,6 +440,7 @@
                 window.parent.postMessage({ type: '__chem_scroll', sy: pos.sy, sx: pos.sx }, '*');
             }
         }
+        window.__chemReportScroll = reportScroll;
 
         window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
         document.addEventListener('scroll', reportScroll, { capture: true, passive: true });

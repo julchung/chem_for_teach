@@ -1,0 +1,1322 @@
+# -*- coding: utf-8 -*-
+"""
+generate_02_01_worksheet.py
+生成單元 2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單 (標準 9 頁完美版)
+完全比照 3-2 (02_溶解度與濃度表示法_講義學習單.html) 之規格與公版架構：
+1. 嚴格 9 頁乾淨分頁（4 頁觀念 + 3 頁範例 + 2 頁練習），零空白夾頁、零溢出。
+2. 全文字體 12pt（標題 15.5pt/13pt，內文 12pt，題目 11.5~12pt，選項 11.5~12pt，表格 11pt），行高 1.5。
+3. 頂部 doc-header 每頁一致呈現，包含單元標題、班級、座號、姓名。
+4. 觀念頁 (P1~P4) 含高精度化學 SVG 向量圖形、比較表格、挖空填空自主檢核（底線無答案）。
+   - P2：托里切利氣壓計圖（直立管 vs 傾斜管），文字與線條完全零重疊。
+   - P4：U形水銀壓力計三種情況並排圖（開口右高、開口左高、閉口真空），圖文並茂。
+5. 經典範例頁 (P5~P7) 每頁上下 2 題，左側題幹、右側 SVG 向量分析圖、下方解題筆記手寫方格。
+6. 單元檢核練習題頁 (P8~P9) 每頁 5 題，收錄題庫精選 10 題選擇題，P9 附底部自我檢核簽閱條。
+7. 零依賴 MathJax，全數採用原生 HTML 標籤與純 CSS .frac 分子分母垂直分數排版。
+8. 輸出 HTML，透過 safe_test_page_heights.js 檢測高度（< 1039px），並透過 safe_html_to_pdf.js 產出 PDF。
+"""
+
+import os
+import subprocess
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TARGET_DIR = os.path.join(BASE_DIR, "my_chem_002_氣體", "01_氣體通性與水銀壓力計")
+
+TARGET_HTML = os.path.join(TARGET_DIR, "01_氣體通性與水銀壓力計_講義學習單.html")
+TARGET_PDF = os.path.join(TARGET_DIR, "01_氣體通性與水銀壓力計_講義學習單.pdf")
+
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單</title>
+    <style>
+        /* ============================================================ */
+        /* 全局版面設定與印刷規範 (針對 A4 滿版列印，白底黑字清晰風格)    */
+        /* ============================================================ */
+        @page {
+            size: A4 portrait;
+            margin: 10mm 12mm 10mm 12mm;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            padding: 20px 0;
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+
+        .worksheet-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 0 10px;
+        }
+
+        @media screen {
+            .worksheet-container {
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+                border-radius: 4px;
+                padding: 20px 18px;
+            }
+        }
+
+        /* 每一頁均為標準 concept-page，列印時自動完美分頁，螢幕預覽時呈現卡片間距 */
+        .concept-page {
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 25px;
+            background: #ffffff;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .worksheet-container {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+            }
+            .concept-page {
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                height: auto !important;
+                min-height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                margin-bottom: 0 !important;
+                padding: 0 !important;
+            }
+            .concept-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            .screen-toolbar {
+                display: none !important;
+            }
+        }
+
+        .avoid-break {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        /* ============================================================ */
+        /* 標題與版頭風格                                               */
+        /* ============================================================ */
+        .sheet-header {
+            border-bottom: 2.2px solid #0f172a;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .sheet-title {
+            font-size: 15.5pt;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+        .sheet-meta {
+            font-size: 11pt;
+            color: #334155;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .section-header {
+            background: #f8fafc;
+            border-left: 5px solid #0284c7;
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            font-size: 13pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 6px 0 5px 0;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-badge {
+            font-size: 10pt;
+            font-weight: 700;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 9px;
+            border-radius: 12px;
+        }
+
+        /* ============================================================ */
+        /* 內容卡片與網格排版 (字體至少 12pt)                            */
+        /* ============================================================ */
+        .concept-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            background: #ffffff;
+            font-size: 12pt;
+        }
+        .card-title {
+            font-size: 12.5pt;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 2px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* 標題分點 (1)(2)(3)... 分段對齊與縮排樣式 */
+        .sub-point-list {
+            margin: 3px 0 2px 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .sub-point-item {
+            display: flex;
+            align-items: baseline;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #1e293b;
+        }
+        .sub-point-num {
+            min-width: 1.8em;
+            font-weight: 700;
+            color: #0284c7;
+        }
+        .sub-point-content {
+            flex: 1;
+        }
+
+        /* 表格排版 (字體 11pt~12pt 清晰易讀) */
+        .standard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin: 3px 0 4px 0;
+            line-height: 1.45;
+        }
+        .standard-table th, .standard-table td {
+            border: 1px solid #94a3b8;
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+        .standard-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 800;
+            text-align: center;
+        }
+        .standard-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* ============================================================ */
+        /* 分子分母垂直分數排版 (純 CSS 實作)                            */
+        /* ============================================================ */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 3px;
+            font-size: 0.95em;
+            line-height: 1.15;
+        }
+        .frac-top {
+            border-bottom: 1.3px solid currentColor;
+            padding-bottom: 1px;
+            font-size: 0.92em;
+        }
+        .frac-bottom {
+            padding-top: 1px;
+            font-size: 0.92em;
+        }
+
+        .math-center-box {
+            text-align: center;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 4px 0;
+            font-weight: bold;
+            font-size: 12pt;
+            color: #0f172a;
+        }
+
+        /* ============================================================ */
+        /* 隨堂觀念自我檢核 (填空，底線無答案，字體 12pt)                */
+        /* ============================================================ */
+        .check-box {
+            background: #f8fafc;
+            border: 1.2px dashed #0284c7;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-top: 5px;
+        }
+        .check-header {
+            font-size: 12pt;
+            font-weight: 800;
+            color: #0369a1;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 3px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .check-item {
+            font-size: 12pt;
+            line-height: 1.5;
+            margin-bottom: 2px;
+            color: #1e293b;
+        }
+        .blank-line {
+            display: inline-block;
+            min-width: 68px;
+            border-bottom: 1.4px solid #0f172a;
+            margin: 0 3px;
+            text-align: center;
+            height: 1.15em;
+            vertical-align: bottom;
+        }
+
+        /* ============================================================ */
+        /* 範例題目卡片與手寫筆記空間 (字體 12pt，充實填滿無提示)        */
+        /* ============================================================ */
+        .example-card {
+            border: 1.2px solid #94a3b8;
+            border-radius: 4px;
+            padding: 9px 12px;
+            margin-bottom: 10px;
+            background: #ffffff;
+        }
+        .example-badge {
+            font-size: 9.5pt;
+            background: #e2e8f0;
+            color: #1e293b;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
+        .example-title {
+            font-size: 12.5pt;
+            font-weight: 800;
+            color: #0369a1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .example-stem {
+            font-size: 12pt;
+            color: #0f172a;
+            line-height: 1.52;
+            margin-bottom: 6px;
+        }
+        .example-options {
+            margin: 4px 0 7px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 12pt;
+            color: #1e293b;
+        }
+        .example-option-row {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+        .notes-box {
+            border: 1.2px dashed #94a3b8;
+            border-radius: 4px;
+            background: #fafafa;
+            padding: 7px 11px;
+            margin-top: 6px;
+        }
+        .notes-box-title {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .notes-box-grid {
+            width: 100%;
+            height: 165px;
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+            border: 1px solid #e2e8f0;
+            border-radius: 3px;
+        }
+
+        /* ============================================================ */
+        /* 單元檢核練習題排版 (每頁 5 題均勻填滿，字體 12pt)             */
+        /* ============================================================ */
+        .quiz-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 7px 11px;
+            margin-bottom: 7px;
+            background: #ffffff;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+        .quiz-num {
+            font-size: 12pt;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .quiz-tag {
+            font-size: 9.5pt;
+            font-weight: 700;
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 1px 7px;
+            border-radius: 3px;
+        }
+        .quiz-stem {
+            font-size: 11.5pt;
+            line-height: 1.5;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .quiz-options-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5px;
+            margin-top: 3px;
+            font-size: 11.5pt;
+        }
+        .quiz-opt {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+            line-height: 1.42;
+            color: #1e293b;
+        }
+
+        /* ============================================================ */
+        /* SVG 圖形保護 (字體 10pt，文字圖形零重疊，外發光防護)           */
+        /* ============================================================ */
+        svg text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-size: 10px !important;
+            paint-order: stroke fill;
+            stroke: #ffffff;
+            stroke-width: 3px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        svg text.no-stroke {
+            stroke: none !important;
+        }
+
+        /* 浮動工具列 (僅螢幕可見) */
+        .screen-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 25px;
+            z-index: 9999;
+            display: flex;
+            gap: 10px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            padding: 9px 18px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .screen-btn {
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .screen-btn:hover {
+            background: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 螢幕列印輔助工具列 -->
+<div class="screen-toolbar">
+    <button class="screen-btn" onclick="window.print()">🖨️ 列印 / 另存為 PDF</button>
+</div>
+
+<div class="worksheet-container">
+
+    <!-- =================================================================== -->
+    <!-- 第 1 頁：一、物質微觀三態模型與氣體宏觀通性                          -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-1">
+        <div class="sheet-header">
+            <div class="sheet-title">2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單</div>
+            <div class="sheet-meta">班級：______ 座號：___ 姓名：______</div>
+        </div>
+
+        <div class="section-header" style="margin-top: 0;">
+            <span>一、物質微觀三態模型與氣體宏觀通性</span>
+            <span class="section-badge">核心觀念綜覽</span>
+        </div>
+
+        <!-- 氣體定義與微觀特徵 -->
+        <div class="concept-card">
+            <div class="card-title">📋 氣體微觀粒子特徵與分子運動論模型</div>
+            <div class="sub-point-list">
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>無固定形狀與體積：</strong>氣體分子動能遠大於分子間引力，處於永不停息之隨機混亂直線運動，能充滿任何密閉容器。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>分子間距極大且高度可壓縮：</strong>氣體粒子本身體積遠小於容器體積（間距約為粒子直徑 10 倍以上），加壓時分子間距顯著縮小。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>完全互溶性（擴散現象）：</strong>不同氣體相遇時分子自由穿透彼此間隙迅速混合，必定形成單一相態之<strong>均相混合物</strong>。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>各向均勻施壓：</strong>大量氣體分子以極高速率頻繁撞擊器壁，宏觀上在各個方向表現出完全均勻相等之正向壓力。</div></div>
+            </div>
+
+            <!-- 雙圖並排：三態比較表 + 微觀碰撞模型 -->
+            <div class="grid-2col" style="margin-top: 6px;">
+                <div>
+                    <table class="standard-table">
+                        <thead>
+                            <tr>
+                                <th>狀態</th>
+                                <th>分子間距</th>
+                                <th>微觀運動</th>
+                                <th>壓縮性</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>固態</strong></td>
+                                <td>極緊密</td>
+                                <td>僅在固定位置振動</td>
+                                <td>極難壓縮</td>
+                            </tr>
+                            <tr>
+                                <td><strong>液態</strong></td>
+                                <td>緊密</td>
+                                <td>可互相滑動翻滾</td>
+                                <td>極難壓縮</td>
+                            </tr>
+                            <tr>
+                                <td><strong>氣態</strong></td>
+                                <td><strong>極大</strong></td>
+                                <td><strong>自由混亂高速移動</strong></td>
+                                <td><strong>極易壓縮</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center;">
+                    <svg viewBox="0 0 340 108" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="340" height="108" fill="#f8fafc" rx="4" stroke="#e2e8f0"/>
+                        <text x="170" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#0369a1">氣體微觀熱運動與容器壁碰撞示意圖</text>
+                        <!-- 容器邊界 -->
+                        <rect x="25" y="24" width="290" height="66" fill="none" stroke="#64748b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                        <!-- 氣體粒子與運動軌跡 -->
+                        <circle cx="65" cy="50" r="5" fill="#0284c7"/>
+                        <line x1="45" y1="58" x2="65" y2="50" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                        <circle cx="120" cy="40" r="5" fill="#0284c7"/>
+                        <line x1="95" y1="48" x2="120" y2="40" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                        <circle cx="180" cy="65" r="5" fill="#0284c7"/>
+                        <line x1="205" y1="75" x2="180" y2="65" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                        <circle cx="235" cy="42" r="5" fill="#0284c7"/>
+                        <line x1="215" y1="32" x2="235" y2="42" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="2,2"/>
+                        <circle cx="285" cy="70" r="5" fill="#0284c7"/>
+                        <line x1="300" y1="78" x2="285" y2="70" stroke="#ef4444" stroke-width="1.4"/>
+                        <text x="170" y="80" text-anchor="middle" font-size="10" font-weight="bold" fill="#475569">分子間距遠大於直徑 · 碰撞器壁產生宏觀氣體壓力</text>
+                        <text x="170" y="96" text-anchor="middle" font-size="10" fill="#0369a1">氣體可隨容器形狀自由擴散填滿空間</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- 氣體巨觀四變數綜整卡片 -->
+        <div class="concept-card">
+            <div class="card-title">📐 描述氣體狀態之四大關鍵物理量</div>
+            <div class="grid-2col" style="font-size: 11pt;">
+                <div><strong>1. 壓力 (P)：</strong>垂直施於器壁單位面積之力（atm、cmHg、Pa）。</div>
+                <div><strong>2. 體積 (V)：</strong>氣體分子自由活動之容器容積（L、mL、m³）。</div>
+                <div><strong>3. 溫度 (T)：</strong>分子平均動能之量度，採絕對溫標 T(K) = t(°C) + 273.15。</div>
+                <div><strong>4. 莫耳數 (n)：</strong>氣體粒子之物質的量（mol = 質量 / 分子量）。</div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-weight: normal; font-size: 10pt; color: #64748b;">自主學習認證</span>
+            </div>
+            <div class="check-item">1. 氣體分子間的距離遠大於固體與液體，因此氣體具有顯著的<span class="blank-line"></span>與隨意擴散性。</div>
+            <div class="check-item">2. 任何兩種或多種不會發生化學反應的氣體相互混合，必定形成均勻單一相態之<span class="blank-line"></span>混合物。</div>
+            <div class="check-item">3. 氣體受到外力加壓時體積大幅縮減，其本質是分子間的<span class="blank-line"></span>大幅縮小，分子本身體積維持不變。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 2 頁：二、氣體壓力成因與托里切利水銀氣壓計                        -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-2">
+        <div class="sheet-header">
+            <div class="sheet-title">2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單</div>
+            <div class="sheet-meta">班級：______ 座號：___ 姓名：______</div>
+        </div>
+
+        <div class="section-header" style="margin-top: 0;">
+            <span>二、氣體壓力成因與托里切利水銀氣壓計</span>
+            <span class="section-badge">大氣壓量測</span>
+        </div>
+
+        <!-- 壓力成因與托里切利實驗 -->
+        <div class="concept-card">
+            <div class="card-title">📋 氣體壓力微觀成因與托里切利實驗原理</div>
+            <div class="sub-point-list">
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>氣體壓力的定義：</strong>氣體分子撞擊容器器壁所產生「單位面積上的垂直作用力」（P = F / A）。容器內部各處各向之壓力皆均勻相等。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>托里切利實驗（1643年）：</strong>取長約 1 m 一端封閉的玻璃管注滿水銀，倒置於水銀槽中，水銀柱自動下降至海平面垂直高度 <strong>76 cm</strong> 達靜力平衡。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>托里切利真空（Torricellian Vacuum）：</strong>管頂水銀面以上無空氣，僅有微量水銀飽和蒸氣壓（25°C 下約 0.0016 mmHg），工程與化學上視為<strong>絕對真空（P ≈ 0）</strong>。</div></div>
+            </div>
+
+            <!-- 托里切利實驗圖形與影響因素對比 (寬敞向量 SVG，零文字重疊) -->
+            <div class="grid-2col" style="margin-top: 6px;">
+                <div style="text-align: center;">
+                    <svg viewBox="0 0 350 160" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-height: 170px; display: block; margin: 0 auto;">
+                        <rect x="0" y="0" width="350" height="160" fill="#f8fafc" rx="5" stroke="#cbd5e1" stroke-width="1.2"/>
+
+                        <!-- 水平等壓基準虛線 (垂直 76 cmHg, y=78) -->
+                        <line x1="22" y1="78" x2="328" y2="78" stroke="#0284c7" stroke-dasharray="3,3" stroke-width="1.3"/>
+                        <text x="26" y="73" font-size="8.5" font-weight="bold" fill="#0284c7">等壓面基準線</text>
+
+                        <!-- 1. 直立管頂端標籤 -->
+                        <text x="83" y="32" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#1e293b">直立管</text>
+                        <text x="83" y="44" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#dc2626">真空</text>
+
+                        <!-- 直立水銀柱 (y=78 到 145，純淨連續灰色液柱，水平液面) -->
+                        <rect x="75" y="78" width="16" height="67" fill="#64748b"/>
+                        <line x1="75" y1="78" x2="91" y2="78" stroke="#334155" stroke-width="1.2"/>
+                        <!-- 直立玻璃管壁外輪廓 (管頂 y=48 圓頂) -->
+                        <path d="M 75,145 V 56 A 8,8 0 0 1 91,56 V 145" fill="none" stroke="#1e293b" stroke-width="1.4"/>
+
+                        <!-- 2. 傾斜管頂端標籤 -->
+                        <text x="180" y="32" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#1e293b">傾斜管</text>
+                        <text x="180" y="44" text-anchor="middle" font-size="9.5" font-weight="bold" fill="#dc2626">真空</text>
+
+                        <!-- 傾斜管內水銀柱 (實心水銀多邊形，頂部液面 (177.1,78)~(195.6,78) 絕對水平！) -->
+                        <polygon points="177.1,78 195.6,78 231.9,141 218.1,149" fill="#64748b"/>
+                        <line x1="177.1" y1="78" x2="195.6" y2="78" stroke="#334155" stroke-width="1.2"/>
+                        <!-- 傾斜玻璃管壁外輪廓 (旋轉 -30度，底端完全開放浸入水銀) -->
+                        <g transform="translate(225, 145) rotate(-30)">
+                            <path d="M -8,0 V -90 A 8,8 0 0 1 8,-90 V 0" fill="none" stroke="#1e293b" stroke-width="1.4"/>
+                        </g>
+
+                        <!-- 3. 水銀槽 (覆蓋於管底上方，管子完全浸入槽內) -->
+                        <rect x="25" y="130" width="300" height="20" fill="#64748b" rx="2" stroke="#334155" stroke-width="1.3"/>
+                        <line x1="25" y1="130" x2="325" y2="130" stroke="#94a3b8" stroke-width="1"/>
+
+                        <!-- 4. 垂直高度差測量箭頭 (x: 48) -->
+                        <line x1="48" y1="78" x2="48" y2="130" stroke="#dc2626" stroke-width="1.4"/>
+                        <path d="M 45,83 L 48,78 L 51,83 M 45,125 L 48,130 L 51,125" fill="none" stroke="#dc2626" stroke-width="1.4"/>
+                        <text x="43" y="108" text-anchor="end" font-size="9.5" font-weight="bold" fill="#dc2626">h = 76 cm</text>
+
+                        <!-- 5. 傾斜角度 θ 清楚標示 (鉛直虛線 + 角度弧線 + θ，絕不重疊原圖) -->
+                        <!-- 鉛直參考虛線 (自傾斜管槽面交點 x=225 向上延伸) -->
+                        <line x1="225" y1="130" x2="225" y2="65" stroke="#64748b" stroke-dasharray="3,3" stroke-width="1.2"/>
+                        <!-- 角度弧線 (半徑 R=36，自鉛直線向傾斜管畫弧) -->
+                        <path d="M 225,94 A 36,36 0 0 0 207,98.8" fill="none" stroke="#0284c7" stroke-width="1.4"/>
+                        <!-- 角度標籤 θ -->
+                        <text x="219" y="88" font-size="11" font-weight="bold" fill="#0284c7" font-style="italic">θ</text>
+                    </svg>
+                </div>
+                <div>
+                    <table class="standard-table">
+                        <thead>
+                            <tr>
+                                <th>操作變因</th>
+                                <th>垂直柱高 (h)</th>
+                                <th>物理成因判讀</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>玻璃管傾斜</td>
+                                <td><strong>不變</strong>（76 cm）</td>
+                                <td>垂直靜壓力不變，斜長增加</td>
+                            </tr>
+                            <tr>
+                                <td>管徑加粗/變細</td>
+                                <td><strong>不變</strong>（76 cm）</td>
+                                <td>受力與面積等比例放大</td>
+                            </tr>
+                            <tr>
+                                <td>將管子微幅提起</td>
+                                <td><strong>不變</strong>（76 cm）</td>
+                                <td>頂端真空空間變大</td>
+                            </tr>
+                            <tr>
+                                <td>管頂混入微量空氣</td>
+                                <td><strong>下降</strong>（&lt; 76 cm）</td>
+                                <td>氣體分壓下推水銀面</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-weight: normal; font-size: 10pt; color: #64748b;">自主學習認證</span>
+            </div>
+            <div class="check-item">1. 托里切利氣壓計頂端的封閉空間稱為<span class="blank-line"></span>，內部幾無氣體分子，壓力值視為零。</div>
+            <div class="check-item">2. 將氣壓計玻璃管稍微傾斜或更換較粗之玻璃管，水銀柱的「垂直高度」將<span class="blank-line"></span>。</div>
+            <div class="check-item">3. 若托里切利氣壓計頂部不慎混入微量氣體，此時測得的水銀柱垂直高度必<span class="blank-line"></span>當時環境之真實大氣壓力。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 3 頁：三、大氣壓力常用單位換算大全與液柱靜壓力公式                -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-3">
+        <div class="sheet-header">
+            <div class="sheet-title">2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單</div>
+            <div class="sheet-meta">班級：______ 座號：___ 姓名：______</div>
+        </div>
+
+        <div class="section-header" style="margin-top: 0;">
+            <span>三、大氣壓力七大常用單位換算大全與液柱靜壓力公式</span>
+            <span class="section-badge">單位換算核心</span>
+        </div>
+
+        <!-- 單位換算公式大全 -->
+        <div class="concept-card">
+            <div class="card-title">📋 標準大氣壓（1 atm）七大等價換算矩陣</div>
+            
+            <div class="math-center-box" style="margin: 3px 0 6px 0; font-size: 12.5pt; color: #0369a1;">
+                1 atm = 76 cmHg = 760 mmHg = 760 torr = 1013.25 hPa = 101325 Pa (N/m²) = 1033.6 gw/cm²
+            </div>
+
+            <table class="standard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">單位名稱</th>
+                        <th style="width: 15%;">符號表示</th>
+                        <th style="width: 30%;">與 1 atm 等價關係</th>
+                        <th style="width: 35%;">生活與科學應用領域</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>標準大氣壓</strong></td>
+                        <td>atm</td>
+                        <td><strong>1 atm</strong></td>
+                        <td>化學熱力學、氣體化學計量標準態</td>
+                    </tr>
+                    <tr>
+                        <td><strong>公分 / 毫米水銀柱</strong></td>
+                        <td>cmHg / mmHg</td>
+                        <td><strong>76 cmHg = 760 mmHg</strong></td>
+                        <td>水銀氣壓計讀數、醫學臨床血壓測量</td>
+                    </tr>
+                    <tr>
+                        <td><strong>托耳</strong></td>
+                        <td>torr</td>
+                        <td><strong>760 torr</strong>（1 torr ≡ 1 mmHg）</td>
+                        <td>高真空物理、材料鍍膜腔體真空計</td>
+                    </tr>
+                    <tr>
+                        <td><strong>百帕 / 毫巴</strong></td>
+                        <td>hPa / mbar</td>
+                        <td><strong>1013.25 hPa</strong> (mbar)</td>
+                        <td>氣象學地面天氣圖、颱風中心氣壓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>帕斯卡（SI制）</strong></td>
+                        <td>Pa (N/m²)</td>
+                        <td><strong>101325 Pa ≈ 1.013 × 10⁵ Pa</strong></td>
+                        <td>國際公制標準單位（1 Pa = 1 N/m²）</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 液體靜壓力換算法則 -->
+            <div style="margin-top: 6px;">
+                <div style="font-weight: 700; color: #1e3a8a; margin-bottom: 2px;">📐 液體靜壓力與水柱高度換算法則：P = h × d</div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content">在相同大氣壓力支撐下，不同液體之液柱高度與液體密度成<strong>反比</strong>：h₁ × d₁ = h₂ × d₂</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>水銀換算為水柱：</strong>h<sub>水銀</sub> × 13.6 = h<sub>水</sub> × 1.0 ⇒ 76 cm × 13.6 = <strong>1033.6 cm = 10.336 公尺</strong>！</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>生活實例：</strong>若以水製作氣壓計，玻璃管長度必須超過三層樓高（&gt; 10.34 m），故實驗一律選用密度極高且蒸氣壓極低之水銀。</div></div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-weight: normal; font-size: 10pt; color: #64748b;">自主學習認證</span>
+            </div>
+            <div class="check-item">1. 1 大氣壓相當於<span class="blank-line"></span> mmHg，又定義為<span class="blank-line"></span> torr。</div>
+            <div class="check-item">2. 國際標準制（SI）中壓力單位為帕斯卡（Pa），1 atm 約等於<span class="blank-line"></span> Pa。</div>
+            <div class="check-item">3. 若改用水製作氣壓計，海平面 1 atm 所能支撐的垂直水柱高度約為<span class="blank-line"></span>公尺。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 4 頁：四、U形水銀壓力計操作法則與等壓基準面分析                  -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-4">
+        <div class="sheet-header">
+            <div class="sheet-title">2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單</div>
+            <div class="sheet-meta">班級：______ 座號：___ 姓名：______</div>
+        </div>
+
+        <div class="section-header" style="margin-top: 0;">
+            <span>四、U形水銀壓力計操作法則與等壓基準面分析</span>
+            <span class="section-badge">解題判讀口訣</span>
+        </div>
+
+        <!-- 核心觀念要點 -->
+        <div class="concept-card">
+            <div class="card-title">📋 帕斯卡等壓基準面定理與三步驟解題法</div>
+            <div class="sub-point-list">
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>等壓基準面定理：</strong>在同一靜止連續液體內部，<strong>同一水平基準面上各點所受的總壓力必相等</strong>（P<sub>左</sub> = P<sub>右</sub>）。</div></div>
+                <div class="sub-point-item"><span class="sub-point-num">•</span><div class="sub-point-content"><strong>解題法則：</strong>選取左右兩管中「水銀面較低者」劃出黃色水平等壓基準線，列出上方兩側垂直壓力總和平衡式即可快速求解。</div></div>
+            </div>
+        </div>
+
+        <!-- 三種情況並排圖文並茂展示區 (情況一：開口右高、情況二：開口左高、情況三：閉口真空) -->
+        <div class="grid-3col" style="margin-top: 5px;">
+            <!-- 情況一：開口式 (右高) -->
+            <div class="concept-card" style="padding: 6px; text-align: center;">
+                <div style="font-weight: 800; font-size: 11pt; color: #0284c7; margin-bottom: 1px;">情況一：開口式 (右高)</div>
+                <div style="font-size: 9.5pt; color: #64748b; font-weight: 700; margin-bottom: 2px;">氣室高壓 (P<sub>gas</sub> &gt; P<sub>atm</sub>)</div>
+                
+                <svg viewBox="0 0 190 120" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 105px; display: block; margin: 0 auto;">
+                    <rect x="0" y="0" width="190" height="120" fill="#f8fafc" rx="4" stroke="#e2e8f0"/>
+                    <!-- 氣室錐形瓶 -->
+                    <polygon points="16,108 54,108 42,66 28,66" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2"/>
+                    <rect x="29" y="58" width="12" height="9" fill="#64748b" rx="1"/>
+                    <text x="35" y="94" text-anchor="middle" font-size="10" font-weight="bold" fill="#0369a1">Pgas</text>
+                    
+                    <!-- 一體成型平滑玻璃導管 (外管壁) -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 22" fill="none" stroke="#334155" stroke-width="13" stroke-linejoin="round"/>
+                    <!-- 玻璃導管內部中空通道 -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 22" fill="none" stroke="#f8fafc" stroke-width="10.4" stroke-linejoin="round"/>
+                    
+                    <!-- 水銀液柱 (情況一：右高左低，左液面 y=82，右液面 y=48) -->
+                    <path d="M 78,82 V 95 A 16,16 0 0 0 110,95 V 48" fill="none" stroke="#94a3b8" stroke-width="10.4" stroke-linecap="butt"/>
+                    
+                    <!-- 等壓基準線 (y=82，向右延伸至管外) -->
+                    <line x1="70" y1="82" x2="148" y2="82" stroke="#eab308" stroke-dasharray="2.5,2" stroke-width="1.2"/>
+                    <!-- 等壓面文字置於圖形最右側，完全不重疊管身與箭頭 -->
+                    <text x="150" y="85" font-size="8.5" font-weight="bold" fill="#ca8a04">等壓面</text>
+                    
+                    <!-- 高度差 h 箭頭 -->
+                    <line x1="122" y1="82" x2="122" y2="48" stroke="#ef4444" stroke-width="1.3"/>
+                    <path d="M 120,52 L 122,48 L 124,52 M 120,78 L 122,82 L 124,78" fill="none" stroke="#ef4444" stroke-width="1.3"/>
+                    <text x="130" y="68" font-size="10" font-weight="bold" fill="#ef4444">h</text>
+                    
+                    <!-- 大氣壓力 Patm 開口標示 -->
+                    <text x="110" y="15" text-anchor="middle" font-size="9" font-weight="bold" fill="#0284c7">Patm</text>
+                </svg>
+
+                <div class="math-center-box" style="margin: 3px 0; font-size: 11pt; padding: 2px 4px; color: #0284c7;">
+                    P<sub>gas</sub> = P<sub>atm</sub> + h
+                </div>
+                <div style="font-size: 9.5pt; text-align: left; line-height: 1.35; color: #334155;">
+                    氣體強勢推高右管水銀柱，等壓面取左管較低水銀面。
+                </div>
+            </div>
+
+            <!-- 情況二：開口式 (左高) -->
+            <div class="concept-card" style="padding: 6px; text-align: center;">
+                <div style="font-weight: 800; font-size: 11pt; color: #0284c7; margin-bottom: 1px;">情況二：開口式 (左高)</div>
+                <div style="font-size: 9.5pt; color: #64748b; font-weight: 700; margin-bottom: 2px;">氣室低壓 (P<sub>gas</sub> &lt; P<sub>atm</sub>)</div>
+                
+                <svg viewBox="0 0 190 120" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 105px; display: block; margin: 0 auto;">
+                    <rect x="0" y="0" width="190" height="120" fill="#f8fafc" rx="4" stroke="#e2e8f0"/>
+                    <!-- 氣室錐形瓶 -->
+                    <polygon points="16,108 54,108 42,66 28,66" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.2"/>
+                    <rect x="29" y="58" width="12" height="9" fill="#64748b" rx="1"/>
+                    <text x="35" y="94" text-anchor="middle" font-size="10" font-weight="bold" fill="#0369a1">Pgas</text>
+                    
+                    <!-- 一體成型平滑玻璃導管 (外管壁) -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 22" fill="none" stroke="#334155" stroke-width="13" stroke-linejoin="round"/>
+                    <!-- 玻璃導管內部中空通道 -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 22" fill="none" stroke="#f8fafc" stroke-width="10.4" stroke-linejoin="round"/>
+                    
+                    <!-- 水銀液柱 (情況二：左高右低，左液面 y=48，右液面 y=82) -->
+                    <path d="M 78,48 V 95 A 16,16 0 0 0 110,95 V 82" fill="none" stroke="#94a3b8" stroke-width="10.4" stroke-linecap="butt"/>
+                    
+                    <!-- 等壓基準線 (y=82，對齊右管較低液面，向右延伸至管外) -->
+                    <line x1="70" y1="82" x2="148" y2="82" stroke="#eab308" stroke-dasharray="2.5,2" stroke-width="1.2"/>
+                    <!-- 等壓面文字置於圖形最右側 -->
+                    <text x="150" y="85" font-size="8.5" font-weight="bold" fill="#ca8a04">等壓面</text>
+                    
+                    <!-- 高度差 h 箭頭 (位於左管外側 x=66) -->
+                    <line x1="66" y1="82" x2="66" y2="48" stroke="#ef4444" stroke-width="1.3"/>
+                    <path d="M 64,52 L 66,48 L 68,52 M 64,78 L 66,82 L 68,78" fill="none" stroke="#ef4444" stroke-width="1.3"/>
+                    <text x="60" y="68" text-anchor="end" font-size="10" font-weight="bold" fill="#ef4444">h</text>
+                    
+                    <!-- 大氣壓力 Patm 開口標示 -->
+                    <text x="110" y="15" text-anchor="middle" font-size="9" font-weight="bold" fill="#0284c7">Patm</text>
+                </svg>
+
+                <div class="math-center-box" style="margin: 3px 0; font-size: 11pt; padding: 2px 4px; color: #0284c7;">
+                    P<sub>gas</sub> = P<sub>atm</sub> - h
+                </div>
+                <div style="font-size: 9.5pt; text-align: left; line-height: 1.35; color: #334155;">
+                    外壓強勢壓入，等壓面取右管較低水銀面：P<sub>gas</sub> + h = P<sub>atm</sub>。
+                </div>
+            </div>
+
+            <!-- 情況三：閉口式 (真空) -->
+            <div class="concept-card" style="padding: 6px; text-align: center;">
+                <div style="font-weight: 800; font-size: 11pt; color: #dc2626; margin-bottom: 1px;">情況三：閉口式 (真空)</div>
+                <div style="font-size: 9.5pt; color: #64748b; font-weight: 700; margin-bottom: 2px;">絕對壓力 (P<sub>vac</sub> = 0)</div>
+                
+                <svg viewBox="0 0 190 120" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; max-height: 105px; display: block; margin: 0 auto;">
+                    <rect x="0" y="0" width="190" height="120" fill="#f8fafc" rx="4" stroke="#e2e8f0"/>
+                    <!-- 氣室錐形瓶 -->
+                    <polygon points="16,108 54,108 42,66 28,66" fill="#fee2e2" stroke="#dc2626" stroke-width="1.2"/>
+                    <rect x="29" y="58" width="12" height="9" fill="#64748b" rx="1"/>
+                    <text x="35" y="94" text-anchor="middle" font-size="10" font-weight="bold" fill="#dc2626">Pgas</text>
+                    
+                    <!-- 一體成型平滑玻璃導管 (外管壁，右端封閉成真空圓頂) -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 26" fill="none" stroke="#334155" stroke-width="13" stroke-linejoin="round"/>
+                    <!-- 封閉圓頂外輪廓 -->
+                    <path d="M 103.5,26 A 6.5,6.5 0 0 1 116.5,26" fill="none" stroke="#334155" stroke-width="1.3"/>
+                    <!-- 玻璃導管內部中空通道 -->
+                    <path d="M 35,60 V 28 H 78 V 95 A 16,16 0 0 0 110,95 V 26" fill="none" stroke="#f8fafc" stroke-width="10.4" stroke-linejoin="round"/>
+                    <!-- 封閉圓頂內部中空 -->
+                    <path d="M 104.8,26 A 5.2,5.2 0 0 1 115.2,26" fill="#f8fafc"/>
+                    
+                    <!-- 水銀液柱 (情況三：右高左低，左液面 y=82，右液面 y=44) -->
+                    <path d="M 78,82 V 95 A 16,16 0 0 0 110,95 V 44" fill="none" stroke="#94a3b8" stroke-width="10.4" stroke-linecap="butt"/>
+                    
+                    <!-- 等壓基準線 (y=82，向右延伸至管外) -->
+                    <line x1="70" y1="82" x2="148" y2="82" stroke="#eab308" stroke-dasharray="2.5,2" stroke-width="1.2"/>
+                    <!-- 等壓面文字置於圖形最右側 -->
+                    <text x="150" y="85" font-size="8.5" font-weight="bold" fill="#ca8a04">等壓面</text>
+                    
+                    <!-- 高度差 h 箭頭 -->
+                    <line x1="122" y1="82" x2="122" y2="44" stroke="#ef4444" stroke-width="1.3"/>
+                    <path d="M 120,48 L 122,44 L 124,48 M 120,78 L 122,82 L 124,78" fill="none" stroke="#ef4444" stroke-width="1.3"/>
+                    <text x="130" y="66" font-size="10" font-weight="bold" fill="#ef4444">h</text>
+                    
+                    <!-- 頂部真空標示 -->
+                    <text x="110" y="15" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#dc2626">真空 P=0</text>
+                </svg>
+
+                <div class="math-center-box" style="margin: 3px 0; font-size: 11pt; padding: 2px 4px; color: #dc2626;">
+                    P<sub>gas</sub> = h
+                </div>
+                <div style="font-size: 9.5pt; text-align: left; line-height: 1.35; color: #334155;">
+                    封閉端為真空，高度差直讀氣體絕對壓力，完全不受大氣壓影響。
+                </div>
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 -->
+        <div class="check-box" style="margin-top: 6px;">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核</span>
+                <span style="font-weight: normal; font-size: 10pt; color: #64748b;">自主學習認證</span>
+            </div>
+            <div class="check-item">1. 連通管解題核心：必須選取兩管中水銀面較低者劃出<span class="blank-line"></span>，並建立兩側壓力相等方程式。</div>
+            <div class="check-item">2. 開口式壓力計右端開口高於左端 20 cmHg，若當時大氣壓為 76 cmHg，則氣體壓力為<span class="blank-line"></span> cmHg。</div>
+            <div class="check-item">3. 閉口式壓力計量測氣體壓力時，兩管水銀高度差直接等於氣體的<span class="blank-line"></span>，完全不受外界大氣壓干擾。</div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 5 頁：經典範例 1 & 2                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-5">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 1 · 開口式水銀壓力計轉閉口式換算</span>
+                <span class="example-badge">核心考題</span>
+            </div>
+            <div class="example-stem">
+                將某氣體緩緩注入連接<strong>開口式水銀壓力計</strong>的容器中，直到右管（開口端）水銀面較左管高出 150 mm。若當時環境大氣壓力為 760 mmHg，今若改用<strong>閉口式水銀壓力計</strong>測量同一容器中的該氣體，則閉口式壓力計兩管之水銀柱高度差 h' 為若干 mm？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 150 mm</div>
+                <div class="example-option-row">(B) 610 mm</div>
+                <div class="example-option-row">(C) 760 mm</div>
+                <div class="example-option-row">(D) 910 mm</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 2 · 閉口式壓力計高度差與氣壓比值</span>
+                <span class="example-badge">基石題型</span>
+            </div>
+            <div class="example-stem">
+                某閉口式水銀壓力計充入 <strong>A 氣體</strong> 後，左右兩管水銀面高度差為 h；將 A 氣體抽空並改換充入 <strong>B 氣體</strong> 後，兩管水銀面高度差變為 1.5h。試問 B 氣體的絕對壓力與 A 氣體的絕對壓力之比值（P<sub>B</sub> / P<sub>A</sub>）為何？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 0.67</div>
+                <div class="example-option-row">(B) 1.0</div>
+                <div class="example-option-row">(C) 1.5</div>
+                <div class="example-option-row">(D) 2.25</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 6 頁：經典範例 3 & 4                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-6">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 3 · 閉口端與氣室端之高度倍數難題</span>
+                <span class="example-badge">高頻難題</span>
+            </div>
+            <div class="example-stem">
+                某閉口式水銀壓力計充入 <strong>A 氣體</strong> 後，閉口端水銀柱高度（自管底起算）為氣室端的 <strong>3 倍</strong>；若抽空改換充入 <strong>B 氣體</strong> 後，閉口端水銀柱高度變為氣室端的 <strong>4 倍</strong>。若 U 形管內水銀總長度固定不變，試問 B 氣體之壓力為 A 氣體壓力的若干倍？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 1.2 倍</div>
+                <div class="example-option-row">(B) 1.4 倍</div>
+                <div class="example-option-row">(C) 1.6 倍</div>
+                <div class="example-option-row">(D) 1.8 倍</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 4 · 開口壓力計低壓狀態與等壓基準面計算</span>
+                <span class="example-badge">判讀專題</span>
+            </div>
+            <div class="example-stem">
+                一開口式水銀壓力計左端連接待測氣體室，右端開口與外界大氣相通（當時大氣壓為 1 atm = 76 cmHg）。若量測時左管水銀面高度為 60 cm，右管水銀面高度為 20 cm。試問容器中待測氣體之壓力為若干 cmHg？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 36 cmHg</div>
+                <div class="example-option-row">(B) 40 cmHg</div>
+                <div class="example-option-row">(C) 96 cmHg</div>
+                <div class="example-option-row">(D) 116 cmHg</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 7 頁：經典範例 5 & 6                                            -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-7">
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 5 · 托里切利氣壓計漏氣微量空氣修正</span>
+                <span class="example-badge">大考進階</span>
+            </div>
+            <div class="example-stem">
+                一托里切利水銀氣壓計之玻璃管全長為 100 cm。在海平面大氣壓為 76 cmHg 時，因管頂混入微量空氣，測得水銀柱高度僅為 72 cm（管頂留有 28 cm 長之稀薄空氣柱）。若將此氣壓計攜至某高山，水銀柱高降為 60 cm，假設溫度保持不變，試問該高山之真實大氣壓力為若干 cmHg？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 62.8 cmHg</div>
+                <div class="example-option-row">(B) 64.0 cmHg</div>
+                <div class="example-option-row">(C) 65.2 cmHg</div>
+                <div class="example-option-row">(D) 67.5 cmHg</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+
+        <div class="example-card">
+            <div class="example-title">
+                <span>經典範例 6 · 連通管水銀與不互溶未知液體等壓平衡</span>
+                <span class="example-badge">密度整合</span>
+            </div>
+            <div class="example-stem">
+                截面積均勻之 U 形管內盛有水銀（密度 13.6 g/cm³）。今由左管開口緩緩注入不與水銀互溶之未知液體 27.2 cm，達靜力平衡時，右管開口端的水銀面較左管水銀面高出若干 cm？
+            </div>
+            <div class="example-options">
+                <div class="example-option-row">(A) 1.0 cm</div>
+                <div class="example-option-row">(B) 2.0 cm</div>
+                <div class="example-option-row">(C) 2.5 cm</div>
+                <div class="example-option-row">(D) 4.0 cm</div>
+            </div>
+            <div class="notes-box">
+                <div class="notes-box-title">✍️ 課堂筆記與手寫演算區：</div>
+                <div class="notes-box-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 8 頁：五、單元檢核練習：題庫精選練習 1~5 (滿版整齊)              -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-8">
+        <div class="section-header">
+            <span>五、單元檢核練習：題庫精選練習 1~5</span>
+            <span class="section-badge">自主實戰</span>
+        </div>
+
+        <!-- Q1 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 1.</span>
+                <span class="quiz-tag">開口式壓力計 · 高壓計算</span>
+            </div>
+            <div class="quiz-stem">
+                在開口式水銀壓力計中，左管連接待測氣體容器，右管開口與外界大氣相通。若右管（開口端）水銀面較左管（氣室端）高出 20 cmHg，且當時外界大氣壓為 76 cmHg。則容器內被測氣體的壓力為多少 cmHg？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 56 cmHg</div>
+                <div class="quiz-opt">(B) 76 cmHg</div>
+                <div class="quiz-opt">(C) 96 cmHg</div>
+                <div class="quiz-opt">(D) 100 cmHg</div>
+            </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 2.</span>
+                <span class="quiz-tag">閉口式壓力計 · 絕對壓力判讀</span>
+            </div>
+            <div class="quiz-stem">
+                在閉口式水銀壓力計中，封閉端已抽至真空。若閉口端水銀面比氣室端高出 30 cmHg，且此時實驗室外界大氣壓為 75 cmHg。則容器內被測氣體的絕對壓力為多少 cmHg？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 30 cmHg</div>
+                <div class="quiz-opt">(B) 45 cmHg</div>
+                <div class="quiz-opt">(C) 75 cmHg</div>
+                <div class="quiz-opt">(D) 105 cmHg</div>
+            </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 3.</span>
+                <span class="quiz-tag">開口式壓力計 · 負壓判讀</span>
+            </div>
+            <div class="quiz-stem">
+                某生以開口式水銀壓力計量測氣室 A 之壓力，當時大氣壓為 76 cmHg。若左管（氣室端）水銀面高出右管（開口端）水銀面 16 cmHg，試問氣室 A 中之氣體絕對壓力為多少 mmHg？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 160 mmHg</div>
+                <div class="quiz-opt">(B) 600 mmHg</div>
+                <div class="quiz-opt">(C) 760 mmHg</div>
+                <div class="quiz-opt">(D) 920 mmHg</div>
+            </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 4.</span>
+                <span class="quiz-tag">封閉端氣柱與高壓氣室平衡</span>
+            </div>
+            <div class="quiz-stem">
+                左管連接壓力為 2 atm（152 cmHg）之氣體室，右管頂端封閉並截留一段乾燥氣柱。若左管水銀面高度為 20 cm，右管水銀面高度為 60 cm，則右管封閉端氣柱之壓力為多少 mmHg？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 400 mmHg</div>
+                <div class="quiz-opt">(B) 920 mmHg</div>
+                <div class="quiz-opt">(C) 1120 mmHg</div>
+                <div class="quiz-opt">(D) 1920 mmHg</div>
+            </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 5.</span>
+                <span class="quiz-tag">開口壓力計 · 高壓容器判讀</span>
+            </div>
+            <div class="quiz-stem">
+                如圖所示之開口式水銀壓力計，左管連接高壓氣體室 C，右管開口與外界大氣相通（外界大氣壓為 1 atm = 76 cmHg）。若右管水銀面較左管高出 80 cm，則容器中 C 氣體之壓力為多少 cmHg？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 4 cmHg</div>
+                <div class="quiz-opt">(B) 80 cmHg</div>
+                <div class="quiz-opt">(C) 156 cmHg</div>
+                <div class="quiz-opt">(D) 160 cmHg</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- 第 9 頁：五、單元檢核練習（續）：題庫精選練習 6~10 (滿版整齊)        -->
+    <!-- =================================================================== -->
+    <div class="concept-page" id="page-9">
+        <div class="section-header">
+            <span>五、單元檢核練習（續）：題庫精選練習 6~10</span>
+            <span class="section-badge">自主實戰</span>
+        </div>
+
+        <!-- Q6 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 6.</span>
+                <span class="quiz-tag">壓力單位綜合換算與檢驗</span>
+            </div>
+            <div class="quiz-stem">
+                下列有關標準 1 大氣壓（1 atm）之各單位換算數值，何者<strong>錯誤</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 1 atm = 76 cmHg = 760 torr</div>
+                <div class="quiz-opt">(B) 1 atm = 1013.25 百帕（hPa）</div>
+                <div class="quiz-opt">(C) 1 atm = 1033.6 gw/cm²</div>
+                <div class="quiz-opt">(D) 1 atm = 760 帕斯卡（Pa）</div>
+            </div>
+        </div>
+
+        <!-- Q7 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 7.</span>
+                <span class="quiz-tag">托里切利氣壓計柱高影響因素</span>
+            </div>
+            <div class="quiz-stem">
+                在 1 大氣壓的海平面實驗室中進行托里切利氣壓計實驗。下列哪一項操作會<strong>改變管內水銀柱的垂直高度</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 將玻璃管向上提起少許（管口仍深浸於水銀槽中）</div>
+                <div class="quiz-opt">(B) 更換截面積較粗兩倍的玻璃管</div>
+                <div class="quiz-opt">(C) 將玻璃管稍微傾斜 30 度角</div>
+                <div class="quiz-opt">(D) 玻璃管頂端微量漏氣，混入少許空氣</div>
+            </div>
+        </div>
+
+        <!-- Q8 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 8.</span>
+                <span class="quiz-tag">液體密度與氣壓計高度換算</span>
+            </div>
+            <div class="quiz-stem">
+                已知水銀密度為 13.6 g/cm³，水的密度為 1.0 g/cm³。若在海平面 1 atm（76 cmHg）條件下改用水代替水銀進行托里切利氣壓計實驗，則 1 大氣壓所能支撐的水柱垂直高度約為多少公尺？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 0.76 公尺</div>
+                <div class="quiz-opt">(B) 1.03 公尺</div>
+                <div class="quiz-opt">(C) 10.34 公尺</div>
+                <div class="quiz-opt">(D) 13.6 公尺</div>
+            </div>
+        </div>
+
+        <!-- Q9 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 9.</span>
+                <span class="quiz-tag">氣體分子微觀性質判斷</span>
+            </div>
+            <div class="quiz-stem">
+                由氣體分子運動論觀點，下列有關氣體微觀特性的敘述，何者<strong>錯誤</strong>？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 氣體分子本身體積遠小於氣體所佔有的空間體積</div>
+                <div class="quiz-opt">(B) 氣體施加於器壁的壓力源自於分子撞擊器壁的衝力</div>
+                <div class="quiz-opt">(C) 氣體受壓體積縮小時，分子本體會受擠壓變小</div>
+                <div class="quiz-opt">(D) 氣體分子於常溫下處於高速混亂之直線運動</div>
+            </div>
+        </div>
+
+        <!-- Q10 -->
+        <div class="quiz-card">
+            <div class="quiz-header">
+                <span class="quiz-num">練習 10.</span>
+                <span class="quiz-tag">登山高度與水銀柱變化</span>
+            </div>
+            <div class="quiz-stem">
+                某登山隊攜帶一精確之托里切利水銀氣壓計自海平面（氣壓 76 cmHg）登上一座高山，在山頂測得水銀柱垂直高度變為 64 cmHg。若在該海拔範圍內平均每升高 100 公尺大氣壓下降約 9 mmHg，試估算該山頂之海拔高度約為多少公尺？
+            </div>
+            <div class="quiz-options-col">
+                <div class="quiz-opt">(A) 1000 公尺</div>
+                <div class="quiz-opt">(B) 1333 公尺</div>
+                <div class="quiz-opt">(C) 1500 公尺</div>
+                <div class="quiz-opt">(D) 2000 公尺</div>
+            </div>
+        </div>
+
+        <!-- 底部審查簽閱條 -->
+        <div style="border-top: 1.5px solid #0f172a; margin-top: 8px; padding-top: 5px; display: flex; justify-content: space-between; font-size: 9pt; color: #334155;">
+            <span>單元 2-1 氣體通性與水銀壓力計 · 課堂教學講義學習單（全單元完）</span>
+            <span><strong>學生自我檢核：□ 觀念填空與 10 題練習題已全數自主演練完成　指導教師簽閱：__________</strong></span>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
+"""
+
+def main():
+    print(f"[*] Writing 2-1 Worksheet HTML to: {TARGET_HTML}")
+    with open(TARGET_HTML, "w", encoding="utf-8") as f:
+        f.write(HTML_TEMPLATE)
+    print("[+] HTML generated successfully.")
+
+if __name__ == "__main__":
+    main()

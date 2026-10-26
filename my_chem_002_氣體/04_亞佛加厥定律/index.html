@@ -102,6 +102,8 @@
             border-radius: 6px;
             cursor: pointer;
             transition: 0.2s;
+            position: relative;
+            z-index: 10;
         }
         .jump-btn:hover { background: var(--accent); color: #0f172a; border-color: var(--accent); }
         .jump-btn.active-pg { background: var(--accent); color: #0f172a; border-color: var(--accent); }
@@ -122,13 +124,12 @@
             height: var(--slide-height);
             min-height: 560px;
             box-sizing: border-box;
-            padding: 12px var(--side-space) 16px var(--side-space);
+            padding: 8px var(--side-space) 12px var(--side-space);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             border-bottom: 2px solid var(--card-border);
-            scroll-margin-top: var(--header-height);
             overflow: hidden;
         }
 
@@ -306,6 +307,17 @@
                         if (h > 600) iframe.style.height = (h + 60) + 'px';
                     } catch(e) {}
                 }
+
+                try {
+                    const idoc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+                    if (idoc && !iframe.__wheelRelayAttached) {
+                        iframe.__wheelRelayAttached = true;
+                        idoc.addEventListener('wheel', (we) => {
+                            window.scrollBy({ top: we.deltaY, behavior: 'auto' });
+                            if (window.__chemReportScroll) window.__chemReportScroll();
+                        }, { passive: true });
+                    }
+                } catch (err) {}
             });
 
             entry.wrap.appendChild(iframe);
@@ -355,7 +367,18 @@
             const entry = wrappers[idx];
             if (!entry) return;
             loadIframe(idx);
-            entry.wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            const target = entry.wrap;
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            let count = 0;
+            const timer = setInterval(() => {
+                if (window.__chemReportScroll) window.__chemReportScroll();
+                count++;
+                if (count > 25) clearInterval(timer);
+            }, 30);
         }
 
         window.addEventListener('keydown', (e) => {

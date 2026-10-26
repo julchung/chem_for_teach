@@ -1,0 +1,1229 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+生成選修化學（三）單元 2-4 亞佛加厥定律 課堂教學講義學習單 (HTML)
+精確 7 頁黃金排版：
+- Page 1: 一、概念奠基 + Slide 1 核心定義 + 雙針筒連通微觀 SVG + 隨堂觀念自我檢核 1
+- Page 2: Slide 2 氣體莫耳體積與密度比 + 莫耳體積/天平比重 SVG + 隨堂觀念自我檢核 2
+- Page 3: 二、經典範例深究 + 經典範例 1 (STP體積) + 經典範例 2 (密度比) (上下二題)
+- Page 4: 經典範例 3 (原子總數比) + 經典範例 4 (未知分子量判定) (上下二題)
+- Page 5: 三、單元檢核練習題 + 題庫 1 ~ 4 題
+- Page 6: 題庫 5 ~ 8 題
+- Page 7: 題庫 9 ~ 10 題 + 四、課堂自主筆記與錯題訂正演算專區
+"""
+
+import json
+
+def build_worksheet():
+    qb_path = 'my_chem_002_氣體/04_亞佛加厥定律/question_bank.json'
+    with open(qb_path, 'r', encoding='utf-8') as f:
+        qb_data = json.load(f)
+    questions = qb_data.get('questions', [])
+
+    html_content = r"""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>單元 2-4 亞佛加厥定律 · 課堂教學講義學習單</title>
+    <script>
+        window.MathJax = {
+            tex: { 
+                inlineMath: [['$', '$'], ['\\(', '\\)']], 
+                displayMath: [['$$', '$$'], ['\\[', '\\]']], 
+                processEscapes: true 
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        document.body.classList.add('mathjax-typeset-done');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #f0f9ff;
+            --secondary: #0f172a;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --card-bg: #ffffff;
+            --highlight: #b45309;
+            --green: #15803d;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 11mm 14mm 11mm 14mm;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+            font-size: 12pt; /* 正文字體一律 12pt 以上 */
+            line-height: 1.55;
+            overflow-x: hidden;
+        }
+
+        .worksheet-container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* 明確頁面分界類 (7 頁黃金結構) */
+        .page-break {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+
+        /* 頂部標頭與學生資料欄 */
+        .handout-header {
+            border-bottom: 2.2px solid var(--primary);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .header-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .course-tag {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .main-title {
+            font-size: 16.5pt;
+            font-weight: 900;
+            color: var(--primary-dark);
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .student-info-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 11.5pt;
+            font-weight: 600;
+            color: var(--text);
+            padding-bottom: 2px;
+        }
+
+        .info-field {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .info-line {
+            display: inline-block;
+            border-bottom: 1.4px solid var(--text);
+            min-width: 60px;
+            height: 1.2em;
+        }
+
+        /* 章節大標題 */
+        .section-header {
+            font-size: 13.5pt;
+            font-weight: 800;
+            color: var(--primary-dark);
+            background: var(--primary-light);
+            border-left: 5px solid var(--primary);
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin: 10px 0 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+        }
+
+        .section-header .sub-badge {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--primary);
+            background: #e0f2fe;
+            padding: 2px 7px;
+            border-radius: 12px;
+        }
+
+        /* 觀念原子卡片 */
+        .concept-card {
+            border: 1.2px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 11px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .card-title {
+            font-size: 13pt;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-tag {
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 10pt;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 3px;
+        }
+
+        /* 懸掛縮排編號清單 */
+        .point-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 5px;
+            font-size: 12pt;
+            line-height: 1.55;
+        }
+
+        .point-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .point-num {
+            font-weight: 800;
+            color: var(--primary-dark);
+            min-width: 26px;
+            flex-shrink: 0;
+        }
+
+        .point-content {
+            flex: 1;
+        }
+
+        /* 公式展示盒 */
+        .formula-display {
+            background: #f8fafc;
+            border: 1.2px solid #e2e8f0;
+            border-left: 4px solid var(--primary);
+            border-radius: 5px;
+            padding: 4px 10px;
+            margin: 4px 0;
+            text-align: center;
+            font-size: 13pt;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        /* 隨堂觀念自我檢核盒 (藍色虛線框) */
+        .check-box {
+            background: #f0f9ff;
+            border: 1.4px dashed #38bdf8;
+            border-radius: 7px;
+            padding: 8px 12px;
+            margin: 6px 0 8px 0;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .check-header {
+            font-size: 12pt;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 4px;
+            font-size: 12pt;
+            line-height: 1.55;
+        }
+
+        .check-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .check-num {
+            font-weight: 800;
+            color: var(--primary-dark);
+            min-width: 22px;
+            flex-shrink: 0;
+        }
+
+        .check-text {
+            flex: 1;
+        }
+
+        .blank-line {
+            display: inline-block;
+            border-bottom: 1.3px solid #0369a1;
+            min-width: 80px;
+            height: 1.2em;
+            vertical-align: bottom;
+            margin: 0 3px;
+        }
+
+        /* SVG 向量圖容器 (文字 >= 10.5pt，留白不壓線) */
+        .svg-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 5px 0;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 4px;
+        }
+
+        .svg-caption {
+            font-size: 10.5pt;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        /* 範例題原子卡片 (每頁固定上下二題) */
+        .example-card {
+            border: 1.4px solid #93c5fd;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            background: #ffffff;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .example-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1.2px solid #e2e8f0;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+        }
+
+        .example-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .example-tag {
+            background: #fef08a;
+            color: #854d0e;
+            font-size: 10.5pt;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid #fde047;
+        }
+
+        .example-title {
+            font-size: 12.5pt;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .example-meta {
+            font-size: 10pt;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .example-body {
+            font-size: 12pt;
+            line-height: 1.6;
+        }
+
+        .example-stem {
+            margin-bottom: 6px;
+        }
+
+        /* 手寫留白計算空間 */
+        .calc-space {
+            margin-top: 6px;
+            border: 1.2px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: #fafafa;
+        }
+
+        .calc-header {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .calc-lines {
+            min-height: 96px;
+            background-color: #fafafa;
+            background-image: repeating-linear-gradient(transparent, transparent 23px, #cbd5e1 23px, #cbd5e1 24px);
+            border-top: 1px solid #e2e8f0;
+            line-height: 24px;
+        }
+
+        /* 選擇題題目原子卡片 */
+        .quiz-item-card {
+            border: 1.2px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            background: #ffffff;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .quiz-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+
+        .quiz-badge {
+            font-size: 9.5pt;
+            font-weight: 700;
+            color: #0369a1;
+            background: #e0f2fe;
+            padding: 1px 6px;
+            border-radius: 3px;
+        }
+
+        .quiz-qnum {
+            font-weight: 800;
+            color: var(--secondary);
+            font-size: 12pt;
+        }
+
+        .quiz-stem {
+            font-size: 12pt;
+            line-height: 1.6;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .opt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 14px;
+            margin: 3px 0 4px 0;
+            font-size: 12pt;
+        }
+
+        .opt-item {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            line-height: 1.45;
+        }
+
+        .opt-label {
+            font-weight: 800;
+            color: var(--primary-dark);
+        }
+
+        .quiz-ans-box {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 5px;
+            font-size: 10.5pt;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 3px;
+            margin-top: 3px;
+        }
+
+        .ans-slot {
+            display: inline-block;
+            border: 1.3px solid #94a3b8;
+            border-radius: 4px;
+            width: 44px;
+            height: 18px;
+            background: #ffffff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0;
+            font-size: 11pt;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            text-align: center;
+        }
+
+        .data-table th {
+            background: #e0f2fe;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        @media print {
+            body {
+                background: none;
+                font-size: 12pt;
+            }
+            .check-box, .example-card, .quiz-item-card, .svg-wrap, .point-item {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            .concept-card {
+                break-inside: auto !important;
+            }
+            .card-title, .example-header, .quiz-header, .section-header {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .section-header {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="worksheet-container">
+
+    <!-- ════════════════════════════════════════════════════════════
+         【第 1 頁】：一、概念奠基 + Slide 1 定義 + 雙針筒連通 SVG + 隨堂檢核 1
+         ════════════════════════════════════════════════════════════ -->
+    <div class="handout-header">
+        <div class="header-title-group">
+            <span class="course-tag">選修化學（三）第二章 · 氣體 &nbsp;|&nbsp; 系統講義學習單系列</span>
+            <h1 class="main-title">單元 2-4 亞佛加厥定律 · 課堂教學講義學習單</h1>
+        </div>
+        <div class="student-info-bar">
+            <span class="info-field">班級：<span class="info-line"></span></span>
+            <span class="info-field">座號：<span class="info-line" style="min-width: 40px;"></span></span>
+            <span class="info-field">姓名：<span class="info-line" style="min-width: 75px;"></span></span>
+            <span class="info-field">得分：<span class="info-line" style="min-width: 50px;"></span></span>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span>一、概念奠基：亞佛加厥定律內涵與微觀模型</span>
+        <span class="sub-badge">觀念深究 · Slidepage 1 ~ 2</span>
+    </div>
+
+    <!-- Slide 1 卡片 -->
+    <div class="concept-card">
+        <div class="card-title">
+            <span class="card-tag">Slide 1</span>
+            <span>亞佛加厥定律 (Avogadro's Law) 核心內涵與微觀本質</span>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(1)</div>
+            <div class="point-content">
+                <strong>定律核心陳述</strong>：1811 年義大利科學家<strong>亞佛加厥 (Amedeo Avogadro)</strong> 提出：在<strong>同溫 ($T$ 為定值)</strong> 與<strong>同壓 ($P$ 為定值)</strong> 的條件下，<strong>同體積的任何氣體含有相同數目的分子（即相同的莫耳數 $n$）</strong>！
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(2)</div>
+            <div class="point-content">
+                <strong>數學運算方程式</strong>：定量關係表現為氣體體積與其莫耳數成正比：
+                <div class="formula-display">
+                    $$V \propto n \iff \frac{V}{n} = k \iff \frac{V_1}{n_1} = \frac{V_2}{n_2} \quad (T, P \text{ 為定值})$$
+                </div>
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(3)</div>
+            <div class="point-content">
+                <strong>核心常數與微觀本質</strong>：亞佛加厥常數 $\mathbf{N_A = 6.022 \times 10^{23} \text{ mol}^{-1}}$。常溫常壓下分子間距遠大於分子直徑（約 10 倍以上），氣體巨觀體積決定於<strong>分子間距與分子總數</strong>，而與<strong>分子本身的質量或化學形狀無關</strong>！
+            </div>
+        </div>
+
+        <!-- 雙針筒頭對頭連通微觀模型 SVG (文字 >= 10.5pt，留白不壓線) -->
+        <div class="svg-wrap">
+            <svg viewBox="0 0 680 185" style="width: 100%; max-width: 680px; height: auto;" font-family="sans-serif">
+                <defs>
+                    <marker id="arr-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7" />
+                    </marker>
+                    <marker id="arr-dark" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f172a" />
+                    </marker>
+                </defs>
+
+                <!-- 【狀態一】：對稱平衡初態 (兩側體積 2V，各含 8 顆粒子) -->
+                <g id="state1-syringe" transform="translate(15, 8)">
+                    <rect x="0" y="0" width="315" height="165" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+                    <text x="157" y="20" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">【狀態一】 對稱連通平衡（同溫同壓）</text>
+
+                    <!-- 左針筒身 -->
+                    <rect x="25" y="38" width="105" height="64" rx="2" fill="#e0f2fe" stroke="#0f172a" stroke-width="1.5"/>
+                    <rect x="42" y="39" width="9" height="62" rx="2" fill="#94a3b8" stroke="#0f172a" stroke-width="1.2"/>
+                    <rect x="15" y="66" width="28" height="8" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2"/>
+                    <text x="85" y="32" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">體積 V₁ = 2V</text>
+                    <text x="85" y="120" fill="#0369a1" font-size="10" font-weight="bold" text-anchor="middle">分子數 n₁ (8顆)</text>
+
+                    <!-- 中央連通閥嘴 -->
+                    <rect x="130" y="64" width="55" height="12" fill="#bae6fd" stroke="#0f172a" stroke-width="1.3"/>
+                    <text x="157" y="88" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">連通口</text>
+
+                    <!-- 右針筒身 -->
+                    <rect x="185" y="38" width="105" height="64" rx="2" fill="#fef3c7" stroke="#0f172a" stroke-width="1.5"/>
+                    <rect x="264" y="39" width="9" height="62" rx="2" fill="#94a3b8" stroke="#0f172a" stroke-width="1.2"/>
+                    <rect x="273" y="66" width="28" height="8" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2"/>
+                    <text x="230" y="32" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="middle">體積 V₂ = 2V</text>
+                    <text x="230" y="120" fill="#b45309" font-size="10" font-weight="bold" text-anchor="middle">分子數 n₂ (8顆)</text>
+
+                    <!-- 左 8 顆藍球 -->
+                    <circle cx="62" cy="52" r="3.2" fill="#0284c7"/><circle cx="92" cy="50" r="3.2" fill="#0284c7"/>
+                    <circle cx="75" cy="68" r="3.2" fill="#0284c7"/><circle cx="110" cy="65" r="3.2" fill="#0284c7"/>
+                    <circle cx="58" cy="85" r="3.2" fill="#0284c7"/><circle cx="85" cy="88" r="3.2" fill="#0284c7"/>
+                    <circle cx="115" cy="85" r="3.2" fill="#0284c7"/><circle cx="72" cy="72" r="3.2" fill="#0284c7"/>
+
+                    <!-- 右 8 顆紅球 -->
+                    <circle cx="202" cy="52" r="3.2" fill="#dc2626"/><circle cx="232" cy="50" r="3.2" fill="#dc2626"/>
+                    <circle cx="215" cy="68" r="3.2" fill="#dc2626"/><circle cx="248" cy="65" r="3.2" fill="#dc2626"/>
+                    <circle cx="198" cy="85" r="3.2" fill="#dc2626"/><circle cx="225" cy="88" r="3.2" fill="#dc2626"/>
+                    <circle cx="255" cy="85" r="3.2" fill="#dc2626"/><circle cx="238" cy="74" r="3.2" fill="#dc2626"/>
+
+                    <rect x="25" y="134" width="265" height="22" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                    <text x="157" y="149" fill="#0f172a" font-size="10.5" font-weight="bold" text-anchor="middle">兩側 V₁ : V₂ = 1 : 1 ⟺ n₁ : n₂ = 1 : 1</text>
+                </g>
+
+                <!-- 【狀態二】：推動後動態平衡態 (左筒 1V，右筒 3V) -->
+                <g id="state2-syringe" transform="translate(350, 8)">
+                    <rect x="0" y="0" width="315" height="165" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+                    <text x="157" y="20" fill="#15803d" font-size="11" font-weight="bold" text-anchor="middle">【狀態二】 活塞位移後平衡（同溫同壓）</text>
+
+                    <!-- 左針筒身 (壓縮至 1V) -->
+                    <rect x="25" y="38" width="105" height="64" rx="2" fill="#e0f2fe" stroke="#0f172a" stroke-width="1.5"/>
+                    <rect x="80" y="39" width="9" height="62" rx="2" fill="#94a3b8" stroke="#0f172a" stroke-width="1.2"/>
+                    <rect x="35" y="66" width="45" height="8" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2"/>
+                    <text x="55" y="32" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">體積 1V</text>
+                    <text x="58" y="120" fill="#0369a1" font-size="10" font-weight="bold" text-anchor="middle">4 顆分子</text>
+
+                    <!-- 中央連通閥嘴與氣體穿梭箭頭 -->
+                    <rect x="130" y="64" width="55" height="12" fill="#bae6fd" stroke="#0f172a" stroke-width="1.3"/>
+                    <line x1="140" y1="70" x2="175" y2="70" stroke="#0284c7" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+                    <text x="157" y="88" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">連通口</text>
+
+                    <!-- 右針筒身 (膨脹至 3V) -->
+                    <rect x="185" y="38" width="105" height="64" rx="2" fill="#fef3c7" stroke="#0f172a" stroke-width="1.5"/>
+                    <rect x="280" y="39" width="9" height="62" rx="2" fill="#94a3b8" stroke="#0f172a" stroke-width="1.2"/>
+                    <rect x="289" y="66" width="20" height="8" fill="#cbd5e1" stroke="#0f172a" stroke-width="1.2"/>
+                    <text x="235" y="32" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="middle">體積 3V</text>
+                    <text x="235" y="120" fill="#b45309" font-size="10" font-weight="bold" text-anchor="middle">12 顆分子</text>
+
+                    <!-- 左側剩餘 4 顆粒子 -->
+                    <circle cx="96" cy="54" r="3.2" fill="#0284c7"/><circle cx="112" cy="66" r="3.2" fill="#0284c7"/>
+                    <circle cx="100" cy="80" r="3.2" fill="#0284c7"/><circle cx="116" cy="88" r="3.2" fill="#0284c7"/>
+
+                    <!-- 右側共 12 顆粒子 -->
+                    <circle cx="198" cy="52" r="3.2" fill="#dc2626"/><circle cx="225" cy="48" r="3.2" fill="#dc2626"/>
+                    <circle cx="250" cy="52" r="3.2" fill="#dc2626"/><circle cx="270" cy="48" r="3.2" fill="#dc2626"/>
+                    <circle cx="205" cy="70" r="3.2" fill="#dc2626"/><circle cx="230" cy="70" r="3.2" fill="#dc2626"/>
+                    <circle cx="255" cy="68" r="3.2" fill="#dc2626"/><circle cx="272" cy="68" r="3.2" fill="#dc2626"/>
+                    <circle cx="198" cy="88" r="3.2" fill="#0284c7"/><circle cx="222" cy="88" r="3.2" fill="#0284c7"/>
+                    <circle cx="248" cy="88" r="3.2" fill="#0284c7"/><circle cx="272" cy="86" r="3.2" fill="#0284c7"/>
+
+                    <rect x="25" y="134" width="265" height="22" rx="3" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+                    <text x="157" y="149" fill="#15803d" font-size="10.5" font-weight="bold" text-anchor="middle">體積比 1 : 3 ⟺ 分子數比 4 : 12 = 1 : 3</text>
+                </g>
+            </svg>
+            <div class="svg-caption">雙針筒頭對頭連通微觀模型：同溫同壓下，氣體體積比嚴格等於分子數（莫耳數）之比值 ($V \propto n$)</div>
+        </div>
+    </div>
+
+    <!-- 隨堂觀念自我檢核 1 (緊接於 Slide 1 下方，同頁飽滿呈現) -->
+    <div class="check-box">
+        <div class="check-header">
+            <span>隨堂觀念自我檢核（Slidepage 1 · 亞佛加厥定律定義）</span>
+            
+        </div>
+        <div class="check-item">
+            <div class="check-num">1.</div>
+            <div class="check-text">
+                亞佛加厥定律成立的必備先決條件為：系統必須維持在<span class="blank-line" style="min-width: 85px;"></span>恆定以及<span class="blank-line" style="min-width: 85px;"></span>恆定。此時任何氣體所佔之體積 ($V$) 與其氣體莫耳數 ($n$) 成<span class="blank-line" style="min-width: 65px;"></span>比。
+            </div>
+        </div>
+        <div class="check-item">
+            <div class="check-num">2.</div>
+            <div class="check-text">
+                從分子動力論微觀本質解讀，常溫常壓下氣體分子間的平均距離遠大於分子本身大小，因此氣體的巨觀空間體積主要由分子間距與<span class="blank-line" style="min-width: 100px;"></span>決定，而與氣體分子本身的<span class="blank-line" style="min-width: 130px;"></span>無關。
+            </div>
+        </div>
+        <div class="check-item">
+            <div class="check-num">3.</div>
+            <div class="check-text">
+                同溫同壓下，定量氣體若由初態 $(V_1, n_1)$ 充氣膨脹至末態 $(V_2, n_2)$，其核心聯立正比運算關係式為：<span class="blank-line" style="min-width: 150px;"></span>。
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         【第 2 頁】：Slide 2 莫耳體積與密度比 + 向量圖 + 隨堂檢核 2
+         ════════════════════════════════════════════════════════════ -->
+    
+    <div class="concept-card" style="margin-top: 4px;">
+        <div class="card-title">
+            <span class="card-tag">Slide 2</span>
+            <span>氣體莫耳體積 ($V_m$) 與氣體密度比判讀 ($d \propto M$)</span>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(1)</div>
+            <div class="point-content">
+                <strong>莫耳體積 ($V_m$) 之物理定義</strong>：指每 $1\text{ 莫耳}$ 任何氣體在特定溫度與壓力條件下所共同佔據的空間體積：
+                $$n\text{ (mol)} = \frac{V\text{ (L)}}{V_m\text{ (L/mol)}}$$
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(2)</div>
+            <div class="point-content">
+                <strong>高中考試必備之常見溫壓狀態對照表</strong>：
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>狀態名稱與縮寫</th>
+                            <th>標準溫壓條件</th>
+                            <th>$1\text{ mol}$ 氣體莫耳體積 ($V_m$)</th>
+                            <th>莫耳數計算式</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>STP</strong>（標準狀態）</td>
+                            <td>$0^\circ\text{C}$ (273.15 K)、$1\text{ atm}$</td>
+                            <td><strong style="color: var(--primary-dark); font-size: 12.5pt;">22.4 L/mol</strong></td>
+                            <td>$n = \dfrac{V\text{ (L)}}{22.4}$</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NTP</strong>（常溫常壓）</td>
+                            <td>$25^\circ\text{C}$ (298.15 K)、$1\text{ atm}$</td>
+                            <td><strong style="color: var(--highlight); font-size: 12.5pt;">24.5 L/mol</strong></td>
+                            <td>$n = \dfrac{V\text{ (L)}}{24.5}$</td>
+                        </tr>
+                        <tr>
+                            <td><strong>實驗室條件</strong></td>
+                            <td>$27^\circ\text{C}$ (300.15 K)、$1\text{ atm}$</td>
+                            <td><strong style="color: var(--text-muted); font-size: 12pt;">24.6 L/mol</strong></td>
+                            <td>$n = \dfrac{V\text{ (L)}}{24.6}$</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(3)</div>
+            <div class="point-content">
+                <strong>同溫同壓下之氣體密度與分子量正比公理</strong>：
+                氣體密度定義為單位體積之質量，由 $1\text{ mol}$ 氣體推演：
+                $$d = \frac{W}{V} = \frac{n \times M}{n \times V_m} = \frac{M}{V_m}$$
+                因同溫同壓下所有氣體之莫耳體積 $V_m$ 恆相等，故導出極速解題公理：
+                <div class="formula-display">
+                    $$\mathbf{d \propto M \iff \frac{d_1}{d_2} = \frac{M_1}{M_2} \quad (T, P \text{ 為定值})}$$
+                </div>
+                <strong>「同溫同壓下，任何兩氣體之密度比恆等於其分子量之比值！」</strong>
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(4)</div>
+            <div class="point-content">
+                <strong>氣體浮沉與空氣平均分子量判定法則</strong>：
+                乾燥空氣平均分子量 $\overline{M}_{\text{空氣}} \approx \mathbf{28.8 \text{ g/mol}}$。
+                <ul>
+                    <li>若 $M < 28.8$（如 $\text{H}_2=2, \text{He}=4, \text{CH}_4=16, \text{NH}_3=17$）：密度小於空氣，在空氣中<strong>向上飄浮</strong>（採向下排氣法）。</li>
+                    <li>若 $M > 28.8$（如 $\text{O}_2=32, \text{CO}_2=44, \text{Cl}_2=71$）：密度大於空氣，在空氣中<strong>向下沉降</strong>（採向上排氣法）。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 莫耳體積與氣體密度向量圖 (文字 >= 10.5pt，完全不疊線、不切邊，安全留白充分) -->
+        <div class="svg-wrap" style="margin-top: 6px;">
+            <svg viewBox="0 0 660 148" style="width: 100%; max-width: 660px; height: auto;" font-family="sans-serif">
+                <!-- 左側：STP 莫耳體積 22.4 L 立方體示意 -->
+                <g transform="translate(18, 4)">
+                    <rect x="0" y="0" width="305" height="138" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+                    <text x="152" y="20" fill="#0369a1" font-size="11.5" font-weight="bold" text-anchor="middle">STP (0°C, 1 atm) 下 1 mol 氣體基準</text>
+                    
+                    <!-- 立方體本體 (頂點最高在 y=35，與頂部標題 y=20 留有 15px 純淨空白，絕不碰線) -->
+                    <polygon points="25,48 48,35 118,35 95,48" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+                    <polygon points="95,48 118,35 118,90 95,103" fill="#7dd3fc" stroke="#0284c7" stroke-width="1.4"/>
+                    <rect x="25" y="48" width="70" height="55" rx="3" fill="#bae6fd" stroke="#0284c7" stroke-width="1.6"/>
+                    
+                    <!-- 盒子內部文字 (置中，四邊完全不壓線) -->
+                    <text x="60" y="74" fill="#0369a1" font-size="13" font-weight="900" text-anchor="middle">22.4 L</text>
+                    <text x="60" y="92" fill="#0369a1" font-size="10.5" font-weight="bold" text-anchor="middle">1 mol 氣體</text>
+
+                    <!-- 右側說明文字 (留白充分，字體 11pt) -->
+                    <text x="135" y="58" fill="#0f172a" font-size="11" font-weight="bold">邊長約 28.2 cm</text>
+                    <text x="135" y="78" fill="#0369a1" font-size="11">含 6.02×10²³ 分子</text>
+                    <text x="135" y="98" fill="#b45309" font-size="11" font-weight="bold">H₂、O₂、CO₂ 體積皆同！</text>
+                </g>
+
+                <!-- 右側：同溫同壓同體積天平密度比對 (d ∝ M) -->
+                <g transform="translate(337, 4)">
+                    <rect x="0" y="0" width="305" height="138" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+                    <text x="152" y="20" fill="#15803d" font-size="11.5" font-weight="bold" text-anchor="middle">同溫同壓同體積 (1 L) 天平比重</text>
+                    <text x="152" y="34" fill="#15803d" font-size="10.5" font-weight="bold" text-anchor="middle">密度比 = 質量比 = 2 : 32 = 1 : 16</text>
+
+                    <!-- 天平中央支柱與底座 (指針頂點在 y=44，與上方文字徹底錯開) -->
+                    <polygon points="152,44 144,98 160,98" fill="#64748b"/>
+                    <rect x="132" y="98" width="40" height="6" rx="2" fill="#475569"/>
+                    
+                    <!-- 天平傾斜橫樑與中心軸 (橫樑平緩傾斜，使右盤具有充足垂直空間) -->
+                    <line x1="45" y1="56" x2="260" y2="76" stroke="#0f172a" stroke-width="2.6"/>
+                    <circle cx="152" cy="66" r="3.5" fill="#0f172a"/>
+
+                    <!-- 左盤：H2 (向上傾起) -->
+                    <line x1="45" y1="56" x2="45" y2="68" stroke="#94a3b8" stroke-width="1.3"/>
+                    <rect x="23" y="68" width="44" height="22" rx="3" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.4"/>
+                    <text x="45" y="83" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">1L H₂</text>
+                    <text x="45" y="103" fill="#475569" font-size="10.5" font-weight="bold" text-anchor="middle">重 0.089g</text>
+
+                    <!-- 右盤：O2 (向下傾沉，下方文字在 y=120，距底邊 138 有整整 18px 安全距離，絕不壓線切邊) -->
+                    <line x1="260" y1="76" x2="260" y2="86" stroke="#94a3b8" stroke-width="1.3"/>
+                    <rect x="238" y="86" width="44" height="22" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+                    <text x="260" y="101" fill="#dc2626" font-size="10.5" font-weight="bold" text-anchor="middle">1L O₂</text>
+                    <text x="260" y="120" fill="#b91c1c" font-size="10.5" font-weight="bold" text-anchor="middle">重 1.43g</text>
+                </g>
+            </svg>
+            <div class="svg-caption">STP 氣體莫耳體積基準 ($22.4\text{ L/mol}$) 與同溫同壓同體積下密度比等於分子量比 ($d \propto M$) 之天平模型</div>
+        </div>
+    </div>
+
+    <!-- 隨堂觀念自我檢核 2 -->
+    <div class="check-box">
+        <div class="check-header">
+            <span>隨堂觀念自我檢核（Slidepage 2 · 莫耳體積與密度比）</span>
+            
+        </div>
+        <div class="check-item">
+            <div class="check-num">1.</div>
+            <div class="check-text">
+                在標準狀態（STP：$0^\circ\text{C}, 1\text{ atm}$）下，$1\text{ mol}$ 任何理想氣體之莫耳體積恆等於<span class="blank-line" style="min-width: 75px;"></span>公升；若在常溫常壓（NTP：$25^\circ\text{C}, 1\text{ atm}$）條件下，其莫耳體積則約為<span class="blank-line" style="min-width: 75px;"></span>公升。
+            </div>
+        </div>
+        <div class="check-item">
+            <div class="check-num">2.</div>
+            <div class="check-text">
+                在同溫同壓條件下，各氣體之莫耳體積 $V_m$ 相同，故氣體密度 ($d$) 與其分子量 ($M$) 呈<span class="blank-line" style="min-width: 65px;"></span>比關係。若氫氣 ($\text{H}_2$) 與氧氣 ($\text{O}_2$) 處於同溫同壓，則其密度比值 $d_{\text{H}_2} : d_{\text{O}_2} =$ <span class="blank-line" style="min-width: 85px;"></span>。
+            </div>
+        </div>
+        <div class="check-item">
+            <div class="check-num">3.</div>
+            <div class="check-text">
+                乾燥空氣之平均分子量約為<span class="blank-line" style="min-width: 65px;"></span> $\text{g/mol}$。若某未知氣體之分子量為 $44$（如 $\text{CO}_2$），在常溫常壓空氣中將會趨向於<span class="blank-line" style="min-width: 85px;"></span>（填向上飄浮或向下沉降）。
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         【第 3 頁】：二、經典範例深究 + 經典範例 1 + 經典範例 2
+         ════════════════════════════════════════════════════════════ -->
+    
+    <div class="section-header" style="margin-top: 4px;">
+        <span>二、經典範例深究：解題思維與題意向量解析</span>
+        <span class="sub-badge">經典題型 · Slidepage 3 ~ 6</span>
+    </div>
+
+    <!-- 範例 1 -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 1</span>
+                <span class="example-title">STP 下的氣體體積計算</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 3 · 莫耳體積基準換算</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                在標準溫壓（STP）下，$2.0\text{ 莫耳}$ 的氧氣所佔據之體積為多少公升？
+            </div>
+            <div class="svg-wrap">
+                <svg viewBox="0 0 460 95" style="width: 100%; max-width: 460px; height: auto;" font-family="sans-serif">
+                    <rect x="25" y="15" width="110" height="65" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+                    <text x="80" y="42" fill="#0369a1" font-size="12" font-weight="bold" text-anchor="middle">1.0 mol O₂</text>
+                    <text x="80" y="65" fill="#0284c7" font-size="13" font-weight="900" text-anchor="middle">22.4 L (STP)</text>
+
+                    <line x1="155" y1="48" x2="225" y2="48" stroke="#b45309" stroke-width="2.5" marker-end="url(#arr-dark)"/>
+                    <text x="190" y="38" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">× 2.0 莫耳</text>
+
+                    <rect x="245" y="10" width="190" height="75" rx="4" fill="#fef3c7" stroke="#b45309" stroke-width="1.6"/>
+                    <text x="340" y="42" fill="#b45309" font-size="12" font-weight="bold" text-anchor="middle">2.0 mol O₂</text>
+                    <text x="340" y="68" fill="#dc2626" font-size="14.5" font-weight="900" text-anchor="middle">V = ? 公升</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- 範例 2 -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 2</span>
+                <span class="example-title">同溫同壓下的氣體密度比</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 4 · 密度與分子量正比關係</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                在同溫同壓下，氫氣 ($\text{H}_2$) 與氧氣 ($\text{O}_2$) 的密度比為何？
+            </div>
+            <div class="svg-wrap">
+                <svg viewBox="0 0 460 95" style="width: 100%; max-width: 460px; height: auto;" font-family="sans-serif">
+                    <rect x="40" y="15" width="120" height="65" rx="4" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+                    <text x="100" y="40" fill="#0369a1" font-size="12" font-weight="bold" text-anchor="middle">氫氣 (H₂)</text>
+                    <text x="100" y="64" fill="#0284c7" font-size="11.5" font-weight="bold" text-anchor="middle">M₁ = 2.0 g/mol</text>
+
+                    <text x="230" y="52" fill="#0f172a" font-size="18" font-weight="bold" text-anchor="middle">比值 ( : )</text>
+
+                    <rect x="300" y="15" width="120" height="65" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+                    <text x="360" y="40" fill="#b91c1c" font-size="12" font-weight="bold" text-anchor="middle">氧氣 (O₂)</text>
+                    <text x="360" y="64" fill="#dc2626" font-size="11.5" font-weight="bold" text-anchor="middle">M₂ = 32.0 g/mol</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         【第 4 頁】：經典範例 3 + 經典範例 4
+         ════════════════════════════════════════════════════════════ -->
+    
+    <!-- 範例 3 -->
+    <div class="example-card" style="margin-top: 4px;">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 3</span>
+                <span class="example-title">原子總數與體積比例計算</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 5 · 分子莫耳數與原子數換算</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                甲、乙兩容器中分別盛同溫、同壓下之 $\text{CO}_{2(g)}$ 與 $\text{NH}_{3(g)}$，已知兩容器中之<strong>原子總數相等</strong>，則甲、乙兩容器體積之比值（$V_{\text{甲}} : V_{\text{乙}}$）為何？<br>
+                <div class="opt-grid" style="margin-top: 4px;">
+                    <div class="opt-item"><span class="opt-label">(A)</span> 2 : 3</div>
+                    <div class="opt-item"><span class="opt-label">(B)</span> 4 : 5</div>
+                    <div class="opt-item"><span class="opt-label">(C)</span> 4 : 3</div>
+                    <div class="opt-item"><span class="opt-label">(D)</span> 3 : 4</div>
+                </div>
+            </div>
+            <div class="svg-wrap">
+                <svg viewBox="0 0 460 95" style="width: 100%; max-width: 460px; height: auto;" font-family="sans-serif">
+                    <rect x="35" y="10" width="150" height="75" rx="4" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+                    <text x="110" y="32" fill="#15803d" font-size="12" font-weight="bold" text-anchor="middle">甲容器：CO₂(g)</text>
+                    <text x="110" y="52" fill="#16a34a" font-size="10.5" text-anchor="middle">每個分子含 3 個原子</text>
+                    <text x="110" y="72" fill="#15803d" font-size="11" font-weight="bold" text-anchor="middle">原子數 = 3 × n_甲</text>
+
+                    <text x="230" y="48" fill="#b45309" font-size="12" font-weight="bold" text-anchor="middle">原子數相等</text>
+                    <text x="230" y="68" fill="#b45309" font-size="16" font-weight="bold" text-anchor="middle">=</text>
+
+                    <rect x="275" y="10" width="150" height="75" rx="4" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+                    <text x="350" y="32" fill="#b45309" font-size="12" font-weight="bold" text-anchor="middle">乙容器：NH₃(g)</text>
+                    <text x="350" y="52" fill="#d97706" font-size="10.5" text-anchor="middle">每個分子含 4 個原子</text>
+                    <text x="350" y="72" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">原子數 = 4 × n_乙</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- 範例 4 -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 4</span>
+                <span class="example-title">未知氣體分子量判定</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 6 · 質量、體積與莫耳質量聯立</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                有甲、乙二種氣體，各重 $\mathbf{1.64\text{ 克}}$ 及 $\mathbf{0.50\text{ 克}}$。在同溫、同壓時甲氣體之體積為乙氣體之二倍。若知乙氣體之分子量為 $28$，則下列分子何者可能為甲氣體？（原子量：$N = 14, O = 16$）<br>
+                <div class="opt-grid" style="margin-top: 4px;">
+                    <div class="opt-item"><span class="opt-label">(A)</span> $\text{NO}_2$</div>
+                    <div class="opt-item"><span class="opt-label">(B)</span> $\text{N}_2\text{O}$</div>
+                    <div class="opt-item"><span class="opt-label">(C)</span> $\text{N}_2\text{O}_4$</div>
+                    <div class="opt-item"><span class="opt-label">(D)</span> $\text{N}_2\text{O}_5$</div>
+                </div>
+            </div>
+            <div class="svg-wrap">
+                <svg viewBox="0 0 460 95" style="width: 100%; max-width: 460px; height: auto;" font-family="sans-serif">
+                    <rect x="30" y="10" width="165" height="75" rx="4" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+                    <text x="112" y="32" fill="#0369a1" font-size="12" font-weight="bold" text-anchor="middle">甲氣體</text>
+                    <text x="112" y="52" fill="#0f172a" font-size="10.5" text-anchor="middle">質量 1.64 g · 體積 2V</text>
+                    <text x="112" y="72" fill="#0284c7" font-size="11" font-weight="bold" text-anchor="middle">分子量 M₁ = ?</text>
+
+                    <text x="230" y="44" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="middle">同溫同壓</text>
+                    <text x="230" y="62" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">V₁ / V₂ = 2</text>
+
+                    <rect x="265" y="10" width="165" height="75" rx="4" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+                    <text x="347" y="32" fill="#334155" font-size="12" font-weight="bold" text-anchor="middle">乙氣體</text>
+                    <text x="347" y="52" fill="#0f172a" font-size="10.5" text-anchor="middle">質量 0.50 g · 體積 1V</text>
+                    <text x="347" y="72" fill="#334155" font-size="11" font-weight="bold" text-anchor="middle">分子量 M₂ = 28</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         【第 5 頁】：三、單元檢核練習題 (題庫 1 ~ 4)
+         ════════════════════════════════════════════════════════════ -->
+    
+    <div class="section-header" style="margin-top: 4px;">
+        <span>三、單元檢核練習題</span>
+        <span class="sub-badge">通關評量 · 10 題精選客觀題 (第 1 ~ 4 題)</span>
+    </div>
+"""
+
+    # 第 5 頁：題庫 1 ~ 4
+    for idx in range(0, 4):
+        q = questions[idx]
+        qnum = idx + 1
+        tag = q.get('tag', '單元觀念檢核')
+        scenario = q.get('scenario', '').strip()
+        question_text = q.get('question', '').strip()
+        full_stem = (scenario + ' ' + question_text) if scenario else question_text
+        opts = q.get('options', [])
+
+        html_content += f"""
+    <div class="quiz-item-card">
+        <div class="quiz-item-header">
+            <span class="quiz-qnum">{qnum}.</span>
+            <span class="quiz-badge">{tag}</span>
+        </div>
+        <div class="quiz-stem">
+            {full_stem}
+        </div>
+        <div class="opt-grid">
+"""
+        for opt in opts:
+            opt_str = opt.strip()
+            if opt_str.startswith(('A.', 'B.', 'C.', 'D.')):
+                label = opt_str[:2]
+                val_raw = opt_str[2:].strip()
+                if '\\sqrt' in val_raw and '$' not in val_raw:
+                    if '倍' in val_raw:
+                        v_num = val_raw.replace('倍', '').strip()
+                        val = f'${v_num}$ 倍'
+                    else:
+                        val = f'${val_raw}$'
+                else:
+                    val = val_raw
+            else:
+                label = ""
+                val = opt_str
+            html_content += f"""            <div class="opt-item"><span class="opt-label">({label[0] if label else ''})</span> <span>{val}</span></div>\n"""
+
+        html_content += """        </div>
+        <div class="quiz-ans-box">
+            <span>作答：</span><span class="ans-slot"></span>
+        </div>
+    </div>
+"""
+
+    # ════════════════════════════════════════════════════════════
+    # 【第 6 頁】：題庫 5 ~ 8
+    # ════════════════════════════════════════════════════════════
+    html_content += r"""
+        <div class="section-header" style="margin-top: 4px;">
+        <span>三、單元檢核練習題（續）</span>
+        <span class="sub-badge">通關評量 · 10 題精選客觀題 (第 5 ~ 8 題)</span>
+    </div>
+"""
+
+    for idx in range(4, 8):
+        q = questions[idx]
+        qnum = idx + 1
+        tag = q.get('tag', '單元觀念檢核')
+        scenario = q.get('scenario', '').strip()
+        question_text = q.get('question', '').strip()
+        full_stem = (scenario + ' ' + question_text) if scenario else question_text
+        opts = q.get('options', [])
+
+        html_content += f"""
+    <div class="quiz-item-card">
+        <div class="quiz-item-header">
+            <span class="quiz-qnum">{qnum}.</span>
+            <span class="quiz-badge">{tag}</span>
+        </div>
+        <div class="quiz-stem">
+            {full_stem}
+        </div>
+        <div class="opt-grid">
+"""
+        for opt in opts:
+            opt_str = opt.strip()
+            if opt_str.startswith(('A.', 'B.', 'C.', 'D.')):
+                label = opt_str[:2]
+                val_raw = opt_str[2:].strip()
+                if '\\sqrt' in val_raw and '$' not in val_raw:
+                    if '倍' in val_raw:
+                        v_num = val_raw.replace('倍', '').strip()
+                        val = f'${v_num}$ 倍'
+                    else:
+                        val = f'${val_raw}$'
+                else:
+                    val = val_raw
+            else:
+                label = ""
+                val = opt_str
+            html_content += f"""            <div class="opt-item"><span class="opt-label">({label[0] if label else ''})</span> <span>{val}</span></div>\n"""
+
+        html_content += """        </div>
+        <div class="quiz-ans-box">
+            <span>作答：</span><span class="ans-slot"></span>
+        </div>
+    </div>
+"""
+
+    # ════════════════════════════════════════════════════════════
+    # 【第 7 頁】：題庫 9 ~ 10 + 四、課堂自主筆記與錯題訂正演算專區
+    # ════════════════════════════════════════════════════════════
+    html_content += r"""
+        <div class="section-header" style="margin-top: 4px;">
+        <span>三、單元檢核練習題（續）</span>
+        <span class="sub-badge">通關評量 · 10 題精選客觀題 (第 9 ~ 10 題)</span>
+    </div>
+"""
+
+    for idx in range(8, 10):
+        q = questions[idx]
+        qnum = idx + 1
+        tag = q.get('tag', '單元觀念檢核')
+        scenario = q.get('scenario', '').strip()
+        question_text = q.get('question', '').strip()
+        full_stem = (scenario + ' ' + question_text) if scenario else question_text
+        opts = q.get('options', [])
+
+        html_content += f"""
+    <div class="quiz-item-card">
+        <div class="quiz-item-header">
+            <span class="quiz-qnum">{qnum}.</span>
+            <span class="quiz-badge">{tag}</span>
+        </div>
+        <div class="quiz-stem">
+            {full_stem}
+        </div>
+        <div class="opt-grid">
+"""
+        for opt in opts:
+            opt_str = opt.strip()
+            if opt_str.startswith(('A.', 'B.', 'C.', 'D.')):
+                label = opt_str[:2]
+                val_raw = opt_str[2:].strip()
+                if '\\sqrt' in val_raw and '$' not in val_raw:
+                    if '倍' in val_raw:
+                        v_num = val_raw.replace('倍', '').strip()
+                        val = f'${v_num}$ 倍'
+                    else:
+                        val = f'${val_raw}$'
+                else:
+                    val = val_raw
+            else:
+                label = ""
+                val = opt_str
+            html_content += f"""            <div class="opt-item"><span class="opt-label">({label[0] if label else ''})</span> <span>{val}</span></div>\n"""
+
+        html_content += """        </div>
+        <div class="quiz-ans-box">
+            <span>作答：</span><span class="ans-slot"></span>
+        </div>
+    </div>
+"""
+
+    html_content += r"""
+    <!-- 四、課堂自主筆記與錯題訂正演算專區 -->
+    <div class="section-header" style="margin-top: 14px;">
+        <span>四、課堂筆記與錯題訂正演算專區</span>
+        <span class="sub-badge">自主學習</span>
+    </div>
+    <div class="concept-card" style="min-height: 240px; padding: 12px;">
+        <div class="calc-lines" style="min-height: 220px; line-height: 26px; background-image: repeating-linear-gradient(transparent, transparent 25px, #e2e8f0 25px, #e2e8f0 26px);"></div>
+    </div>
+
+</div>
+</body>
+</html>
+"""
+
+    output_path = 'my_chem_002_氣體/04_亞佛加厥定律/04_亞佛加厥定律_講義學習單.html'
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    print(f'[SUCCESS] Successfully generated {output_path}')
+
+if __name__ == '__main__':
+    build_worksheet()

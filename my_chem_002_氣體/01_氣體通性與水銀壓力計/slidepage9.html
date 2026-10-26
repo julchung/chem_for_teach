@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2-1 氣體通性與水銀壓力計 · 經典範例 3：U形管水銀總量守恆與高度倍數比 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --mercury: #94a3b8;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%; background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #presentation-area { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+        }
+        .slide {
+            position: absolute; inset: 0; padding: 0.15rem 0.15rem;
+            opacity: 1; pointer-events: auto;
+            display: flex; flex-direction: column; overflow: hidden; height: 100%;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34,211,238,0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1.02rem, 1.25vw, 1.2rem); margin-bottom: 0.25rem; font-weight: 700; flex-shrink: 0; }
+        p, li { font-size: clamp(0.88rem, 1.02vw, 1.02rem); line-height: 1.55; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+        em { color: var(--accent-yellow); font-style: normal; font-weight: 600; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 0.85rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 0.85rem 1.15rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            min-height: 0; overflow-y: auto; gap: 0.55rem;
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .tag { display: inline-block; padding: 0.15rem 0.65rem; border-radius: 12px; font-size: 0.82rem; font-weight: 700; }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1px solid rgba(251,191,36,0.45); color: var(--accent-yellow); }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: #0f172a; border: none; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; touch-action: manipulation;
+        }
+        .btn-action:hover { transform: scale(1.02); box-shadow: 0 0 12px rgba(34,211,238,0.4); }
+
+        .solution-card {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .solution-card.revealed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-block {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid var(--accent-blue); border-radius: 8px;
+            padding: 0.55rem 0.85rem; line-height: 1.6; font-size: 0.88rem;
+        }
+        .step-block.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); }
+        .step-block.red { border-left-color: var(--accent-red); background: rgba(248,113,113,0.05); }
+
+        .formula-box {
+            background: rgba(0,0,0,0.38); border-radius: 8px; border-left: 4px solid var(--accent-yellow);
+            padding: 0.5rem 0.8rem; text-align: center;
+            font-size: 1.15rem; margin: 0.3rem 0;
+        }
+
+        .opt-list {
+            display: flex;
+            gap: 12px;
+            margin-top: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .opt-chip {
+            padding: 4px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #f1f5f9;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+        .opt-chip.active-ans {
+            background: rgba(52,211,153,0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr !important; overflow-y: auto; }
+            body, html, #app, #presentation-area { overflow: auto; }
+            .slide { position: relative; height: auto; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="presentation-area">
+        <div id="slides-container">
+            <div class="slide active">
+                <h1>2-1 氣體通性與水銀壓力計 · 經典範例 3：U形管水銀總量守恆與高度倍數比</h1>
+                <div class="grid-2">
+                    <!-- 左欄：題目呈現 -->
+                    <div class="panel">
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:0.35rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="tag tag-yellow">經典範例 3</span>
+                                <h2 style="color: var(--accent-yellow); margin:0;">閉口端與氣室端之高度倍數難題</h2>
+                            </div>
+                            <span style="font-size:0.8rem; color:rgba(255,255,255,0.5);">一題一頁 · 水銀總量守恆</span>
+                        </div>
+
+                        <div style="background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 0.75rem 0.95rem;">
+                            <p style="font-size: 0.95rem; line-height: 1.7; color: #f8fafc;">
+                                <strong>題目說明：</strong><br>
+                                某閉口式水銀壓力計充入 <strong>A 氣體</strong> 後，<strong class="text-cyan">閉口端</strong>的水銀柱高度為<strong class="text-cyan">氣室端</strong>的 <strong>$3$ 倍</strong>；若抽空改換充入 <strong>B 氣體</strong> 後，閉口端水銀柱高度變為氣室端的 <strong>$4$ 倍</strong>。試問 B 氣體的壓力為 A 氣體壓力的若干倍？
+                            </p>
+                            <div class="opt-list">
+                                <span class="opt-chip active-ans">(A) 1.2</span>
+                                <span class="opt-chip">(B) 1.4</span>
+                                <span class="opt-chip">(C) 1.6</span>
+                                <span class="opt-chip">(D) 1.8</span>
+                            </div>
+                        </div>
+
+                        <!-- 題目雙管示意圖（大幅放大呈現） -->
+                        <div class="diagram-wrap" style="flex: 1; min-height: 220px; display:flex; align-items:center; justify-content:space-around; background:rgba(0,0,0,0.32); border: 1.5px solid rgba(255,255,255,0.08); border-radius:14px; padding: 0.8rem 0.5rem; margin: 0.35rem 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);">
+                            <!-- A 氣體圖 (3h vs h) -->
+                            <div style="text-align:center; flex: 1; max-width: 46%;">
+                                <svg viewBox="0 0 200 170" style="width: 100%; height: auto; max-height: 210px; display: block; margin: 0 auto;">
+                                    <path d="M 15,140 L 65,140 L 48,90 L 32,90 Z" fill="rgba(255,100,100,0.15)" stroke="white" stroke-width="1.5" />
+                                    <text x="40" y="125" fill="var(--accent-red)" font-size="22" font-weight="bold" text-anchor="middle">A</text>
+                                    <path d="M 32,80 L 48,80 L 46,90 L 34,90 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 40,85 V 60 H 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                                    <path d="M 35,85 V 55 H 105" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 45,85 V 65 H 95" fill="none" stroke="white" stroke-width="1.2" />
+                                    <!-- 水銀 -->
+                                    <path d="M 95,115 V 140 A 20,20 0 0 0 135,140 V 65 H 125 V 140 A 10,10 0 0 1 105,140 V 115 Z" fill="#9ca3af" />
+                                    <path d="M 95,65 V 140 A 20,20 0 0 0 135,140 V 25 A 5,5 0 0 0 125,25 V 140 A 10,10 0 0 1 105,140 V 55" fill="none" stroke="white" stroke-width="1.2" />
+                                    <!-- 基準與高度標線 -->
+                                    <line x1="85" y1="140" x2="155" y2="140" stroke="rgba(255,255,255,0.4)" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="135" y1="65" x2="160" y2="65" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="105" y1="115" x2="80" y2="115" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <path d="M 150,65 V 140" stroke="yellow" stroke-width="1.8" />
+                                    <text x="155" y="100" fill="yellow" font-size="15" font-weight="bold" dominant-baseline="middle">3h</text>
+                                    <path d="M 85,115 V 140" stroke="yellow" stroke-width="1.8" />
+                                    <text x="75" y="128" fill="yellow" font-size="15" font-weight="bold" dominant-baseline="middle" text-anchor="end">h</text>
+                                    <text x="130" y="18" fill="var(--accent-red)" font-size="11" font-weight="bold" text-anchor="middle">Vacuum</text>
+                                </svg>
+                                <div style="color:var(--accent-red); font-size: clamp(0.96rem, 1.05vw, 1.1rem); font-weight:800; margin-top: 0.35rem;">A: 閉口端 3h · 氣室端 h</div>
+                            </div>
+
+                            <div style="font-size: clamp(1.8rem, 2.2vw, 2.5rem); color:var(--accent-yellow); font-weight: 800; padding: 0 0.2rem;">➔</div>
+
+                            <!-- B 氣體圖 (4h' vs h') -->
+                            <div style="text-align:center; flex: 1; max-width: 46%;">
+                                <svg viewBox="0 0 200 170" style="width: 100%; height: auto; max-height: 210px; display: block; margin: 0 auto;">
+                                    <path d="M 15,140 L 65,140 L 48,90 L 32,90 Z" fill="rgba(100,255,100,0.15)" stroke="white" stroke-width="1.5" />
+                                    <text x="40" y="125" fill="var(--accent-green)" font-size="22" font-weight="bold" text-anchor="middle">B</text>
+                                    <path d="M 32,80 L 48,80 L 46,90 L 34,90 Z" fill="#444" stroke="white" stroke-width="1" />
+                                    <path d="M 40,85 V 60 H 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                                    <path d="M 35,85 V 55 H 105" fill="none" stroke="white" stroke-width="1.2" />
+                                    <path d="M 45,85 V 65 H 95" fill="none" stroke="white" stroke-width="1.2" />
+                                    <!-- 水銀 -->
+                                    <path d="M 95,120 V 140 A 20,20 0 0 0 135,140 V 50 H 125 V 140 A 10,10 0 0 1 105,140 V 120 Z" fill="#9ca3af" />
+                                    <path d="M 95,65 V 140 A 20,20 0 0 0 135,140 V 25 A 5,5 0 0 0 125,25 V 140 A 10,10 0 0 1 105,140 V 55" fill="none" stroke="white" stroke-width="1.2" />
+                                    <!-- 基準與高度標線 -->
+                                    <line x1="85" y1="140" x2="155" y2="140" stroke="rgba(255,255,255,0.4)" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="135" y1="50" x2="160" y2="50" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <line x1="105" y1="120" x2="80" y2="120" stroke="white" stroke-dasharray="2,2" stroke-width="1" />
+                                    <path d="M 150,50 V 140" stroke="yellow" stroke-width="1.8" />
+                                    <text x="155" y="95" fill="yellow" font-size="15" font-weight="bold" dominant-baseline="middle">4h'</text>
+                                    <path d="M 85,120 V 140" stroke="yellow" stroke-width="1.8" />
+                                    <text x="75" y="130" fill="yellow" font-size="15" font-weight="bold" dominant-baseline="middle" text-anchor="end">h'</text>
+                                    <text x="130" y="18" fill="var(--accent-green)" font-size="11" font-weight="bold" text-anchor="middle">Vacuum</text>
+                                </svg>
+                                <div style="color:var(--accent-green); font-size: clamp(0.96rem, 1.05vw, 1.1rem); font-weight:800; margin-top: 0.35rem;">B: 閉口端 4h' · 氣室端 h'</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: auto; padding-top: 0.35rem; flex-shrink: 0;">
+                            <button class="btn-action" onclick="toggleSolution('s8-solution')" style="width: 100%; padding: 10px 18px; font-size: 1.05rem;">
+                                💡 顯示詳解 / 隱藏
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 右欄：詳解解析（預設空白） -->
+                    <div class="panel scroll-panel" style="background: rgba(255,255,255,0.025); position: relative;">
+                        <div id="s8-solution" class="solution-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52,211,153,0.3); padding-bottom: 0.35rem;">
+                                <h2 style="color: var(--accent-green); margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                                    <span>✓</span> 嚴謹推導與三步驟詳解
+                                </h2>
+                                <span class="tag" style="background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.4);">
+                                    正確選項：(A) 1.2
+                                </span>
+                            </div>
+
+                            <div class="step-block">
+                                <strong style="color: var(--accent-blue);">Step 1：設水銀總長度為固定值 $C$</strong><br>
+                                由於同一套 U 形管水銀既未增添也未洩漏，左、右兩管水銀柱長度總和必為定值 $C$。
+                            </div>
+
+                            <div class="step-block green">
+                                <strong style="color: var(--accent-green);">Step 2：分別求出 A 與 B 氣體之水銀高度差</strong><br>
+                                <strong>(1) 充入 A 氣體時：</strong><br>
+                                設左管高度為 $h$，則右管高度為 $3h$：
+                                $$C = h + 3h = 4h \implies h = \frac{C}{4}$$
+                                兩端高差即為氣壓：
+                                $$P_A = 3h - h = 2h = 2 \times \frac{C}{4} = \mathbf{0.5C}$$
+
+                                <strong>(2) 改充入 B 氣體時：</strong><br>
+                                設左管高度為 $h'$，則右管高度為 $4h'$：
+                                $$C = h' + 4h' = 5h' \implies h' = \frac{C}{5}$$
+                                兩端高差即為氣壓：
+                                $$P_B = 4h' - h' = 3h' = 3 \times \frac{C}{5} = \mathbf{0.6C}$$
+                            </div>
+
+                            <div class="step-block red">
+                                <strong style="color: var(--accent-red);">Step 3：計算壓力比值 $P_B / P_A$</strong><br>
+                                將兩者相除：
+                                <div class="formula-box" style="border-left-color: var(--accent-red);">
+                                    $$\frac{P_B}{P_A} = \frac{0.6C}{0.5C} = \frac{6}{5} = \mathbf{1.2}$$
+                                </div>
+                                <p style="font-size: 0.86rem; color: #94a3b8; margin-top: 0.2rem;">
+                                    📌 故 B 氣體的壓力為 A 氣體的 <strong>1.2 倍</strong>，正確答案選 <strong>(A)</strong>。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.toggleSolution = function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const isShowing = el.classList.contains('revealed');
+    if (isShowing) {
+        el.classList.remove('revealed');
+    } else {
+        el.classList.add('revealed');
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise([el]).catch(function(){});
+        }
+    }
+};
+</script>
+</body>
+</html>

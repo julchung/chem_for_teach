@@ -1,0 +1,1571 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+generate_boyle_worksheet.py
+依照 3-3 學習單製作標準，為單元 2-2 波以耳定律建立完整優化版課堂講義學習單 HTML 與 PDF。
+滿足使用者規範：
+1. 字體統一大小 12pt 以上，標題對齊，子標題與題號懸掛縮排對齊。
+2. 循序對應各 slidepage 內容：
+   - slidepage1: 定律核心與 J 型管實驗原型（圖一初始態 vs 圖二加汞壓縮對照 SVG）+ 隨堂觀念自我檢核（留填空橫線，不給答案與口號）。
+   - slidepage2: 三大經典圖形（P-V 雙曲線、V-1/P 直線、PV-P 水平線 SVG）+ 隨堂觀念自我檢核。
+   - slidepage3: 氣體動力論微觀物理模型（活塞前後狀態微觀分子碰撞 + PV等溫曲線對照 SVG）+ 隨堂觀念自我檢核。
+3. 經典範例題 1 ~ 5（對應 slidepage4 ~ 8）：呈現題目、題意 SVG 圖、預留充足計算作答空間（無答案與提示詳解）。
+4. 單元檢核練習題（對應 quiz.html 題庫 10 題選擇題，扣除連連看，含 5 題專屬 SVG 圖，無答案與提示詳解）。
+5. 流式自然分頁（break-inside: avoid, break-after: avoid），避免孤行標題與空白夾頁。
+6. SVG 圖中文字至少 10pt 以上，文字置於空白處，絕不壓線。
+"""
+
+import os
+import re
+import subprocess
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TARGET_DIR = os.path.join(BASE_DIR, "my_chem_002_氣體", "02_波以耳定律")
+OUTPUT_HTML = os.path.join(TARGET_DIR, "02_波以耳定律_講義學習單.html")
+OUTPUT_PDF = os.path.join(TARGET_DIR, "02_波以耳定律_講義學習單.pdf")
+
+html_content = '''<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-2 波以耳定律 · 課堂教學講義學習單</title>
+    <script>
+        window.MathJax = {
+            tex: { 
+                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], 
+                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+                processEscapes: true
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        document.body.classList.add('mathjax-typeset-done');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* ============================================================ */
+        /* 全局版面設定與印刷規範 (A4 白底黑字高對比印刷風格)             */
+        /* ============================================================ */
+        @page {
+            size: A4 portrait;
+            margin: 11mm 13mm 11mm 13mm;
+        }
+
+        :root {
+            --text-main: #0f172a;
+            --text-sub: #334155;
+            --text-muted: #64748b;
+            --blue: #0284c7;
+            --blue-dark: #0369a1;
+            --blue-bg: #f0f9ff;
+            --blue-border: #bae6fd;
+            --green: #15803d;
+            --green-bg: #f0fdf4;
+            --green-border: #bbf7d0;
+            --amber: #b45309;
+            --amber-bg: #fef3c7;
+            --amber-border: #fde68a;
+            --purple: #7e22ce;
+            --purple-bg: #faf5ff;
+            --purple-border: #e9d5ff;
+            --border-light: #cbd5e1;
+            --border-card: #94a3b8;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            font-size: 12pt;
+            line-height: 1.55;
+            overflow: visible;
+        }
+
+        .worksheet-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 0 4px;
+        }
+
+        @media screen {
+            body {
+                background-color: #f1f5f9;
+                padding: 20px 0;
+            }
+            .worksheet-container {
+                box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+                border-radius: 6px;
+                padding: 24px 22px;
+            }
+        }
+
+        /* 印刷防護：防截斷與自然換頁 */
+        .avoid-break {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+
+        .page-break {
+            page-break-after: always !important;
+            break-after: page !important;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        /* ============================================================ */
+        /* 版頭標題區與學生資訊欄                                         */
+        /* ============================================================ */
+        .sheet-header {
+            border-bottom: 2.5px solid var(--text-main);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            break-inside: avoid;
+        }
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .header-badge {
+            font-size: 11pt;
+            font-weight: 700;
+            color: var(--blue-dark);
+            letter-spacing: 0.5px;
+        }
+        .sheet-title {
+            font-size: 16pt;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.2px;
+            margin: 0;
+        }
+        .student-fields {
+            font-size: 11.5pt;
+            color: var(--text-sub);
+            font-weight: 600;
+            white-space: nowrap;
+            display: flex;
+            gap: 12px;
+        }
+        .student-fields span {
+            display: inline-block;
+            border-bottom: 1.3px solid var(--text-main);
+            min-width: 55px;
+            margin-left: 2px;
+        }
+
+        /* ============================================================ */
+        /* 大標題條（Section Header）                                    */
+        /* ============================================================ */
+        .section-header {
+            background: var(--blue-bg);
+            border-left: 5px solid var(--blue);
+            border-top: 1px solid var(--blue-border);
+            border-right: 1px solid var(--blue-border);
+            border-bottom: 1px solid var(--blue-border);
+            padding: 6px 12px;
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--blue-dark);
+            margin: 14px 0 8px 0;
+            border-radius: 0 4px 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            break-after: avoid;
+            break-inside: avoid;
+        }
+        .section-badge {
+            font-size: 10.5pt;
+            font-weight: 600;
+            background: #ffffff;
+            color: var(--blue-dark);
+            border: 1px solid var(--blue-border);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* ============================================================ */
+        /* 觀念卡片與內容排版                                           */
+        /* ============================================================ */
+        .concept-card {
+            border: 1.2px solid var(--border-color);
+            border-radius: 5px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            background: #ffffff;
+            break-inside: avoid;
+        }
+        .card-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .card-title-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: var(--blue);
+            color: #ffffff;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 18px;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        /* 標題與分點排版（完美懸掛縮排） */
+        .point-item {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 6px;
+            font-size: 12pt;
+            line-height: 1.55;
+            color: var(--text-main);
+        }
+        .point-num {
+            min-width: 2.1em;
+            font-weight: 700;
+            color: var(--blue-dark);
+            flex-shrink: 0;
+        }
+        .point-content {
+            flex: 1;
+        }
+
+        /* 公式強調框 */
+        .formula-box {
+            background: #f8fafc;
+            border: 1.2px solid var(--blue-border);
+            border-left: 4.5px solid var(--blue);
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin: 6px 0;
+            text-align: center;
+            font-size: 13pt;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* 並排網格 */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* SVG 容器：白底高對比清晰邊框 */
+        .svg-wrap {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .svg-caption {
+            font-size: 11pt;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        /* ============================================================ */
+        /* 隨堂觀念自我檢核 (手寫填空專區，留底線無提示)                   */
+        /* ============================================================ */
+        .check-box {
+            background: #fdfefe;
+            border: 1.2px solid #cbd5e1;
+            border-left: 4.5px solid var(--amber);
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            break-inside: avoid;
+        }
+        .check-header {
+            font-size: 12pt;
+            font-weight: 700;
+            color: var(--amber);
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .check-item {
+            font-size: 12pt;
+            line-height: 1.6;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+        }
+        .check-num {
+            min-width: 2.1em;
+            font-weight: 700;
+            color: var(--amber);
+            flex-shrink: 0;
+        }
+        .check-text {
+            flex: 1;
+        }
+        .blank-line {
+            display: inline-block;
+            min-width: 90px;
+            border-bottom: 1.4px solid var(--text-main);
+            margin: 0 4px;
+            height: 1.1em;
+            vertical-align: bottom;
+        }
+
+        /* ============================================================ */
+        /* 經典範例題卡片與作答空間                                      */
+        /* ============================================================ */
+        .example-card {
+            border: 1.5px solid var(--border-card);
+            border-radius: 5px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            background: #ffffff;
+            break-inside: avoid;
+        }
+        .example-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid var(--border-light);
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+        }
+        .example-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .example-tag {
+            font-size: 11pt;
+            font-weight: 700;
+            background: var(--blue-bg);
+            color: var(--blue-dark);
+            border: 1px solid var(--blue-border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .example-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .example-meta {
+            font-size: 10.5pt;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .example-body {
+            display: grid;
+            grid-template-columns: 1.25fr 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .example-stem {
+            font-size: 12pt;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        /* 計算作答空間 */
+        .calc-space {
+            margin-top: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            padding: 8px 12px;
+            background: #fafafa;
+        }
+        .calc-header {
+            font-size: 11pt;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .calc-lines {
+            height: 80px;
+            background-image: repeating-linear-gradient(transparent, transparent 23px, #e2e8f0 24px);
+        }
+        .calc-lines-large {
+            height: 105px;
+            background-image: repeating-linear-gradient(transparent, transparent 23px, #e2e8f0 24px);
+        }
+
+        /* ============================================================ */
+        /* 單元檢核練習題 (10 題選擇題)                                  */
+        /* ============================================================ */
+        .quiz-item {
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            break-inside: avoid;
+        }
+        .quiz-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .quiz-tag {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: var(--blue-dark);
+            background: var(--blue-bg);
+            border: 1px solid var(--blue-border);
+            padding: 1.5px 7px;
+            border-radius: 3px;
+        }
+        .q-stem-row {
+            display: flex;
+            align-items: baseline;
+            font-size: 12pt;
+            line-height: 1.6;
+            margin-bottom: 4px;
+        }
+        .q-num {
+            min-width: 2.2em;
+            font-weight: 800;
+            color: var(--text-main);
+            flex-shrink: 0;
+        }
+        .q-text {
+            flex: 1;
+        }
+        .q-sub-scenario {
+            background: #f8fafc;
+            border-left: 3.5px solid var(--blue);
+            padding: 6px 10px;
+            margin: 4px 0 6px 2.2em;
+            border-radius: 0 4px 4px 0;
+            font-size: 11.5pt;
+            color: var(--text-sub);
+        }
+        .q-options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 14px;
+            padding-left: 2.2em;
+            margin-top: 4px;
+            font-size: 12pt;
+        }
+        .q-options-grid.single-col {
+            grid-template-columns: 1fr;
+        }
+        .opt-item {
+            display: flex;
+            align-items: baseline;
+            line-height: 1.5;
+        }
+        .opt-label {
+            font-weight: 700;
+            color: var(--blue-dark);
+            min-width: 1.8em;
+            flex-shrink: 0;
+        }
+        .opt-text {
+            flex: 1;
+        }
+
+        .note-space {
+            margin-top: 4px;
+            margin-left: 2.2em;
+            border-top: 1px dotted #e2e8f0;
+            padding-top: 3px;
+            font-size: 10.5pt;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="worksheet-container">
+
+    <!-- ============================================================ -->
+    <!-- 版頭標題與基本資料欄                                          -->
+    <!-- ============================================================ -->
+    <header class="sheet-header">
+        <div class="header-left">
+            <span class="header-badge">選修化學（三）第二章 · 氣體化學</span>
+            <h1 class="sheet-title">單元 2-2 波以耳定律 · 課堂教學講義學習單</h1>
+        </div>
+        <div class="student-fields">
+            班級：<span></span> 座號：<span></span> 姓名：<span></span> 得分：<span></span>
+        </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- 一、觀念學習 (Slidepage 1 ~ 3 循序編排)                       -->
+    <!-- ============================================================ -->
+
+    <!-- ── 1. Slidepage 1：核心內涵與 J 型管實驗原型 ── -->
+    <div class="section-header">
+        <span>一、波以耳定律核心內涵與 J 型管實驗原型</span>
+        <span class="section-badge">概念奠基 · Slidepage 1</span>
+    </div>
+
+    <div class="concept-card">
+        <div class="card-title">
+            <span class="card-title-icon">1</span>
+            <span>定律內涵與成立先決條件</span>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(1)</div>
+            <div class="point-content">
+                <strong>歷史發現與定律陳述：</strong>1662 年英國物理與化學家<strong>波以耳 (Robert Boyle)</strong> 透過 J 型管水銀充填實驗發表：在<strong>定溫 ($T$ 固定)</strong> 且<strong>定量 ($n$ 固定)</strong> 的條件下，定量氣體所呈現之<strong>體積 ($V$) 與其壓力 ($P$) 成反比</strong>。
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(2)</div>
+            <div class="point-content">
+                <strong>核心運算方程式：</strong>
+                <div class="formula-box">
+                    $$P \propto \frac{1}{V} \iff P \times V = k \quad (\text{定值}) \quad \xrightarrow{\text{等溫變化}} \quad P_1 V_1 = P_2 V_2$$
+                </div>
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(3)</div>
+            <div class="point-content">
+                <strong>反比物理意義：</strong>在等溫密閉容器中，將氣體壓力增為 $2$ 倍，體積縮小為原來的 $\frac{1}{2}$；反之，若體積膨脹為 $3$ 倍，則系統內部壓力必降為原來的 $\frac{1}{3}$。
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(4)</div>
+            <div class="point-content">
+                <strong>波以耳經典 J 型管實驗受力平衡：</strong>由【圖一】至【圖二】係於開口端持續<strong>注入更多水銀</strong>，壓縮密閉端之氣體體積：
+            </div>
+        </div>
+
+        <!-- J 型管 SVG 雙圖對照 (圖一 vs 圖二) -->
+        <div class="svg-wrap" style="margin: 6px 0 4px 0;">
+            <svg viewBox="0 0 530 240" style="width: 100%; max-width: 530px; height: auto;" font-family="sans-serif">
+                <!-- 定義箭頭 -->
+                <defs>
+                    <marker id="arr-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0284c7" />
+                    </marker>
+                    <marker id="arr-dark" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0f172a" />
+                    </marker>
+                </defs>
+
+                <!-- ================= 左圖：圖一 (初始狀態) ================= -->
+                <g id="jtube-p1">
+                    <!-- J 型玻璃管本體 -->
+                    <path d="M 65,55 V 195 A 35,35 0 0 0 135,195 V 25" fill="none" stroke="#94a3b8" stroke-width="12" stroke-linecap="round"/>
+                    <path d="M 59,55 V 195 A 41,41 0 0 0 141,195 V 25" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                    <path d="M 71,55 V 195 A 29,29 0 0 0 129,195 V 25" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                    <!-- 密閉端頂蓋 -->
+                    <path d="M 59,55 A 6,6 0 0 1 71,55" fill="#0f172a" stroke="#0f172a" stroke-width="1.6"/>
+                    
+                    <!-- 密閉端氣體 (長度 55~125) -->
+                    <path d="M 65,56 V 125" stroke="#bae6fd" stroke-width="8" stroke-linecap="square"/>
+                    
+                    <!-- 水銀充填 (左液面 y=125, 右液面 y=90) -->
+                    <path d="M 65,125 V 195 A 35,35 0 0 0 135,195 V 90" fill="none" stroke="#64748b" stroke-width="8"/>
+                    
+                    <!-- 基準線與刻度 -->
+                    <line x1="50" y1="125" x2="160" y2="125" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="3,2"/>
+                    <line x1="120" y1="90" x2="160" y2="90" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="3,2"/>
+                    
+                    <!-- 高度差 h1 標註 -->
+                    <line x1="152" y1="90" x2="152" y2="125" stroke="#0284c7" stroke-width="1.5" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)"/>
+                    <text x="168" y="112" fill="#0284c7" font-size="12" font-weight="bold">h₁</text>
+
+                    <!-- 文字標記 (文字置於空白處不壓線) -->
+                    <text x="65" y="42" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">密閉氣體</text>
+                    <text x="65" y="95" fill="#0369a1" font-size="12" font-weight="bold" text-anchor="middle">V₁</text>
+                    <text x="135" y="16" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">開口端 (Patm)</text>
+
+                    <!-- 圖一標題與平衡式 -->
+                    <rect x="25" y="212" width="150" height="22" rx="3" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1"/>
+                    <text x="100" y="227" fill="#0369a1" font-size="11.5" font-weight="bold" text-anchor="middle">【圖一】 P₁ = Patm + h₁</text>
+                </g>
+
+                <!-- ================= 中間過渡箭頭 ================= -->
+                <g id="add-mercury-arrow">
+                    <line x1="190" y1="120" x2="250" y2="120" stroke="#b45309" stroke-width="2.5" marker-end="url(#arr-dark)"/>
+                    <text x="220" y="105" fill="#b45309" font-size="11.5" font-weight="bold" text-anchor="middle">+ 注入更多水銀</text>
+                    <text x="220" y="140" fill="#64748b" font-size="10.5" text-anchor="middle">(體積壓縮 V₂ &lt; V₁)</text>
+                </g>
+
+                <!-- ================= 右圖：圖二 (加汞壓縮) ================= -->
+                <g id="jtube-p2">
+                    <!-- J 型玻璃管本體 -->
+                    <path d="M 335,55 V 195 A 35,35 0 0 0 405,195 V 15" fill="none" stroke="#94a3b8" stroke-width="12" stroke-linecap="round"/>
+                    <path d="M 329,55 V 195 A 41,41 0 0 0 411,195 V 15" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                    <path d="M 341,55 V 195 A 29,29 0 0 0 399,195 V 15" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                    <!-- 密閉端頂蓋 -->
+                    <path d="M 329,55 A 6,6 0 0 1 341,55" fill="#0f172a" stroke="#0f172a" stroke-width="1.6"/>
+                    
+                    <!-- 密閉端氣體 (體積壓縮至長度 55~100) -->
+                    <path d="M 335,56 V 100" stroke="#bbf7d0" stroke-width="8" stroke-linecap="square"/>
+                    
+                    <!-- 水銀充填 (左液面升至 y=100, 右液面大幅上升至 y=40) -->
+                    <path d="M 335,100 V 195 A 35,35 0 0 0 405,195 V 40" fill="none" stroke="#64748b" stroke-width="8"/>
+                    
+                    <!-- 基準線與刻度 -->
+                    <line x1="320" y1="100" x2="435" y2="100" stroke="#15803d" stroke-width="1.2" stroke-dasharray="3,2"/>
+                    <line x1="390" y1="40" x2="435" y2="40" stroke="#15803d" stroke-width="1.2" stroke-dasharray="3,2"/>
+                    
+                    <!-- 高度差 h2 標註 (顯著大於 h1) -->
+                    <line x1="425" y1="40" x2="425" y2="100" stroke="#15803d" stroke-width="1.5" marker-start="url(#arr-dark)" marker-end="url(#arr-dark)"/>
+                    <text x="442" y="74" fill="#15803d" font-size="12" font-weight="bold">h₂</text>
+
+                    <!-- 文字標記 -->
+                    <text x="335" y="42" fill="#15803d" font-size="11" font-weight="bold" text-anchor="middle">密閉氣體</text>
+                    <text x="335" y="82" fill="#15803d" font-size="12" font-weight="bold" text-anchor="middle">V₂</text>
+                    <text x="405" y="8" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">開口端 (Patm)</text>
+
+                    <!-- 圖二標題與平衡式 -->
+                    <rect x="295" y="212" width="150" height="22" rx="3" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+                    <text x="370" y="227" fill="#15803d" font-size="11.5" font-weight="bold" text-anchor="middle">【圖二】 P₂ = Patm + h₂</text>
+                </g>
+            </svg>
+            <div class="svg-caption">波以耳 J 型管實驗原理：加汞壓縮使水銀高差增至 $h_2 > h_1$，內壓增為 $P_2 > P_1$，體積縮小 $V_2 < V_1$，恆滿 $P_1V_1 = P_2V_2$</div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 1 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核（Slidepage 1 · 核心概念確認）</span>
+                <span style="font-size: 10.5pt; font-weight: normal; color: var(--text-muted);">請依據課堂理解填入適當字句或符號</span>
+            </div>
+            <div class="check-item">
+                <div class="check-num">1.</div>
+                <div class="check-text">
+                    波以耳定律成立的雙重必備先決條件為：系統必須保持在<span class="blank-line" style="min-width: 100px;"></span>恆定以及<span class="blank-line" style="min-width: 100px;"></span>恆定。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">2.</div>
+                <div class="check-text">
+                    在等溫密閉系統中，若氣體之壓力由 $1.0\text{ atm}$ 增大為 $2.5\text{ atm}$，則其體積將縮小為原本體積的<span class="blank-line" style="min-width: 80px;"></span>倍。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">3.</div>
+                <div class="check-text">
+                    在 J 型管實驗中，由【圖一】變至【圖二】過程中，開口端注入更多水銀，使兩管液面差 $h$ 將<span class="blank-line" style="min-width: 70px;"></span>（填增大/減小），封閉端氣體受壓增強，體積隨之<span class="blank-line" style="min-width: 70px;"></span>，兩者乘積 $P \times V$ 保持<span class="blank-line" style="min-width: 70px;"></span>。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 2. Slidepage 2：三大經典圖形特徵與解析 ── -->
+    <div class="section-header">
+        <span>二、波以耳定律三大經典圖形特徵與解析</span>
+        <span class="section-badge">圖形辨析 · Slidepage 2</span>
+    </div>
+
+    <div class="concept-card">
+        <div class="card-title">
+            <span class="card-title-icon">2</span>
+            <span>圖形幾何特徵、面積意義與溫度效應</span>
+        </div>
+
+        <!-- 三張經典圖形並排 (SVG) -->
+        <div class="grid-3col" style="margin: 8px 0 10px 0;">
+            <!-- 圖 1: P vs V 雙曲線 -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 190 150" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 坐標軸 (原點在 x=26, y=124) -->
+                    <line x1="26" y1="124" x2="182" y2="124" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <line x1="26" y1="124" x2="26" y2="10" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <text x="180" y="140" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">V (體積)</text>
+                    <text x="22" y="16" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">P</text>
+
+                    <!-- 等面積矩形 A1 (P1, V1) 與 A2 (P2, V2) -->
+                    <rect x="26" y="38" width="36" height="86" fill="rgba(2,132,199,0.18)" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <rect x="26" y="86" width="80" height="38" fill="rgba(180,83,9,0.18)" stroke="#b45309" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <text x="44" y="85" fill="#0284c7" font-size="12" font-weight="bold" text-anchor="middle">A₁</text>
+                    <text x="76" y="108" fill="#b45309" font-size="12" font-weight="bold" text-anchor="middle">A₂</text>
+
+                    <!-- 低溫曲線 T1 -->
+                    <path d="M 45,22 Q 58,78 165,112" fill="none" stroke="#0284c7" stroke-width="2.4"/>
+                    <text x="166" y="106" fill="#0284c7" font-size="11" font-weight="bold">T₁</text>
+
+                    <!-- 高溫曲線 T2 (向外平移) -->
+                    <path d="M 68,18 Q 84,68 178,88" fill="none" stroke="#7e22ce" stroke-width="2" stroke-dasharray="3,2"/>
+                    <text x="178" y="82" fill="#7e22ce" font-size="11" font-weight="bold">T₂</text>
+
+                    <circle cx="62" cy="38" r="3.5" fill="#0284c7"/>
+                    <circle cx="106" cy="86" r="3.5" fill="#b45309"/>
+                </svg>
+                <div class="svg-caption">(1) $P$ vs $V$ 等溫雙曲線<br><span style="font-weight:normal; font-size:10pt;">圍成矩形面積 $A_1 = A_2 = k$</span></div>
+            </div>
+
+            <!-- 圖 2: V vs 1/P 正比直線 -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 190 150" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 坐標軸 -->
+                    <line x1="26" y1="124" x2="182" y2="124" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <line x1="26" y1="124" x2="26" y2="10" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <text x="180" y="140" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">1/P (倒數)</text>
+                    <text x="22" y="16" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">V</text>
+
+                    <!-- 高溫 T2 線 (斜率大) -->
+                    <line x1="26" y1="124" x2="126" y2="20" stroke="#7e22ce" stroke-width="2" stroke-dasharray="3,2"/>
+                    <text x="130" y="24" fill="#7e22ce" font-size="11" font-weight="bold">T₂ (高溫)</text>
+
+                    <!-- 低溫 T1 線 -->
+                    <line x1="26" y1="124" x2="168" y2="44" stroke="#15803d" stroke-width="2.4"/>
+                    <text x="170" y="48" fill="#15803d" font-size="11" font-weight="bold">T₁</text>
+
+                    <!-- 原點空心圈 (極限外插) -->
+                    <circle cx="26" cy="124" r="3.5" fill="#ffffff" stroke="#b45309" stroke-width="1.8"/>
+                </svg>
+                <div class="svg-caption">(2) $V$ vs $1/P$ 過原點直線<br><span style="font-weight:normal; font-size:10pt;">斜率 $m = nRT$（溫高斜率大）</span></div>
+            </div>
+
+            <!-- 圖 3: PV vs P 水平線 -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 190 150" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 坐標軸 -->
+                    <line x1="26" y1="124" x2="182" y2="124" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <line x1="26" y1="124" x2="26" y2="10" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                    <text x="180" y="140" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">P (壓力)</text>
+                    <text x="22" y="16" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="end">PV</text>
+
+                    <!-- 高溫 T2 水平線 -->
+                    <line x1="26" y1="46" x2="170" y2="46" stroke="#7e22ce" stroke-width="2" stroke-dasharray="3,2"/>
+                    <text x="174" y="50" fill="#7e22ce" font-size="11" font-weight="bold">T₂</text>
+
+                    <!-- 低溫 T1 水平線 -->
+                    <line x1="26" y1="82" x2="170" y2="82" stroke="#b45309" stroke-width="2.4"/>
+                    <text x="174" y="86" fill="#b45309" font-size="11" font-weight="bold">T₁</text>
+
+                    <!-- 虛線至縱軸 -->
+                    <line x1="26" y1="82" x2="26" y2="82" stroke="#0f172a" stroke-width="1"/>
+                </svg>
+                <div class="svg-caption">(3) $PV$ vs $P$ 水平定值線<br><span style="font-weight:normal; font-size:10pt;">乘積為常數（溫高位置在上）</span></div>
+            </div>
+        </div>
+
+        <!-- 重點歸納條列 -->
+        <div class="point-item">
+            <div class="point-num">(1)</div>
+            <div class="point-content">
+                <strong>等溫雙曲線下面積：</strong>在 $P-V$ 圖中，曲線上的任一點向兩軸作垂直投影所圍成的矩形面積皆相等（$\text{面積 } A = P \times V = k$）。
+            </div>
+        </div>
+        <div class="point-item">
+            <div class="point-num">(2)</div>
+            <div class="point-content">
+                <strong>正比直線化與斜率物理意義：</strong>若將體積對壓力倒數作圖（$V$ 對 $\frac{1}{P}$），圖形為通過原點的斜直線，$V = k \cdot (\frac{1}{P})$，其直線斜率 $m = k = nRT$。當<strong>溫度越高</strong>或<strong>氣體莫耳數越多</strong>時，直線斜率越<span style="font-weight:bold; color:var(--blue-dark);">大</span>。
+            </div>
+        </div>
+        <div class="point-item">
+            <div class="point-num">(3)</div>
+            <div class="point-content">
+                <strong>乘積定值線：</strong>在 $PV-P$ 或 $PV-V$ 圖中，由於定溫定量下 $PV$ 乘積恆定，故呈現一條平行於橫軸的<strong>水平直線</strong>。
+            </div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 2 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核（Slidepage 2 · 圖形特徵確認）</span>
+                <span style="font-size: 10.5pt; font-weight: normal; color: var(--text-muted);">請依據課堂理解填入適當字句或符號</span>
+            </div>
+            <div class="check-item">
+                <div class="check-num">1.</div>
+                <div class="check-text">
+                    在 $P$ 對 $V$ 的圖形中，等溫線幾何形狀為<span class="blank-line" style="min-width: 100px;"></span>，當環境溫度升高時，此雙曲線將向<span class="blank-line" style="min-width: 100px;"></span>（填左下/右上）平移。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">2.</div>
+                <div class="check-text">
+                    若改繪 $V$ 對 $\frac{1}{P}$ 圖，其圖形為通過原點之直線，該直線的斜率物理意義代表<span class="blank-line" style="min-width: 120px;"></span>；在原點處必須標示為<span class="blank-line" style="min-width: 80px;"></span>（填實心/空心）點，因為壓力不可能為無窮大。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">3.</div>
+                <div class="check-text">
+                    在 $PV$ 對 $V$ 圖形中，曲線為一條平行於體積軸的<span class="blank-line" style="min-width: 90px;"></span>線，此特徵反映了在等溫等量條件下氣體之 $PV$ 乘積具有<span class="blank-line" style="min-width: 90px;"></span>的性質。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 3. Slidepage 3：微觀物理模型：氣體動力論觀點 ── -->
+    <div class="section-header">
+        <span>三、微觀物理模型：氣體動力論觀點</span>
+        <span class="section-badge">分子動力 · Slidepage 3</span>
+    </div>
+
+    <div class="concept-card">
+        <div class="card-title">
+            <span class="card-title-icon">3</span>
+            <span>分子碰撞頻率、器壁衝量與壓力微觀本質</span>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(1)</div>
+            <div class="point-content">
+                <strong>氣體壓力的微觀本質：</strong>宏觀所量測到的氣體壓力 $P$，本質上是數以億萬計之氣體分子持續<strong>撞擊容器壁面</strong>，施加於單位面積上之時間平均動量衝量：
+                <div class="formula-box">
+                    $$P = \frac{\bar{F}}{A} \propto \left( \frac{\text{分子數 } n}{\text{體積 } V} \right) \times (\text{器壁碰撞頻率 } f) \times (\text{單次碰撞動量變化 } \Delta p)$$
+                </div>
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(2)</div>
+            <div class="point-content">
+                <strong>定溫條件下分子碰撞頻率正比關係：</strong>分子熱運動之方均根速率 $v_{\text{rms}} \propto \sqrt{\frac{T}{M}}$。定溫下氣體平均動能固定，單次碰撞之動量變化 $\Delta p$ 不變，故碰撞頻率純由單位體積分子數密度決定：
+                $$f \propto \frac{n}{V} \cdot \bar{v} \xrightarrow{\text{定溫定莫耳數}} f \propto \frac{1}{V}$$
+            </div>
+        </div>
+
+        <div class="point-item">
+            <div class="point-num">(3)</div>
+            <div class="point-content">
+                <strong>體積減半時微觀連鎖因果推導：</strong>
+                <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: 4px; padding: 6px 12px; margin-top: 4px;">
+                    體積減半 $V \to \frac{1}{2}$ 倍 $\implies$ 空間分子數密度 $\left(\frac{n}{V}\right)$ 增為 <strong>$2$ 倍</strong> $\implies$ 分子於兩壁間往返自由路徑減半，每秒撞擊器壁次數 $f$ 增為 <strong>$2$ 倍</strong> $\implies$ 單位面積每秒所受之總動量衝力 $\bar{F}$ 增為 <strong>$2$ 倍</strong> $\implies$ <strong>宏觀壓力 $P$ 增為 $2$ 倍！</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 活塞微觀前後狀態與 PV 等溫曲線對照 SVG -->
+        <div class="svg-wrap" style="margin: 8px 0 6px 0;">
+            <svg viewBox="0 0 540 180" style="width: 100%; max-width: 540px; height: auto;" font-family="sans-serif">
+                <!-- ================= 狀態一 (左側)：體積大、低壓 ================= -->
+                <g id="state1-piston">
+                    <!-- 氣缸外壁 -->
+                    <rect x="20" y="25" width="130" height="75" fill="#f8fafc" stroke="#64748b" stroke-width="1.8"/>
+                    <rect x="15" y="20" width="8" height="85" fill="#334155"/>
+                    <text x="19" y="66" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle" transform="rotate(-90 19 66)">底面</text>
+                    <!-- 活塞 (x=115) -->
+                    <rect x="115" y="26" width="12" height="73" fill="#94a3b8" stroke="#334155" stroke-width="1.5"/>
+                    <rect x="127" y="56" width="30" height="12" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+                    
+                    <!-- 分子示意 (稀疏 6 顆，附慢速箭頭) -->
+                    <circle cx="45" cy="45" r="4" fill="#0284c7"/><line x1="45" y1="45" x2="57" y2="40" stroke="#0284c7" stroke-width="1.5"/>
+                    <circle cx="75" cy="70" r="4" fill="#0284c7"/><line x1="75" y1="70" x2="85" y2="80" stroke="#0284c7" stroke-width="1.5"/>
+                    <circle cx="95" cy="45" r="4" fill="#0284c7"/><line x1="95" y1="45" x2="83" y2="42" stroke="#0284c7" stroke-width="1.5"/>
+                    <circle cx="40" cy="80" r="4" fill="#0284c7"/><line x1="40" y1="80" x2="48" y2="88" stroke="#0284c7" stroke-width="1.5"/>
+                    <circle cx="70" cy="38" r="4" fill="#0284c7"/><line x1="70" y1="38" x2="65" y2="30" stroke="#0284c7" stroke-width="1.5"/>
+                    <circle cx="102" cy="75" r="4" fill="#0284c7"/><line x1="102" y1="75" x2="110" y2="72" stroke="#0284c7" stroke-width="1.5"/>
+
+                    <text x="75" y="120" fill="#0369a1" font-size="12" font-weight="bold" text-anchor="middle">【初態 1】 較大體積 V₁</text>
+                    <text x="75" y="138" fill="#64748b" font-size="10.5" text-anchor="middle">分子密度低 · 碰撞頻率低 (P₁)</text>
+                </g>
+
+                <!-- 中間壓縮推動箭頭 -->
+                <g id="compression-flow">
+                    <line x1="172" y1="62" x2="208" y2="62" stroke="#0284c7" stroke-width="2.2" marker-end="url(#arr-blue)"/>
+                    <text x="190" y="52" fill="#0284c7" font-size="10.5" font-weight="bold" text-anchor="middle">壓縮</text>
+                </g>
+
+                <!-- ================= 狀態二 (中間)：體積減半、高壓 ================= -->
+                <g id="state2-piston">
+                    <!-- 氣缸外壁 -->
+                    <rect x="220" y="25" width="130" height="75" fill="#f8fafc" stroke="#64748b" stroke-width="1.8"/>
+                    <rect x="215" y="20" width="8" height="85" fill="#334155"/>
+                    <!-- 活塞向左壓縮至 x=275 (體積減半) -->
+                    <rect x="275" y="26" width="12" height="73" fill="#15803d" stroke="#14532d" stroke-width="1.5"/>
+                    <rect x="287" y="56" width="45" height="12" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+                    
+                    <!-- 分子示意 (密集 6 顆，路徑短碰撞頻繁) -->
+                    <circle cx="235" cy="42" r="4" fill="#15803d"/><line x1="235" y1="42" x2="225" y2="40" stroke="#15803d" stroke-width="1.5"/>
+                    <circle cx="255" cy="65" r="4" fill="#15803d"/><line x1="255" y1="65" x2="265" y2="72" stroke="#15803d" stroke-width="1.5"/>
+                    <circle cx="268" cy="45" r="4" fill="#15803d"/><line x1="268" y1="45" x2="274" y2="43" stroke="#15803d" stroke-width="1.5"/>
+                    <circle cx="232" cy="80" r="4" fill="#15803d"/><line x1="232" y1="80" x2="226" y2="85" stroke="#15803d" stroke-width="1.5"/>
+                    <circle cx="248" cy="35" r="4" fill="#15803d"/><line x1="248" y1="35" x2="248" y2="28" stroke="#15803d" stroke-width="1.5"/>
+                    <circle cx="262" cy="85" r="4" fill="#15803d"/><line x1="262" y1="85" x2="260" y2="92" stroke="#15803d" stroke-width="1.5"/>
+
+                    <text x="275" y="120" fill="#15803d" font-size="12" font-weight="bold" text-anchor="middle">【末態 2】 壓縮體積 V₂ = ½V₁</text>
+                    <text x="275" y="138" fill="#64748b" font-size="10.5" text-anchor="middle">密度加倍 · 碰撞頻率倍增 (P₂=2P₁)</text>
+                </g>
+
+                <!-- ================= 右側：對應 P-V 曲線工作點 ================= -->
+                <g id="state-pv-graph">
+                    <line x1="390" y1="125" x2="520" y2="125" stroke="#0f172a" stroke-width="1.5"/>
+                    <line x1="390" y1="125" x2="390" y2="20" stroke="#0f172a" stroke-width="1.5"/>
+                    <text x="515" y="140" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="end">V</text>
+                    <text x="385" y="24" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="end">P</text>
+
+                    <!-- 等溫線 -->
+                    <path d="M 405,32 Q 425,75 505,108" fill="none" stroke="#0284c7" stroke-width="2"/>
+                    
+                    <!-- 點 2 (高壓小體積) -->
+                    <circle cx="418" cy="48" r="4" fill="#15803d"/>
+                    <text x="424" y="44" fill="#15803d" font-size="11" font-weight="bold">狀態 2</text>
+                    <!-- 點 1 (低壓大體積) -->
+                    <circle cx="475" cy="92" r="4" fill="#0284c7"/>
+                    <text x="482" y="88" fill="#0284c7" font-size="11" font-weight="bold">狀態 1</text>
+                    
+                    <!-- 虛線連線 -->
+                    <line x1="475" y1="92" x2="425" y2="52" stroke="#b45309" stroke-width="1.3" stroke-dasharray="2,2"/>
+                    <text x="455" y="162" fill="#0f172a" font-size="11" font-weight="bold" text-anchor="middle">P-V 曲線對應點</text>
+                </g>
+            </svg>
+            <div class="svg-caption">微觀動力論模型：活塞向左壓縮體積減半，分子平均速率不變但碰撞頻率倍增，宏觀壓力增為 2 倍</div>
+        </div>
+
+        <!-- 隨堂觀念自我檢核 3 -->
+        <div class="check-box">
+            <div class="check-header">
+                <span>隨堂觀念自我檢核（Slidepage 3 · 微觀動力學確認）</span>
+                <span style="font-size: 10.5pt; font-weight: normal; color: var(--text-muted);">請依據課堂理解填入適當字句或符號</span>
+            </div>
+            <div class="check-item">
+                <div class="check-num">1.</div>
+                <div class="check-text">
+                    依氣體動力論，宏觀氣體壓力大小取決於分子撞擊器壁的<span class="blank-line" style="min-width: 100px;"></span>以及單次碰撞所造成的<span class="blank-line" style="min-width: 100px;"></span>。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">2.</div>
+                <div class="check-text">
+                    若系統溫度保持不變，代表氣體分子的平均動能與平均運動速率保持<span class="blank-line" style="min-width: 80px;"></span>；當容器容積被壓縮為原本的 $\frac{1}{3}$ 時，分子在器壁間來回運動的自由路徑縮短，每秒撞擊器壁之碰撞頻率將增為原本的<span class="blank-line" style="min-width: 70px;"></span>倍，使壓力提升為原本的<span class="blank-line" style="min-width: 70px;"></span>倍。
+                </div>
+            </div>
+            <div class="check-item">
+                <div class="check-num">3.</div>
+                <div class="check-text">
+                    在等溫壓縮過程中，氣體分子的「單次碰撞平均衝量」是否改變？答：<span class="blank-line" style="min-width: 80px;"></span>（填是/否）；壓力增大的根本微觀原因為單位時間內的<span class="blank-line" style="min-width: 130px;"></span>增多所致。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 二、經典範例解析 (Slidepage 4 ~ 8 範例題)                     -->
+    <!-- ============================================================ -->
+    <div class="section-header">
+        <span>二、波以耳定律 · 經典範例題（題目與題意圖析）</span>
+        <span class="section-badge">經典題型 · Slidepage 4 ~ 8</span>
+    </div>
+
+    <!-- ── 範例 1：等溫體積與壓力基本反比運算 (原 slidepage4) ── -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 1</span>
+                <span class="example-title">等溫狀態之壓力變化運算</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 4 · 基礎反比計算</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                某定量氣體之體積在 $0.20\text{ atm}$ 時為 $40\text{ mL}$。假設<strong>溫度保持不變</strong>，當環境壓力升至 $0.80\text{ atm}$ 時，此氣體的體積變為若干 $\text{mL}$？
+            </div>
+            <!-- 題目題意 SVG (活塞雙狀態) -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 250 125" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 狀態 1 (P1=0.20 atm, V1=40 mL) -->
+                    <g id="ex1-s1">
+                        <path d="M 25,28 V 105 H 85 V 28" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+                        <rect x="26" y="42" width="58" height="62" fill="rgba(2,132,199,0.18)"/>
+                        <rect x="26" y="38" width="58" height="7" fill="#0284c7"/>
+                        <line x1="55" y1="12" x2="55" y2="35" stroke="#b45309" stroke-width="1.6" marker-end="url(#arr-dark)"/>
+                        <text x="55" y="10" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="middle">P₁=0.20 atm</text>
+                        <text x="55" y="75" fill="#0284c7" font-size="11.5" font-weight="bold" text-anchor="middle">V₁=40 mL</text>
+                        <text x="55" y="120" fill="#64748b" font-size="10.5" text-anchor="middle">【初態 1】</text>
+                    </g>
+                    <!-- 箭頭 -->
+                    <line x1="102" y1="65" x2="135" y2="65" stroke="#0f172a" stroke-width="1.6" marker-end="url(#arr-dark)"/>
+                    <text x="118" y="55" fill="#0f172a" font-size="9.5" text-anchor="middle">加壓</text>
+                    <!-- 狀態 2 (P2=0.80 atm, V2=?) -->
+                    <g id="ex1-s2">
+                        <path d="M 155,28 V 105 H 215 V 28" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+                        <rect x="156" y="78" width="58" height="26" fill="rgba(21,128,61,0.2)"/>
+                        <rect x="156" y="74" width="58" height="7" fill="#15803d"/>
+                        <line x1="185" y1="12" x2="185" y2="70" stroke="#b45309" stroke-width="2.2" marker-end="url(#arr-dark)"/>
+                        <text x="185" y="10" fill="#b45309" font-size="10.5" font-weight="bold" text-anchor="middle">P₂=0.80 atm</text>
+                        <text x="185" y="94" fill="#15803d" font-size="11.5" font-weight="bold" text-anchor="middle">V₂ = ?</text>
+                        <text x="185" y="120" fill="#64748b" font-size="10.5" text-anchor="middle">【末態 2】</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+                <span>核心觀念：$P_1V_1 = P_2V_2$</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- ── 範例 2：水中氣泡上升與池深換算 (原 slidepage5) ── -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 2</span>
+                <span class="example-title">氣泡上升體積膨脹與水深求解</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 5 · 水壓與氣壓聯立</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                在外界大氣壓為 $1\text{ atm}$ 下，有一氣泡由水池底部緩緩上升至水面，其<strong>體積變為原來的 $3$ 倍</strong>。設水溫均勻且保持不變，大氣壓相當於 $10\text{ m}$ 水柱高，則該水池的水深 $h$ 約為若干公尺？<br>
+                <div style="margin-top: 6px; font-weight: 600; display: flex; gap: 18px;">
+                    <span>(A) 30 公尺</span>
+                    <span>(B) 20 公尺</span>
+                    <span>(C) 15 公尺</span>
+                    <span>(D) 10 公尺</span>
+                </div>
+            </div>
+            <!-- 題目題意 SVG (水池氣泡上升) -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 240 135" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 水池外框與水體 -->
+                    <rect x="25" y="25" width="190" height="95" fill="rgba(2,132,199,0.12)" stroke="#0284c7" stroke-width="1.5"/>
+                    <line x1="20" y1="25" x2="220" y2="25" stroke="#0284c7" stroke-width="2"/>
+                    <text x="35" y="18" fill="#0284c7" font-size="10.5" font-weight="bold">水面 (Patm = 10 m 水柱)</text>
+                    
+                    <!-- 水面大氣泡 (3V) -->
+                    <circle cx="160" cy="42" r="14" fill="#bae6fd" stroke="#0284c7" stroke-width="1.6"/>
+                    <text x="160" y="46" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">3V</text>
+                    <text x="160" y="68" fill="#0369a1" font-size="10" text-anchor="middle">P頂 = 1 atm</text>
+
+                    <!-- 水底小氣泡 (V) -->
+                    <circle cx="70" cy="100" r="8" fill="#bae6fd" stroke="#0284c7" stroke-width="1.6"/>
+                    <text x="70" y="103" fill="#0369a1" font-size="9" font-weight="bold" text-anchor="middle">V</text>
+                    <text x="70" y="118" fill="#0369a1" font-size="10" text-anchor="middle">P底 = Patm + h</text>
+
+                    <!-- 上升虛線路徑 -->
+                    <path d="M 82,92 Q 115,70 148,48" fill="none" stroke="#b45309" stroke-width="1.6" stroke-dasharray="3,2" marker-end="url(#arr-dark)"/>
+
+                    <!-- 水深 h 標註 -->
+                    <line x1="210" y1="25" x2="210" y2="120" stroke="#b45309" stroke-width="1.5" marker-start="url(#arr-dark)" marker-end="url(#arr-dark)"/>
+                    <text x="225" y="76" fill="#b45309" font-size="11.5" font-weight="bold">h = ?</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+                <span>核心觀念：$P_{\\text{底}} V_{\\text{底}} = P_{\\text{頂}} V_{\\text{頂}}$ 且 $P_{\\text{底}} = 10\\text{ m} + h$</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- ── 範例 3：封閉玻璃管中水銀柱轉向分析 (原 slidepage6) ── -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 3</span>
+                <span class="example-title">細長管內封閉氣柱轉向運算</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 6 · 經典力學平衡</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                一端封閉之細長玻璃管中，封入一長為 $a\text{ cm}$ 的水銀柱。保持<strong>水平放置</strong>時，被封入之空氣柱長為 $l\text{ cm}$。若將玻璃管轉動至<strong>管口垂直向下</strong>時，被封入空氣柱長 $l_2$ 為若干 $\text{cm}$？（設外界大氣壓力為 $p\text{ cmHg}$，環境溫度恆定）
+            </div>
+            <!-- 題目題意 SVG (水平 vs 管口朝下) -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 250 135" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- (1) 水平管 -->
+                    <g id="ex3-horiz">
+                        <!-- 玻璃管輪廓 (左閉右開) -->
+                        <path d="M 125,25 H 20 A 8,8 0 0 0 20,41 H 125" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                        <!-- 空氣柱 l -->
+                        <rect x="20" y="27" width="55" height="12" fill="#bae6fd"/>
+                        <!-- 水銀柱 a -->
+                        <rect x="75" y="27" width="35" height="12" fill="#64748b"/>
+                        <text x="47" y="20" fill="#0369a1" font-size="10.5" font-weight="bold" text-anchor="middle">空氣 (l)</text>
+                        <text x="92" y="20" fill="#64748b" font-size="10.5" font-weight="bold" text-anchor="middle">汞柱 (a)</text>
+                        <text x="65" y="55" fill="#0369a1" font-size="10.5" text-anchor="middle">【水平】 P₁ = p</text>
+                    </g>
+                    <!-- (2) 管口向下管 -->
+                    <g id="ex3-down">
+                        <!-- 玻璃管 (頂閉底開) -->
+                        <path d="M 175,125 V 20 A 8,8 0 0 1 191,20 V 125" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                        <!-- 空氣柱 l2 -->
+                        <rect x="177" y="20" width="12" height="65" fill="#bae6fd"/>
+                        <!-- 水銀柱 a -->
+                        <rect x="177" y="85" width="12" height="35" fill="#64748b"/>
+                        <text x="165" y="55" fill="#0369a1" font-size="10.5" font-weight="bold" text-anchor="end">空氣 (l₂)</text>
+                        <text x="165" y="105" fill="#64748b" font-size="10.5" font-weight="bold" text-anchor="end">汞 (a)</text>
+                        <!-- 外氣壓由下往上支撐箭頭 -->
+                        <line x1="183" y1="135" x2="183" y2="124" stroke="#b45309" stroke-width="1.8" marker-end="url(#arr-dark)"/>
+                        <text x="200" y="115" fill="#0369a1" font-size="10.5">【朝下】 P₂ = p - a</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+                <span>核心觀念：水平時 $P_1 = p$；管口垂直朝下時受力平衡 $P_2 + a = p \implies P_2 = p - a$</span>
+            </div>
+            <div class="calc-lines"></div>
+        </div>
+    </div>
+
+    <!-- ── 範例 4：玻璃管倒壓入水銀槽之深度求解 (原 slidepage7) ── -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 4</span>
+                <span class="example-title">試管倒插水銀槽深度計算</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 7 · 二次方程式聯立</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                一玻璃管長 $57\text{ cm}$，管底封閉。在 $25^\circ\text{C}$、$1\text{ atm}$ ($76\text{ cmHg}$) 下裝滿氮氣，然後倒壓入一水銀槽內，直到<strong>管底（封閉端）與水銀槽的水銀面等高</strong>。若外界氣壓仍為 $1\text{ atm}$，試求：<br>
+                (a) 管內氮氣柱高度 $h$ 為若干公分？<br>
+                (b) 管內氮氣之壓力為若干 $\text{cmHg}$？
+            </div>
+            <!-- 題目題意 SVG (倒插水銀槽) -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 250 145" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- 水銀槽外框與水銀 -->
+                    <rect x="20" y="60" width="210" height="75" fill="rgba(100,116,139,0.2)" stroke="#64748b" stroke-width="1.6"/>
+                    <line x1="15" y1="60" x2="235" y2="60" stroke="#0f172a" stroke-width="2"/>
+                    <text x="25" y="52" fill="#0f172a" font-size="10.5" font-weight="bold">槽面 (Patm = 76)</text>
+
+                    <!-- 倒插玻璃管：管底封閉端與槽面等高 y=60，管身長 90px (對應 57cm) -->
+                    <path d="M 130,135 V 60 A 10,10 0 0 1 150,60 V 135" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+                    <!-- 管內氮氣柱 (高 h，長度對應 y=60~110) -->
+                    <rect x="132" y="60" width="16" height="50" fill="#bae6fd"/>
+                    <text x="140" y="88" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">h</text>
+                    <!-- 管內進入的水銀 (57 - h) -->
+                    <rect x="132" y="110" width="16" height="25" fill="#64748b"/>
+
+                    <!-- 管底等高線標註 -->
+                    <line x1="80" y1="60" x2="130" y2="60" stroke="#b45309" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <text x="105" y="45" fill="#b45309" font-size="10.5" text-anchor="middle">管底與液面等高</text>
+
+                    <!-- 液面差 (h) 標註 -->
+                    <line x1="165" y1="60" x2="165" y2="110" stroke="#0284c7" stroke-width="1.4" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)"/>
+                    <text x="175" y="88" fill="#0284c7" font-size="11" font-weight="bold">h cm</text>
+                    <text x="140" y="145" fill="#64748b" font-size="10" text-anchor="middle">P氮 = 76 + h</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+                <span>核心觀念：管底與槽面等高時，管內氮氣壓力 $P_2 = 76 + h$；初態 $P_1 = 76, L_1 = 57$</span>
+            </div>
+            <div class="calc-lines-large"></div>
+        </div>
+    </div>
+
+    <!-- ── 範例 5：J 型管中抽出水銀之綜合位移問題 (原 slidepage8) ── -->
+    <div class="example-card">
+        <div class="example-header">
+            <div class="example-title-wrap">
+                <span class="example-tag">經典範例 5</span>
+                <span class="example-title">J 型管水銀抽取體積求值</span>
+            </div>
+            <span class="example-meta">對應 Slidepage 8 · 雙管連動位移</span>
+        </div>
+        <div class="example-body">
+            <div class="example-stem">
+                <strong>【題目說明】：</strong><br>
+                在 $25^\circ\text{C}$、$1\text{ atm}$ ($76\text{ cmHg}$) 下，一截面積為 $1\text{ cm}^2$ 之 J 型玻璃管，左管頂端封閉，管中封有氦氣。初時左管氦氣柱高 $20\text{ cm}$，右管水銀面高於左管液面 $34\text{ cm}$（故初壓 $P_1 = 76 + 34 = 110\text{ cmHg}$，初體積 $V_1 = 20\text{ cm}^3$）。<br>
+                現從系統中緩慢抽走部分水銀，使氦氣體積增大至 $V_2 = 25\text{ cm}^3$。問：共從 J 型管中抽走了多少 $\text{mL}$ 的水銀？
+            </div>
+            <!-- 題目題意 SVG (J 型管抽取水銀) -->
+            <div class="svg-wrap">
+                <svg viewBox="0 0 240 145" style="width: 100%; height: auto;" font-family="sans-serif">
+                    <!-- J 型管本體 -->
+                    <path d="M 60,35 V 125 A 25,25 0 0 0 110,125 V 15" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+                    <path d="M 72,35 V 125 A 13,13 0 0 0 98,125 V 15" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+                    <line x1="60" y1="35" x2="72" y2="35" stroke="#0f172a" stroke-width="2"/>
+                    
+                    <!-- 左管氦氣 (初高 20cm, y=35~75) -->
+                    <rect x="61" y="36" width="10" height="40" fill="#bae6fd"/>
+                    <text x="66" y="58" fill="#0369a1" font-size="10" font-weight="bold" text-anchor="middle">He</text>
+                    
+                    <!-- 水銀充填 (左液面 y=76, 右液面 y=35) -->
+                    <path d="M 66,76 V 125 A 19,19 0 0 0 104,125 V 35" fill="none" stroke="#64748b" stroke-width="10"/>
+
+                    <!-- 初態水銀差 Δh = 34cm 標註 -->
+                    <line x1="72" y1="76" x2="125" y2="76" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <line x1="104" y1="35" x2="125" y2="35" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2,2"/>
+                    <line x1="120" y1="35" x2="120" y2="76" stroke="#0284c7" stroke-width="1.4" marker-start="url(#arr-blue)" marker-end="url(#arr-blue)"/>
+                    <text x="135" y="58" fill="#0284c7" font-size="10.5" font-weight="bold">34 cm</text>
+                    
+                    <!-- 抽水銀圖示 -->
+                    <text x="165" y="95" fill="#b45309" font-size="10.5" font-weight="bold">抽走水銀 ΔV = ?</text>
+                    <text x="165" y="112" fill="#64748b" font-size="10">使 V₂ = 25 cm³</text>
+                </svg>
+            </div>
+        </div>
+        <div class="calc-space">
+            <div class="calc-header">
+                <span>解題思考與計算過程：</span>
+                <span>核心觀念：先求末壓 $P_2 = \frac{P_1V_1}{V_2}$，再求末高差 $\Delta h_2 = P_2 - 76$，總抽水量 $= A \cdot (\Delta L_{\\text{左}} + \Delta L_{\\text{右}})$</span>
+            </div>
+            <div class="calc-lines-large"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 三、單元檢核練習題 (對應 quiz.html 題庫 10 題選擇題)            -->
+    <!-- ============================================================ -->
+    <div class="section-header">
+        <span>三、單元檢核練習題</span>
+        <span class="section-badge">題庫 10 題 · 不含答案詳解</span>
+    </div>
+
+    <!-- ── 題目 1 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 1 · 定溫體積變化計算</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">1.</div>
+            <div class="q-text">
+                在定溫下，某定量氣體在 $0.20\text{ atm}$ 時測得體積為 $40\text{ mL}$。若將壓力提升至 $0.80\text{ atm}$ 時，此氣體之體積變為若干？
+            </div>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">10 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">20 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">160 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">8 mL</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 2 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 2 · 瑕疵氣壓計空氣分壓</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">2.</div>
+            <div class="q-text">
+                某氣壓計長 $85\text{ cm}$，管內水銀面上含微量空氣。當外界準確氣壓計讀數為 $75\text{ cmHg}$ 時，此氣壓計僅顯示為 $70\text{ cmHg}$。定溫時，當此氣壓計之水銀高度下降至 $65\text{ cmHg}$ 時，外界標準大氣壓的高度應為若干 $\text{cm}$？
+            </div>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">67.0 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">68.8 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">69.6 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">71.5 cm</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 3 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 3 · 細長玻璃管管口朝下受力平衡</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">3.</div>
+            <div class="q-text">
+                在 $1\text{ atm}$ ($76\text{ cmHg}$) 時，於一端封閉的細長玻璃管中封入長 $10\text{ cm}$ 汞柱。保持水平時被封入之空氣柱長 $20\text{ cm}$。當玻璃管轉動至管口垂直朝下時，被封入的空氣柱長約為若干 $\text{cm}$？
+            </div>
+        </div>
+        <!-- 附題意 SVG -->
+        <div style="margin: 4px 0 6px 2.2em; max-width: 420px;">
+            <svg viewBox="0 0 320 80" style="width: 100%; height: auto;" font-family="sans-serif">
+                <!-- 水平放置 -->
+                <path d="M 140,18 H 15 A 10,10 0 0 0 15,38 H 140" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                <rect x="16" y="19" width="65" height="18" fill="#bae6fd"/>
+                <rect x="81" y="19" width="40" height="18" fill="#64748b"/>
+                <text x="48" y="32" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">空氣 20cm</text>
+                <text x="101" y="32" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">10cm Hg</text>
+                <text x="75" y="56" fill="#64748b" font-size="10.5" text-anchor="middle">【水平放置】 (P₁=76)</text>
+                <!-- 垂直朝下 -->
+                <path d="M 230,75 V 10 A 8,8 0 0 1 246,10 V 75" fill="none" stroke="#0f172a" stroke-width="1.6"/>
+                <rect x="231" y="10" width="14" height="42" fill="#bae6fd"/>
+                <rect x="231" y="52" width="14" height="22" fill="#64748b"/>
+                <text x="218" y="35" fill="#0369a1" font-size="10.5" font-weight="bold" text-anchor="end">? cm</text>
+                <text x="218" y="66" fill="#64748b" font-size="10" text-anchor="end">10cm</text>
+                <text x="270" y="45" fill="#b45309" font-size="10.5">【管口朝下】</text>
+            </svg>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">18 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">21 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">23 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">25 cm</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 4 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 4 · 湖底氣泡上升深度計算</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">4.</div>
+            <div class="q-text">
+                湖底有一氫氣泡體積為 $V\text{ cm}^3$，湖面上大氣壓力為 $1\text{ atm}$。氫氣泡由湖底上升至湖面時，若溫度保持不變，體積膨脹為 $5V$。設湖水密度為 $1.0\text{ g/cm}^3$（已知 $1\text{ atm} \approx 10.33\text{ m}$ 水柱高），則該湖的深度約為若干公尺？
+            </div>
+        </div>
+        <!-- 附題意 SVG -->
+        <div style="margin: 4px 0 6px 2.2em; max-width: 360px;">
+            <svg viewBox="0 0 280 85" style="width: 100%; height: auto;" font-family="sans-serif">
+                <rect x="15" y="20" width="250" height="60" fill="rgba(2,132,199,0.12)" stroke="#0284c7" stroke-width="1.4"/>
+                <line x1="10" y1="20" x2="270" y2="20" stroke="#0284c7" stroke-width="2"/>
+                <text x="35" y="15" fill="#0284c7" font-size="10.5" font-weight="bold">湖面 1 atm</text>
+                <circle cx="210" cy="34" r="12" fill="#bae6fd" stroke="#0284c7" stroke-width="1.5"/>
+                <text x="210" y="38" fill="#0369a1" font-size="10" font-weight="bold" text-anchor="middle">5V</text>
+                <circle cx="70" cy="65" r="6" fill="#bae6fd" stroke="#0284c7" stroke-width="1.5"/>
+                <text x="70" y="68" fill="#0369a1" font-size="8" font-weight="bold" text-anchor="middle">V</text>
+                <path d="M 82,60 Q 140,42 196,35" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="2,2" marker-end="url(#arr-dark)"/>
+                <text x="140" y="75" fill="#b45309" font-size="11" font-weight="bold" text-anchor="middle">水深 h = ?</text>
+            </svg>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">10 m</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">40 m</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">50 m</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">60 m</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 5 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 5 · 恆溫抽氣與質量莫耳數守恆</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">5.</div>
+            <div class="q-text">
+                容器中氣體初始壓力為 $650\text{ mmHg}$，在恆溫下抽出一定量氣體後，全系統之壓力減為 $600\text{ mmHg}$。若設抽出之氣體在同溫、1 atm ($760\text{ mmHg}$) 下測得體積為 $3.75\text{ mL}$。則此容器之體積應為何？
+            </div>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">75 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">65 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">57 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">45 mL</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 6 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 6 · 水池倒置玻璃管液面高低與氣壓關係</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">6.</div>
+            <div class="q-text">
+                有一長 2 米的一端封閉玻璃管垂直插入水池中，存有定量氣體。調節到管內水面與管外水面等高時體積為 $V_1$；管內水面高於管外水面時體積為 $V_2$；管內水面低於管外水面時體積為 $V_3$。則在恆溫下，三者體積大小關係為何？
+            </div>
+        </div>
+        <!-- 附題意 SVG -->
+        <div style="margin: 4px 0 6px 2.2em; max-width: 400px;">
+            <svg viewBox="0 0 300 80" style="width: 100%; height: auto;" font-family="sans-serif">
+                <line x1="15" y1="42" x2="285" y2="42" stroke="#0284c7" stroke-width="1.8" stroke-dasharray="3,2"/>
+                <text x="280" y="36" fill="#0284c7" font-size="10" text-anchor="end">池水面</text>
+                <!-- 等高 V1 -->
+                <rect x="35" y="15" width="22" height="52" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+                <rect x="36" y="42" width="20" height="25" fill="#bae6fd"/>
+                <text x="46" y="32" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">V₁</text>
+                <text x="46" y="77" fill="#64748b" font-size="9.5" text-anchor="middle">等高</text>
+                <!-- 內高外低 V2 -->
+                <rect x="135" y="5" width="22" height="52" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+                <rect x="136" y="28" width="20" height="29" fill="#bae6fd"/>
+                <text x="146" y="22" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">V₂</text>
+                <text x="146" y="77" fill="#64748b" font-size="9.5" text-anchor="middle">內高外低</text>
+                <!-- 內低外高 V3 -->
+                <rect x="235" y="25" width="22" height="52" fill="none" stroke="#0f172a" stroke-width="1.5"/>
+                <rect x="236" y="58" width="20" height="19" fill="#bae6fd"/>
+                <text x="246" y="45" fill="#0369a1" font-size="11" font-weight="bold" text-anchor="middle">V₃</text>
+                <text x="246" y="77" fill="#64748b" font-size="9.5" text-anchor="middle">內低外高</text>
+            </svg>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">V₂ &gt; V₁ &gt; V₃</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">V₃ &gt; V₁ &gt; V₂</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">V₁ &gt; V₂ &gt; V₃</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">V₃ &gt; V₂ &gt; V₁</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 7 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 7 · U 形管波以耳定律與液面移量</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">7.</div>
+            <div class="q-text">
+                在 U 形管中，截面積為 $1.0\text{ cm}^2$，左端封閉充有氦氣（氣柱長 $10\text{ cm}$）及水銀，右端開口與大氣相通（大氣壓 $76\text{ cmHg}$）。初始時右管水銀面高於左管 $34\text{ cm}$。定溫下，若欲使氦氣端之水銀面下降 $1.0\text{ cm}$，管中尚需移走水銀若干 $\text{mL}$？
+            </div>
+        </div>
+        <!-- 附題意 SVG -->
+        <div style="margin: 4px 0 6px 2.2em; max-width: 320px;">
+            <svg viewBox="0 0 240 105" style="width: 100%; height: auto;" font-family="sans-serif">
+                <path d="M 60,18 V 80 A 25,25 0 0 0 110,80 V 18" fill="none" stroke="#0f172a" stroke-width="2"/>
+                <path d="M 72,18 V 80 A 13,13 0 0 0 98,80 V 18" fill="none" stroke="#0f172a" stroke-width="2"/>
+                <line x1="60" y1="18" x2="72" y2="18" stroke="#0f172a" stroke-width="3"/>
+                <rect x="61" y="19" width="10" height="32" fill="#bae6fd"/>
+                <text x="66" y="38" fill="#0369a1" font-size="9.5" font-weight="bold" text-anchor="middle">He 10cm</text>
+                <path d="M 66,51 V 80 A 19,19 0 0 0 104,80 V 26" fill="none" stroke="#64748b" stroke-width="10"/>
+                <line x1="72" y1="51" x2="125" y2="51" stroke="#b45309" stroke-width="1.2" stroke-dasharray="2,2"/>
+                <line x1="104" y1="26" x2="125" y2="26" stroke="#b45309" stroke-width="1.2" stroke-dasharray="2,2"/>
+                <line x1="120" y1="26" x2="120" y2="51" stroke="#b45309" stroke-width="1.4" marker-start="url(#arr-dark)" marker-end="url(#arr-dark)"/>
+                <text x="135" y="42" fill="#b45309" font-size="10.5" font-weight="bold">34 cm</text>
+            </svg>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">12 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">25 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">29 mL</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">32 mL</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 8 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 8 · V-t 等壓線斜率與波以耳定律</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">8.</div>
+            <div class="q-text">
+                某定量理想氣體於 $P_1$ 及 $P_2\text{ atm}$ 下，分別測量其體積 $V$（L）與溫度 $t$（℃）關係如下圖。已知 $P_1 = 2.50\text{ atm}$，且在同溫 $t_2$ 下，對應體積分別為 $16.8\text{ L}$ ($P_1$) 與 $11.2\text{ L}$ ($P_2$)。則 $P_2$ 應為若干 atm？
+            </div>
+        </div>
+        <!-- 附題意 SVG -->
+        <div style="margin: 4px 0 6px 2.2em; max-width: 340px;">
+            <svg viewBox="0 0 280 115" style="width: 100%; height: auto;" font-family="sans-serif">
+                <line x1="45" y1="95" x2="260" y2="95" stroke="#0f172a" stroke-width="1.5"/>
+                <line x1="45" y1="95" x2="45" y2="10" stroke="#0f172a" stroke-width="1.5"/>
+                <text x="255" y="108" fill="#0f172a" font-size="9.5">溫度(℃)</text>
+                <text x="22" y="16" fill="#0f172a" font-size="9.5">體積(L)</text>
+                <!-- 刻度與直線 -->
+                <text x="38" y="62" fill="#0284c7" font-size="9" text-anchor="end" font-weight="bold">16.8</text>
+                <text x="38" y="78" fill="#b45309" font-size="9" text-anchor="end" font-weight="bold">11.2</text>
+                <text x="165" y="108" fill="#b45309" font-size="9.5" font-weight="bold">t₂</text>
+                <line x1="45" y1="85" x2="230" y2="20" stroke="#0284c7" stroke-width="2"/>
+                <text x="235" y="24" fill="#0284c7" font-size="10.5" font-weight="bold">P₁</text>
+                <line x1="45" y1="85" x2="230" y2="44" stroke="#b45309" stroke-width="2"/>
+                <text x="235" y="48" fill="#b45309" font-size="10.5" font-weight="bold">P₂</text>
+                <circle cx="165" cy="42" r="3" fill="#0284c7"/>
+                <circle cx="165" cy="56" r="3" fill="#b45309"/>
+                <line x1="165" y1="42" x2="165" y2="95" stroke="#0f172a" stroke-width="1" stroke-dasharray="2,2"/>
+            </svg>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">1.25 atm</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">2.00 atm</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">3.75 atm</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">4.00 atm</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 9 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 9 · 封閉氣管開口朝上與朝下反轉</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">9.</div>
+            <div class="q-text">
+                在大氣壓為 $76\text{ cmHg}$ 環境中，一端封閉的均勻玻璃管，管口垂直朝上時，管內封入長 $19\text{ cm}$ 的水銀柱與長 $30\text{ cm}$ 的空氣柱。若將管子緩慢倒轉使管口垂直朝下（設水銀未溢出且溫度恆定），倒轉後管內空氣柱的長度變為若干 cm？
+            </div>
+        </div>
+        <div class="q-options-grid">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">38 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">45 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">50 cm</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">60 cm</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+    <!-- ── 題目 10 ── -->
+    <div class="quiz-item">
+        <div class="quiz-header">
+            <span class="quiz-tag">題庫 10 · 波以耳定律函數圖形與物理意義</span>
+        </div>
+        <div class="q-stem-row">
+            <div class="q-num">10.</div>
+            <div class="q-text">
+                定量的理想氣體在定溫 $T_1$ 與 $T_2$（$T_2 > T_1$）條件下進行波以耳定律實驗，繪製各種狀態函數關係圖。下列有關波以耳定律圖形之敘述，何者<strong>錯誤</strong>？
+            </div>
+        </div>
+        <div class="q-options-grid single-col">
+            <div class="opt-item"><span class="opt-label">(A)</span><span class="opt-text">$P$ 對 $V$ 圖為等溫雙曲線，且 $T_2$ 之等溫線在 $T_1$ 之等溫線的右上方</span></div>
+            <div class="opt-item"><span class="opt-label">(B)</span><span class="opt-text">$P$ 對 $1/V$ 圖為過原點的直線，且 $T_2$ 直線的斜率大於 $T_1$ 直線</span></div>
+            <div class="opt-item"><span class="opt-label">(C)</span><span class="opt-text">$PV$ 對 $P$ 圖為平行於橫軸的水平線，且 $T_2$ 之直線在 $T_1$ 之直線上方</span></div>
+            <div class="opt-item"><span class="opt-label">(D)</span><span class="opt-text">$PV$ 對 $V$ 圖為斜率為正的斜直線，體積愈大時 $PV$ 乘積值愈大</span></div>
+        </div>
+        <div class="note-space"><span>作答：[ &nbsp;&nbsp;&nbsp;&nbsp; ]</span></div>
+    </div>
+
+</div>
+
+</body>
+</html>
+'''
+
+with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"✅ 成功生成 HTML 學習單：{OUTPUT_HTML}")
