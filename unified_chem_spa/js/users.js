@@ -15,7 +15,7 @@ const DEFAULT_ROSTER_GROUPS = {
 jul,1099,化學科老師,教師,julshow418@gmail.com,jul
 admin,admin1099,系統管理員,教師,,jul
 31727,310609,鍾冠頡,一般,,jul
-show,show,化學科老師,教師,,jul`,
+show,show,化學科老師,教師,542488@gm.hccvs.hc.edu.tw,jul`,
 
   "users01.csv": `登入帳號/班級座號,密碼/學號,姓名,備註,Google帳號,歸屬教師
 20501,410542,于上迪,一般,,jul
