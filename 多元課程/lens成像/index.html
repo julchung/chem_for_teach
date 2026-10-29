@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>光的直進與透鏡成像模擬</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{
+    width:100%;height:100%;overflow:hidden;
+    background:#0a0e1a;
+    font-family:'Segoe UI',sans-serif;
+    user-select:none;
+  }
+  #app{
+    display:flex;flex-direction:column;
+    width:100vw;
+    height: 100vh; /* fallback */
+    height: 100dvh;
+    background: #0a0e1a;
+  }
+  /* ── 頂部標題列 ── */
+  #header{
+    flex:0 0 44px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(90deg,#0d1b3e,#1a2a5e,#0d1b3e);
+    border-bottom:1px solid #2a3a6e;
+    color:#8ab4f8;
+    font-size:15px;letter-spacing:2px;font-weight:600;
+    position:relative;
+  }
+  #btn-back-portal {
+    position: absolute;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: rgba(26, 42, 94, 0.7);
+    border: 1px solid #3a5a9e;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 20;
+  }
+  #btn-back-portal:hover {
+    background: rgba(74, 122, 223, 0.4);
+    border-color: #60a5fa;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.45);
+    transform: translateY(-1px);
+  }
+  /* ── 作圖區 ── */
+  #canvas-wrap{
+    flex:1 1 0;
+    position:relative;
+    overflow:hidden;
+  }
+  #canvas{
+    display:block;
+    cursor:crosshair;
+  }
+  /* ── 物件選擇區 ── */
+  #panel{
+    flex:0 0 110px;
+    background:linear-gradient(180deg,#0d1625 0%,#111c30 100%);
+    border-top:1px solid #2a3a6e;
+    display:flex;align-items:center;
+    padding:0 12px;gap:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+  }
+  #panel::-webkit-scrollbar{height:4px;}
+  #panel::-webkit-scrollbar-track{background:#0a0e1a;}
+  #panel::-webkit-scrollbar-thumb{background:#2a4080;border-radius:2px;}
+
+  .panel-label{
+    color:#5a7aaa;font-size:10px;letter-spacing:1px;
+    white-space:nowrap;margin-right:2px;
+  }
+  .divider{
+    width:1px;height:60px;
+    background:linear-gradient(180deg,transparent,#2a3a6e,transparent);
+    flex-shrink:0;margin:0 4px;
+  }
+  .item-card{
+    flex-shrink:0;
+    width:68px;height:86px;
+    background:linear-gradient(135deg,#131d35,#1c294a);
+    border:1px solid #2a3a6e;
+    border-radius:8px;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:4px;
+    cursor:grab;
+    transition:border-color .2s,box-shadow .2s,transform .15s;
+    position:relative;
+  }
+  .item-card:hover{
+    border-color:#4a7adf;
+    box-shadow:0 0 12px #1a3a8f88;
+    transform:translateY(-2px);
+  }
+  .item-card:active{cursor:grabbing;}
+  .item-label{
+    color:#8ab4f8;font-size:9px;text-align:center;
+    pointer-events:none;line-height:1.2;
+  }
+  /* trash zone */
+  #trash{
+    margin-left:auto;
+    flex-shrink:0;
+    width:50px;height:80px;
+    border:1px dashed #ff5a5a66;
+    border-radius:8px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    color:#ff5a5a66;font-size:18px;
+    transition:border-color .2s,color .2s;
+  }
+  #trash.active{border-color:#ff5a5a;color:#ff5a5a;box-shadow:0 0 12px #ff5a5a44;}
+  #trash-label{font-size:8px;letter-spacing:1px;}
+
+  /* 拖曳幽靈 */
+  #ghost{
+    position:fixed;pointer-events:none;
+    z-index:9999;display:none;
+    opacity:.8;
+  }
+
+  /* 說明文字 */
+  #hint{
+    position:absolute;bottom:8px;left:0;right:0;
+    text-align:center;
+    color:#3a5a8a;font-size:10px;letter-spacing:.5px;
+    pointer-events:none;
+  }
+
+  /* 自訂焦距卡片 */
+  .custom-card{height:80px;}
+  .custom-card canvas { margin-top: 8px; }
+  .cust-f-row{display:flex;align-items:center;justify-content:center;gap:2px;margin-top:1px;}
+  .cust-f-label{color:#5a7aaa;font-size:9px;}
+  .cust-f-input{
+    width:42px;background:#0a0e1a;color:#8ab4f8;
+    border:1px solid #2a3a6e;border-radius:3px;
+    font-size:9px;padding:1px 2px;text-align:center;
+    outline:none;-moz-appearance:textfield;
+  }
+  .cust-f-input::-webkit-inner-spin-button,
+  .cust-f-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+  .cust-f-input:focus{border-color:#4a7adf;box-shadow:0 0 4px #4a7adf44;}
+
+  /* ── 行動裝置優化 (Responsive) ── */
+  @media (max-height: 500px), (max-width: 600px) {
+    #header { flex: 0 0 36px; font-size: 13px; }
+    #panel { flex: 0 0 100px; padding: 0 8px; gap: 6px; }
+    .item-card { width: 64px; height: 80px; gap: 3px; }
+    .custom-card { height: 74px; }
+    .item-label { font-size: 8.5px; }
+    .cust-f-input { width: 38px; font-size: 8.5px; }
+    .divider { height: 50px; margin: 0 2px; }
+    #trash { width: 44px; height: 70px; font-size: 16px; }
+    #hint { font-size: 9px; bottom: 4px; }
+  }
+
+  @media (pointer: coarse) {
+    /* 增加觸控目標的舒適度 */
+    .cust-f-input { padding: 4px 2px; }
+    #panel::-webkit-scrollbar { height: 6px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <a href="../../index.html" id="btn-back-portal" title="返回化學網首頁目錄">
+      <span>🏠</span> 返回目錄頁
+    </a>
+    <span>💡 光的直進與透鏡成像原理模擬</span>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div id="hint">拖曳下方物件至作圖區 · 滑鼠在作圖區拖移物件位置 · 支援多透鏡組合</div>
+  </div>
+
+  <div id="panel">
+    <span class="panel-label">光&nbsp;源</span>
+
+    <!-- 點光源 -->
+    <div class="item-card" id="card-point" data-type="point">
+      <canvas width="68" height="56" id="icon-point"></canvas>
+      <span class="item-label">點光源</span>
+    </div>
+
+    <!-- 平行光源 -->
+    <div class="item-card" id="card-parallel" data-type="parallel">
+      <canvas width="68" height="56" id="icon-parallel"></canvas>
+      <span class="item-label">平行光源</span>
+    </div>
+
+    <div class="divider"></div>
+    <span class="panel-label">凸&nbsp;透&nbsp;鏡</span>
+
+    <!-- 凸透鏡 f=80 -->
+    <div class="item-card" data-type="convex" data-f="80">
+      <canvas width="68" height="56" class="lens-icon" data-f="80" data-kind="convex"></canvas>
+      <span class="item-label">凸透鏡<br>f = 80</span>
+    </div>
+
+    <!-- 凸透鏡 f=140 -->
+    <div class="item-card" data-type="convex" data-f="140">
+      <canvas width="68" height="56" class="lens-icon" data-f="140" data-kind="convex"></canvas>
+      <span class="item-label">凸透鏡<br>f = 140</span>
+    </div>
+
+    <!-- 凸透鏡 f=200 -->
+    <div class="item-card" data-type="convex" data-f="200">
+      <canvas width="68" height="56" class="lens-icon" data-f="200" data-kind="convex"></canvas>
+      <span class="item-label">凸透鏡<br>f = 200</span>
+    </div>
+
+    <div class="divider"></div>
+    <span class="panel-label">凹&nbsp;透&nbsp;鏡</span>
+
+    <!-- 凹透鏡 f=-80 -->
+    <div class="item-card" data-type="concave" data-f="-80">
+      <canvas width="68" height="56" class="lens-icon" data-f="-80" data-kind="concave"></canvas>
+      <span class="item-label">凹透鏡<br>f = -80</span>
+    </div>
+
+    <!-- 凹透鏡 f=-140 -->
+    <div class="item-card" data-type="concave" data-f="-140">
+      <canvas width="68" height="56" class="lens-icon" data-f="-140" data-kind="concave"></canvas>
+      <span class="item-label">凹透鏡<br>f = -140</span>
+    </div>
+
+    <!-- 凹透鏡 f=-200 -->
+    <div class="item-card" data-type="concave" data-f="-200">
+      <canvas width="68" height="56" class="lens-icon" data-f="-200" data-kind="concave"></canvas>
+      <span class="item-label">凹透鏡<br>f = -200</span>
+    </div>
+
+    <div class="divider"></div>
+    <span class="panel-label">自&nbsp;訂</span>
+
+    <!-- 自訂凸透鏡 -->
+    <div class="item-card custom-card" id="card-cust-convex" data-type="convex">
+      <canvas width="68" height="32" id="icon-cust-convex"></canvas>
+      <span class="item-label">凸透鏡</span>
+      <div class="cust-f-row">
+        <span class="cust-f-label">f=</span>
+        <input type="number" class="cust-f-input" id="finput-cust-convex" value="120" min="10" max="800" step="10">
+      </div>
+    </div>
+
+    <!-- 自訂凹透鏡 -->
+    <div class="item-card custom-card" id="card-cust-concave" data-type="concave">
+      <canvas width="68" height="32" id="icon-cust-concave"></canvas>
+      <span class="item-label">凹透鏡</span>
+      <div class="cust-f-row">
+        <span class="cust-f-label">f=</span>
+        <input type="number" class="cust-f-input" id="finput-cust-concave" value="-120" min="-800" max="-10" step="10">
+      </div>
+    </div>
+
+    <!-- 自訂凸凹透鏡 -->
+    <div class="item-card custom-card" id="card-cust-menCC" data-type="meniscusCC">
+      <canvas width="68" height="32" id="icon-cust-menCC"></canvas>
+      <span class="item-label">凸凹透鏡</span>
+      <div class="cust-f-row">
+        <span class="cust-f-label">f=</span>
+        <input type="number" class="cust-f-input" id="finput-cust-menCC" value="200" min="-800" max="800" step="10">
+      </div>
+    </div>
+
+    <!-- 自訂凹凸透鏡 -->
+    <div class="item-card custom-card" id="card-cust-menCX" data-type="meniscusCX">
+      <canvas width="68" height="32" id="icon-cust-menCX"></canvas>
+      <span class="item-label">凹凸透鏡</span>
+      <div class="cust-f-row">
+        <span class="cust-f-label">f=</span>
+        <input type="number" class="cust-f-input" id="finput-cust-menCX" value="-200" min="-800" max="800" step="10">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div id="trash"><span>🗑</span><span id="trash-label">移除</span></div>
+  </div>
+</div>
+
+<!-- 拖曳幽靈 -->
+<canvas id="ghost" width="68" height="80"></canvas>
+
+<script>
+// ─────────────────────────────────────────────
+// 畫小圖示
+// ─────────────────────────────────────────────
+function drawPointIcon(cv){
+  const ctx=cv.getContext('2d'),w=cv.width,h=cv.height,cx=w/2,cy=h/2;
+  ctx.clearRect(0,0,w,h);
+  const r=Math.min(w,h)*0.32;
+  const grad=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  grad.addColorStop(0,'#fffde4');grad.addColorStop(.4,'#ffcc44');grad.addColorStop(1,'transparent');
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+  for(let i=0;i<5;i++){
+    const ang=-Math.PI/4+i*(Math.PI/2)/4;
+    const lx=cx+Math.cos(ang)*(r*1.22),ly=cy+Math.sin(ang)*(r*1.22);
+    ctx.beginPath();ctx.moveTo(cx+Math.cos(ang)*(r*0.33),cy+Math.sin(ang)*(r*0.33));
+    ctx.lineTo(lx,ly); ctx.strokeStyle='#ffcc4488';ctx.lineWidth=1.5;ctx.stroke();
+  }
+}
+function drawParallelIcon(cv){
+  const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;
+  ctx.clearRect(0,0,w,h);
+  const ys=[h*.15,h*.27,h*.5,h*.73,h*.85];
+  ys.forEach(y=>{
+    ctx.beginPath();ctx.moveTo(4,y);ctx.lineTo(w-8,y);
+    ctx.strokeStyle='#66aaff88';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(w-10,y-h*0.07);ctx.lineTo(w-4,y);ctx.lineTo(w-10,y+h*0.07);
+    ctx.strokeStyle='#66aaff';ctx.lineWidth=1.5;ctx.stroke();
+  });
+}
+function drawLensIcon(cv,f,kind){
+  const ctx=cv.getContext('2d'),w=cv.width,h=cv.height,cx=w/2,cy=h/2;
+  ctx.clearRect(0,0,w,h);
+  const colMap={convex:'#44aaff',concave:'#ff8844',meniscusCC:'#44ffcc',meniscusCX:'#ff44aa'};
+  const col=colMap[kind]||'#888888'; ctx.strokeStyle=col;ctx.lineWidth=2;
+  const hh=h*0.43, bw=w*0.26;
+  if(kind==='convex'){
+    ctx.beginPath(); ctx.moveTo(cx,cy-hh);
+    ctx.bezierCurveTo(cx+bw,cy-hh/2,cx+bw,cy+hh/2,cx,cy+hh);
+    ctx.bezierCurveTo(cx-bw,cy+hh/2,cx-bw,cy-hh/2,cx,cy-hh);
+    ctx.closePath();
+    const g=ctx.createLinearGradient(cx-bw,0,cx+bw,0);
+    g.addColorStop(0,col+'11');g.addColorStop(.5,col+'44');g.addColorStop(1,col+'11');
+    ctx.fillStyle=g;ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-hh-h*0.07);ctx.lineTo(cx,cy+hh+h*0.07);ctx.strokeStyle=col+'88';ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-3,cy-hh);ctx.lineTo(cx,cy-hh-h*0.07);ctx.lineTo(cx+3,cy-hh);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-3,cy+hh);ctx.lineTo(cx,cy+hh+h*0.07);ctx.lineTo(cx+3,cy+hh);ctx.stroke();
+  } else if(kind==='concave'){
+    const iw=w*0.12, indent=h*0.21;
+    ctx.beginPath(); ctx.moveTo(cx-iw,cy-hh);
+    ctx.bezierCurveTo(cx+indent,cy-hh/2,cx+indent,cy+hh/2,cx-iw,cy+hh);
+    ctx.moveTo(cx+iw,cy-hh);
+    ctx.bezierCurveTo(cx-indent,cy-hh/2,cx-indent,cy+hh/2,cx+iw,cy+hh);
+    ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-iw,cy-hh);ctx.lineTo(cx+iw,cy-hh);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-iw,cy+hh);ctx.lineTo(cx+iw,cy+hh);ctx.stroke();
+  } else if(kind==='meniscusCC'||kind==='meniscusCX'){
+    const bigB=w*0.26, smallB=w*0.09; ctx.beginPath(); ctx.moveTo(cx,cy-hh);
+    if(kind==='meniscusCC'){
+      ctx.bezierCurveTo(cx-bigB,cy-hh/2,cx-bigB,cy+hh/2,cx,cy+hh);
+      ctx.bezierCurveTo(cx-smallB,cy+hh/2,cx-smallB,cy-hh/2,cx,cy-hh);
+    } else {
+      ctx.bezierCurveTo(cx+bigB,cy-hh/2,cx+bigB,cy+hh/2,cx,cy+hh);
+      ctx.bezierCurveTo(cx-smallB,cy+hh/2,cx-smallB,cy-hh/2,cx,cy-hh);
+    }
+    ctx.closePath();
+    const g=ctx.createLinearGradient(cx-bigB,0,cx+bigB,0);
+    g.addColorStop(0,col+'0a');g.addColorStop(.5,col+'44');g.addColorStop(1,col+'0a');
+    ctx.fillStyle=g;ctx.fill();ctx.stroke();
+  }
+}
+
+// ─────────────────────────────────────────────
+// 初始化小圖示
+// ─────────────────────────────────────────────
+drawPointIcon(document.getElementById('icon-point'));
+drawParallelIcon(document.getElementById('icon-parallel'));
+document.querySelectorAll('.lens-icon').forEach(cv=>{
+  const f=parseFloat(cv.dataset.f);
+  drawLensIcon(cv,f,cv.dataset.kind);
+});
+// 自訂透鏡標準圖示
+drawLensIcon(document.getElementById('icon-cust-convex'),120,'convex');
+drawLensIcon(document.getElementById('icon-cust-concave'),-120,'concave');
+drawLensIcon(document.getElementById('icon-cust-menCC'),200,'meniscusCC');
+drawLensIcon(document.getElementById('icon-cust-menCX'),-200,'meniscusCX');
+// 輸入框焦距很時更新圖示
+document.querySelectorAll('.cust-f-input').forEach(inp=>{
+  inp.addEventListener('mousedown',e=>e.stopPropagation());
+  inp.addEventListener('touchstart',e=>e.stopPropagation(),{passive:false});
+  inp.addEventListener('change',()=>{
+    const card=inp.closest('.item-card');
+    const type=card.dataset.type;
+    const f=parseFloat(inp.value)||120;
+    const iconId='icon-'+card.id.replace('card-','');
+    const icon=document.getElementById(iconId);
+    if(icon) drawLensIcon(icon,f,type);
+  });
+});
+
+// ─────────────────────────────────────────────
+// 主畫布設定
+// ─────────────────────────────────────────────
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const wrap=document.getElementById('canvas-wrap');
+
+let W,H,axisY,prevW,prevH;
+
+// 攝像機狀態 (Zoom & Pan)
+let camX=0, camY=0, camZoom=1;
+let isPanning=false, panStart={x:0,y:0};
+let initialPinchDist=null, initialPinchZoom=1, pinchCenter={x:0,y:0};
+
+// 座標映射輔助函式
+const toWorldX = (sx) => (sx - camX) / camZoom;
+const toWorldY = (sy) => (sy - camY) / camZoom;
+const toScreenX = (wx) => wx * camZoom + camX;
+const toScreenY = (wy) => wy * camZoom + camY;
+
+function resize(){
+  const newW=wrap.clientWidth, newH=wrap.clientHeight;
+  if(prevW && prevH && (newW !== prevW || newH !== prevH)){
+    const ratioX = newW / prevW;
+    const ratioY = newH / prevH;
+    // 等比例縮放場景物件
+    if(source){
+      source.x *= ratioX;
+      if(source.y !== undefined) source.y *= ratioY;
+    }
+    lenses.forEach(l => {
+      l.x *= ratioX;
+      // 為了維持「幾何比例固定」，焦距也隨寬度比例調整
+      l.f = Math.round(l.f * ratioX);
+    });
+  }
+  W=newW; H=newH;
+  canvas.width=W; canvas.height=H;
+  axisY=H*.52; 
+  prevW=W; prevH=H;
+  redraw();
+}
+window.addEventListener('resize',resize);
+
+// ─────────────────────────────────────────────
+// 場景物件
+// ─────────────────────────────────────────────
+// source: {type:'point'|'parallel', x:canvas_x}
+// lenses: [{type:'convex'|'concave', f:number, x:canvas_x}]
+let source=null;
+let lenses=[];  // 保持照 x 排序
+
+// 判斷光線行進方向：+1 向右，-1 向左
+function getLightDirection(){
+  if(!source||lenses.length===0) return 1;
+  const hasRight=lenses.some(l=>l.x>source.x);
+  const hasLeft =lenses.some(l=>l.x<source.x);
+  // 只有左側有透鏡時向左；其餘預設向右
+  if(hasLeft&&!hasRight) return -1;
+  return 1;
+}
+
+// 射線顏色調色板
+const RAY_COLORS=['#ff6644','#ffaa22','#88ff44','#44ccff','#cc88ff'];
+const N_RAYS=5;  // 條數
+
+// ─────────────────────────────────────────────
+// 光學計算
+// ─────────────────────────────────────────────
+
+// 透鏡高度（虛擬座標，像素）
+const LENS_HALF_H=110; // 固定常數參考
+function lensHalfH(){return Math.min(H*.32,130);}
+
+/* 薄透鏡公式: 1/v - 1/u = 1/f (sign convention: real-positive)
+   我們用 Cartesian sign: 光從左向右，
+   u = 物到透鏡的距離（物在左，u>0表示物在左方）
+   v = 像到透鏡的距離（v>0像在右，v<0像在左）
+   1/v = 1/f + 1/u  → v = 1/(1/f - 1/u)
+   使用此處所有 x 為畫布座標，最終回傳畫布 x
+*/
+function traceThroughLens(incidentRay, lens, dir=1){
+  // incidentRay: {x1,y1,x2,y2} 代表方向向量
+  // 找入射光線與透鏡面(x=lens.x)的交點
+  const lx=lens.x;
+  const dx=incidentRay.x2-incidentRay.x1;
+  const dy=incidentRay.y2-incidentRay.y1;
+  if(Math.abs(dx)<1e-9) return null; // 垂直光線
+  const t=(lx-incidentRay.x1)/dx;
+  if(t<0) return null; // 交點在光線後方
+  const hitY=incidentRay.y1+dy*t;
+  // 檢查是否在透鏡有效範圍內
+  const halfH=lensHalfH();
+  if(Math.abs(hitY-axisY)>halfH) return null;
+
+  // 薄透鏡偏折（含方向修正）
+  // 向右(dir=+1): slopeOut = slopeIn - h/f
+  // 向左(dir=-1): slopeOut = slopeIn + h/f  → 統一為 slopeIn - (h/f)*dir
+  const h=hitY-axisY;
+  const slopeIn=dy/dx;
+  const slopeOut=slopeIn - (h/lens.f)*dir;
+  return {
+    x1:lx, y1:hitY,
+    x2:lx+100, y2:hitY+slopeOut*100,
+    slope:slopeOut
+  };
+}
+
+// 給定射線起點與斜率，追蹤穿過所有透鏡後的路徑段
+// dir=+1 向右，dir=-1 向左
+function traceRay(startX, startY, slopeOrParallel, parallel, dir=1){
+  const segments=[];
+  let curX=startX, curY=startY;
+  let curSlope=parallel?0:slopeOrParallel;
+
+  // 依方向過濾並排序透鏡
+  const sortedLenses= dir>0
+    ? [...lenses].filter(l=>l.x>startX).sort((a,b)=>a.x-b.x)
+    : [...lenses].filter(l=>l.x<startX).sort((a,b)=>b.x-a.x);
+
+  for(const lens of sortedLenses){
+    const hitY=curY+curSlope*(lens.x-curX);
+    const halfH=lensHalfH();
+
+    if(Math.abs(hitY-axisY)>halfH){
+      segments.push({x1:curX,y1:curY,x2:lens.x,y2:hitY,blocked:true});
+      return segments;
+    }
+
+    const refracted=traceThroughLens(
+      {x1:curX,y1:curY,x2:lens.x,y2:hitY},
+      lens, dir
+    );
+    if(!refracted){
+      segments.push({x1:curX,y1:curY,x2:lens.x,y2:hitY,blocked:true});
+      return segments;
+    }
+    segments.push({x1:curX,y1:curY,x2:refracted.x1,y2:refracted.y1,ghost:false});
+    curX=refracted.x1; curY=refracted.y1; curSlope=refracted.slope;
+  }
+  // 最後一段延伸到對應邊界
+  const endX=dir>0?W+100:-100;
+  segments.push({x1:curX,y1:curY,x2:endX,y2:curY+curSlope*(endX-curX),ghost:false});
+  return segments;
+}
+
+// ─────────────────────────────────────────────
+// 統一計算射線初始參數（供 drawRays 與 drawImageIndicator 共用）
+// ─────────────────────────────────────────────
+function getRayParams(){
+  const dir=getLightDirection();
+  // 取行進方向上最近的透鏡（用於對準孔徑）
+  const firstLens= dir>0
+    ? lenses.filter(l=>l.x>source.x).sort((a,b)=>a.x-b.x)[0]
+    : lenses.filter(l=>l.x<source.x).sort((a,b)=>b.x-a.x)[0];
+  const halfH=lensHalfH();
+  const fracs=[-1,-0.5,0,0.5,1];
+
+  if(source.type==='point'){
+    const srcY=source.y??axisY;
+    return fracs.map(frac=>{
+      let slope;
+      if(firstLens){
+        const targetY=axisY+frac*halfH;
+        const dist=firstLens.x-source.x; // 負值＝向左
+        slope=Math.abs(dist)>1?(targetY-srcY)/dist:0;
+      } else {
+        slope=frac*0.45;
+      }
+      return {startX:source.x,startY:srcY,slope,parallel:false,dir};
+    });
+  } else {
+    // 平行光：依光源 y 位置計算斜射角，使射線對準第一個透鏡中心
+    const srcY=source.y??axisY;
+    const slope=firstLens&&Math.abs(firstLens.x-source.x)>1
+      ?(axisY-srcY)/(firstLens.x-source.x)
+      :0;
+    return fracs.map(frac=>{
+      // 各射線起點分佈在光源 y 附近，使其在透鏡處展布於孔徑內
+      const startY=srcY+frac*halfH;
+      return {startX:source.x,startY,slope,parallel:false,dir};
+    });
+  }
+}
+
+// ─────────────────────────────────────────────
+// 計算交點（成像位置）
+// ─────────────────────────────────────────────
+function findImagePoints(){
+  if(!source||lenses.length===0) return [];
+  const finalSegs=[];
+  const N=N_RAYS;
+  const dir=getLightDirection();
+
+  if(source.type==='point'){
+    const srcY=source.y??axisY;
+    const spreadAngles=[-0.35,-0.175,0,0.175,0.35];
+    for(let i=0;i<N;i++){
+      const slope=Math.tan(spreadAngles[i]);
+      const segs=traceRay(source.x,srcY,slope,false,dir);
+      if(segs.length>0) finalSegs.push(segs[segs.length-1]);
+    }
+  } else {
+    const offsets=[-0.7,-0.35,0,0.35,0.7];
+    for(let i=0;i<N;i++){
+      const y=axisY+offsets[i]*lensHalfH();
+      const segs=traceRay(source.x,y,0,true,dir);
+      if(segs.length>0) finalSegs.push(segs[segs.length-1]);
+    }
+  }
+  return finalSegs;
+}
+
+// ─────────────────────────────────────────────
+// 主繪製函式
+// ─────────────────────────────────────────────
+function redraw(){
+  ctx.clearRect(0,0,W,H);
+  
+  // 繪製背景 (不隨鏡頭移動)
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0a0f1e');bg.addColorStop(1,'#050911');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  
+  ctx.save();
+  // 應用攝像機變換
+  ctx.setTransform(camZoom, 0, 0, camZoom, camX, camY);
+  
+  drawGrid();
+  drawAxis();
+  if(source) drawSource();
+  drawLenses();
+  if(source) drawRays();
+  drawImageIndicator();
+  
+  ctx.restore();
+}
+
+/**
+ * 繪製背景網格
+ */
+function drawGrid(){
+  ctx.save();
+  ctx.strokeStyle='#1a2540';
+  ctx.lineWidth=1/camZoom;
+  const step=60;
+  
+  // 根據視圖範圍繪製足夠大的網格
+  const startX = Math.floor(toWorldX(0)/step)*step;
+  const endX = Math.ceil(toWorldX(W)/step)*step;
+  const startY = Math.floor(toWorldY(0)/step)*step;
+  const endY = Math.ceil(toWorldY(H)/step)*step;
+  
+  for(let x=startX; x<=endX; x+=step){
+    ctx.beginPath();ctx.moveTo(x,startY);ctx.lineTo(x,endY);ctx.stroke();
+  }
+  for(let y=startY; y<=endY; y+=step){
+    ctx.beginPath();ctx.moveTo(startX,y);ctx.lineTo(endX,y);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawAxis(){
+  ctx.save();
+  // 光軸 — 光源在軸上時加亮
+  const srcOnAxis=source&&Math.abs((source.type==='point'?(source.y??axisY):axisY)-axisY)<0.5;
+  ctx.beginPath();ctx.moveTo(toWorldX(-100),axisY);ctx.lineTo(toWorldX(W+100),axisY);
+  if(srcOnAxis){
+    ctx.strokeStyle='#5a8aff';ctx.lineWidth=2/camZoom;
+    ctx.shadowColor='#4488ff';ctx.shadowBlur=8/camZoom;
+  } else {
+    ctx.strokeStyle='#2a4a8a';ctx.lineWidth=1.5/camZoom;
+  }
+  ctx.setLineDash([8/camZoom,5/camZoom]);ctx.stroke();
+  ctx.setLineDash([]);ctx.shadowBlur=0;
+
+  // 若有透鏡，繪製尺
+  if(source && lenses.length>0){
+    drawRuler();
+  }
+  ctx.restore();
+}
+
+function drawRuler(){
+  // 以物件位置為原點，繪製含焦距刻度的尺
+  const originX=source.x;
+  // 刻度間距: 每 20px 顯示一刻度
+  const tickStep=20;
+  ctx.save();
+  ctx.font=`${10/camZoom}px monospace`;
+  ctx.textAlign='center';
+  ctx.textBaseline='top';
+
+  const startPX = Math.floor((toWorldX(0)-originX)/tickStep)*tickStep;
+  const endPX = Math.ceil((toWorldX(W)-originX)/tickStep)*tickStep;
+
+  // 主刻度
+  for(let px=startPX; px<=endPX; px+=tickStep){
+    const x=originX+px;
+    const h=(px%100===0?10:px%20===0?6:0)/camZoom;
+    if(h>0){
+      ctx.beginPath();ctx.moveTo(x,axisY-h);ctx.lineTo(x,axisY+h);
+      ctx.strokeStyle='#3a5a8a';ctx.lineWidth=1/camZoom;ctx.stroke();
+      if(px%100===0){
+        ctx.fillStyle='#3a5a8a';
+        ctx.fillText(px,x,axisY+12/camZoom);
+      }
+    }
+  }
+
+  // 對每個透鏡標記焦點位置
+  lenses.forEach(lens=>{
+    const f=lens.f;
+    // 前焦點和後焦點
+    [f,-f].forEach(df=>{
+      const fx=lens.x+df;
+      // 焦點標記
+      ctx.beginPath();ctx.arc(fx,axisY,4/camZoom,0,Math.PI*2);
+      ctx.fillStyle=f>0?'#ff8844':'#ff4488';ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=0.5/camZoom;ctx.stroke();
+      // 標籤
+      ctx.fillStyle=f>0?'#ffaa66':'#ff66aa';
+      ctx.font=`${10/camZoom}px monospace`;
+      ctx.fillText('F'+(df>0?'\'':''),fx,axisY-16/camZoom);
+      // 虛線標記
+      ctx.beginPath();ctx.moveTo(fx,axisY-lensHalfH());ctx.lineTo(fx,axisY+lensHalfH());
+      ctx.strokeStyle=(f>0?'#ff884444':'#ff448844');ctx.setLineDash([4/camZoom,4/camZoom]);ctx.lineWidth=1/camZoom;ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    // 距離標籤
+    const dx=lens.x-source.x;
+    if(Math.abs(dx)>20){
+      ctx.save();
+      ctx.strokeStyle='#5a8aaa88';ctx.setLineDash([3/camZoom,3/camZoom]);ctx.lineWidth=1/camZoom;
+      ctx.beginPath();ctx.moveTo(source.x,axisY-28/camZoom);ctx.lineTo(lens.x,axisY-28/camZoom);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='#7abacc';ctx.font=`${11/camZoom}px monospace`;
+      ctx.textBaseline='bottom';
+      ctx.fillText('d='+Math.round(dx),(source.x+lens.x)/2,axisY-30/camZoom);
+      ctx.restore();
+    }
+  });
+  ctx.restore();
+}
+
+function drawSource(){
+  ctx.save();
+  const x=source.x;
+  const y=source.type==='point'?(source.y??axisY):axisY;
+  const onAxis=(source.type==='point'&&Math.abs(y-axisY)<0.5);
+
+  if(source.type==='point'){
+    // 虛線連接到光軸（不在軸上時才畫）
+    if(!onAxis&&Math.abs(y-axisY)>4){
+      ctx.beginPath();ctx.moveTo(x,axisY);ctx.lineTo(x,y);
+      ctx.strokeStyle='#ffcc4440';ctx.lineWidth=1/camZoom;ctx.setLineDash([4/camZoom,4/camZoom]);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // 光暈
+    const grad=ctx.createRadialGradient(x,y,0,x,y,40);
+    grad.addColorStop(0,'#fffde4cc');grad.addColorStop(.3,'#ffcc4488');grad.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.arc(x,y,40,0,Math.PI*2);ctx.fillStyle=grad;ctx.fill();
+    // 核心
+    const inner=ctx.createRadialGradient(x,y,0,x,y,8);
+    inner.addColorStop(0,'#ffffff');inner.addColorStop(.5,'#ffdd66');inner.addColorStop(1,'#ff8800');
+    ctx.beginPath();ctx.arc(x,y,8,0,Math.PI*2);ctx.fillStyle=inner;ctx.fill();
+
+    if(onAxis){
+      // 「在軸上」鎖定圓環 — 白色光暈環
+      ctx.beginPath();ctx.arc(x,y,14/camZoom,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.85)';
+      ctx.lineWidth=2/camZoom;ctx.stroke();
+      // 標籤
+      ctx.fillStyle='#ffffff';ctx.font=`bold ${11/camZoom}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText('點光源 ● 在軸上',x,y-20/camZoom);
+    } else {
+      // 標籤
+      ctx.fillStyle='#ffdd66';ctx.font=`bold ${12/camZoom}px sans-serif`;
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText('點光源',x,y-14/camZoom);
+    }
+  } else {
+    // 平行光源本體（可上下移動）
+    const srcY=source.y??axisY;
+    const onAxisP=Math.abs(srcY-axisY)<0.5;
+    const bw=28,bh=lensHalfH()*2;
+    const rx=x-bw/2,ry=srcY-bh/2;
+    // 虛線連接到光軸（不在軸上時）
+    if(!onAxisP&&Math.abs(srcY-axisY)>4){
+      ctx.beginPath();ctx.moveTo(x,axisY);ctx.lineTo(x,srcY);
+      ctx.strokeStyle='#4488cc40';ctx.lineWidth=1/camZoom;ctx.setLineDash([4/camZoom,4/camZoom]);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // 本體矩形
+    ctx.fillStyle='#1a2a4a';
+    ctx.strokeStyle=onAxisP?'#88bbff':'#4488cc';
+    ctx.lineWidth=(onAxisP?2.5:2)/camZoom;
+    ctx.beginPath();ctx.roundRect(rx,ry,bw,bh,6/camZoom);ctx.fill();ctx.stroke();
+    // 在軸上的水平鎖定線
+    if(onAxisP){
+      ctx.beginPath();ctx.moveTo(rx-6/camZoom,srcY);ctx.lineTo(rx+bw+6/camZoom,srcY);
+      ctx.strokeStyle='rgba(180,220,255,0.75)';ctx.lineWidth=1.5/camZoom;ctx.stroke();
+    }
+    ctx.fillStyle=onAxisP?'#aaddff':'#6aAAee';
+    ctx.font=`bold ${12/camZoom}px sans-serif`;ctx.textAlign='center';
+    ctx.textBaseline='bottom';ctx.fillText('平行光源',x,ry-6/camZoom);
+  }
+  ctx.restore();
+}
+
+function drawLenses(){
+  lenses.forEach((lens,i)=>{
+    const halfH=lensHalfH();
+    const x=lens.x;
+    ctx.save();
+    if(lens.type==='convex'){
+      // 凸透鏡（雙凸形狀）
+      const bulge=halfH*.4;
+      ctx.beginPath();
+      ctx.moveTo(x,axisY-halfH);
+      ctx.bezierCurveTo(x+bulge,axisY-halfH*.5, x+bulge,axisY+halfH*.5, x,axisY+halfH);
+      ctx.bezierCurveTo(x-bulge,axisY+halfH*.5, x-bulge,axisY-halfH*.5, x,axisY-halfH);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(x-bulge,0,x+bulge,0);
+      g.addColorStop(0,'#44aaff0a');g.addColorStop(.5,'#44aaff2a');g.addColorStop(1,'#44aaff0a');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='#44aaff';ctx.lineWidth=2.5/camZoom;ctx.stroke();
+      // 標籤
+      ctx.fillStyle='#44aaff';ctx.font=`bold ${11/camZoom}px monospace`;ctx.textAlign='center';
+      ctx.textBaseline='top';ctx.fillText(`f=${lens.f}`,x,axisY+halfH+14/camZoom);
+    } else if(lens.type==='concave'){
+      // 凹透鏡
+      const indent=halfH*.35;
+      ctx.beginPath();
+      ctx.moveTo(x-8,axisY-halfH);ctx.lineTo(x+8,axisY-halfH);
+      ctx.bezierCurveTo(x+8-indent,axisY-halfH*.5, x+8-indent,axisY+halfH*.5, x+8,axisY+halfH);
+      ctx.lineTo(x-8,axisY+halfH);
+      ctx.bezierCurveTo(x-8+indent,axisY+halfH*.5, x-8+indent,axisY-halfH*.5, x-8,axisY-halfH);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(x-8,0,x+8,0);
+      g.addColorStop(0,'#ff88440a');g.addColorStop(.5,'#ff884418');g.addColorStop(1,'#ff88440a');
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='#ff8844';ctx.lineWidth=2.5/camZoom;ctx.stroke();
+      ctx.fillStyle='#ff8844';ctx.font=`bold ${11/camZoom}px monospace`;ctx.textAlign='center';
+      ctx.textBaseline='top';ctx.fillText(`f=${lens.f}`,x,axisY+halfH+14/camZoom);
+    } else if(lens.type==='meniscusCC'||lens.type==='meniscusCX'){
+      // 凸凹/凹凸彎月透鏡
+      const isCC=lens.type==='meniscusCC';
+      const col=isCC?'#44ffcc':'#ff44aa';
+      const bigB=halfH*.5,smallB=halfH*.15;
+      ctx.beginPath();
+      ctx.moveTo(x,axisY-halfH);
+      if(isCC){
+        // 彎月開口朝右（彎向左）
+        ctx.bezierCurveTo(x-bigB,axisY-halfH*.5,x-bigB,axisY+halfH*.5,x,axisY+halfH);
+        ctx.bezierCurveTo(x-smallB,axisY+halfH*.5,x-smallB,axisY-halfH*.5,x,axisY-halfH);
+      } else {
+        // 彎月開口朝左（彎向右）
+        ctx.bezierCurveTo(x+bigB,axisY-halfH*.5,x+bigB,axisY+halfH*.5,x,axisY+halfH);
+        ctx.bezierCurveTo(x+smallB,axisY+halfH*.5,x+smallB,axisY-halfH*.5,x,axisY-halfH);
+      }
+      ctx.closePath();
+      const gm=ctx.createLinearGradient(x-bigB,0,x+bigB,0);
+      gm.addColorStop(0,col+'0a');gm.addColorStop(.5,col+'2a');gm.addColorStop(1,col+'0a');
+      ctx.fillStyle=gm;ctx.fill();
+      ctx.strokeStyle=col;ctx.lineWidth=2.5/camZoom;ctx.stroke();
+      // 標籤
+      ctx.fillStyle=col;ctx.font=`bold ${11/camZoom}px monospace`;ctx.textAlign='center';
+      ctx.textBaseline='top';ctx.fillText(`f=${lens.f}`,x,axisY+halfH+14/camZoom);
+    }
+    ctx.restore();
+  });
+}
+
+function drawRays(){
+  if(!source) return;
+  ctx.save();
+  const params=getRayParams();
+  params.forEach((p,i)=>{
+    const segs=traceRay(p.startX,p.startY,p.slope,p.parallel,p.dir||1);
+    drawSegments(segs,RAY_COLORS[i]);
+  });
+  ctx.restore();
+}
+
+function drawSegments(segs,color){
+  segs.forEach(seg=>{
+    ctx.beginPath();ctx.moveTo(seg.x1,seg.y1);
+    // 裁剪到畫布範圍（含向左射線的正確插值）
+    let ex=seg.x2,ey=seg.y2;
+    if(ex>W&&seg.x2!==seg.x1){
+      const t=(W-seg.x1)/(seg.x2-seg.x1);
+      ey=seg.y1+(seg.y2-seg.y1)*t;ex=W;
+    }
+    if(ex<0&&seg.x2!==seg.x1){
+      const t=(0-seg.x1)/(seg.x2-seg.x1);
+      ey=seg.y1+(seg.y2-seg.y1)*t;ex=0;
+    }
+    ctx.lineTo(ex,ey);
+    ctx.strokeStyle=color+'cc';ctx.lineWidth=1.8;
+    ctx.shadowColor=color;ctx.shadowBlur=4;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  });
+}
+
+function drawImageIndicator(){
+  if(!source||lenses.length===0) return;
+
+  const dir=getLightDirection();
+  const params=getRayParams();
+  const finalSegs=[];
+  params.forEach(p=>{
+    const segs=traceRay(p.startX,p.startY,p.slope,p.parallel,p.dir||1);
+    const last=segs[segs.length-1];
+    if(last&&!last.blocked) finalSegs.push(last);
+  });
+
+  if(finalSegs.length<2) return;
+
+  const s1=finalSegs[0];
+  const s2=finalSegs[finalSegs.length-1];
+  if(!s1||!s2) return;
+  const ix=lineIntersectX(s1,s2);
+
+  // 成像點需在光行方向的前方（dir>0→右側；dir<0→左側）
+  const validImg=ix!==null&&(
+    dir>0 ? (ix>source.x+10&&ix<toWorldX(W)-20)
+          : (ix<source.x-10&&ix>toWorldX(20))
+  );
+
+  if(validImg){
+    const iy=lineY(s1,ix);
+    if(Math.abs(iy-axisY)>H*2) return;
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(ix,axisY);ctx.lineTo(ix,iy);
+    ctx.strokeStyle='#ffffff44';ctx.lineWidth=1/camZoom;ctx.setLineDash([4/camZoom,3/camZoom]);ctx.stroke();
+    ctx.setLineDash([]);
+    const g2=ctx.createRadialGradient(ix,iy,0,ix,iy,14/camZoom);
+    g2.addColorStop(0,'#ffffffdd');g2.addColorStop(.4,'#88ddffaa');g2.addColorStop(1,'transparent');
+    ctx.beginPath();ctx.arc(ix,iy,14/camZoom,0,Math.PI*2);ctx.fillStyle=g2;ctx.fill();
+    ctx.beginPath();ctx.arc(ix,iy,4/camZoom,0,Math.PI*2);
+    ctx.fillStyle='#ffffff';ctx.fill();
+    // 距離標籤
+    const refLens=dir>0
+      ?lenses.slice().sort((a,b)=>a.x-b.x)[lenses.length-1]
+      :lenses.slice().sort((a,b)=>a.x-b.x)[0];
+    const imgDist=Math.round(ix-refLens.x);
+    ctx.fillStyle='#aaddff';ctx.font=`bold ${11/camZoom}px monospace`;
+    ctx.textAlign=dir>0?'left':'right';
+    ctx.textBaseline='middle';
+    ctx.fillText(`像 v≈${imgDist}`,ix+(dir>0?8/camZoom:-8/camZoom),iy);
+    ctx.restore();
+  }
+}
+
+function lineIntersectX(s1,s2){
+  // 求兩射線段（直線延伸）的交點 x 座標
+  const dx1=s1.x2-s1.x1,dy1=s1.y2-s1.y1;
+  const dx2=s2.x2-s2.x1,dy2=s2.y2-s2.y1;
+  const denom=dx1*dy2-dy1*dx2;
+  if(Math.abs(denom)<1e-9) return null;
+  const t=((s2.x1-s1.x1)*dy2-(s2.y1-s1.y1)*dx2)/denom;
+  return s1.x1+t*dx1;
+}
+function lineY(seg,x){
+  const t=(x-seg.x1)/(seg.x2-seg.x1);
+  return seg.y1+t*(seg.y2-seg.y1);
+}
+
+// ─────────────────────────────────────────────
+// 拖曳邏輯
+// ─────────────────────────────────────────────
+const ghost=document.getElementById('ghost');
+const ghostCtx=ghost.getContext('2d');
+let dragging=null; // {type,f?,fromCard}
+let movingObj=null; // 正在畫布上移動的物件 {kind:'source'|'lens', lensRef?}
+let deletePending=false; // 是否準備刪除（往下拖曳）
+
+// --- 從面板拖出 ---
+document.querySelectorAll('.item-card').forEach(card=>{
+  card.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('cust-f-input')) return; // 輸入框點擊不觸發拖曳
+    e.preventDefault();
+    const type=card.dataset.type;
+    const custIn=card.querySelector('.cust-f-input');
+    const f=custIn?parseFloat(custIn.value)||(type==='concave'?-120:120):
+             card.dataset.f?parseFloat(card.dataset.f):null;
+    dragging={type,f,fromCard:true};
+    // 畫幽靈
+    ghost.width=80;ghost.height=80;
+    ghostCtx.clearRect(0,0,80,80);
+    if(type==='point') drawPointIcon(ghost);
+    else if(type==='parallel') drawParallelIcon(ghost);
+    else drawLensIcon(ghost,f,type);
+    ghost.style.display='block';
+    moveGhost(e.clientX,e.clientY);
+  });
+});
+
+// --- 畫布上的滑鼠事件 ---
+canvas.addEventListener('mousedown',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  
+  if(e.button === 2){ // 右鍵平移
+    isPanning=true; panStart={x:e.clientX, y:e.clientY};
+    canvas.style.cursor='grabbing'; return;
+  }
+  
+  const wx=toWorldX(mx), wy=toWorldY(my);
+  if(source){
+    const sY=source.type==='point'?(source.y??axisY):axisY;
+    if(source.type==='point'){ if(Math.hypot(wx-source.x,wy-sY)<20/camZoom){ movingObj={kind:'source'};deletePending=false;return; } }
+    else { const bw=24,bh=lensHalfH()*2; if(wx>=source.x-bw/2-10/camZoom&&wx<=source.x+bw/2+10/camZoom&&wy>=sY-bh/2&&wy<=sY+bh/2){ movingObj={kind:'source'};deletePending=false;return; } }
+  }
+  for(let i=0;i<lenses.length;i++){
+    const l=lenses[i];
+    if(Math.abs(wx-l.x)<20/camZoom&&Math.abs(wy-axisY)<lensHalfH()){
+      movingObj={kind:'lens',lensRef:l};deletePending=false;return;
+    }
+  }
+});
+
+function handleCanvasDrag(clientX, clientY){
+  const rect=canvas.getBoundingClientRect(), mx=clientX-rect.left, my=clientY-rect.top;
+  if(isPanning){
+    const dx=clientX-panStart.x, dy=clientY-panStart.y;
+    camX += dx; camY += dy; panStart={x:clientX, y:clientY}; redraw(); return;
+  }
+  if(!movingObj) return; 
+  const wx=toWorldX(mx), wy=toWorldY(my);
+  deletePending = (my > H + 10);
+  if(movingObj.kind==='source'){ if(source && !deletePending){ source.x=wx; let sy=wy; if(Math.abs(sy-axisY)<16/camZoom) sy=axisY; source.y=sy; } }
+  else { if(!deletePending){ movingObj.lensRef.x=wx; } }
+  redraw(); if(deletePending) drawDeleteHint(movingObj);
+}
+
+// 刪除提示覆蓋層
+function drawDeleteHint(obj){
+  ctx.save();
+  ctx.fillStyle='rgba(255,60,60,0.18)';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#ff6666';
+  ctx.font='bold 18px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🗑  放開滑鼠以移除',W/2,H/2);
+  ctx.restore();
+}
+
+// 放開畫布物件
+function releaseCanvasObj(){
+  if(!movingObj) return;
+  if(deletePending){
+    // 執行刪除
+    if(movingObj.kind==='source'){
+      source=null;
+    } else {
+      const idx=lenses.indexOf(movingObj.lensRef);
+      if(idx>=0) lenses.splice(idx,1);
+    }
+  } else {
+    // 透鏡放開後重新排序（光源位置不再強制限制）
+    lenses.sort((a,b)=>a.x-b.x);
+  }
+  movingObj=null;deletePending=false;
+  redraw();
+}
+
+canvas.addEventListener('mousemove',e=>{ handleCanvasDrag(e.clientX,e.clientY); });
+canvas.addEventListener('mouseup', e=>{ releaseCanvasObj(); });
+canvas.addEventListener('mouseleave',e=>{
+  // 滑鼠離開畫布時繼續追蹤（由全域 mousemove 接手）
+});
+
+// --- 全域 mousemove / mouseup 處理拖曳 ---
+document.addEventListener('mousemove',e=>{
+  // 畫布物件拖曳（即使滑鼠移出畫布也繼續）
+  if(movingObj){
+    handleCanvasDrag(e.clientX,e.clientY);
+  }
+  // 面板卡片拖曳
+  if(!dragging) return;
+  moveGhost(e.clientX,e.clientY);
+  const trash=document.getElementById('trash');
+  const tr=trash.getBoundingClientRect();
+  const isOverTrash=e.clientX>=tr.left&&e.clientX<=tr.right&&e.clientY>=tr.top&&e.clientY<=tr.bottom;
+  trash.classList.toggle('active',isOverTrash);
+});
+
+// 全域 mouseup：統一處理畫布物件放開 + 面板卡片放置
+document.addEventListener('mouseup',e=>{
+  // 1. 畫布上已有物件的拖放（含往下滑動刪除）
+  if(movingObj){
+    releaseCanvasObj();
+  }
+
+  // 2. 面板卡片拖放到畫布
+  if(!dragging) return;
+  ghost.style.display='none';
+  const trash=document.getElementById('trash');
+  trash.classList.remove('active');
+
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const {type,f}=dragging;
+  dragging=null; // 先清除，避免重入
+
+  if(mx>=0&&mx<=W&&my>=0&&my<=H){
+    if(type==='point'){
+      // 點光源可放在任意位置（包含透鏡右側）
+      source={type:'point',
+        x:Math.max(20,Math.min(mx,W-20)),
+        y:Math.max(20,Math.min(my,H-20))};
+    } else if(type==='parallel'){
+      // 平行光源可放在任意位置
+      let py=Math.max(20,Math.min(my,H-20));
+      if(Math.abs(py-axisY)<16) py=axisY;
+      source={type:'parallel',x:Math.max(20,Math.min(mx,W-20)),y:py};
+    } else {
+      lenses.push({type,f,x:Math.max(10,Math.min(mx,W-10))});
+      lenses.sort((a,b)=>a.x-b.x);
+    }
+    redraw();
+  }
+});
+
+// --- 幽靈移動 ---
+function moveGhost(cx,cy){
+  ghost.style.left=(cx-40)+'px';
+  ghost.style.top=(cy-40)+'px';
+}
+
+// ─────────────────────────────────────────────
+// 動畫：持續發射光線（光源動畫效果）
+// ─────────────────────────────────────────────
+let animFrame=0;
+let animId=null;
+function animLoop(){
+  animFrame++;
+  redraw();
+  animId=requestAnimationFrame(animLoop);
+}
+
+// 在 drawRays 中加入動態效果
+function drawRaysAnimated(){
+  if(!source) return;
+  // 平行光源的光線動態流動效果
+  // 用 phase 做偏移
+  const phase=(animFrame*.8)%30;
+  // 暫時修改顏色透明度製造流動感
+}
+
+// 初始化
+resize();
+animLoop();
+
+// 行動裝置觸控支援
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  
+  if (e.touches.length === 2) {
+    const t1 = e.touches[0], t2 = e.touches[1];
+    initialPinchDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    initialPinchZoom = camZoom;
+    pinchCenter = { x: (t1.clientX + t2.clientX) / 2 - rect.left, y: (t1.clientY + t2.clientY) / 2 - rect.top };
+    isPanning = true; 
+    panStart = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+    return;
+  }
+
+  const mx = t.clientX - rect.left, my = t.clientY - rect.top;
+  const wx = toWorldX(mx), wy = toWorldY(my);
+
+  if (source) {
+    const srcY = source.type === 'point' ? (source.y ?? axisY) : axisY;
+    if (source.type === 'point' && Math.hypot(wx - source.x, wy - srcY) < 24/camZoom) {
+      movingObj = { kind: 'source' }; return;
+    }
+    const bw = 28, bh = lensHalfH() * 2;
+    if (source.type === 'parallel' && wx >= source.x - bw / 2 - 14/camZoom && wx <= source.x + bw / 2 + 14/camZoom && wy >= srcY - bh / 2 && wy <= srcY + bh / 2) {
+      movingObj = { kind: 'source' }; return;
+    }
+  }
+  for (let i = 0; i < lenses.length; i++) {
+    if (Math.abs(wx - lenses[i].x) < 24/camZoom && Math.abs(wy - axisY) < lensHalfH() + 10) {
+      movingObj = { kind: 'lens', lensRef: lenses[i] }; return;
+    }
+  }
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+
+  if (e.touches.length === 2 && initialPinchDist) {
+    const t1 = e.touches[0], t2 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
+    const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+
+    // 平移
+    camX += (t1.clientX + t2.clientX) / 2 - panStart.x;
+    camY += (t1.clientY + t2.clientY) / 2 - panStart.y;
+    panStart = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+
+    // 縮放
+    const factor = dist / initialPinchDist;
+    const wx = toWorldX(midX), wy = toWorldY(midY);
+    camZoom = initialPinchZoom * factor;
+    camZoom = Math.max(0.2, Math.min(camZoom, 10));
+    camX = midX - wx * camZoom;
+    camY = midY - wy * camZoom;
+
+    redraw(); return;
+  }
+
+  if (!movingObj) return;
+  const t = e.touches[0];
+  handleCanvasDrag(t.clientX, t.clientY);
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => { 
+  initialPinchDist = null;
+  releaseCanvasObj(); 
+});
+
+// 面板觸控拖放
+document.querySelectorAll('.item-card').forEach(card=>{
+  card.addEventListener('touchstart',e=>{
+    if(e.target.classList.contains('cust-f-input')) return;
+    e.preventDefault();
+    const type=card.dataset.type;
+    const custIn=card.querySelector('.cust-f-input');
+    const f=custIn?parseFloat(custIn.value)||(type==='concave'?-120:120):
+             card.dataset.f?parseFloat(card.dataset.f):null;
+    dragging={type,f,fromCard:true};
+    ghost.width=80;ghost.height=80;
+    ghostCtx.clearRect(0,0,80,80);
+    if(type==='point') drawPointIcon(ghost);
+    else if(type==='parallel') drawParallelIcon(ghost);
+    else drawLensIcon(ghost,f,type);
+    ghost.style.display='block';
+  },{passive:false});
+
+  card.addEventListener('touchmove',e=>{
+    if(!dragging) return;
+    e.preventDefault();
+    const t=e.touches[0];
+    moveGhost(t.clientX,t.clientY);
+  },{passive:false});
+
+  card.addEventListener('touchend',e=>{
+    if(!dragging) return;
+    const t=e.changedTouches[0];
+    ghost.style.display='none';
+    const rect=canvas.getBoundingClientRect();
+    const mx=t.clientX-rect.left,my=t.clientY-rect.top;
+    const {type,f}=dragging;
+    
+    const wx = toWorldX(mx), wy = toWorldY(my);
+
+    if(mx>=0&&mx<=W&&my>=0&&my<=H){
+      if(type==='point'){
+        source={type:'point',x:wx,y:wy};
+      } else if(type==='parallel'){
+        let py=wy;
+        if(Math.abs(py-axisY)<16/camZoom) py=axisY;
+        source={type:'parallel',x:wx,y:py};
+      } else {
+        lenses.push({type,f,x:wx});
+        lenses.sort((a,b)=>a.x-b.x);
+      }
+      redraw();
+    }
+    dragging=null;
+  },{passive:false});
+});
+
+</script>
+</body>
+</html>

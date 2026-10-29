@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>光的直進與透鏡成像模擬 (Blogger 版)</title>
+  <style>
+    /* ── Blogger 強制全螢幕覆蓋樣式 ── */
+    /* 隱藏 Blogger 預設導航、側欄、頁底等元素 */
+    #navbar-iframe,
+    .navbar,
+    .header-outer,
+    .footer-outer,
+    .sidebar-wrapper,
+    .post-footer,
+    .comments,
+    .blog-pager,
+    .HB-button,
+    #header,
+    #footer {
+      display: none !important;
+      height: 0 !important;
+      visibility: hidden !important;
+    }
+
+    body,
+    html {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: #0a0e1a !important;
+    }
+
+    /* 強制 App 容器佔滿視窗 */
+    #app {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      /* fallback */
+      height: 100dvh !important;
+      z-index: 999999 !important;
+      display: flex;
+      flex-direction: column;
+      background: #0a0e1a;
+    }
+
+    /* ── 原有樣式 ── */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      user-select: none;
+    }
+
+    /* ── 回前頁按鈕 ── */
+    #back-btn {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      z-index: 1000000;
+      background: rgba(26, 42, 94, 0.8);
+      border: 1px solid #4a7adf;
+      color: #8ab4f8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 0 10px rgba(74, 122, 223, 0.3);
+    }
+
+    #back-btn:hover {
+      background: #1a2a5e;
+      box-shadow: 0 0 15px rgba(74, 122, 223, 0.6);
+      transform: scale(1.05);
+    }
+
+    #header {
+      flex: 0 0 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(90deg, #0d1b3e, #1a2a5e, #0d1b3e);
+      border-bottom: 1px solid #2a3a6e;
+      color: #8ab4f8;
+      font-size: 15px;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+
+    #canvas-wrap {
+      flex: 1 1 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvas {
+      display: block;
+      cursor: crosshair;
+    }
+
+    #panel {
+      flex: 0 0 110px;
+      background: linear-gradient(180deg, #0d1625 0%, #111c30 100%);
+      border-top: 1px solid #2a3a6e;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    #panel::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    #panel::-webkit-scrollbar-track {
+      background: #0a0e1a;
+    }
+
+    #panel::-webkit-scrollbar-thumb {
+      background: #2a4080;
+      border-radius: 2px;
+    }
+
+    .panel-label {
+      color: #5a7aaa;
+      font-size: 10px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      margin-right: 2px;
+    }
+
+    .divider {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(180deg, transparent, #2a3a6e, transparent);
+      flex-shrink: 0;
+      margin: 0 4px;
+    }
+
+    .item-card {
+      flex-shrink: 0;
+      width: 68px;
+      height: 86px;
+      background: linear-gradient(135deg, #131d35, #1c294a);
+      border: 1px solid #2a3a6e;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: grab;
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      position: relative;
+    }
+
+    .item-card:hover {
+      border-color: #4a7adf;
+      box-shadow: 0 0 12px #1a3a8f88;
+      transform: translateY(-2px);
+    }
+
+    .item-card:active {
+      cursor: grabbing;
+    }
+
+    .item-label {
+      color: #8ab4f8;
+      font-size: 9px;
+      text-align: center;
+      pointer-events: none;
+      line-height: 1.2;
+    }
+
+    #trash {
+      margin-left: auto;
+      flex-shrink: 0;
+      width: 50px;
+      height: 80px;
+      border: 1px dashed #ff5a5a66;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      color: #ff5a5a66;
+      font-size: 18px;
+      transition: border-color .2s, color .2s;
+    }
+
+    #trash.active {
+      border-color: #ff5a5a;
+      color: #ff5a5a;
+      box-shadow: 0 0 12px #ff5a5a44;
+    }
+
+    #trash-label {
+      font-size: 8px;
+      letter-spacing: 1px;
+    }
+
+    #ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      opacity: .8;
+    }
+
+    #hint {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: #3a5a8a;
+      font-size: 10px;
+      letter-spacing: .5px;
+      pointer-events: none;
+    }
+
+    .custom-card {
+      height: 80px;
+    }
+
+    .custom-card canvas {
+      margin-top: 8px;
+    }
+
+    .cust-f-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      margin-top: 1px;
+    }
+
+    .cust-f-label {
+      color: #5a7aaa;
+      font-size: 9px;
+    }
+
+    .cust-f-input {
+      width: 42px;
+      background: #0a0e1a;
+      color: #8ab4f8;
+      border: 1px solid #2a3a6e;
+      border-radius: 3px;
+      font-size: 9px;
+      padding: 1px 2px;
+      text-align: center;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    .cust-f-input::-webkit-inner-spin-button,
+    .cust-f-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .cust-f-input:focus {
+      border-color: #4a7adf;
+      box-shadow: 0 0 4px #4a7adf44;
+    }
+
+    @media (max-height: 500px),
+    (max-width: 600px) {
+      #header {
+        flex: 0 0 36px;
+        font-size: 13px;
+      }
+
+      #panel {
+        flex: 0 0 115px;
+        padding: 0 8px;
+        gap: 8px;
+      }
+
+      .item-card {
+        width: 72px;
+        height: 90px;
+        gap: 4px;
+      }
+
+      .custom-card {
+        height: 84px;
+      }
+
+      .item-label {
+        font-size: 9px;
+      }
+
+      .cust-f-input {
+        width: 44px;
+        font-size: 9px;
+      }
+
+      .divider {
+        height: 60px;
+        margin: 0 2px;
+      }
+
+      #trash {
+        width: 50px;
+        height: 75px;
+        font-size: 18px;
+      }
+
+      #hint {
+        font-size: 10px;
+        bottom: 4px;
+      }
+
+      #back-btn {
+        padding: 4px 10px;
+        font-size: 11px;
+        top: 6px;
+        left: 8px;
+      }
+    }
+
+    @media (pointer: coarse) {
+      .cust-f-input {
+        padding: 4px 2px;
+      }
+
+      #panel::-webkit-scrollbar {
+        height: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="app">
+    <button id="back-btn" onclick="window.history.back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      回前頁
+    </button>
+    <div id="header">💡 光的直進與透鏡成像原理模擬</div>
+
+    <div id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="hint">拖曳下方物件至作圖區 · 滑鼠在作圖區拖移物件位置 · 支援多透鏡組合</div>
+    </div>
+
+    <div id="panel">
+      <span class="panel-label">光&nbsp;源</span>
+      <div class="item-card" id="card-point" data-type="point">
+        <canvas width="68" height="56" id="icon-point"></canvas>
+        <span class="item-label">點光源</span>
+      </div>
+      <div class="item-card" id="card-parallel" data-type="parallel">
+        <canvas width="68" height="56" id="icon-parallel"></canvas>
+        <span class="item-label">平行光源</span>
+      </div>
+
+      <div class="divider"></div>
+      <span class="panel-label">凸&nbsp;透&nbsp;鏡</span>
+      <div class="item-card" data-type="convex" data-f="80">
+        <canvas width="68" height="56" class="lens-icon" data-f="80" data-kind="convex"></canvas>
+        <span class="item-label">凸透鏡<br>f = 80</span>
+      </div>
+      <div class="item-card" data-type="convex" data-f="140">
+        <canvas width="68" height="56" class="lens-icon" data-f="140" data-kind="convex"></canvas>
+        <span class="item-label">凸透鏡<br>f = 140</span>
+      </div>
+      <div class="item-card" data-type="convex" data-f="200">
+        <canvas width="68" height="56" class="lens-icon" data-f="200" data-kind="convex"></canvas>
+        <span class="item-label">凸透鏡<br>f = 200</span>
+      </div>
+
+      <div class="divider"></div>
+      <span class="panel-label">凹&nbsp;透&nbsp;鏡</span>
+      <div class="item-card" data-type="concave" data-f="-80">
+        <canvas width="68" height="56" class="lens-icon" data-f="-80" data-kind="concave"></canvas>
+        <span class="item-label">凹透鏡<br>f = -80</span>
+      </div>
+      <div class="item-card" data-type="concave" data-f="-140">
+        <canvas width="68" height="56" class="lens-icon" data-f="-140" data-kind="concave"></canvas>
+        <span class="item-label">凹透鏡<br>f = -140</span>
+      </div>
+      <div class="item-card" data-type="concave" data-f="-200">
+        <canvas width="68" height="56" class="lens-icon" data-f="-200" data-kind="concave"></canvas>
+        <span class="item-label">凹透鏡<br>f = -200</span>
+      </div>
+
+      <div class="divider"></div>
+      <span class="panel-label">自&nbsp;訂</span>
+      <div class="item-card custom-card" id="card-cust-convex" data-type="convex">
+        <canvas width="68" height="32" id="icon-cust-convex"></canvas>
+        <span class="item-label">凸透鏡</span>
+        <div class="cust-f-row">
+          <span class="cust-f-label">f=</span>
+          <input type="number" class="cust-f-input" id="finput-cust-convex" value="120" min="10" max="800" step="10">
+        </div>
+      </div>
+      <div class="item-card custom-card" id="card-cust-concave" data-type="concave">
+        <canvas width="68" height="32" id="icon-cust-concave"></canvas>
+        <span class="item-label">凹透鏡</span>
+        <div class="cust-f-row">
+          <span class="cust-f-label">f=</span>
+          <input type="number" class="cust-f-input" id="finput-cust-concave" value="-120" min="-800" max="-10"
+            step="10">
+        </div>
+      </div>
+      <div class="item-card custom-card" id="card-cust-menCC" data-type="meniscusCC">
+        <canvas width="68" height="32" id="icon-cust-menCC"></canvas>
+        <span class="item-label">凸凹透鏡</span>
+        <div class="cust-f-row">
+          <span class="cust-f-label">f=</span>
+          <input type="number" class="cust-f-input" id="finput-cust-menCC" value="200" min="-800" max="800" step="10">
+        </div>
+      </div>
+      <div class="item-card custom-card" id="card-cust-menCX" data-type="meniscusCX">
+        <canvas width="68" height="32" id="icon-cust-menCX"></canvas>
+        <span class="item-label">凹凸透鏡</span>
+        <div class="cust-f-row">
+          <span class="cust-f-label">f=</span>
+          <input type="number" class="cust-f-input" id="finput-cust-menCX" value="-200" min="-800" max="800" step="10">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div id="trash"><span>🗑</span><span id="trash-label">移除</span></div>
+    </div>
+  </div>
+
+  <canvas id="ghost" width="68" height="80"></canvas>
+
+  <script>
+    // ─────────────────────────────────────────────
+    // 畫小圖示
+    // ─────────────────────────────────────────────
+    function drawPointIcon(cv) {
+      const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, cx = w / 2, cy = h / 2;
+      ctx.clearRect(0, 0, w, h);
+      const r = Math.min(w, h) * 0.32;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grad.addColorStop(0, '#fffde4'); grad.addColorStop(.4, '#ffcc44'); grad.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+      for (let i = 0; i < 5; i++) {
+        const ang = -Math.PI / 4 + i * (Math.PI / 2) / 4;
+        const lx = cx + Math.cos(ang) * (r * 1.22), ly = cy + Math.sin(ang) * (r * 1.22);
+        ctx.beginPath(); ctx.moveTo(cx + Math.cos(ang) * (r * 0.33), cy + Math.sin(ang) * (r * 0.33));
+        ctx.lineTo(lx, ly); ctx.strokeStyle = '#ffcc4488'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+    }
+    function drawParallelIcon(cv) {
+      const ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+      ctx.clearRect(0, 0, w, h);
+      const ys = [h * .15, h * .27, h * .5, h * .73, h * .85];
+      ys.forEach(y => {
+        ctx.beginPath(); ctx.moveTo(4, y); ctx.lineTo(w - 8, y);
+        ctx.strokeStyle = '#66aaff88'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(w - 10, y - h * 0.07); ctx.lineTo(w - 4, y); ctx.lineTo(w - 10, y + h * 0.07);
+        ctx.strokeStyle = '#66aaff'; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+    }
+    function drawLensIcon(cv, f, kind) {
+      const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, cx = w / 2, cy = h / 2;
+      ctx.clearRect(0, 0, w, h);
+      const colMap = { convex: '#44aaff', concave: '#ff8844', meniscusCC: '#44ffcc', meniscusCX: '#ff44aa' };
+      const col = colMap[kind] || '#888888'; ctx.strokeStyle = col; ctx.lineWidth = 2;
+      const hh = h * 0.43, bw = w * 0.26;
+      if (kind === 'convex') {
+        ctx.beginPath(); ctx.moveTo(cx, cy - hh);
+        ctx.bezierCurveTo(cx + bw, cy - hh / 2, cx + bw, cy + hh / 2, cx, cy + hh);
+        ctx.bezierCurveTo(cx - bw, cy + hh / 2, cx - bw, cy - hh / 2, cx, cy - hh);
+        ctx.closePath();
+        const g = ctx.createLinearGradient(cx - bw, 0, cx + bw, 0);
+        g.addColorStop(0, col + '11'); g.addColorStop(.5, col + '44'); g.addColorStop(1, col + '11');
+        ctx.fillStyle = g; ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy - hh - h * 0.07); ctx.lineTo(cx, cy + hh + h * 0.07); ctx.strokeStyle = col + '88'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx - 3, cy - hh); ctx.lineTo(cx, cy - hh - h * 0.07); ctx.lineTo(cx + 3, cy - hh); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx - 3, cy + hh); ctx.lineTo(cx, cy + hh + h * 0.07); ctx.lineTo(cx + 3, cy + hh); ctx.stroke();
+      } else if (kind === 'concave') {
+        const iw = w * 0.12, indent = h * 0.21;
+        ctx.beginPath(); ctx.moveTo(cx - iw, cy - hh);
+        ctx.bezierCurveTo(cx + indent, cy - hh / 2, cx + indent, cy + hh / 2, cx - iw, cy + hh);
+        ctx.moveTo(cx + iw, cy - hh);
+        ctx.bezierCurveTo(cx - indent, cy - hh / 2, cx - indent, cy + hh / 2, cx + iw, cy + hh);
+        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx - iw, cy - hh); ctx.lineTo(cx + iw, cy - hh); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx - iw, cy + hh); ctx.lineTo(cx + iw, cy + hh); ctx.stroke();
+      } else if (kind === 'meniscusCC' || kind === 'meniscusCX') {
+        const bigB = w * 0.26, smallB = w * 0.09; ctx.beginPath(); ctx.moveTo(cx, cy - hh);
+        if (kind === 'meniscusCC') {
+          ctx.bezierCurveTo(cx - bigB, cy - hh / 2, cx - bigB, cy + hh / 2, cx, cy + hh);
+          ctx.bezierCurveTo(cx - smallB, cy + hh / 2, cx - smallB, cy - hh / 2, cx, cy - hh);
+        } else {
+          ctx.bezierCurveTo(cx + bigB, cy - hh / 2, cx + bigB, cy + hh / 2, cx, cy + hh);
+          ctx.bezierCurveTo(cx + smallB, cy + hh / 2, cx + smallB, cy - hh / 2, cx, cy - hh);
+        }
+        ctx.closePath();
+        const g = ctx.createLinearGradient(cx - bigB, 0, cx + bigB, 0);
+        g.addColorStop(0, col + '0a'); g.addColorStop(.5, col + '44'); g.addColorStop(1, col + '0a');
+        ctx.fillStyle = g; ctx.fill(); ctx.stroke();
+      }
+    }
+
+    // 初始化圖示
+    drawPointIcon(document.getElementById('icon-point'));
+    drawParallelIcon(document.getElementById('icon-parallel'));
+    document.querySelectorAll('.lens-icon').forEach(cv => {
+      const f = parseFloat(cv.dataset.f); drawLensIcon(cv, f, cv.dataset.kind);
+    });
+    drawLensIcon(document.getElementById('icon-cust-convex'), 120, 'convex');
+    drawLensIcon(document.getElementById('icon-cust-concave'), -120, 'concave');
+    drawLensIcon(document.getElementById('icon-cust-menCC'), 200, 'meniscusCC');
+    drawLensIcon(document.getElementById('icon-cust-menCX'), -200, 'meniscusCX');
+    document.querySelectorAll('.cust-f-input').forEach(inp => {
+      inp.addEventListener('mousedown', e => e.stopPropagation());
+      inp.addEventListener('touchstart', e => e.stopPropagation(), { passive: false });
+      inp.addEventListener('change', () => {
+        const card = inp.closest('.item-card');
+        const type = card.dataset.type;
+        const f = parseFloat(inp.value) || 120;
+        const iconId = 'icon-' + card.id.replace('card-', '');
+        const icon = document.getElementById(iconId);
+        if (icon) drawLensIcon(icon, f, type);
+      });
+    });
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('canvas-wrap');
+    let W, H, axisY, prevW, prevH;
+
+    // 攝像機狀態
+    let camX = 0, camY = 0, camZoom = 1;
+    let isPanning = false, panStart = { x: 0, y: 0 };
+    let initialPinchDist = null, initialPinchZoom = 1, pinchCenter = { x: 0, y: 0 };
+
+    const toWorldX = (sx) => (sx - camX) / camZoom;
+    const toWorldY = (sy) => (sy - camY) / camZoom;
+    const toScreenX = (wx) => wx * camZoom + camX;
+    const toScreenY = (wy) => wy * camZoom + camY;
+
+    function resize() {
+      const newW = wrap.clientWidth, newH = wrap.clientHeight;
+      if (prevW && prevH && (newW !== prevW || newH !== prevH)) {
+        const ratioX = newW / prevW;
+        const ratioY = newH / prevH;
+        if (source) { source.x *= ratioX; if (source.y !== undefined) source.y *= ratioY; }
+        lenses.forEach(l => { l.x *= ratioX; l.f = Math.round(l.f * ratioX); });
+      }
+      W = newW; H = newH; canvas.width = W; canvas.height = H;
+      axisY = H * .52; prevW = W; prevH = H; redraw();
+    }
+    window.addEventListener('resize', resize);
+
+    let source = null;
+    let lenses = [];
+
+    function getLightDirection() {
+      if (!source || lenses.length === 0) return 1;
+      const hasRight = lenses.some(l => l.x > source.x);
+      const hasLeft = lenses.some(l => l.x < source.x);
+      if (hasLeft && !hasRight) return -1;
+      return 1;
+    }
+    const RAY_COLORS = ['#ff6644', '#ffaa22', '#88ff44', '#44ccff', '#cc88ff'];
+    function lensHalfH() { return Math.min(H * .32, 130); }
+
+    function traceThroughLens(incidentRay, lens, dir = 1) {
+      const lx = lens.x;
+      const dx = incidentRay.x2 - incidentRay.x1;
+      const dy = incidentRay.y2 - incidentRay.y1;
+      if (Math.abs(dx) < 1e-9) return null;
+      const t = (lx - incidentRay.x1) / dx;
+      if (t < 0) return null;
+      const hitY = incidentRay.y1 + dy * t;
+      const halfH = lensHalfH();
+      if (Math.abs(hitY - axisY) > halfH) return null;
+      const h = hitY - axisY;
+      const slopeIn = dy / dx;
+      const slopeOut = slopeIn - (h / lens.f) * dir;
+      return { x1: lx, y1: hitY, x2: lx + 100, y2: hitY + slopeOut * 100, slope: slopeOut };
+    }
+
+    function traceRay(startX, startY, slopeOrParallel, parallel, dir = 1) {
+      const segments = [];
+      let curX = startX, curY = startY, curSlope = parallel ? 0 : slopeOrParallel;
+      const sortedLenses = dir > 0 ? [...lenses].filter(l => l.x > startX).sort((a, b) => a.x - b.x) : [...lenses].filter(l => l.x < startX).sort((a, b) => b.x - a.x);
+      for (const lens of sortedLenses) {
+        const hitY = curY + curSlope * (lens.x - curX);
+        const halfH = lensHalfH();
+        if (Math.abs(hitY - axisY) > halfH) { segments.push({ x1: curX, y1: curY, x2: lens.x, y2: hitY, blocked: true }); return segments; }
+        const refracted = traceThroughLens({ x1: curX, y1: curY, x2: lens.x, y2: hitY }, lens, dir);
+        if (!refracted) { segments.push({ x1: curX, y1: curY, x2: lens.x, y2: hitY, blocked: true }); return segments; }
+        segments.push({ x1: curX, y1: curY, x2: refracted.x1, y2: refracted.y1, ghost: false });
+        curX = refracted.x1; curY = refracted.y1; curSlope = refracted.slope;
+      }
+      const endX = dir > 0 ? W + 100 : -100;
+      segments.push({ x1: curX, y1: curY, x2: endX, y2: curY + curSlope * (endX - curX), ghost: false });
+      return segments;
+    }
+
+    function getRayParams() {
+      const dir = getLightDirection();
+      const firstLens = dir > 0 ? lenses.filter(l => l.x > source.x).sort((a, b) => a.x - b.x)[0] : lenses.filter(l => l.x < source.x).sort((a, b) => b.x - a.x)[0];
+      const halfH = lensHalfH(), fracs = [-1, -0.5, 0, 0.5, 1];
+      if (source.type === 'point') {
+        const srcY = source.y ?? axisY;
+        return fracs.map(frac => {
+          let slope = firstLens ? (axisY + frac * halfH - srcY) / (firstLens.x - source.x) : frac * 0.45;
+          return { startX: source.x, startY: srcY, slope, parallel: false, dir };
+        });
+      } else {
+        const srcY = source.y ?? axisY;
+        const slope = firstLens && Math.abs(firstLens.x - source.x) > 1 ? (axisY - srcY) / (firstLens.x - source.x) : 0;
+        return fracs.map(frac => { return { startX: source.x, startY: srcY + frac * halfH, slope, parallel: false, dir }; });
+      }
+    }
+
+    function redraw() {
+      ctx.clearRect(0, 0, W, H);
+      const bg = ctx.createLinearGradient(0, 0, 0, H);
+      bg.addColorStop(0, '#0a0f1e'); bg.addColorStop(1, '#050911');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.setTransform(camZoom, 0, 0, camZoom, camX, camY);
+      drawGrid(); drawAxis(); if (source) drawSource();
+      drawLenses(); if (source) drawRays(); drawImageIndicator();
+      ctx.restore();
+    }
+
+    function drawGrid() {
+      ctx.save(); ctx.strokeStyle = '#1a2540'; ctx.lineWidth = 1 / camZoom;
+      const step = 60;
+      const startX = Math.floor(toWorldX(0) / step) * step;
+      const endX = Math.ceil(toWorldX(W) / step) * step;
+      const startY = Math.floor(toWorldY(0) / step) * step;
+      const endY = Math.ceil(toWorldY(H) / step) * step;
+      for (let x = startX; x <= endX; x += step) { ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, endY); ctx.stroke(); }
+      for (let y = startY; y <= endY; y += step) { ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(endX, y); ctx.stroke(); }
+      ctx.restore();
+    }
+
+    function drawAxis() {
+      ctx.save();
+      const srcOnAxis = source && Math.abs((source.type === 'point' ? (source.y ?? axisY) : axisY) - axisY) < 0.5;
+      ctx.beginPath(); ctx.moveTo(toWorldX(-100), axisY); ctx.lineTo(toWorldX(W + 100), axisY);
+      if (srcOnAxis) { ctx.strokeStyle = '#5a8aff'; ctx.lineWidth = 2 / camZoom; ctx.shadowColor = '#4488ff'; ctx.shadowBlur = 8 / camZoom; } else { ctx.strokeStyle = '#2a4a8a'; ctx.lineWidth = 1.5 / camZoom; }
+      ctx.setLineDash([8 / camZoom, 5 / camZoom]); ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+      if (source && lenses.length > 0) drawRuler();
+      ctx.restore();
+    }
+
+    function drawRuler() {
+      const originX = source.x, tickStep = 20; ctx.save(); ctx.font = `${10 / camZoom}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const startPX = Math.floor((toWorldX(0) - originX) / tickStep) * tickStep;
+      const endPX = Math.ceil((toWorldX(W) - originX) / tickStep) * tickStep;
+      for (let px = startPX; px <= endPX; px += tickStep) {
+        const x = originX + px;
+        const h = (px % 100 === 0 ? 10 : px % 20 === 0 ? 6 : 0) / camZoom;
+        if (h > 0) {
+          ctx.beginPath(); ctx.moveTo(x, axisY - h); ctx.lineTo(x, axisY + h); ctx.strokeStyle = '#3a5a8a'; ctx.lineWidth = 1 / camZoom; ctx.stroke();
+          if (px % 100 === 0) { ctx.fillStyle = '#3a5a8a'; ctx.fillText(px, x, axisY + 12 / camZoom); }
+        }
+      }
+      lenses.forEach(lens => {
+        const f = lens.f;[f, -f].forEach(df => {
+          const fx = lens.x + df;
+          ctx.beginPath(); ctx.arc(fx, axisY, 4 / camZoom, 0, Math.PI * 2); ctx.fillStyle = f > 0 ? '#ff8844' : '#ff4488'; ctx.fill();
+          ctx.fillStyle = f > 0 ? '#ffaa66' : '#ff66aa'; ctx.font = `${10 / camZoom}px monospace`; ctx.fillText('F' + (df > 0 ? '\'' : ''), fx, axisY - 16 / camZoom);
+        });
+        const dx = lens.x - source.x; if (Math.abs(dx) > 20) {
+          ctx.fillStyle = '#7abacc'; ctx.font = `${11 / camZoom}px monospace`; ctx.fillText('d=' + Math.round(dx), (source.x + lens.x) / 2, axisY - 30 / camZoom);
+        }
+      });
+      ctx.restore();
+    }
+
+    function drawSource() {
+      ctx.save(); const x = source.x, y = source.type === 'point' ? (source.y ?? axisY) : axisY;
+      const onAxis = (source.type === 'point' && Math.abs(y - axisY) < 0.5);
+      if (source.type === 'point') {
+        if (!onAxis && Math.abs(y - axisY) > 4) { ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, y); ctx.strokeStyle = '#ffcc4440'; ctx.lineWidth = 1 / camZoom; ctx.setLineDash([4 / camZoom, 4 / camZoom]); ctx.stroke(); ctx.setLineDash([]); }
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, 40); grad.addColorStop(0, '#fffde4cc'); grad.addColorStop(.3, '#ffcc4488'); grad.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+        const inner = ctx.createRadialGradient(x, y, 0, x, y, 8); inner.addColorStop(0, '#ffffff'); inner.addColorStop(.5, '#ffdd66'); inner.addColorStop(1, '#ff8800');
+        ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fillStyle = inner; ctx.fill();
+        if (onAxis) { ctx.beginPath(); ctx.arc(x, y, 14 / camZoom, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2 / camZoom; ctx.stroke(); ctx.fillStyle = '#ffffff'; ctx.font = `bold ${11 / camZoom}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('點光源 ● 在軸上', x, y - 20 / camZoom); }
+        else { ctx.fillStyle = '#ffdd66'; ctx.font = `bold ${12 / camZoom}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('點光源', x, y - 14 / camZoom); }
+      } else {
+        const srcY = source.y ?? axisY, onAxisP = Math.abs(srcY - axisY) < 0.5, bw = 28, bh = lensHalfH() * 2, rx = x - bw / 2, ry = srcY - bh / 2;
+        if (!onAxisP && Math.abs(srcY - axisY) > 4) { ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, srcY); ctx.strokeStyle = '#4488cc40'; ctx.lineWidth = 1 / camZoom; ctx.setLineDash([4 / camZoom, 4 / camZoom]); ctx.stroke(); ctx.setLineDash([]); }
+        ctx.fillStyle = '#1a2a4a'; ctx.strokeStyle = onAxisP ? '#88bbff' : '#4488cc'; ctx.lineWidth = (onAxisP ? 2.5 : 2) / camZoom;
+        ctx.beginPath(); ctx.roundRect(rx, ry, bw, bh, 6 / camZoom); ctx.fill(); ctx.stroke();
+        if (onAxisP) { ctx.beginPath(); ctx.moveTo(rx - 6 / camZoom, srcY); ctx.lineTo(rx + bw + 6 / camZoom, srcY); ctx.strokeStyle = 'rgba(180,220,255,0.75)'; ctx.lineWidth = 1.5 / camZoom; ctx.stroke(); }
+        ctx.fillStyle = onAxisP ? '#aaddff' : '#6aAAee'; ctx.font = `bold ${12 / camZoom}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('平行光源', x, ry - 6 / camZoom);
+      }
+      ctx.restore();
+    }
+
+    function drawLenses() {
+      lenses.forEach((lens, i) => {
+        const halfH = lensHalfH(), x = lens.x; ctx.save();
+        if (lens.type === 'convex') {
+          const bulge = halfH * .4; ctx.beginPath(); ctx.moveTo(x, axisY - halfH); ctx.bezierCurveTo(x + bulge, axisY - halfH * .5, x + bulge, axisY + halfH * .5, x, axisY + halfH); ctx.bezierCurveTo(x - bulge, axisY + halfH * .5, x - bulge, axisY - halfH * .5, x, axisY - halfH); ctx.closePath();
+          const g = ctx.createLinearGradient(x - bulge, 0, x + bulge, 0); g.addColorStop(0, '#44aaff0a'); g.addColorStop(.5, '#44aaff2a'); g.addColorStop(1, '#44aaff0a');
+          ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#44aaff'; ctx.lineWidth = 2.5 / camZoom; ctx.stroke();
+          ctx.fillStyle = '#44aaff'; ctx.font = `bold ${11 / camZoom}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(`f=${lens.f}`, x, axisY + halfH + 14 / camZoom);
+        } else if (lens.type === 'concave') {
+          const indent = halfH * .35; ctx.beginPath(); ctx.moveTo(x - 8, axisY - halfH); ctx.lineTo(x + 8, axisY - halfH); ctx.bezierCurveTo(x + 8 - indent, axisY - halfH * .5, x + 8 - indent, axisY + halfH * .5, x + 8, axisY + halfH); ctx.lineTo(x - 8, axisY + halfH); ctx.bezierCurveTo(x - 8 + indent, axisY + halfH * .5, x - 8 + indent, axisY - halfH * .5, x - 8, axisY - halfH); ctx.closePath();
+          const g = ctx.createLinearGradient(x - 8, 0, x + 8, 0); g.addColorStop(0, '#ff88440a'); g.addColorStop(.5, '#ff884418'); g.addColorStop(1, '#ff88440a');
+          ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#ff8844'; ctx.lineWidth = 2.5 / camZoom; ctx.stroke();
+          ctx.fillStyle = '#ff8844'; ctx.font = `bold ${11 / camZoom}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(`f=${lens.f}`, x, axisY + halfH + 14 / camZoom);
+        } else if (lens.type === 'meniscusCC' || lens.type === 'meniscusCX') {
+          const isCC = lens.type === 'meniscusCC', col = isCC ? '#44ffcc' : '#ff44aa', bigB = halfH * .5, smallB = halfH * .15;
+          ctx.beginPath(); ctx.moveTo(x, axisY - halfH);
+          if (isCC) { ctx.bezierCurveTo(x - bigB, axisY - halfH * .5, x - bigB, axisY + halfH * .5, x, axisY + halfH); ctx.bezierCurveTo(x - smallB, axisY + halfH * .5, x - smallB, axisY - halfH * .5, x, axisY - halfH); }
+          else { ctx.bezierCurveTo(x + bigB, axisY - halfH * .5, x + bigB, axisY + halfH * .5, x, axisY + halfH); ctx.bezierCurveTo(x + smallB, axisY + halfH * .5, x + smallB, axisY - halfH * .5, x, axisY - halfH); }
+          ctx.closePath(); const gm = ctx.createLinearGradient(x - bigB, 0, x + bigB, 0); gm.addColorStop(0, col + '0a'); gm.addColorStop(.5, col + '2a'); gm.addColorStop(1, col + '0a');
+          ctx.fillStyle = gm; ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 2.5 / camZoom; ctx.stroke();
+          ctx.fillStyle = col; ctx.font = `bold ${11 / camZoom}px monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(`f=${lens.f}`, x, axisY + halfH + 14 / camZoom);
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawRays() {
+      if (!source) return; ctx.save(); const params = getRayParams();
+      params.forEach((p, i) => { const segs = traceRay(p.startX, p.startY, p.slope, p.parallel, p.dir || 1); drawSegments(segs, RAY_COLORS[i]); });
+      ctx.restore();
+    }
+
+    function drawSegments(segs, color) {
+      segs.forEach(seg => {
+        ctx.beginPath(); ctx.moveTo(seg.x1, seg.y1); ctx.lineTo(seg.x2, seg.y2);
+        ctx.strokeStyle = color + 'cc'; ctx.lineWidth = 1.8 / camZoom; ctx.shadowColor = color; ctx.shadowBlur = 4 / camZoom; ctx.stroke(); ctx.shadowBlur = 0;
+      });
+    }
+
+    function drawImageIndicator() {
+      if (!source || lenses.length === 0) return; const dir = getLightDirection(), params = getRayParams(), finalSegs = [];
+      params.forEach(p => { const segs = traceRay(p.startX, p.startY, p.slope, p.parallel, p.dir || 1); const last = segs[segs.length - 1]; if (last && !last.blocked) finalSegs.push(last); });
+      if (finalSegs.length < 2) return; const s1 = finalSegs[0], s2 = finalSegs[finalSegs.length - 1];
+      const ix = lineIntersectX(s1, s2); const validImg = ix !== null && (dir > 0 ? (ix > source.x + 10 && ix < toWorldX(W) - 20) : (ix < source.x - 10 && ix > toWorldX(20)));
+      if (validImg) {
+        const iy = lineY(s1, ix); if (Math.abs(iy - axisY) > H * 2) return; ctx.save(); ctx.beginPath(); ctx.moveTo(ix, axisY); ctx.lineTo(ix, iy); ctx.strokeStyle = '#ffffff44'; ctx.lineWidth = 1 / camZoom; ctx.setLineDash([4 / camZoom, 3 / camZoom]); ctx.stroke(); ctx.setLineDash([]);
+        const g2 = ctx.createRadialGradient(ix, iy, 0, ix, iy, 14 / camZoom); g2.addColorStop(0, '#ffffffdd'); g2.addColorStop(.4, '#88ddffaa'); g2.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(ix, iy, 14 / camZoom, 0, Math.PI * 2); ctx.fillStyle = g2; ctx.fill(); ctx.beginPath(); ctx.arc(ix, iy, 4 / camZoom, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+        const refLens = dir > 0 ? lenses.slice().sort((a, b) => a.x - b.x)[lenses.length - 1] : lenses.slice().sort((a, b) => a.x - b.x)[0];
+        const imgDist = Math.round(ix - refLens.x); ctx.fillStyle = '#aaddff'; ctx.font = `bold ${11 / camZoom}px monospace`; ctx.textAlign = dir > 0 ? 'left' : 'right'; ctx.textBaseline = 'middle'; ctx.fillText(`像 v≈${imgDist}`, ix + (dir > 0 ? 8 / camZoom : -8 / camZoom), iy); ctx.restore();
+      }
+    }
+
+    function lineIntersectX(s1, s2) { const dx1 = s1.x2 - s1.x1, dy1 = s1.y2 - s1.y1, dx2 = s2.x2 - s2.x1, dy2 = s2.y2 - s2.y1, denom = dx1 * dy2 - dy1 * dx2; if (Math.abs(denom) < 1e-9) return null; const t = ((s2.x1 - s1.x1) * dy2 - (s2.y1 - s1.y1) * dx2) / denom; return s1.x1 + t * dx1; }
+    function lineY(seg, x) { const t = (x - seg.x1) / (seg.x2 - seg.x1); return seg.y1 + t * (seg.y2 - seg.y1); }
+
+    const ghost = document.getElementById('ghost'), ghostCtx = ghost.getContext('2d');
+    let dragging = null, movingObj = null, deletePending = false;
+
+    document.querySelectorAll('.item-card').forEach(card => {
+      card.addEventListener('mousedown', e => {
+        if (e.target.classList.contains('cust-f-input')) return; e.preventDefault();
+        const type = card.dataset.type, custIn = card.querySelector('.cust-f-input');
+        const f = custIn ? parseFloat(custIn.value) || (type === 'concave' ? -120 : 120) : card.dataset.f ? parseFloat(card.dataset.f) : null;
+        dragging = { type, f, fromCard: true }; ghost.width = 80; ghost.height = 80; ghostCtx.clearRect(0, 0, 80, 80); if (type === 'point') drawPointIcon(ghost); else if (type === 'parallel') drawParallelIcon(ghost); else drawLensIcon(ghost, f, type); ghost.style.display = 'block'; moveGhost(e.clientX, e.clientY);
+      });
+    });
+
+    canvas.addEventListener('mousedown', e => {
+      const rect = canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      if (e.button === 2) { isPanning = true; panStart = { x: e.clientX, y: e.clientY }; canvas.style.cursor = 'grabbing'; return; }
+      const wx = toWorldX(mx), wy = toWorldY(my);
+      if (source) {
+        const sY = source.type === 'point' ? (source.y ?? axisY) : axisY;
+        if (source.type === 'point') { if (Math.hypot(wx - source.x, wy - sY) < 20 / camZoom) { movingObj = { kind: 'source' }; deletePending = false; return; } }
+        else { const bw = 28, bh = lensHalfH() * 2; if (wx >= source.x - bw / 2 - 10 / camZoom && wx <= source.x + bw / 2 + 10 / camZoom && wy >= sY - bh / 2 && wy <= sY + bh / 2) { movingObj = { kind: 'source' }; deletePending = false; return; } }
+      }
+      for (let i = 0; i < lenses.length; i++) { if (Math.abs(wx - lenses[i].x) < 20 / camZoom && Math.abs(wy - axisY) < lensHalfH()) { movingObj = { kind: 'lens', lensRef: lenses[i] }; deletePending = false; return; } }
+    });
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+    function handleCanvasDrag(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect(), mx = clientX - rect.left, my = clientY - rect.top;
+      if (isPanning) {
+        const dx = clientX - panStart.x, dy = clientY - panStart.y;
+        camX += dx; camY += dy; panStart = { x: clientX, y: clientY }; redraw(); return;
+      }
+      if (!movingObj) return;
+      const wx = toWorldX(mx), wy = toWorldY(my);
+
+      // 檢查是否拖移到垃圾桶或畫布下方
+      const trash = document.getElementById('trash'), tr = trash.getBoundingClientRect();
+      const isOverTrash = clientX >= tr.left && clientX <= tr.right && clientY >= tr.top && clientY <= tr.bottom;
+      deletePending = (my > H + 10) || isOverTrash;
+      trash.classList.toggle('active', isOverTrash);
+
+      if (movingObj.kind === 'source') { if (source && !deletePending) { source.x = wx; let sy = wy; if (Math.abs(sy - axisY) < 16 / camZoom) sy = axisY; source.y = sy; } }
+      else { if (!deletePending) { movingObj.lensRef.x = wx; } }
+      redraw(); if (deletePending) drawDeleteHint(movingObj);
+    }
+    function drawDeleteHint(obj) { ctx.save(); ctx.fillStyle = 'rgba(255,60,60,0.18)'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#ff6666'; ctx.font = 'bold 18px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🗑  放開滑鼠以移除', W / 2, H / 2); ctx.restore(); }
+
+    function releaseCanvasObj() {
+      isPanning = false; canvas.style.cursor = 'crosshair';
+      if (!movingObj) return;
+      document.getElementById('trash').classList.remove('active');
+      if (deletePending) { if (movingObj.kind === 'source') { source = null; } else { const idx = lenses.indexOf(movingObj.lensRef); if (idx >= 0) lenses.splice(idx, 1); } }
+      else { lenses.sort((a, b) => a.x - b.x); }
+      movingObj = null; deletePending = false; redraw();
+    }
+    canvas.addEventListener('mousemove', e => { handleCanvasDrag(e.clientX, e.clientY); });
+    canvas.addEventListener('mouseup', e => { releaseCanvasObj(); });
+    canvas.addEventListener('mouseleave', e => {
+      // 滑鼠離開畫布時繼續追蹤（由全域 mousemove 接手）
+    });
+
+    wrap.addEventListener('wheel', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const wx = toWorldX(mx), wy = toWorldY(my);
+      camZoom *= zoomFactor;
+      camZoom = Math.max(0.2, Math.min(camZoom, 10));
+      camX = mx - wx * camZoom;
+      camY = my - wy * camZoom;
+      redraw();
+    }, { passive: false });
+
+    document.addEventListener('mousemove', e => { if (movingObj || isPanning) { handleCanvasDrag(e.clientX, e.clientY); } if (!dragging) return; moveGhost(e.clientX, e.clientY); const trash = document.getElementById('trash'), tr = trash.getBoundingClientRect(); const isOverTrash = e.clientX >= tr.left && e.clientX <= tr.right && e.clientY >= tr.top && e.clientY <= tr.bottom; trash.classList.toggle('active', isOverTrash); });
+    document.addEventListener('mouseup', e => {
+      if (movingObj || isPanning) releaseCanvasObj(); if (!dragging) return; ghost.style.display = 'none'; document.getElementById('trash').classList.remove('active');
+      const rect = canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      const wx = toWorldX(mx), wy = toWorldY(my);
+      const { type, f } = dragging; dragging = null;
+      if (mx >= 0 && mx <= W && my >= 0 && my <= H) { if (type === 'point') { source = { type: 'point', x: wx, y: wy }; } else if (type === 'parallel') { let py = wy; if (Math.abs(py - axisY) < 16 / camZoom) py = axisY; source = { type: 'parallel', x: wx, y: py }; } else { lenses.push({ type, f, x: wx }); lenses.sort((a, b) => a.x - b.x); } redraw(); }
+    });
+
+    function moveGhost(cx, cy) { ghost.style.left = (cx - 40) + 'px'; ghost.style.top = (cy - 40) + 'px'; }
+    let animFrame = 0; function animLoop() { animFrame++; redraw(); requestAnimationFrame(animLoop); }
+    resize(); animLoop();
+
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches.length === 2) {
+        const t1 = e.touches[0], t2 = e.touches[1];
+        initialPinchDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        initialPinchZoom = camZoom;
+        pinchCenter = { x: (t1.clientX + t2.clientX) / 2 - rect.left, y: (t1.clientY + t2.clientY) / 2 - rect.top };
+        isPanning = true; panStart = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+        return;
+      }
+      const t = e.touches[0], mx = t.clientX - rect.left, my = t.clientY - rect.top;
+      const wx = toWorldX(mx), wy = toWorldY(my);
+      if (source) {
+        const sY = source.type === 'point' ? (source.y ?? axisY) : axisY;
+        if (source.type === 'point' && Math.hypot(wx - source.x, wy - sY) < 24 / camZoom) { movingObj = { kind: 'source' }; return; }
+        const bw = 28, bh = lensHalfH() * 2;
+        if (source.type === 'parallel' && wx >= source.x - bw / 2 - 14 / camZoom && wx <= source.x + bw / 2 + 14 / camZoom && wy >= sY - bh / 2 && wy <= sY + bh / 2) { movingObj = { kind: 'source' }; return; }
+      }
+      for (let i = 0; i < lenses.length; i++) { if (Math.abs(wx - lenses[i].x) < 24 / camZoom && Math.abs(wy - axisY) < lensHalfH() + 10) { movingObj = { kind: 'lens', lensRef: lenses[i] }; return; } }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches.length === 2 && initialPinchDist) {
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
+        const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+        camX += (t1.clientX + t2.clientX) / 2 - panStart.x;
+        camY += (t1.clientY + t2.clientY) / 2 - panStart.y;
+        panStart = { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
+        const factor = dist / initialPinchDist;
+        const wx = toWorldX(midX), wy = toWorldY(midY);
+        camZoom = initialPinchZoom * factor;
+        camZoom = Math.max(0.2, Math.min(camZoom, 10));
+        camX = midX - wx * camZoom;
+        camY = midY - wy * camZoom;
+        redraw(); return;
+      }
+      const t = e.touches[0];
+      handleCanvasDrag(t.clientX, t.clientY);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', e => {
+      initialPinchDist = null;
+      releaseCanvasObj();
+    });
+
+    document.querySelectorAll('.item-card').forEach(card => {
+      card.addEventListener('touchstart', e => { if (e.target.classList.contains('cust-f-input')) return; e.preventDefault(); const type = card.dataset.type, custIn = card.querySelector('.cust-f-input'); const f = custIn ? parseFloat(custIn.value) || (type === 'concave' ? -120 : 120) : card.dataset.f ? parseFloat(card.dataset.f) : null; dragging = { type, f, fromCard: true }; ghost.width = 80; ghost.height = 80; ghostCtx.clearRect(0, 0, 80, 80); if (type === 'point') drawPointIcon(ghost); else if (type === 'parallel') drawParallelIcon(ghost); else drawLensIcon(ghost, f, type); ghost.style.display = 'block'; }, { passive: false });
+      card.addEventListener('touchmove', e => { if (!dragging) return; e.preventDefault(); moveGhost(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+      card.addEventListener('touchend', e => {
+        if (!dragging) return; const t = e.changedTouches[0], rect = canvas.getBoundingClientRect(), mx = t.clientX - rect.left, my = t.clientY - rect.top, { type, f } = dragging; ghost.style.display = 'none';
+        const wx = toWorldX(mx), wy = toWorldY(my);
+        if (mx >= 0 && mx <= W && my >= 0 && my <= H) { if (type === 'point') { source = { type: 'point', x: wx, y: wy }; } else if (type === 'parallel') { let py = wy; if (Math.abs(py - axisY) < 16 / camZoom) py = axisY; source = { type: 'parallel', x: wx, y: py }; } else { lenses.push({ type, f, x: wx }); lenses.sort((a, b) => a.x - b.x); } redraw(); } dragging = null;
+      }, { passive: false });
+    });
+  </script>
+</body>
+
+</html>
