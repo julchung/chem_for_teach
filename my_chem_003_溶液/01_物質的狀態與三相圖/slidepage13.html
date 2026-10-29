@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-1 物質三態 · 範例 2：CO₂ 三相圖狀態判斷 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.14);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #slide-stage {
+            width: 1600px;
+            height: 900px;
+            transform-origin: center center;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            padding: 24px 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: 32px; font-weight: 800;
+            display: flex; align-items: center; gap: 14px;
+            border-bottom: 2px solid rgba(34,211,238,0.28); padding-bottom: 10px; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 32px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+
+        .ex-layout {
+            display: grid; grid-template-columns: 1.05fr 1.15fr;
+            gap: 24px; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 18px;
+            padding: 24px 28px; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 0;
+            box-shadow: 0 10px 32px rgba(0,0,0,0.38);
+        }
+        .tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 18px; border-radius: 20px;
+            font-size: 20px; font-weight: 800; align-self: flex-start;
+        }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1.5px solid rgba(251,191,36,0.5); color: var(--accent-yellow); }
+        .tag-cyan { background: rgba(34,211,238,0.15); border: 1.5px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .q-box {
+            background: rgba(56,189,248,0.08); border: 1.5px solid rgba(56,189,248,0.3);
+            border-radius: 14px; padding: 22px 26px; font-size: 23.5px; line-height: 1.7;
+        }
+        
+        .options {
+            list-style: none; margin: 0; padding: 0;
+            display: flex; flex-direction: column; gap: 12px;
+            padding-left: 6px;
+        }
+        .options li {
+            padding: 13px 22px; border-radius: 12px;
+            background: rgba(255,255,255,0.035); border: 1.5px solid rgba(255,255,255,0.1);
+            font-size: 22px; font-weight: 600; line-height: 1.5;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            transition: all 0.25s ease;
+        }
+        .opt-wrap {
+            display: flex; align-items: baseline; gap: 12px; flex: 1;
+        }
+        .opt-label {
+            color: var(--accent-yellow); font-weight: 800; font-size: 22px; flex-shrink: 0;
+        }
+        .opt-text {
+            flex: 1;
+        }
+        .options li.opt-correct {
+            border-color: rgba(52,211,153,0.7) !important;
+            background: rgba(52,211,153,0.14) !important;
+            color: var(--accent-green) !important;
+            box-shadow: 0 0 16px rgba(52,211,153,0.25);
+        }
+        
+        .btn-show-ans {
+            align-self: flex-start; padding: 11px 32px;
+            background: rgba(56,189,248,0.18); border: 2px solid var(--accent-cyan);
+            color: #fff; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 800;
+            transition: all 0.2s ease; font-family: inherit;
+        }
+        .btn-show-ans:hover { background: var(--accent-cyan); color: #000; }
+        .btn-show-ans.shown {
+            background: rgba(248,113,113,0.2); border-color: var(--accent-red); color: #fca5a5;
+        }
+        .step-line { border-left: 5px solid var(--accent-cyan); padding-left: 18px; font-size: 21px; line-height: 1.62; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slide-stage">
+        <h1>3-1 物質三態 &middot; 範例 2：CO₂ 三相圖各相態與臨界條件判定</h1>
+
+        <div class="ex-layout">
+            <!-- 左欄：題目與選項 -->
+            <div class="panel">
+                <span class="tag tag-yellow">📋 範例 2 · 三相點與臨界點判讀</span>
+                
+                <div class="q-box">
+                    <p>已知二氧化碳 ($\text{CO}_2$) 的三相點條件為：壓力 $5.11\text{ atm}$，溫度 $-56.6^\circ\text{C}$；<strong>正常昇華點為 $-78^\circ\text{C}$</strong>；臨界點條件為：壓力 $72.8\text{ atm}$，溫度 $31.0^\circ\text{C}$。<br><br>
+                    根據上述相圖特徵與熱力學規律，下列各溫壓條件下的敘述何項<strong>正確</strong>？</p>
+                </div>
+
+                <ul class="options">
+                    <li id="opt-2a">
+                        <div class="opt-wrap"><span class="opt-label">(A)</span><span class="opt-text">在 $1\text{ atm}$ 常壓時，溫度低於 $-78^\circ\text{C}$，以液態二氧化碳存在。</span></div>
+                    </li>
+                    <li id="opt-2b">
+                        <div class="opt-wrap"><span class="opt-label">(B)</span><span class="opt-text">壓力為 $10\text{ atm}$，溫度維持在 $-56.6^\circ\text{C}$ 時以液態二氧化碳存在。</span></div>
+                    </li>
+                    <li id="opt-2c">
+                        <div class="opt-wrap"><span class="opt-label">(C)</span><span class="opt-text">壓力為 $75\text{ atm}$，溫度維持在 $31.0^\circ\text{C}$ 時以液態二氧化碳存在。</span></div>
+                        <span class="ans-badge" style="display:none; font-weight:800; color:var(--accent-green); flex-shrink:0; margin-left:12px;">✓ 正確答案</span>
+                    </li>
+                    <li id="opt-2d">
+                        <div class="opt-wrap"><span class="opt-label">(D)</span><span class="opt-text">壓力為 $75\text{ atm}$，溫度維持在 $32.0^\circ\text{C}$ 時以液態二氧化碳存在。</span></div>
+                    </li>
+                </ul>
+
+                <button class="btn-show-ans" id="btnAns2" onclick="toggleAns()">💡 顯示詳解</button>
+            </div>
+
+            <!-- 右欄：預設留白（上課由老師自行講解） / 點擊按鈕後才展開詳解 -->
+            <div class="panel" style="background: rgba(255,255,255,0.025); border:1.5px solid rgba(255,255,255,0.1);">
+                <div id="ansBox2" style="display:none; flex-direction:column; gap:14px; height:100%; justify-content:space-between;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1.5px solid rgba(255,255,255,0.12); padding-bottom: 8px;">
+                        <span class="tag tag-cyan">📖 參考詳解與選項深度剖析</span>
+                        <span style="color:var(--accent-green); font-weight:800; font-size:22px;">🎯 正確答案：選 (C)</span>
+                    </div>
+
+                    <div class="step-line">
+                        <strong style="color:var(--accent-red);">(A) 錯誤：</strong>$\text{CO}_2$ 的三相點壓力為 $5.11\text{ atm}$。常壓 $1\text{ atm}$ 低於三相點壓力，因此常壓下<strong>絕無液態二氧化碳存在</strong>；在 $1\text{ atm}$ 且溫度低於正常昇華點（$-78^\circ\text{C}$）時，係以<strong>固態乾冰</strong>形式存在。
+                    </div>
+                    <div class="step-line">
+                        <strong style="color:var(--accent-red);">(B) 錯誤：</strong>$\text{CO}_2$ 固液平衡線（熔化線）<strong>斜率為正（加壓使熔點上升）</strong>。當壓力提高至 $10\text{ atm}$ 時，熔點已高於 $-56.6^\circ\text{C}$，因此在 $-56.6^\circ\text{C}$ 且 $10\text{ atm}$ 下尚未熔化，仍為<strong>固態</strong>。
+                    </div>
+                    <div class="step-line" style="border-left-color:var(--accent-green);">
+                        <strong style="color:var(--accent-green);">(C) 正確：</strong>在 $31.0^\circ\text{C}$（恰達臨界溫度）且外壓 $75\text{ atm} > 72.8\text{ atm}$（高於臨界壓力），尚未跨入超臨界流體區域，此高壓低於超溫邊界，能以高密度<strong>液態</strong>存在。
+                    </div>
+                    <div class="step-line" style="border-left-color:var(--accent-purple);">
+                        <strong style="color:var(--accent-purple);">(D) 錯誤：</strong>溫度 $32.0^\circ\text{C}$ <strong>已超過臨界溫度 $31.0^\circ\text{C}$</strong>。臨界溫度以上分子動能極高，無論施加多大壓力皆無法液化，此時系統為<strong>超臨界流體</strong>。
+                    </div>
+
+                    <div style="background:rgba(52,211,153,0.12); border:1.5px solid rgba(52,211,153,0.4); border-radius:12px; padding:12px 20px;">
+                        <p style="color:var(--accent-green); font-weight:800; font-size:22px; margin:0;">
+                            🎯 唯一正確答案：選 (C)。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAns() {
+    const ans = document.getElementById('ansBox2');
+    const btn = document.getElementById('btnAns2');
+    const optC = document.getElementById('opt-2c');
+    const badge = optC ? optC.querySelector('.ans-badge') : null;
+
+    const isShown = ans.style.display === 'flex';
+    if (isShown) {
+        ans.style.display = 'none';
+        btn.textContent = '💡 顯示詳解';
+        btn.classList.remove('shown');
+        if (optC) optC.classList.remove('opt-correct');
+        if (badge) badge.style.display = 'none';
+    } else {
+        ans.style.display = 'flex';
+        btn.textContent = '🙈 隱藏詳解';
+        btn.classList.add('shown');
+        if (optC) optC.classList.add('opt-correct');
+        if (badge) badge.style.display = 'inline-block';
+        if (window.MathJax) MathJax.typesetPromise([ans]).catch(function(){});
+    }
+}
+
+function fitStage() {
+    const stage = document.getElementById('slide-stage');
+    if (!stage) return;
+    const baseW = 1600;
+    const baseH = 900;
+    const paddingX = 20;
+    const paddingY = 20;
+    const availW = Math.max(window.innerWidth - paddingX, 320);
+    const availH = Math.max(window.innerHeight - paddingY, 240);
+    const scale = Math.min(availW / baseW, availH / baseH);
+    stage.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', fitStage);
+document.addEventListener('fullscreenchange', fitStage);
+document.addEventListener('webkitfullscreenchange', fitStage);
+window.addEventListener('DOMContentLoaded', fitStage);
+fitStage();
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return;
+    window.__chemScrollBridgeInstalled = true;
+    function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY||0, sx: window.scrollX||0 }, '*'); } }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('message', function (e) {
+        if (!e.data) return;
+        if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY||0, behavior: 'instant' }); reportScroll(); }
+        else if (e.data.type === '__chem_get_scroll') { reportScroll(); }
+    });
+    reportScroll(); window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-5 觀念例題 5：綜合離子分離流程 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56, 189, 248, 0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+        #slides-container {
+            position: absolute;
+            top: 1.2vh; left: 1.8vw; right: 1.8vw; bottom: 1.2vh;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+            margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.6rem;
+            border-bottom: 2px solid rgba(34, 211, 238, 0.25); padding-bottom: 0.25rem; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 7px; height: 24px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        h2 { font-size: clamp(1rem, 1.15vw, 1.25rem); font-weight: 700; margin-bottom: 0.35rem; }
+
+        .grid-2 {
+            display: grid; grid-template-columns: 1.2fr 0.95fr;
+            gap: 1.1rem; flex: 1; min-height: 0; align-items: stretch;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 14px;
+            padding: 1.2rem; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; gap: 0.8rem;
+            min-height: 0; overflow-y: auto;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+        }
+        .panel::-webkit-scrollbar { width: 4px; }
+        .panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+
+        .btn-action {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px; font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35); padding: 10px 22px;
+            font-size: 1rem; transition: all 0.2s; align-self: flex-start;
+        }
+        .btn-action:hover { filter: brightness(1.15); transform: translateY(-1px); }
+
+        .calc-step {
+            background: rgba(0,0,0,0.3); border-radius: 10px;
+            padding: 0.85rem 1.1rem; border-left: 4px solid var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        /* 流程圖樣式與完整樹狀分支橫線 */
+        .flow-container {
+            display: flex; flex-direction: column; align-items: center; gap: 0;
+            background: rgba(15, 23, 42, 0.75); padding: 16px 12px; border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.12); width: 100%;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .flow-box {
+            background: rgba(30, 41, 59, 0.95); border: 1.5px solid rgba(255,255,255,0.18);
+            border-radius: 8px; padding: 6px 12px; font-size: 0.88rem; font-weight: 700;
+            text-align: center; color: #f8fafc; transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            position: relative; z-index: 2;
+        }
+        .flow-box.reagent {
+            background: rgba(56, 189, 248, 0.16); border-color: var(--accent-blue);
+            color: var(--accent-cyan); font-size: 0.82rem; padding: 4px 12px; border-radius: 20px;
+            border-style: dashed;
+        }
+        .flow-arrow-v {
+            width: 2px; height: 16px; background: var(--accent-blue);
+            margin: 0 auto; position: relative;
+            box-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+            flex-shrink: 0;
+        }
+        .flow-arrow-v::after {
+            content: ''; position: absolute; bottom: -2px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 3.5px solid transparent;
+            border-right: 3.5px solid transparent;
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        /* 樹狀分支列（包含頂部分支橫線） */
+        .flow-split-row {
+            display: flex; width: 100%; justify-content: center;
+            position: relative; padding-top: 18px; margin-top: 0;
+        }
+        .flow-branch-col {
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; padding: 0 8px;
+        }
+
+        /* 水平分支橫線與垂直轉角導線：
+           左側分支：橫線自中心(50%)向右延伸至欄位交界(0)，左側向下垂至方塊
+           右側分支：橫線自中心(50%)向左延伸至欄位交界(0)，右側向下垂至方塊
+        */
+        .flow-split-row > .flow-branch-col::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            height: 18px;
+            box-sizing: border-box;
+            border-top: 2.5px solid var(--accent-blue);
+            box-shadow: 0 -1px 6px rgba(56, 189, 248, 0.5);
+            z-index: 1;
+        }
+        .flow-split-row > .flow-branch-col:first-child::before {
+            left: 50%;
+            right: 0;
+            border-left: 2.5px solid var(--accent-blue);
+            border-top-left-radius: 6px;
+        }
+        .flow-split-row > .flow-branch-col:last-child::before {
+            right: 50%;
+            left: 0;
+            border-right: 2.5px solid var(--accent-blue);
+            border-top-right-radius: 6px;
+        }
+
+        /* 垂直轉折線末端向下方塊之指示箭頭 */
+        .flow-split-row > .flow-branch-col::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 3.5px solid transparent;
+            border-right: 3.5px solid transparent;
+            border-top: 5px solid var(--accent-blue);
+            z-index: 3;
+        }
+
+        .flow-ans-text {
+            color: var(--accent-green); font-size: 0.85rem; font-weight: 800;
+            margin-top: 3px; display: none;
+        }
+        .show-ans .flow-ans-text { display: block; }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; overflow-y: auto; }
+            body, html, #app { overflow: auto; }
+            #slides-container { position: relative; height: auto; min-height: 100vh; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slides-container">
+        <h1>3-5 沉澱表與沉澱規則 &middot; 實戰演練：觀念例題 5</h1>
+
+        <div class="grid-2">
+            <!-- 左欄：流程圖題目與按鈕 -->
+            <div class="panel" style="justify-content:space-between;">
+                <div>
+                    <h2 style="color:var(--accent-yellow); font-size:1.25rem; margin-bottom:0.5rem;">📝 題目流程圖</h2>
+                    <p style="font-size:0.92rem; color:#cbd5e1; margin-bottom:0.6rem;">
+                        一溶液中含有 $\text{Ca}^{2+}, \text{Ag}^+, \text{Zn}^{2+}, \text{K}^+, \text{Pb}^{2+}$ 五種陽離子，經由以下步驟進行分離：
+                    </p>
+
+                    <!-- 流程樹 -->
+                    <div class="flow-container" id="flow-tree">
+                        <div class="flow-box">
+                            起始混合液：$[\text{Ca}^{2+}, \text{Ag}^+, \text{Zn}^{2+}, \text{K}^+, \text{Pb}^{2+}]$
+                        </div>
+                        <div class="flow-arrow-v"></div>
+                        <div class="flow-box reagent">加入 $0.1\text{ M HCl}_{(aq)}$</div>
+                        <div class="flow-arrow-v"></div>
+
+                        <div class="flow-split-row">
+                            <!-- 分支左：沉澱物 I -->
+                            <div class="flow-branch-col" style="flex: 1.4;">
+                                <div class="flow-box">
+                                    沉澱物 I
+                                    <div class="flow-ans-text">$\text{AgCl}, \text{PbCl}_2 \downarrow$</div>
+                                </div>
+                                <div class="flow-arrow-v"></div>
+                                <div class="flow-box reagent">加水煮沸</div>
+                                <div class="flow-arrow-v"></div>
+
+                                <div class="flow-split-row">
+                                    <div class="flow-branch-col" style="flex: 1;">
+                                        <div class="flow-box">
+                                            殘留沉澱 II
+                                            <div class="flow-ans-text">$\text{AgCl} \downarrow$</div>
+                                        </div>
+                                        <div class="flow-arrow-v"></div>
+                                        <div class="flow-box reagent">加 $6\text{ M }\text{NH}_3$</div>
+                                        <div class="flow-arrow-v"></div>
+                                        <div class="flow-box">
+                                            澄清液 IV
+                                            <div class="flow-ans-text">$[\text{Ag(NH}_3)_2]^+$</div>
+                                        </div>
+                                    </div>
+                                    <div class="flow-branch-col" style="flex: 1;">
+                                        <div class="flow-box">
+                                            熱濾液 III
+                                            <div class="flow-ans-text">$\text{Pb}^{2+}, \text{Cl}^-$</div>
+                                        </div>
+                                        <div class="flow-arrow-v"></div>
+                                        <div class="flow-box reagent">冷卻</div>
+                                        <div class="flow-arrow-v"></div>
+                                        <div class="flow-box">
+                                            沉澱物 V
+                                            <div class="flow-ans-text">$\text{PbCl}_2 \downarrow$</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 分支右：原濾液 -->
+                            <div class="flow-branch-col" style="flex: 1;">
+                                <div class="flow-box">
+                                    澄清濾液
+                                    <div class="flow-ans-text">$\text{Ca}^{2+}, \text{Zn}^{2+}, \text{K}^+$</div>
+                                </div>
+                                <div class="flow-arrow-v"></div>
+                                <div class="flow-box reagent">加 $\text{H}_2\text{SO}_{4(aq)}$</div>
+                                <div class="flow-arrow-v"></div>
+                                <div class="flow-box">
+                                    沉澱物 VI
+                                    <div class="flow-ans-text">$\text{CaSO}_4 \downarrow$</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding-top:0.8rem; display:flex; gap:10px;">
+                    <button class="btn-action" id="btn-flow-toggle" onclick="toggleFlowAns()">
+                        💡 顯示流程解答 / 隱藏
+                    </button>
+                    <button class="btn-action" style="background:linear-gradient(135deg,#059669,#047857);" onclick="toggleSolution('solution-box')">
+                        📖 查看原理詳解
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右欄：分析與詳解 -->
+            <div class="panel" style="background:rgba(255,255,255,0.02);">
+                <div id="solution-box" style="display:none; flex-direction:column; gap:0.6rem;">
+                    <h2 style="color:var(--accent-green); font-size:1.3rem; margin-bottom:0.4rem;">💡 分離步驟原理詳解</h2>
+
+                    <div class="calc-step">
+                        <div style="font-size:0.95rem; color:var(--accent-blue); font-weight:700;">步驟 1：加稀鹽酸（$\text{HCl}$）沉澱第一組陽離子</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:3px;">
+                            • $\text{Ag}^+$ 與 $\text{Pb}^{2+}$ 形成難溶的氯化物沉澱：$\text{AgCl}\downarrow$（白色）、$\text{PbCl}_2\downarrow$（白色）。<br>
+                            • $\text{Ca}^{2+}, \text{Zn}^{2+}, \text{K}^+$ 的氯化物均易溶，留在澄清濾液中。
+                        </p>
+                    </div>
+
+                    <div class="calc-step">
+                        <div style="font-size:0.95rem; color:var(--accent-yellow); font-weight:700;">步驟 2：利用熱水溶解度分離 $\text{PbCl}_2$ 與 $\text{AgCl}$</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:3px;">
+                            • $\text{PbCl}_2$ 的溶解度具極大溫度敏感性（熱水中溶解度為冷水數倍），煮沸時 $\text{PbCl}_2$ 溶解進入熱濾液 III。<br>
+                            • $\text{AgCl}$ 在熱水中仍極難溶，作為殘留沉澱 II 留在濾紙上。<br>
+                            • 熱濾液冷卻後，$\text{PbCl}_2$ 結晶重新析出（沉澱物 V）。
+                        </p>
+                    </div>
+
+                    <div class="calc-step">
+                        <div style="font-size:0.95rem; color:var(--accent-purple); font-weight:700;">步驟 3：加濃氨水檢驗 $\text{AgCl}$</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:3px;">
+                            • 殘留沉澱 II（$\text{AgCl}$）遇 $6\text{ M }\text{NH}_3$ 生成可溶性二氨合銀錯離子：<br>
+                            $\text{AgCl}_{(s)} + 2\text{NH}_{3(aq)} \rightarrow [\text{Ag(NH}_3)_2]^+_{(aq)} + \text{Cl}^-_{(aq)}$，沉澱完全溶解成澄清液 IV。
+                        </p>
+                    </div>
+
+                    <div class="calc-step" style="border-left-color:var(--accent-green);">
+                        <div style="font-size:0.95rem; color:var(--accent-green); font-weight:700;">步驟 4：加硫酸（$\text{H}_2\text{SO}_4$）沉澱 $\text{Ca}^{2+}$</div>
+                        <p style="font-size:0.92rem; color:#cbd5e1; margin-top:3px;">
+                            • 在含有 $\text{Ca}^{2+}, \text{Zn}^{2+}, \text{K}^+$ 的濾液中加入硫酸：<br>
+                            • $\text{Ca}^{2+} + \text{SO}_4^{2-} \rightarrow \text{CaSO}_{4(s)} \downarrow$（沉澱物 VI）。<br>
+                            • $\text{ZnSO}_4$ 與 $\text{K}_2\text{SO}_4$ 均易溶於水，成功將鉦離子分離！
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFlowAns() {
+    const tree = document.getElementById('flow-tree');
+    const isShowing = tree.classList.contains('show-ans');
+    tree.classList.toggle('show-ans', !isShowing);
+    const btn = document.getElementById('btn-flow-toggle');
+    btn.textContent = isShowing ? '💡 顯示流程解答 / 隱藏' : '隱藏流程解答';
+    if (!isShowing && window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([tree]).catch(() => {});
+    }
+}
+
+function toggleSolution(id) {
+    const box = document.getElementById(id);
+    if (!box) return;
+    const isHidden = (box.style.display === 'none' || box.style.display === '');
+    box.style.display = isHidden ? 'flex' : 'none';
+    if (isHidden && window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([box]).catch(() => {});
+    }
+}
+</script>
+</body>
+</html>

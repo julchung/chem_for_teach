@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>3-1 物質三態 · 範例 3：飽和蒸氣壓關鍵概念 | 互動教學</title>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --text-main: #f8fafc;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --accent-cyan: #22d3ee;
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.14);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body, html {
+            width: 100%; height: 100%;
+            background: var(--bg-dark); color: var(--text-main);
+            font-family: 'Segoe UI', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(56,189,248,0.08) 1.2px, transparent 1.2px);
+            background-size: 30px 30px;
+        }
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #slide-stage {
+            width: 1600px;
+            height: 900px;
+            transform-origin: center center;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            padding: 24px 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+        h1 {
+            color: var(--accent-cyan); font-size: 32px; font-weight: 800;
+            display: flex; align-items: center; gap: 14px;
+            border-bottom: 2px solid rgba(34,211,238,0.28); padding-bottom: 10px; flex-shrink: 0;
+        }
+        h1::before { content: ""; width: 8px; height: 32px; background: var(--accent-cyan); border-radius: 4px; flex-shrink: 0; }
+        strong { color: var(--accent-cyan); font-weight: 700; }
+
+        .ex-layout {
+            display: grid; grid-template-columns: 1.05fr 1.15fr;
+            gap: 24px; flex: 1; min-height: 0;
+        }
+        .panel {
+            background: var(--glass); border: 1.5px solid var(--glass-border); border-radius: 18px;
+            padding: 24px 28px; backdrop-filter: blur(12px);
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 0;
+            box-shadow: 0 10px 32px rgba(0,0,0,0.38);
+        }
+        .tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 18px; border-radius: 20px;
+            font-size: 20px; font-weight: 800; align-self: flex-start;
+        }
+        .tag-yellow { background: rgba(251,191,36,0.18); border: 1.5px solid rgba(251,191,36,0.5); color: var(--accent-yellow); }
+        .tag-cyan { background: rgba(34,211,238,0.15); border: 1.5px solid rgba(34,211,238,0.4); color: var(--accent-cyan); }
+        
+        .q-box {
+            background: rgba(56,189,248,0.08); border: 1.5px solid rgba(56,189,248,0.3);
+            border-radius: 14px; padding: 22px 26px; font-size: 23.5px; line-height: 1.7;
+        }
+        
+        .options {
+            list-style: none; margin: 0; padding: 0;
+            display: flex; flex-direction: column; gap: 12px;
+            padding-left: 6px;
+        }
+        .options li {
+            padding: 13px 22px; border-radius: 12px;
+            background: rgba(255,255,255,0.035); border: 1.5px solid rgba(255,255,255,0.1);
+            font-size: 22px; font-weight: 600; line-height: 1.5;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            transition: all 0.25s ease;
+        }
+        .opt-wrap {
+            display: flex; align-items: baseline; gap: 12px; flex: 1;
+        }
+        .opt-label {
+            color: var(--accent-yellow); font-weight: 800; font-size: 22px; flex-shrink: 0;
+        }
+        .opt-text {
+            flex: 1;
+        }
+        .options li.opt-correct {
+            border-color: rgba(52,211,153,0.7) !important;
+            background: rgba(52,211,153,0.14) !important;
+            color: var(--accent-green) !important;
+            box-shadow: 0 0 16px rgba(52,211,153,0.25);
+        }
+        
+        .btn-show-ans {
+            align-self: flex-start; padding: 11px 32px;
+            background: rgba(56,189,248,0.18); border: 2px solid var(--accent-cyan);
+            color: #fff; border-radius: 12px; cursor: pointer; font-size: 20px; font-weight: 800;
+            transition: all 0.2s ease; font-family: inherit;
+        }
+        .btn-show-ans:hover { background: var(--accent-cyan); color: #000; }
+        .btn-show-ans.shown {
+            background: rgba(248,113,113,0.2); border-color: var(--accent-red); color: #fca5a5;
+        }
+        .step-line { border-left: 5px solid var(--accent-cyan); padding-left: 18px; font-size: 21px; line-height: 1.62; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div id="slide-stage">
+        <h1>3-1 物質三態 &middot; 範例 3：飽和蒸氣壓本質與沸點關係</h1>
+
+        <div class="ex-layout">
+            <!-- 左欄：題目與選項 -->
+            <div class="panel">
+                <span class="tag tag-yellow">📋 範例 3 · 蒸氣壓強度性質判別</span>
+                
+                <div class="q-box">
+                    <p>下列有關液體的<strong>「飽和蒸氣壓」</strong>與沸點關係之觀念敘述，何者<strong>正確</strong>？</p>
+                </div>
+
+                <ul class="options">
+                    <li id="opt-3a">
+                        <div class="opt-wrap"><span class="opt-label">(A)</span><span class="opt-text">飽和蒸氣壓的大小與容器中液體的存量及液面表面積成正比。</span></div>
+                    </li>
+                    <li id="opt-3b">
+                        <div class="opt-wrap"><span class="opt-label">(B)</span><span class="opt-text">液體的沸點，即為其飽和蒸氣壓等於外界環境壓力時的平衡溫度。</span></div>
+                        <span class="ans-badge" style="display:none; font-weight:800; color:var(--accent-green); flex-shrink:0; margin-left:12px;">✓ 正確答案</span>
+                    </li>
+                    <li id="opt-3c">
+                        <div class="opt-wrap"><span class="opt-label">(C)</span><span class="opt-text">在相同溫度下，揮發性愈大之液體，其飽和蒸氣壓必然愈小。</span></div>
+                    </li>
+                    <li id="opt-3d">
+                        <div class="opt-wrap"><span class="opt-label">(D)</span><span class="opt-text">當環境溫度降低時，液體分子的飽和蒸氣壓將隨之增大。</span></div>
+                    </li>
+                </ul>
+
+                <button class="btn-show-ans" id="btnAns3" onclick="toggleAns()">💡 顯示詳解</button>
+            </div>
+
+            <!-- 右欄：預設留白（上課由老師自行講解） / 點擊按鈕後才展開詳解 -->
+            <div class="panel" style="background: rgba(255,255,255,0.025); border:1.5px solid rgba(255,255,255,0.1);">
+                <div id="ansBox3" style="display:none; flex-direction:column; gap:14px; height:100%; justify-content:space-between;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1.5px solid rgba(255,255,255,0.12); padding-bottom: 8px;">
+                        <span class="tag tag-cyan">📖 參考詳解與選項深度剖析</span>
+                        <span style="color:var(--accent-green); font-weight:800; font-size:22px;">🎯 正確答案：選 (B)</span>
+                    </div>
+
+                    <div class="step-line">
+                        <strong style="color:var(--accent-red);">(A) 錯誤：</strong>定溫下飽和蒸氣壓只與「液體本性」及「溫度」有關，為<strong>強度性質</strong>，與液體存量多寡、液面表面積、容器大小<strong>完全無關</strong>。
+                    </div>
+                    <div class="step-line" style="border-left-color:var(--accent-green);">
+                        <strong style="color:var(--accent-green);">(B) 正確：</strong><strong>沸點的精準熱力學定義</strong>即為液體內部飽和蒸氣壓等於外界環境壓力時的平衡溫度。當蒸氣壓達到外壓時，液體內部即可劇烈汽化產生氣泡。
+                    </div>
+                    <div class="step-line">
+                        <strong style="color:var(--accent-red);">(C) 錯誤：</strong>揮發性愈大代表分子間引力愈弱，粒子極易脫離液面逸散成為氣體 &rarr; 在定溫下其飽和蒸氣壓必然<strong>愈大</strong>而非愈小。
+                    </div>
+                    <div class="step-line">
+                        <strong style="color:var(--accent-red);">(D) 錯誤：</strong>環境溫度降低時，液體分子的平均熱動能減小，能克服引力逸出液面的分子數大幅減少 &rarr; 飽和蒸氣壓必然<strong>隨之減小</strong>。
+                    </div>
+
+                    <div style="background:rgba(52,211,153,0.12); border:1.5px solid rgba(52,211,153,0.4); border-radius:12px; padding:12px 20px;">
+                        <p style="color:var(--accent-green); font-weight:800; font-size:22px; margin:0;">
+                            🎯 唯一正確答案：選 (B)。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAns() {
+    const ans = document.getElementById('ansBox3');
+    const btn = document.getElementById('btnAns3');
+    const optB = document.getElementById('opt-3b');
+    const badge = optB ? optB.querySelector('.ans-badge') : null;
+
+    const isShown = ans.style.display === 'flex';
+    if (isShown) {
+        ans.style.display = 'none';
+        btn.textContent = '💡 顯示詳解';
+        btn.classList.remove('shown');
+        if (optB) optB.classList.remove('opt-correct');
+        if (badge) badge.style.display = 'none';
+    } else {
+        ans.style.display = 'flex';
+        btn.textContent = '🙈 隱藏詳解';
+        btn.classList.add('shown');
+        if (optB) optB.classList.add('opt-correct');
+        if (badge) badge.style.display = 'inline-block';
+        if (window.MathJax) MathJax.typesetPromise([ans]).catch(function(){});
+    }
+}
+
+function fitStage() {
+    const stage = document.getElementById('slide-stage');
+    if (!stage) return;
+    const baseW = 1600;
+    const baseH = 900;
+    const paddingX = 20;
+    const paddingY = 20;
+    const availW = Math.max(window.innerWidth - paddingX, 320);
+    const availH = Math.max(window.innerHeight - paddingY, 240);
+    const scale = Math.min(availW / baseW, availH / baseH);
+    stage.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', fitStage);
+window.addEventListener('orientationchange', fitStage);
+document.addEventListener('fullscreenchange', fitStage);
+document.addEventListener('webkitfullscreenchange', fitStage);
+window.addEventListener('DOMContentLoaded', fitStage);
+fitStage();
+</script>
+<script src="../../unified_chem_spa/js/scroll_relay.js"></script>
+<script id="__chem_scroll_bridge">
+(function () {
+    if (window.__chemScrollBridgeInstalled) return;
+    window.__chemScrollBridgeInstalled = true;
+    function reportScroll() { if (window.parent && window.parent !== window) { window.parent.postMessage({ type: '__chem_scroll', sy: window.scrollY||0, sx: window.scrollX||0 }, '*'); } }
+    window.addEventListener('scroll', reportScroll, { capture: true, passive: true });
+    window.addEventListener('message', function (e) {
+        if (!e.data) return;
+        if (e.data.type === '__chem_scroll_by') { window.scrollBy({ top: e.data.deltaY||0, behavior: 'instant' }); reportScroll(); }
+        else if (e.data.type === '__chem_get_scroll') { reportScroll(); }
+    });
+    reportScroll(); window.addEventListener('load', reportScroll);
+})();
+</script>
+</body>
+</html>
